@@ -2825,6 +2825,7 @@ width: 100%!important;
 
 .single-post p {
     line-height: 1.4em;
+    height: 80px;
 }
 
 .sf-post p {
