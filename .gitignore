@@ -18,40 +18,8 @@ wp-content/cache/*
 wp-content/cache/supercache/*
 sitemap.xml
 sitemap.xml.gz
-.htaccess
 *.log
 
-
-
-
-wp-content/plugins/cred-frontend-editor/*
-wp-content/plugins/decomments/*
-wp-content/plugins/duracelltomi-google-tag-manager/*
-wp-content/plugins/facebook-for-woocommerce/*
-wp-content/plugins/formidable/*
-wp-content/plugins/formidable-mailchimp/*
-wp-content/plugins/formidable-registration/*
-wp-content/plugins/hyperdb/*
-wp-content/plugins/hyperdb-1-1/*
-wp-content/plugins/layouts/*
-wp-content/plugins/mailchimp-for-woocommerce/*
-wp-content/plugins/post-views-counter/*
-wp-content/plugins/sucuri-scanner/*
-wp-content/plugins/toolset-maps/*
-wp-content/plugins/types/*
-wp-content/plugins/types-access/*
-wp-content/plugins/woocommerce/*
-wp-content/plugins/woocommerce-filter-orders-by-product/*
-wp-content/plugins/woocommerce-gateway-stripe/*
-wp-content/plugins/woocommerce-name-your-price/*
-wp-content/plugins/woocommerce-social-login/*
-wp-content/plugins/woocommerce-views/*
-wp-content/plugins/woocommerce-xero/*
-wp-content/plugins/wordpress-seo/*
-wp-content/plugins/wp-migrate-db-pro/*
-wp-content/plugins/wp-rocket/*
-wp-content/plugins/wp-ses/*
-wp-content/plugins/wp-views/*
 
 
 # wpengine specific
@@ -95,7 +63,6 @@ wp-content/mysql.sql
 /xmlrpc.php
 /wp-admin
 /wp-includes
-/wp-content/index.php
 /wp-content/themes/twentyten
 /wp-content/themes/twentyeleven
 /wp-content/themes/twentytwelve
@@ -104,9 +71,6 @@ wp-content/mysql.sql
 /wp-content/themes/twentyfifteen
 /wp-content/themes/twentysixteen
 /wp-content/themes/twentyseventeen
-/wp-content/themes/toolset-starter
-/wp-content/themes/index.php
-/wp-content/plugins/index.php
 /wp-content/plugins/akismet*
 
 
