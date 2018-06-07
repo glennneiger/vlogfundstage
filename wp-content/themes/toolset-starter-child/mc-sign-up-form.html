@@ -1,0 +1,152 @@
+<style>
+    body {
+  font-family: Helvatica Neue, sans-serif;
+}
+.sf-mc-inline {
+  background: #999;
+  background-color: #313c46 !important;
+  border-top: 6px solid #6b10d6;
+}
+.sf-mc-inline-header {
+  padding:20px;
+}
+.sf-mc-inline-form-wrapper {
+  background: #eee;
+      background-color: #273038 !important;
+      padding:20px;
+}
+.sf-mc-inline-h2 {
+  color: white;
+  margin: 0 0 10px 0;
+    font-weight: 400;
+}
+.sf-mc-inline-p {
+  color: white;
+  margin: 0 0 10px 0;
+    font-weight: 400;
+}
+.sf-mc-inline-form {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.sf-mc-inline-form-item {
+  flex: 1;
+}
+.sf-mc-email-inline {
+    width:100%;
+    padding: 10px!important;
+    box-shadow: inset 0 0 5px #eee!important;
+    border: none;
+    border-left: 4px solid #6b10d6!important;
+    outline: none!important;
+    border-radius: 0px!important;
+    font-size: 16px!important;
+}
+.mc-submit-2 {
+  width:100%;
+  padding: 10px !important;
+    color: white !important;
+    background: #6b10d6 !important;
+    background-color: #6b10d6 !important;
+    cursor: pointer !important;
+    border-radius: 0 !important;
+     font-size: 16px!important;
+    border: none;
+      -webkit-appearance: none;
+   -moz-appearance: none;
+   appearance: none;
+     -webkit-border-radius:0;
+}
+#subscribe-result p,  #subscribe-result-2 p {
+    line-height: normal;
+    font-size: 14px;
+    margin-left: 5px;
+}
+</style>
+
+
+<!--new-inline-form-->
+   <div class="sf-mc-inline">
+
+<div class="sf-mc-inline-header">
+<h2 class="sf-mc-inline-h2">Satisfy your YouTube Obsession</h2>
+<p class="sf-mc-inline-p">Join our mailing list to receive the latest news about your favorite YouTubers.</p>
+</div>
+
+<div class="sf-mc-inline-form-wrapper">
+<form action="https://vlogfund.us17.list-manage.com/subscribe/post-json?u=144e2b841120da1b2d05b4e05&amp;id=f7f8eb5e63&c=?" method="get" id="mc-embedded-subscribe-form-2" name="mc-embedded-subscribe-form" class="validate">
+  <div class="sf-mc-inline-form">
+<div class="sf-mc-inline-form-item">
+<input type="email" value="" name="EMAIL" class="sf-mc-email-inline" id="mce-EMAIL-2" placeholder="mail@example.com" required>
+</div>
+<div style="position: absolute; left: -5000px;" aria-hidden="true">
+    <input type="text" name="b_e44c1f194bec93e238615469e_f6f826e769" tabindex="-1" value="">
+</div>
+
+
+<input type="hidden" value="" name="SOURCE" id="mce-SOURCE">
+<input type="hidden" value="" name="SIGNUPPAGE" id="mce-SIGNUPPAGE">
+
+
+<div class="sf-mc-inline-form-item">
+<input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe-2" class="mc-submit-2">
+</div>
+  </div>
+<div id="subscribe-result-2"></div>
+</form>
+</div>
+</div>
+    <!--end-new-inline-form-->
+
+
+<script type='text/javascript' src='https://www.vlogfund.com/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='https://www.vlogfund.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+<script>
+jQuery(document).ready(function () {
+
+
+  var jQueryform2 = jQuery('#mc-embedded-subscribe-form-2')
+  if (jQueryform2.length > 0) {
+    jQuery('form input.mc-submit-2').bind('click', function (event) {
+      if (event) event.preventDefault()
+      register(jQueryform2)
+    })
+  }
+
+
+});
+
+
+
+  function register(jQueryform2) {
+  jQuery('#mc-embedded-subscribe-2').val('Sending...');
+  jQuery.ajax({
+    type: jQueryform2.attr('method'),
+    url: jQueryform2.attr('action'),
+    data: jQueryform2.serialize(),
+    cache: false,
+    dataType: 'json',
+    contentType: 'application/json; charset=utf-8',
+    error: function (err) { alert('Could not connect to the registration server. Please try again later.') },
+    success: function (data) {
+      jQuery('#mc-embedded-subscribe-2').val('subscribe')
+      if (data.result === 'success') {
+        // Yeahhhh Success
+        console.log(data.msg)
+        jQuery('#mce-EMAIL-2').css('borderColor', '#ffffff')
+        jQuery('#subscribe-result-2').css({'color':'deeppink', 'font-size':'14px'})
+        jQuery('#subscribe-result-2').html('<p>Thank you for subscribing. We have sent you a confirmation email.</p>')
+        jQuery('#mce-EMAIL-2').val('')
+      } else {
+        // Something went wrong, do something to notify the user.
+        console.log(data.msg)
+        jQuery('#mce-EMAIL-2').css('borderColor', '#ff8282')
+        jQuery('#subscribe-result-2').css('color', '#ff8282')
+        jQuery('#subscribe-result-2').html('<p>' + data.msg.substring(4) + '</p>')
+      }
+    }
+  }
+
+        )};
+</script>
