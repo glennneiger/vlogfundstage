@@ -8,5 +8,6 @@ Version: 1
 */
 add_filter( 'wpmdb_preserved_options', function ( $options ) {
 	$options[] = 'woocommerce_stripe_settings';
+  $options[] = 'woocommerce_paypal_settings';
 	return $options;
 } );
