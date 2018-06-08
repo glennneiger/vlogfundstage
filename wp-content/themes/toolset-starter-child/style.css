@@ -2228,6 +2228,7 @@ hr {
 }
 .sf-blog-article-excerpt {
     margin: 10px 0;
+    height: 85px;
 }
 .sf-blog-shares {
     border-top: 1px dashed #eee;
@@ -2825,8 +2826,8 @@ width: 100%!important;
 
 .single-post p {
     line-height: 1.4em;
-    height: 80px;
 }
+
 
 .sf-post p {
     line-height: 1.4em;
