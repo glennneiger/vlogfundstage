@@ -66,7 +66,7 @@ do_action( 'woocommerce_before_account_orders', $has_orders ); ?>
 							<?php elseif ( 'order-actions' === $column_id ) : ?>
 								<?php
 								$actions = wc_get_account_orders_actions( $order );
-								
+
 								if ( ! empty( $actions ) ) {
 									foreach ( $actions as $key => $action ) {
 										echo '<a href="' . esc_url( $action['url'] ) . '" class="woocommerce-button button ' . sanitize_html_class( $key ) . '">' . esc_html( $action['name'] ) . '</a>';
@@ -98,9 +98,9 @@ do_action( 'woocommerce_before_account_orders', $has_orders ); ?>
 <?php else : ?>
 
 	<div class="woocommerce-message woocommerce-message--info woocommerce-Message woocommerce-Message--info woocommerce-info">
-        <h3><strong>You haven't backed any campaigns yet.</strong></h3>
-        <button class="sfc-campaign-archive-no-results-btn"><a class="woocommerce-Button button" href="/campaign-search">Discover now</a></button>
-        
+        <h3><strong>You haven't contributed to any collabs yet.</strong></h3>
+        <button class="sfc-campaign-archive-no-results-btn"><a class="woocommerce-Button button" href="/campaign-search">Start contributing</a></button>
+
 	</div>
 
 <?php endif; ?>
