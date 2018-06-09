@@ -257,9 +257,6 @@ jQuery(function () {
 
 
 
-
-
-
  //minimum character count
 jQuery('textarea[name="post_content_substitute"]').keyup(function () {
   var max = 250;
@@ -383,7 +380,7 @@ jQuery('textarea[name="post_content_substitute"]').keyup(function () {
               console.log('Pasted');
               var url = jQuery(".videourl1").val();
               $.ajax({
-                      url: 'https://www.vlogfund.com/wp-content/themes/toolset-starter-child/process.php',
+                      url: '/wp-content/themes/toolset-starter-child/process.php',
                       type: 'POST',
                       data: {url: url},
                       dataType: 'json',
@@ -408,7 +405,7 @@ jQuery('textarea[name="post_content_substitute"]').keyup(function () {
               console.log('Pasted');
               var url = jQuery(".videourl2").val();
               $.ajax({
-                      url: 'https://www.vlogfund.com/wp-content/themes/toolset-starter-child/process.php',
+                      url: '/wp-content/themes/toolset-starter-child/process.php',
                       type: 'POST',
                       data: {url: url},
                       dataType: 'json',
