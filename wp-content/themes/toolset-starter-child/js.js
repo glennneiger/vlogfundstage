@@ -877,7 +877,7 @@ jQuery('.regular-login').get(0).click();
 
 
     // Perform AJAX login on form submit
-     jQuery('form#login').on('submit', function(e){
+    /* jQuery('form#login').on('submit', function(e){
         jQuery('form#login p.status').show().text(ajax_login_object.loadingmessage);
         jQuery.ajax({
             type: 'POST',
@@ -906,7 +906,102 @@ jQuery('.regular-login').get(0).click();
             }
         });
         e.preventDefault();
+    });*/
+
+
+
+//perform AJAX login and registration on form submit
+
+
+// Perform AJAX login/register on form submit
+	$('form#login_user, form#register_user').on('submit', function (e) {
+        if (!$(this).valid()) return false;
+        $('p.status', this).show().text(ajax_auth_object.loadingmessage);
+		action = 'ajaxlogin';
+		username = 	$('form#login_user #username').val();
+		password = $('form#login_user #password').val();
+		email = '';
+		//security = $('form#login #security').val();
+		if ($(this).attr('id') == 'register_user') {
+			action = 'ajaxregister';
+			username = $('#signonname').val();
+			password = $('#signonpassword').val();
+        	email = $('#email').val();
+        	//security = $('#signonsecurity').val();
+		}
+		ctrl = $(this);
+		$.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: ajax_auth_object.ajaxurl,
+            data: {
+                'action': action,
+                'username': username,
+                'password': password,
+				'email': email,
+                 //'security': security
+            },
+            success: function (data) {
+				$('p.status', ctrl).text(data.message);
+        $('.login-w-a').addClass('hide');
+        $('li.account-li').removeClass('hide');
+        toastr.success('', 'Welcome!');
+      /*if ($(this).attr('id') == 'register_user') {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+        event: 'formSubmissionSuccess',
+        formName: 'registerForm'
+        });
+          toastr.success('', 'Welcome!');
+        } else {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+          event: 'formSubmissionSuccess',
+          formName: 'loginForm'
+          });
+            toastr.success('', 'Welcome back!');
+          }*/
+				if (data.loggedin == true) {
+          if ($('body').hasClass('page-campaign-form-get-started')) {
+                document.location.href = '/campaign-form';
+}
+if ($('body').hasClass('page-checkout')) {
+                document.location.href = ajax_auth_object.redirecturl;
+}
+if ($('body').hasClass('single-post')) {
+                $('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
+}
+else {
+  setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
+}
+
+                }
+            }
+        });
+        e.preventDefault();
     });
+
+
+	// Client side form validation
+
+  /*setTimeout(function() {
+     jQuery('#signonpassword').rules('add', { required: true })
+  }, 0);*/
+
+   if (jQuery("#register_user").length)
+		jQuery("#register_user").validate(
+		{
+			rules:{
+			password2:{ equalTo:'#signonpassword'
+			}
+		}
+  }
+		);
+    else if (jQuery("#login_user").length)
+		   jQuery("#login_user").validate();
+
+
+
 
 
 

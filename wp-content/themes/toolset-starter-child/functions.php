@@ -4,6 +4,7 @@
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
 require_once( get_theme_file_path('/inc/campaign-status-update.php') );
+require_once( get_theme_file_path() . '/libs/custom-ajax-auth.php' );
 
 if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 	function ref_enqueue_main_stylesheet() {
@@ -20,6 +21,11 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
 						wp_register_script( 'jqueryui-script', 'https://code.jquery.com/ui/1.12.1/jquery-ui.js' );
 					 wp_enqueue_script('jqueryui-script');
+
+
+					 wp_register_script('validate-script', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js' );
+				     wp_enqueue_script('validate-script');
+
 
             wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
             wp_enqueue_style('select2-style');
@@ -1266,13 +1272,13 @@ add_action( 'wc_social_login_google_new_user_data', 	'wp_social_login_change_use
 
 function my_form_shortcode() {
     ob_start();
-    get_template_part('my_form_template');
+    get_template_part('login_form');
     return ob_get_clean();
 }
 add_shortcode( 'my_form_shortcode', 'my_form_shortcode' );
 
 
-function ajax_login_init(){
+/*function ajax_login_init(){
 
     wp_enqueue_script('js', get_theme_file_uri('js.js'), array('jquery'), null, true );
 
@@ -1317,9 +1323,17 @@ function ajax_login(){
     }
 
     die();
+}*/
+
+
+//Registration Form
+
+function registration_form_shortcode() {
+    ob_start();
+    get_template_part('registration_form');
+    return ob_get_clean();
 }
-
-
+add_shortcode( 'registration_form_shortcode', 'registration_form_shortcode' );
 
 
 //Login and logout message
