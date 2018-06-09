@@ -596,7 +596,7 @@ jQuery('.sfc-campaign-archive-post-title-inner').mouseover( function() {
     if ( jQuery('.woocommerce-MyAccount-navigation-link--orders').hasClass( 'is-active' ) ) {
      jQuery('.sfc-account-mobile-nav-donations').addClass('sfc-account-mobile-nav-li-active');
     }
-    if ( jQuery('.woocommerce-MyAccount-navigation-link--settings').hasClass( 'is-active' ) ) {
+    if ( jQuery('.woocommerce-MyAccount-navigation-link--settings, .woocommerce-MyAccount-navigation-link--edit-account').hasClass( 'is-active' ) ) {
      jQuery('.sfc-account-mobile-nav-settings').addClass('sfc-account-mobile-nav-li-active');
     }
 
@@ -964,6 +964,8 @@ jQuery('.regular-login').get(0).click();
 				if (data.loggedin == true) {
           if ($('body').hasClass('page-campaign-form-get-started')) {
                 document.location.href = '/campaign-form';
+                $('a.sf-redirect-to-form-create').get(0).click();
+
 }
 if ($('body').hasClass('page-checkout')) {
                 document.location.href = ajax_auth_object.redirecturl;
