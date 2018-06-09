@@ -962,14 +962,6 @@ jQuery('.regular-login').get(0).click();
             toastr.success('', 'Welcome back!');
           }*/
 				if (data.loggedin == true) {
-          if ($('body').hasClass('page-campaign-form-get-started')) {
-                document.location.href = '/campaign-form';
-                $('a.sf-redirect-to-form-create').get(0).click();
-
-}
-if ($('body').hasClass('page-checkout')) {
-                document.location.href = ajax_auth_object.redirecturl;
-}
 if ($('body').hasClass('single-post')) {
                 $('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
 }
