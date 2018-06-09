@@ -399,10 +399,10 @@ function vlogfund_woocommerce_product_columns( $columns ) {
 
 	unset($columns['sku'],$columns['wpseo-score'],$columns['wpseo-score-readability'],
 		$columns['product_tag'], $columns['product_type'], $columns['thumb'],
-		$columns['wpseo-links'], $columns['wpseo-linked'], $columns['product_cat'], $columns['featured'],
+		$columns['wpseo-links'], $columns['wpseo-linked'], $columns['product_cat'], $columns['featured'], $columns['price'],
 		$columns['date'], $columns['author'], $columns['post_views'], $columns['wpseo-title'],
 		$columns['wpseo-metadesc'], $columns['wpseo-focuskw']);
-	$columns['total_sales'] = __('Total Sales');
+
 	//$columns['featured'] = __('Featured');
 	$columns['date'] = __('Date');
 	$columns['author'] = __('Author');
@@ -410,6 +410,8 @@ function vlogfund_woocommerce_product_columns( $columns ) {
 	$columns['wpseo-title'] = __('SEO Title');
 	$columns['wpseo-metadesc'] = __('Meta Desc.');
 	$columns['wpseo-focuskw'] = __('Focus KW');
+	$columns['upvotes'] = __( 'Upvotes' );
+	$columns['total_sales'] = __('Total Sales');
 	$columns['nyp'] = __( 'NYP' );
 	$columns['campaign-status'] = __( 'Status' );
 	return $columns;
@@ -432,6 +434,9 @@ function vlogfund_woocommerce_product_columns_data( $column, $post_id ) {
 		case 'total_sales' : //Total Sales
 			echo get_post_meta($post_id, '_product_total_sales',true) ? get_post_meta($post_id, '_product_total_sales',true) : '&mdash;';
 			break;
+			case 'upvotes' : //Total Sales
+				echo get_post_meta($post_id, '_upvote_count',true) ? get_post_meta($post_id, '_upvote_count',true) : '&mdash;';
+				break;
 	endswitch;
 }
 add_action( 'manage_product_posts_custom_column', 'vlogfund_woocommerce_product_columns_data', 99, 2);

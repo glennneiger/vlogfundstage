@@ -3,7 +3,7 @@
 //Override Woocommerce Functionality
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
-//require_once( get_theme_file_path('/inc/campaign-status-update.php') );
+require_once( get_theme_file_path('/inc/campaign-status-update.php') );
 
 if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 	function ref_enqueue_main_stylesheet() {
@@ -330,7 +330,7 @@ if( ($_POST['post_status']!='draft') ) {
         //check my_field value
         if (strlen(trim($fields['post_content_substitute']['value'])) < 250 ){
             //set error message for my_field
-            $errors['post_content_substitute']='Please enter at least 250 characters in Step 3 or save your campaign as a draft to edit it later';
+            $errors['post_content_substitute']='Please enter at least 250 characters or save your campaign as a draft';
         }
     }
 }
@@ -909,12 +909,12 @@ add_action( 'init', 'my_custom_endpoints1' );
 
 
 
-function my_custom_endpoints2() {
+/*function my_custom_endpoints2() {
     add_rewrite_endpoint( 'settings', EP_ROOT | EP_PAGES );
 
 }
 
-add_action( 'init', 'my_custom_endpoints2' );
+add_action( 'init', 'my_custom_endpoints2' );*/
 
 
 
@@ -929,14 +929,14 @@ function my_custom_query_vars1( $vars ) {
 add_filter( 'query_vars', 'my_custom_query_vars1', 0 );
 
 
-function my_custom_query_vars2( $vars ) {
+/*function my_custom_query_vars2( $vars ) {
     $vars[] = 'settings';
 
 
     return $vars;
 }
 
-add_filter( 'query_vars', 'my_custom_query_vars2', 0 );
+add_filter( 'query_vars', 'my_custom_query_vars2', 0 );*/
 
 
 
@@ -955,7 +955,8 @@ function my_custom_my_account_menu_items( $items ) {
 
         'my-campaigns' => 'My Campaigns',
 		'orders'            => __( 'Backed Campaigns', 'woocommerce' ),
-        'settings'  => __( 'Account Settings', 'woocommerce' ),
+		'edit-account' => __('Account', 'woocommerce')
+        //'settings'  => __( 'Account Settings', 'woocommerce' ),
 
     );
 
@@ -980,13 +981,13 @@ add_action( 'woocommerce_account_my-campaigns_endpoint', 'my_custom_endpoint_con
 
 
 
-function my_custom_endpoint_content2() {
+/*function my_custom_endpoint_content2() {
 
 
 echo do_shortcode ('[wpv-post-body view_template="acccount-settings"]');
 }
 
-add_action( 'woocommerce_account_settings_endpoint', 'my_custom_endpoint_content2' );
+add_action( 'woocommerce_account_settings_endpoint', 'my_custom_endpoint_content2' );*/
 
 
 
