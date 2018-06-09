@@ -554,6 +554,32 @@ update_post_meta($post_id, 'wpcf-collaborator-2-image', $_POST['channel_logo_url
 
 
 
+
+/**user redirect**/
+
+add_action( 'template_redirect', 'redirect_to_specific_page' );
+
+function redirect_to_specific_page() {
+
+if ( is_page('campaign-form-get-started') && is_user_logged_in() ) {
+
+wp_redirect( '/campaign-form', 301 );
+  exit;
+    }
+}
+
+
+
+
+/*add_action( 'admin_init', 'redirect_non_logged_users_to_specific_page' );
+
+function redirect_non_logged_users_to_specific_page() {
+
+if ( !is_user_logged_in() && is_page('add page slug or i.d here') && $_SERVER['PHP_SELF'] != '/wp-admin/admin-ajax.php' ) {
+
+wp_redirect( 'http://www.example.dev/page/' );
+    exit;
+}*/
 /*******************************************************/
 //update form && update edit form
 /*******************************************************/
