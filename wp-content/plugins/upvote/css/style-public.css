@@ -15,6 +15,15 @@
 }
 .upvote-progress-button.icon{ min-width:115px; }
 /* Button style */
+.sfc-campaign-archive-post .upvote-progress-button.icon{
+	width: 100%;
+	min-width: 100%;
+ }
+ .sfc-campaign-archive-post .upvote-progress-button button {
+height: 45px;
+
+}
+
 .upvote-progress-button button {
     width: 100%;
     margin: 0 auto;
