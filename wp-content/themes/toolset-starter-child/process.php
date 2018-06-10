@@ -67,4 +67,3 @@ if(isset($_POST['url'])){
         echo 'https://image.flaticon.com/icons/svg/812/812892.svg';
     }
 }
-?>
