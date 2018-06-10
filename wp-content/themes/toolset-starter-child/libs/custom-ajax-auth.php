@@ -1,4 +1,3 @@
-
 <?php
 /*
 http://fellowtuts.com/wordpress/wordpress-ajax-login-and-register-without-a-plugin/
