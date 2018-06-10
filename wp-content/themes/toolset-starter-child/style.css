@@ -404,11 +404,15 @@ p {
 }
 
 .site-header {
-    position: relative;
+    position: fixed;
     width: 100%;
     background: white;
     box-shadow: 0 4px 10px 0 rgba(22, 22, 22, 0.08);
-    z-index: 2;
+    z-index: 9999;
+}
+
+.container-fluid:nth-of-type(2), .container-fluid:nth-child(2){
+  padding-top: 54px!important;
 }
 
 .site-content-contain {
@@ -634,14 +638,12 @@ width: 100%;
 .sf-navigation {
     position: relative;
     background-color: white;
-    /*background-color: var(--navigation-bg-color);*/
     box-shadow: 0 4px 10px 0 rgba(22, 22, 22, 0.08);
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     flex-wrap: nowrap;
     min-height: 50px;
-    /*min-height: var(--navigation-height);*/
     z-index: 1;
 }
 
@@ -679,7 +681,6 @@ width: 100%;
 
 .sf-navigation-title-link {
     font-family: apple-system,BlinkMacSystemFont,SegoeUI, "Helvetica Neue", Helvetica, sans-serif;
-    /*font-family: var(--title-font-family);*/
     color: #6b10d6;
     color: var(--brand-color);
     display: block;
@@ -710,20 +711,19 @@ width: 100%;
     display: flex;
     text-shadow: 0.2em 0.5em 0.1em transparent, -0.1em 0 0 #dc2c5d, 0.1em 0 0 #2cdcab;
     color: rgba(255, 255, 255, 0.9);
-    /*top: 25px;*/
 }
 
 .sf-blog-only {
     display: none!important;
 }
 body.blog .sf-blog-only {
-    display: block!important;
+    display: none!important;
     margin: auto;
 }
 @media (min-width:997px) {
    body.blog .sf-blog-only {
     margin-left: 5px;
-    display: inline-block!important;
+    display: block!important;
 }
 }
 .sfc-brand-title-inner {
@@ -741,9 +741,6 @@ body.blog .sf-blog-only {
     line-height: 1;
     color: #9e9ba4;
     display: inline-block;
-    /* background: black;*/
-    /*padding: 10px 20px;*/
-
 }
 
 
@@ -862,20 +859,17 @@ body.blog .sf-blog-only {
 .sf-navigation-items-left {
     order: 1;
     margin-left: 10px;
-    /*margin-left: var(--navigation-space);*/
 }
 
 .sf-navigation-items-right {
     order: 3;
     margin-right: 10px;
-    /*margin-right: var(--navigation-space);*/
 }
 
 .sf-navigation-items-menu {
     position: absolute;
     z-index: 1;
     top: calc(50px + 2px);
-    /*top: calc(var(--navigation-height) + 2px);*/
     right: 0;
     width: 200px;
     flex-direction: column;
@@ -894,7 +888,6 @@ body.blog .sf-blog-only {
     list-style: none;
     align-self: center;
     color: #000;
-    /*color: var(--navigation-link-color);*/
     border-bottom: 2px solid white;
     border-top: 2px solid white;
 }
@@ -920,7 +913,6 @@ body.blog .sf-blog-only {
 .sf-navigation-link {
     padding: 0 5px;
     line-height: 50px;
-    /*line-height: var(--navigation-height);*/
     display: block;
 }
 
@@ -992,8 +984,6 @@ body.blog .sf-blog-only {
         order: 1;
         display: flex;
         justify-content: center;
-        /*border-bottom: 1px solid #eee;*/
-        /*line-height: 39px;*/
         line-height: normal;
 
 
@@ -1003,7 +993,6 @@ body.blog .sf-blog-only {
         display: block;
         align-self: center;
         margin-right: 10px;
-        /*margin-right: var(--navigation-space);*/
     }
 
     .sf-navigation-items {
@@ -1178,11 +1167,10 @@ body.blog .sf-blog-only {
 @media screen and (max-width:776px) {
    .sf-popup {
 
-    position: absolute;
+    position: fixed;
     padding: 0 20px;
     z-index: 9999;
     top: 0;
-    /*bottom: 0;*/
     left: 0;
     right: 0;
     background: rgba(0, 0, 0, 0.5);
@@ -1204,6 +1192,15 @@ body.blog .sf-blog-only {
 .sf-popup:target {
     visibility: visible;
     opacity: 1;
+}
+
+.login-popup-visible{
+  visibility: visible;
+  opacity: 1;
+}
+.register-popup-visible{
+  visibility: visible;
+  opacity: 1;
 }
 
 .sf-popup-container {
@@ -1272,7 +1269,6 @@ top: 12px;
 .sf-popup-content h2 {
     text-align: left;
     margin: auto;
-    /*display: block;*/
     color: #202020;
     font-size: x-large;
 }
@@ -1282,12 +1278,6 @@ display: none;
 }
 
 .sf-popup-input {
-    /*width: 100%;
-    margin: 10px auto;
-    box-shadow: inset 0 0 5px #eee;
-    padding-right: 40px;
-    font-size: 20px;*/
-
     width: 100%;
     padding: 10px;
     margin: 10px auto;
@@ -1652,7 +1642,6 @@ input:checked + .sf-smile-slider:before {
     .sfc-terms-col:nth-of-type(1) {
         flex: auto;
         order: 2;
-        /*width: 100%;*/
     }
     .sfc-terms-col {
         padding:0;
@@ -1985,46 +1974,6 @@ hr {
         display: none;
     }
 }
-
-/*.sfc-blog-title {
-    margin: auto 40px;
-    background-color: #222222;
-    position: relative;
-    line-height: 58px;
-    color: #fff;
-    font-weight: bold;
-    padding: 0px 25px;
-    transition: all 250ms;
-    border: none;
-    display: inline-block;
-    text-shadow: 0.2em 0.5em 0.1em transparent, -0.1em 0em 0em #dc2c5d, 0.1em 0em 0em #2cdcab;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.sfc-blog-title:before {
-    border-width: 0 0 1.8em 0.45em;
-    border-color: transparent transparent #222222 transparent;
-    left: -0.46em;
-    bottom: 0;
-    top: 0;
-}
-
-.sfc-blog-title:after {
-    border-width: 1.8em 0.45em 0 0;
-    border-color: #222222 transparent transparent transparent;
-    right: -0.46em;
-    top: 0;
-}
-
-.sfc-blog-title:before, .sfc-blog-title:after {
-    transition: border-color 250ms;
-    border-style: solid;
-    content: '';
-    width: 0.1em;
-    height: 0;
-    display: block;
-    position: absolute;
-}*/
 
 .sfc-blog-title {
     transform: skewX(-15deg);
@@ -2420,7 +2369,6 @@ hr {
     display: flex;
     position: relative;
     top: 0;
-    /*pointer-events: none;*/
     justify-content: center;
     padding: 0;
     width: 100%;
@@ -2484,7 +2432,6 @@ div.sf-play {
     display: flex;
     position: relative;
     justify-content: center;
-    /*margin: 15px;*/
 }
 
 .sf-blog-yt-video-thumbnail {
@@ -2519,7 +2466,6 @@ div.sf-play {
 
 
 div.sf-blog-yt-video-thumbnail img {
-    /*margin: -10% auto;*/
     width: 100%;
     height: 200px;
     object-fit: cover;
@@ -2527,7 +2473,6 @@ div.sf-blog-yt-video-thumbnail img {
 }
 @media (min-width:996px) {
    div.sf-blog-yt-video-thumbnail img {
-    /*margin: -10% auto;*/
     width: 100%;
     height: 215px;
     object-fit: cover;
@@ -2537,16 +2482,7 @@ div.sf-blog-yt-video-thumbnail img {
 .sf-blog-yt-video-thumbnail img:hover {
     -webkit-filter: brightness(75%);
 }
-div.sf-blog-yt-video-thumbnail:nth-of-type(1) img {
-   /* -webkit-clip-path: polygon(0 0, 100% 0%, 90% 100%, 0 100%);
-    clip-path: polygon(0 0, 100% 0%, 90% 100%, 0 100%);*/
-}
-div.sf-blog-yt-video-thumbnail:nth-of-type(2) img {
-    /* -webkit-clip-path: polygon(100% 0, 0% 100%, 100% 100%);
-     clip-path: polygon(100% 0, 0% 100%, 100% 100%);*/
-    /*-webkit-clip-path: polygon(10% 0, 100% 0%, 100% 100%, 0 100%);
-    clip-path: polygon(10% 0, 100% 0%, 100% 100%, 0 100%);*/
-}
+
 div.sf-blog-yt-video-thumbnail iframe {
     width: 100%;
     height: 200px;
@@ -2579,7 +2515,6 @@ div.sf-blog-yt-video-thumbnail iframe {
 }
 
 div.sf-blog-yt-video-thumbnail-single img {
-    /*margin: -10% auto;*/
     width: 100%;
     height:215px;
     object-fit: cover;
@@ -2610,7 +2545,6 @@ div.sf-blog-yt-video-thumbnail-single iframe {
     -webkit-filter: brightness(75%);
 }
 div.sf-blog-yt-video-thumbnail-trending img {
-    /*margin: -10% auto;*/
     width: 100%;
     height: 129px;
     object-fit: cover;
@@ -3357,39 +3291,7 @@ div.sf-post-yt-video-thumbnail iframe {
 }
 
 
-/* .sf-post-sharing-icons-side {
-     position: fixed;
-     left: 0%;
-     top: 40%;
 
- }
-
- .sf-post-sharing-icons-side ul {
-     margin: 0;
-     padding: 0;
-     list-style: none;
-
- }
-
- .sf-post-sharing-icons-side ul li {
-     background: #eee no-repeat center center;
-     padding: 5px;
-     height: 45px;
-     width: 45px;
-     background-size: cover;
-     line-height: 47px;
-     border: 2px solid #cccccc;
-     position: relative;
-     text-align: center;
-     vertical-align: middle;
-     margin-bottom: 5px;
- }
-
- .sf-post-sharing-icons-side ul li a {
-     margin: auto;
-     text-align: center;
-     display: block;
- }*/
 
 .sf-post-suggestions {
     padding: 0;
@@ -3723,7 +3625,6 @@ btn {
 }
 
 .sfc-front-page-slide-background {
-    /*background: url(https://cdn.beta.soundfund.com/soundfund-beta/content/2017/04/21221338/hieu-vu-minh-191853.jpg) no-repeat 50% 0;*/
     -webkit-background-size: cover;
     background-size: cover;
 }
@@ -3863,7 +3764,6 @@ zoom:49%;
 }
 
 .confetti-list {
-    /*position: absolute;*/
     top: 0;
     bottom: 0;
     left: 0;
@@ -4093,7 +3993,6 @@ zoom:49%;
     top: 50%;
     -webkit-transform: translateY(-50%) rotate(-45deg);
     transform: translateY(-50%) rotate(-45deg);
-    /*text-indent: -999em;*/
     color: transparent;
     left: 30px;
     cursor: pointer;
@@ -4314,11 +4213,7 @@ font-size: xx-large;
     align-items: center;
     justify-content: space-between;
 }
-/*@media screen and (max-width:996px) {
-    .sfc-campaign-widget-heading-controls {
-        display: none;
-    }
-}*/
+
 
 .sfc-campaign-section-title {
     color: #6b10d6;
@@ -4910,7 +4805,6 @@ flex: auto;
     font-size: 14px;
     max-width: 350px;
     word-wrap: break-word;
-    /*margin: 20px 0 48px 0;*/
     font-style: italic;
 }
 
@@ -4970,7 +4864,6 @@ flex: auto;
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     font-style: normal;
-    /*font-weight: normal;*/
     font-size: 14px;
     padding-right: 0.5em;
     position: absolute;
@@ -5004,7 +4897,6 @@ flex: auto;
     display: flex;
     position: relative;
     justify-content: center;
-    /*margin: 15px;*/
         border: 5px solid black;
     background: black;
 }
@@ -5018,7 +4910,6 @@ flex: auto;
     height: 250px;
     height: 400px;
     max-height: 100%;
-    /*zoom: 50%;*/
         zoom: 60%;
 }
 
@@ -5075,7 +4966,6 @@ div.sf-campaign-popular-yt-video-thumbnail:nth-of-type(2) div {
 
 
 div.sf-campaign-popular-yt-video-thumbnail img {
-    /*margin: -10% auto;*/
     width: 100%;
     height: 250px;
         height: 400px;
@@ -5087,8 +4977,6 @@ div.sf-campaign-popular-yt-video-thumbnail img {
     -moz-transform:scale(1.33); /* Firefox */
     -webkit-transform:scale(1.33); /* Safari and Chrome */
     -o-transform:scale(1.33); /* Opera */
-
-        /*position: absolute;*/
 }
 
 @media screen and (max-width: 996px) {
@@ -5099,16 +4987,12 @@ div.sf-campaign-popular-yt-video-thumbnail img {
     display: block;
     }
 }
-.sf-campaign-popular-yt-video-thumbnail img:hover {
-    /*-webkit-filter: brightness(75%);*/
-}
+
 div.sf-campaign-popular-yt-video-thumbnail:nth-of-type(1) img {
     -webkit-clip-path: polygon(0 0, 100% 0%, 90% 100%, 0 100%);
     clip-path: polygon(0 0, 100% 0%, 90% 100%, 0 100%);
 }
 div.sf-campaign-popular-yt-video-thumbnail:nth-of-type(2) img {
-    /* -webkit-clip-path: polygon(100% 0, 0% 100%, 100% 100%);
-     clip-path: polygon(100% 0, 0% 100%, 100% 100%);*/
     -webkit-clip-path: polygon(10% 0, 100% 0%, 100% 100%, 0 100%);
     clip-path: polygon(10% 0, 100% 0%, 100% 100%, 0 100%);
 }
@@ -5524,8 +5408,6 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-
-    /*border: 1px solid black;*/
     padding: 10px;
 }
 
@@ -5554,11 +5436,9 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
     }
 }
 .sfc-ngo-overview-col {
-    /*flex: 1 1 auto;*/
     padding: 0 15px;
 }
 .sfc-ngo-overview-col:nth-of-type(1) {
-    /*border: 1px solid brown;*/
     flex:3;
 }
 
@@ -5659,9 +5539,6 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
 .sfc-ngo-overview-item-wrapper {
     display: flex;
     flex-wrap: wrap;
-    /*justify-content: space-evenly;*/
-    /*border:2px solid #2cdcab;*/
-
     padding: 0 5px;
 }
 /*.scroll-bar::-webkit-scrollbar {
@@ -7548,18 +7425,20 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
 
 .sfc-campaign-archive-post-status-vote {
     position: absolute;
-        top: 12px;
+        top: 0;
     right: -11px;
-    padding: 5px 25px 5px 20px;
-    font-size: 24px;
+    padding: 7px 25px 7px 20px;
+    font-size: 16px;
     font-weight: bold;
     background: black;
     z-index: 1;
     color: white;
     border: 3px solid white;
+    border-top: 0;
     -ms-transform: skewX(-10deg);
     -webkit-transform: skewX(-10deg);
     transform: skewX(-10deg);
+    z-index: 9998;
 }
 
 .sfc-campaign-archive-post-status-dollar-sign {
