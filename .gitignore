@@ -22,6 +22,7 @@ sitemap.xml.gz
 *.log
 .htaccess
 /wp-content/plugins/layouts*
+/wp-content/plugins/wp-rocket*
 
 
 
