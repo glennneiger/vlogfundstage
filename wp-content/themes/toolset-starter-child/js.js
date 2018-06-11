@@ -738,6 +738,26 @@ jQuery(document).ready(function($) {
   /** login & register **/
   /*******************************************************/
 
+
+  /**IOS pop up issue workaround**/
+
+  //target ios
+  var isMobile = {
+      iOS: function() {
+          return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+      }
+  }
+
+    if(isMobile.iOS()) {
+      jQuery('body').css({
+          'position' : 'relative',
+          'width' : '100%',
+          'overflow' : 'hidden',
+          'height' : '100%',
+        });
+      }
+
+
   /**popup visibility*/
 
   jQuery('a[href="#login"]').click(function(e) {
