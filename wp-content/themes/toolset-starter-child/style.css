@@ -363,9 +363,6 @@ html, body {
     height: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    -webkit-overflow-scrolling : touch !important;
-    overflow: auto !important;
-    height: 100% !important;
 }
 
 body {
@@ -420,12 +417,12 @@ p {
   }
 }
 
-.container-fluid:nth-of-type(2), .container-fluid:nth-child(2){
+.container-fluid:nth-of-type(2){
   padding-top: 54px!important;
 }
 
 @media screen and (max-width:996px) {
-  .post-type-archive-product .container-fluid:nth-of-type(2), .post-type-archive-product .container-fluid:nth-child(2){
+  .post-type-archive-product .container-fluid:nth-of-type(2){
     padding-top: 0!important;
   }
 }
@@ -4589,7 +4586,7 @@ font-size: xx-large;
 
 
 .sfc-campaign-archive-vote-bar {
-    background-color: #eee;
+    background-color: transparent;
     height: 5px;
     width: 100%;
     position: relative;
