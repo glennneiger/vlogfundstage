@@ -20,7 +20,9 @@ wp-content/cache/supercache/*
 sitemap.xml
 sitemap.xml.gz
 *.log
+.htaccess
 /wp-content/plugins/layouts*
+
 
 
 
