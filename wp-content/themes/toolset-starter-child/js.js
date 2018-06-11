@@ -451,6 +451,262 @@ jQuery(document).ready(function($) {
 
 
 
+
+  jQuery( document ).on( 'js_event_wpv_pagination_completed', function( event, data ) {
+	/**
+	* data.view_unique_id (string) The View unique ID hash
+	* data.effect (string) The View AJAX pagination effect
+	* data.speed (integer) The View AJAX pagination speed in miliseconds
+	* data.layout (object) The jQuery object for the View layout wrapper
+	*/
+	  var div, n,
+            v = document.querySelectorAll(".sf-campaign-yt-video-thumbnail");
+        for (n = 0; n < v.length; n++) {
+            div = document.createElement("div");
+            div.setAttribute("data-id", v[n].dataset.id);
+            div.innerHTML = Thumb(v[n].dataset.id);
+            div.onclick = Iframe;
+            v[n].appendChild(div);
+        }
+});
+
+
+
+
+jQuery( document ).on( 'js_event_wpv_parametric_search_triggered', function( event, data ) {
+
+}); //js_event_wpv_parametric_search_triggered
+
+jQuery( document ).on( 'js_event_wpv_parametric_search_started', function( event, data ) {
+  var TopPosition = jQuery('.post-type-archive-product').offset().top;
+ jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
+}); //js_event_wpv_parametric_search_started
+
+jQuery( document ).on( 'js_event_wpv_parametric_search_form_updated', function( event, data ) {
+jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
+jQuery(".form-control").select2({ minimumResultsForSearch: Infinity });
+}); //js_event_wpv_parametric_search_form_updated
+
+jQuery( document ).on( 'js_event_wpv_parametric_search_results_updated', function( event, data ) {
+
+  jQuery(".sfc-campaign-archive-search-input").autocomplete({
+    source: function(request, response) {
+      $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
+        "hl": "en", // Language
+        "ds": "yt", // Restrict lookup to youtube
+        "jsonp": "suggestCallBack", // jsonp callback function name
+        "q": request.term, // query term
+        "client": "youtube" // force youtube style response, i.e. jsonp
+      });
+      suggestCallBack = function(data) {
+        var suggestions = [];
+        $.each(data[1], function(key, val) {
+          suggestions.push({
+            "value": val[0]
+          });
+        });
+        suggestions.length = 5; // prune suggestions list to only 5 items
+        response(suggestions);
+      };
+    },
+  });
+
+
+
+jQuery('.select2-container.select2-container--default.select2-container--open').remove();
+if (jQuery('body').hasClass('post-type-archive-product')) {
+jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
+}
+jQuery('.sfc-campaign-archive-overlay-close').click();
+jQuery(".sfc-campaign-archive-reset-button").addClass("show");
+
+jQuery('button.sfc-campaign-archive-reset-button').click(function (){
+jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
+//jQuery('.rand').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('.post_date').addClass('sfc-campaign-archive-search-sort-item-link-active');
+//jQuery('input:radio[name=wpv_sort_orderby][value="rand"]').click();
+  jQuery('input:radio[name=wpv_sort_orderby][value="post_date"]').click();
+});
+
+//Check if option is selected
+if( jQuery('select[name=wpv-_nyp] option:selected').val() == 'no' ) {
+    jQuery('._product_total_sales').addClass('hide');
+    jQuery('._product_total_customers').addClass('hide');
+    jQuery('._upvote_count').removeClass('hide');
+  }
+if( jQuery('select[name=wpv-_nyp] option:selected').val() == 'yes' ) {
+    jQuery('._upvote_count').addClass('hide');
+    jQuery('._product_total_sales').removeClass('hide');
+    jQuery('._product_total_customers').removeClass('hide');
+  }
+    if( jQuery('select[name=wpv-_nyp] option:selected').val() == '' ) {
+    jQuery('._upvote_count').removeClass('hide');
+    jQuery('._product_total_sales').removeClass('hide');
+    jQuery('._product_total_customers').removeClass('hide');
+  }
+
+
+
+        var div, n,
+            v = document.querySelectorAll(".sf-campaign-yt-video-thumbnail");
+        for (n = 0; n < v.length; n++) {
+            div = document.createElement("div");
+            div.setAttribute("data-id", v[n].dataset.id);
+            div.innerHTML = Thumb(v[n].dataset.id);
+            div.onclick = Iframe;
+            v[n].appendChild(div);
+        }
+
+
+
+  jQuery('.sfc-campaign-archive-post-title-inner').mouseover( function() {
+    if( this.offsetWidth > this.parentNode.offsetWidth ) {
+        $(this).animate({'left': '-'+(this.offsetWidth)+'px'}, 4000, function(){this.style.left='0px';});
+    }
+} ).mouseout( function() {
+    jQuery(this).stop();
+    this.style.left = '0px';
+} );
+
+
+}); //on. js_event_wpv_parametric_search_results_updated
+
+
+
+    jQuery(".sfc-campaign-archive-refined-search-mobile").click(function () {
+        jQuery(".sfc-campaign-archive-overlay-wrapper").fadeIn('500').show();
+    });
+    jQuery(".sfc-campaign-archive-overlay-close").click(function () {
+        jQuery(".sfc-campaign-archive-overlay-wrapper").fadeOut('500').hide();
+    });
+    jQuery('.sfc-campaign-archive-select-genre').click(function () {
+        jQuery('.sfc-campaign-archive-select-container-open-genre').toggle();
+        jQuery('.sfc-campaign-archive-select-container-open-status').css('display', 'none');
+    });
+    jQuery('.sfc-campaign-archive-select-status').click(function () {
+        jQuery('.sfc-campaign-archive-select-container-open-status').toggle();
+        jQuery('.sfc-campaign-archive-select-container-open-genre').css('display', 'none');
+    });
+    jQuery('.sfc-campaign-select-multiple-genre-item').click(function () {
+        jQuery(this).hide();
+    });
+
+
+
+
+jQuery('ul li.sort-dir').fadeIn(500).appendTo('div.sfc-campaign-archive-refined-search').css('display','inline');
+
+jQuery("span.select2-container").fadeIn(3000);
+jQuery('.d').fadeIn(500).removeClass('hide');
+
+if (jQuery('body').hasClass('post-type-archive-product')) {
+jQuery(".form-control").select2({ minimumResultsForSearch: Infinity });
+jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
+}
+
+     jQuery('ul.sfc-campaign-archive-search-sort li a').on('click', function(){
+    jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active ');
+    jQuery(this).addClass('sfc-campaign-archive-search-sort-item-link-active ');
+});
+
+
+/*      //Random order
+       jQuery(".rand").click(function () {
+         jQuery('input:radio[name=wpv_sort_orderby][value="rand"]').click(); //select radio button
+});
+
+    if( jQuery ('input:radio[name=wpv_sort_orderby][value="rand"]').is(':checked') ){
+    jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('.rand').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  } */
+
+
+
+ //Date
+         jQuery(".post_date").click(function () {
+       jQuery('input:radio[name=wpv_sort_orderby][value="post_date"]').click(); //select radio button
+});
+
+    if( jQuery ('input:radio[name=wpv_sort_orderby][value="post_date"]').is(':checked') ){
+    jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('.post_date').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  }
+
+   //Popularity
+       jQuery(".field-wpcf-campaign-view-count").click(function () {
+       jQuery('input:radio[name=wpv_sort_orderby][value="field-wpcf-campaign-view-count"]').click(); //select radio button
+});
+
+      if( jQuery ('input:radio[name=wpv_sort_orderby][value="field-wpcf-campaign-view-count"]').is(':checked') ){
+    jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('.field-wpcf-campaign-view-count').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  }
+
+
+   //Upvotes
+  jQuery("._upvote_count").click(function() {
+    jQuery('input:radio[name=wpv_sort_orderby][value="field-_upvote_count"]').click(); //select radio button
+    });
+
+      if( jQuery ('input:radio[name=wpv_sort_orderby][value="field-_upvote_count"]').is(':checked') ){
+    jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('.field-_upvote_count').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  }
+
+
+    //Most donations
+  jQuery("._product_total_sales").click(function () {
+                 jQuery('input:radio[name=wpv_sort_orderby][value="field-_product_total_sales"]').click(); //select radio button
+  });
+
+      if( jQuery ('input:radio[name=wpv_sort_orderby][value="field-_product_total_sales"]').is(':checked') ){
+    jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('target');
+  jQuery('.field-_product_total_sales').addClass('target');
+  }
+
+
+        //Most supported
+  jQuery("._product_total_customers").click(function () {
+                 jQuery('input:radio[name=wpv_sort_orderby][value="field-_product_total_customers"]').click(); //select radio button
+  });
+
+
+  if( jQuery ('input:radio[name=wpv_sort_orderby][value="field-_product_total_customers"]').is(':checked') ){
+    jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('._product_total_customers').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  }
+
+
+
+  /*
+  // Hide radio fields based on Campaign Status
+  if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() == 'no' ) {
+    jQuery('.field-_alg_crowdfunding_total_orders').addClass('hide');
+    jQuery('.field-_alg_crowdfunding_orders_sum').addClass('hide');
+    jQuery('.field-_thumbs_rating_up').removeClass('hide');
+  }
+
+if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() == 'yes' ) {
+    jQuery('.field-_thumbs_rating_up').addClass('hide');
+    jQuery('.field-_alg_crowdfunding_total_orders').removeClass('hide');
+    jQuery('.field-_alg_crowdfunding_orders_sum').removeClass('hide');
+  }*/
+
+    jQuery('.js-wpv-reset-trigger').click(function() {
+   jQuery('.field-_thumbs_rating_up, .field-_alg_crowdfunding_orders_sum, .field-_alg_crowdfunding_total_orders').removeClass('hide');
+ });
+
+  jQuery('.sfc-campaign-archive-overlay-reset').click(function() {
+    jQuery('.js-wpv-reset-trigger').click();
+  });
+
+
+
+
+
+
+
+
   /*******************************************************/
   //campaign
   /*******************************************************/

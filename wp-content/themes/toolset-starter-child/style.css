@@ -6629,7 +6629,7 @@ margin-top: 20px;
     position: sticky;
     top: 50px;
     top: 0;
-    z-index: 9997;
+    z-index: 10;
   }
 }
 
@@ -6693,7 +6693,7 @@ margin-top: 20px;
 }
 @media screen and (max-width:996px) {
   .sfc-campaign-archive-search {
-      padding: 5px 0;
+      padding: 0;
   }
 }
 
@@ -6708,7 +6708,7 @@ margin-top: 20px;
 @media screen and (max-width:996px) {
     .sfc-campaign-archive-search-fields {
         display: block;
-        padding: 0 25px;
+        padding: 5px 25px;
     }
 }
 
@@ -6720,6 +6720,7 @@ margin-top: 20px;
 @media screen and (max-width: 996px) {
     .sfc-campaign-archive-search-item {
         margin: 10px auto;
+        margin: auto;
         text-align: center;
     }
     .sfc-campaign-archive-search-item:nth-of-type(2) {
@@ -7520,7 +7521,7 @@ display: none;
     -ms-transform: skewX(-10deg);
     -webkit-transform: skewX(-10deg);
     transform: skewX(-10deg);
-    z-index: 9996;
+    z-index: 9;
 }
 
 .sfc-campaign-archive-post-status-dollar-sign {
