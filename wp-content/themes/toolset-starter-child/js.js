@@ -478,7 +478,7 @@ jQuery( document ).on( 'js_event_wpv_parametric_search_triggered', function( eve
 }); //js_event_wpv_parametric_search_triggered
 
 jQuery( document ).on( 'js_event_wpv_parametric_search_started', function( event, data ) {
-  var TopPosition = jQuery('.post-type-archive-product').offset().top;
+ var TopPosition = jQuery('.post-type-archive-product').offset().top;
  jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
 }); //js_event_wpv_parametric_search_started
 
@@ -1008,8 +1008,9 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
       jQuery('body').css({
           'position' : 'relative',
           'width' : '100%',
-          'overflow' : 'hidden',
-          'height' : '100%',
+          'height' : '100%!important',
+          '-webkit-overflow-scrolling' : 'touch',
+          'overflow' : 'auto',
         });
       }
 
