@@ -46,6 +46,24 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
             wp_enqueue_script( 'js', get_stylesheet_directory_uri() . '/js.js', array(), null );
 
 		}
+		if ( is_page('about') && ! is_admin() ) {
+
+			wp_enqueue_style( 'slick-style', get_stylesheet_directory_uri() . '/css/vendor/slick.css', array(), null );
+			//wp_enqueue_style( 'animate-style', get_stylesheet_directory_uri() . '/css/vendor/animate.css', array(), null );
+			wp_enqueue_style( 'responsive-style', get_stylesheet_directory_uri() . '/css/responsive.css', array(), null );
+			wp_enqueue_style( 'normalize-style', get_stylesheet_directory_uri() . '/css/normalize.css', array(), null );
+
+			wp_enqueue_script( 'modernizr-script', get_stylesheet_directory_uri() . '/js/vendor/modernizr.min.js', array(), null );
+			wp_enqueue_script( 'waypoints-script', get_stylesheet_directory_uri() . '/js/vendor/waypoints.min.js', array(), null );
+
+			wp_enqueue_script( 'slick-script', get_stylesheet_directory_uri() . '/js/vendor/slick.min.js', array(), null );
+
+				wp_enqueue_script( 'general-script', get_stylesheet_directory_uri() . '/js/general.js', array(), null );
+
+		}
+
+
+
 	}
 	add_action( 'wp_enqueue_scripts', 'ref_enqueue_main_stylesheet', 100 );
 }
@@ -565,7 +583,10 @@ if ( is_page('campaign-form-get-started') && is_user_logged_in() ) {
 
 wp_redirect( '/campaign-form', 301 );
   exit;
-    }
+} elseif ( is_page('campaign-form') && ! is_user_logged_in()) {
+	wp_redirect( '/campaign-form-get-started', 301 );
+	  exit;
+}
 }
 
 
