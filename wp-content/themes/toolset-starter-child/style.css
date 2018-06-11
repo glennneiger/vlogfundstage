@@ -363,6 +363,9 @@ html, body {
     height: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-overflow-scrolling : touch !important;
+    overflow: auto !important;
+    height: 100% !important;
 }
 
 body {
@@ -1180,6 +1183,8 @@ body.blog .sf-blog-only {
     overflow-y: scroll;
     }
 }
+
+
 
 .woocommerce-order-received .sf-popup {
     position: fixed!important;
@@ -6607,6 +6612,7 @@ margin-top: 20px;
 
 @media screen and (max-width:996px) {
   .sfc-campaign-archive {
+    position: -webkit-sticky;
     position: sticky;
     top: 50px;
     z-index: 9997;
@@ -6747,6 +6753,7 @@ input.sfc-campaign-archive-search-input {
 
 
 
+
 .sfc-campaign-archive-reset-button {
     width: 25px!important;
     height: 25px!important;
@@ -6793,8 +6800,9 @@ input.sfc-campaign-archive-search-input {
 @media screen and (max-width: 996px) {
     input.sfc-campaign-archive-search-input {
         width: 100%;
-        line-height: 40px;
+        line-height: normal;
         height: 40px;
+        text-indent: 20px;
     }
 }
 
