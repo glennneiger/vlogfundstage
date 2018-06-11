@@ -414,8 +414,20 @@ p {
     z-index: 9999;
 }
 
+@media screen and (max-width:996px) {
+  .post-type-archive-product .site-header {
+   position: relative;
+  }
+}
+
 .container-fluid:nth-of-type(2), .container-fluid:nth-child(2){
   padding-top: 54px!important;
+}
+
+@media screen and (max-width:996px) {
+  .post-type-archive-product .container-fluid:nth-of-type(2), .post-type-archive-product .container-fluid:nth-child(2){
+    padding-top: 0!important;
+  }
 }
 
 .site-content-contain {
@@ -1194,10 +1206,11 @@ body.blog .sf-blog-only {
     right: 0;
 }
 
-.sf-popup:target {
+/*uncomment to make the popup not go away ;)*/
+/*.sf-popup:target {
     visibility: visible;
     opacity: 1;
-}
+}*/
 
 .login-popup-visible{
   visibility: visible;
@@ -6615,6 +6628,7 @@ margin-top: 20px;
     position: -webkit-sticky;
     position: sticky;
     top: 50px;
+    top: 0;
     z-index: 9997;
   }
 }
@@ -6802,7 +6816,7 @@ input.sfc-campaign-archive-search-input {
         width: 100%;
         line-height: normal;
         height: 40px;
-        text-indent: 20px;
+        text-indent: 25px;
     }
 }
 
