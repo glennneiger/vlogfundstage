@@ -5573,6 +5573,34 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
 
 
 
+/**campaign view title scrooll**/
+.sfc-campaign-archive-post-title::-webkit-scrollbar {
+    width:0;
+    height: 0;
+}
+.sfc-campaign-archive-post-title:-webkit-scrollbar-track {
+    border-radius: 0;
+    border: none;
+    margin: 0;
+    height: 0;
+}
+.sfc-campaign-archive-post-title::-webkit-scrollbar-thumb {
+    background: transparent;
+    outline: none;
+    border-radius: 0;
+    border: none;
+}
+.sfc-campaign-archive-post-title {
+    overflow-y: hidden;
+}
+.sfc-campaign-archive-post-title:hover {
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+
+
+
 .page-checkout .sfc-checkout-non-clickable {
     pointer-events: none;
    cursor: default;
@@ -6563,9 +6591,7 @@ margin-top: 20px;
     box-sizing: border-box;
 }
 
-.sfc-campaign-archive {
 
-}
 
 .sfc-campaign-archive-posts {
 
@@ -6577,6 +6603,14 @@ margin-top: 20px;
 .sfc-campaign-archive {
     background: #202020;
     background-size: cover;
+}
+
+@media screen and (max-width:996px) {
+  .sfc-campaign-archive {
+    position: sticky;
+    top: 50px;
+    z-index: 9997;
+  }
 }
 
 .sfc-campaign-archive-container {
@@ -6614,6 +6648,7 @@ margin-top: 20px;
 @media screen and (max-width:996px) {
     .sfc-campaign-archive-heading {
         padding: 35px 0;
+        display: none;
     }
 }
 .sfc-campaign-archive-title {
@@ -6636,7 +6671,11 @@ margin-top: 20px;
     padding: 25px 0;
     position: relative;
 }
-
+@media screen and (max-width:996px) {
+  .sfc-campaign-archive-search {
+      padding: 5px 0;
+  }
+}
 
 .sfc-campaign-archive-search-fields {
     position: relative;
@@ -6683,6 +6722,14 @@ margin-top: 20px;
     left: 10px;
     font-size: 18px;
 }
+@media screen and (max-width:996px) {
+  .sfc-campaign-search-icon {
+      position: absolute;
+      top: 13px;
+      left: 10px;
+      font-size: 14px;
+  }
+}
 
 input.sfc-campaign-archive-search-input {
     background-color: #ffffff;
@@ -6713,9 +6760,15 @@ input.sfc-campaign-archive-search-input {
     top: 13px;
     margin: auto;
     text-align: center;
-  padding:5px;
+    padding:5px;
     cursor: pointer;
     border:2px solid #eee;
+}
+
+@media screen and (max-width:996px) {
+  .sfc-campaign-archive-reset-button {
+    top: 8px;
+  }
 }
 
 .sfc-campaign-archive-reset-button:hover {
@@ -6740,6 +6793,8 @@ input.sfc-campaign-archive-search-input {
 @media screen and (max-width: 996px) {
     input.sfc-campaign-archive-search-input {
         width: 100%;
+        line-height: 40px;
+        height: 40px;
     }
 }
 
@@ -6779,6 +6834,7 @@ input.sfc-campaign-archive-search-input {
 @media screen and (max-width:996px) {
     .sfc-campaign-archive-search form .sfc-campaign-archive-search-button {
         width: 100%;
+        display: none;
     }
 }
 
@@ -7102,7 +7158,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
     width: 100%;
     height: 100%;
     top: 0;
-    overflow: scroll;
+    /*overflow: scroll;*/
 }
 .sfc-campaign-archive-overlay {
     padding: 45px 20px;
@@ -7181,7 +7237,11 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
     position: relative;
     bottom: 0;
 }
-
+@media screen and (max-width:996px) {
+.sfc-campaign-archive-loader {
+display: none;
+}
+}
 .sfc-campaign-archive-loader-progress {
     background-color: #6b10d6;
     background-color: var(--brand-color);
@@ -7438,7 +7498,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
     -ms-transform: skewX(-10deg);
     -webkit-transform: skewX(-10deg);
     transform: skewX(-10deg);
-    z-index: 9998;
+    z-index: 9996;
 }
 
 .sfc-campaign-archive-post-status-dollar-sign {
@@ -7500,8 +7560,9 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
 .sfc-campaign-make-it-happen-vote {
         margin-bottom: 10px;
     width: 100%;
-    font-size: 16px;
-    padding: 10px 15px;
+    font-size: 18px;
+    padding: 0 15px;
+    height: 45px;
     color: white;
     background: #202020;
     border: 2px solid #202020;
