@@ -37,7 +37,7 @@ function upvote_button_shortcode( $atts, $content = null ){
 	$content = '<div class="upvote-container-big">';
 	if( !is_user_logged_in() ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button">
-						<a href="#login"><button class="upvote-btn" data-id="'.$postid.'">'.$label.'</button></a>
+						<a href="#register"><button class="upvote-btn" data-id="'.$postid.'">'.$label.'</button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
 					</div><!-- /progress-button -->';
 	else : //Else
@@ -115,7 +115,7 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 	$content = '<div class="upvote-container">';
 	if( !is_user_logged_in() ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button icon">
-						<a href="#login"><button class="upvote-btn icon">↑&nbsp;<span>'.$vote_count.'</span></button></a>
+						<a href="#register"><button class="upvote-btn icon">↑&nbsp;<span>'.$vote_count.'</span></button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
 					</div><!-- /progress-button -->';
 	else : //Else
