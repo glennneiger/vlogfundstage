@@ -167,12 +167,6 @@ class Api
      */
     protected function request($path, array $data = [], $method = 'get')
     {
-
-		// Check if php-curl is enabled
-        if ( ! function_exists( 'curl_init' ) || ! function_exists( 'curl_exec' ) ) {
-			throw new UnauthorizedException('curl is not enabled on your server');
-		}
-
         if (!isset($this->email, $this->auth_key) || false === filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             throw new AuthenticationException('Authentication information must be provided');
         }
@@ -198,7 +192,7 @@ class Api
             $curl_options = array_replace($default_curl_options, $this->curl_options);
         }
 
-        $user_agent = 'wp-rocket/' . WP_ROCKET_VERSION;;
+        $user_agent = __FILE__;
         $headers = [
             "X-Auth-Email: {$this->email}",
             "X-Auth-Key: {$this->auth_key}",

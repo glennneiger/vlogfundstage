@@ -9,13 +9,11 @@ require WP_ROCKET_3RD_PARTY_PATH . 'hosting/pagely.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'hosting/nginx.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'hosting/siteground.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'hosting/pressidium.php';
+require WP_ROCKET_3RD_PARTY_PATH . 'hosting/savvii.php';
+require WP_ROCKET_3RD_PARTY_PATH . 'hosting/godaddy.php';
+require WP_ROCKET_3RD_PARTY_PATH . 'hosting/kinsta.php';
 
-if ( version_compare( phpversion(), '5.3.0', '>=' ) ) {
-	require WP_ROCKET_3RD_PARTY_PATH . 'hosting/savvii.php';
-	require WP_ROCKET_3RD_PARTY_PATH . 'hosting/godaddy.php';
-	require WP_ROCKET_3RD_PARTY_PATH . 'plugins/geotargetingwp.php';
-}
-
+require WP_ROCKET_3RD_PARTY_PATH . 'plugins/geotargetingwp.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/slider/revslider.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/slider/layerslider.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/slider/meta-slider.php';
@@ -48,9 +46,9 @@ require WP_ROCKET_3RD_PARTY_PATH . 'plugins/disqus.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/custom-login.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/mobile/amp.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/mobile/wp-appkit.php';
-require WP_ROCKET_3RD_PARTY_PATH . 'plugins/mobile/wp-touch.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/seo/yoast-seo.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/seo/all-in-one-seo-pack.php';
+require WP_ROCKET_3RD_PARTY_PATH . 'plugins/seo/premium-seo-pack.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/wp-rest-api.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/page-builder/beaver-builder.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/page-builder/thrive-visual-editor.php';
@@ -67,6 +65,8 @@ require WP_ROCKET_3RD_PARTY_PATH . 'plugins/advanced-custom-fields.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/wp-offload-s3.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/wp-offload-s3-assets.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'plugins/s2member.php';
+require WP_ROCKET_3RD_PARTY_PATH . 'plugins/cookie-notice.php';
+require WP_ROCKET_3RD_PARTY_PATH . 'plugins/sumome.php';
 
 require WP_ROCKET_3RD_PARTY_PATH . 'themes/divi.php';
 require WP_ROCKET_3RD_PARTY_PATH . 'themes/avada.php';

@@ -8,5 +8,6 @@ $baseDir = dirname($vendorDir);
 return array(
     'MatthiasMullie\\PathConverter\\' => array($vendorDir . '/matthiasmullie/path-converter/src'),
     'MatthiasMullie\\Minify\\' => array($vendorDir . '/matthiasmullie/minify/src'),
+    'Composer\\Installers\\' => array($vendorDir . '/composer/installers/src/Composer/Installers'),
     'Cloudflare\\' => array($vendorDir . '/jamesryanbell/cloudflare/src/CloudFlare'),
 );
