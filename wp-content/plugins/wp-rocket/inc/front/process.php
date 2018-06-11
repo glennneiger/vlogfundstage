@@ -109,7 +109,7 @@ if ( ! empty( $_GET )
 }
 
 // Don't cache SSL.
-if ( ! isset( $rocket_cache_ssl ) && rocket_is_ssl() ) {
+if ( empty( $rocket_cache_ssl ) && rocket_is_ssl() ) {
 	rocket_define_donotoptimize_constant( true );
 	return;
 }
@@ -197,7 +197,7 @@ if ( ( rocket_is_ssl() && ! empty( $rocket_cache_ssl ) ) ) {
 // Rename the caching filename depending to dynamic cookies.
 if ( ! empty( $rocket_cache_dynamic_cookies ) ) {
 	foreach ( $rocket_cache_dynamic_cookies as $cookie_name ) {
-		if ( ! empty( $_COOKIE[ $cookie_name ] ) ) {
+		if ( isset( $_COOKIE[ $cookie_name ] ) && '' !== $_COOKIE[ $cookie_name ] ) {
 			$cache_key = $_COOKIE[ $cookie_name ];
 			$cache_key = preg_replace( '/[^a-z0-9_\-]/i', '-', $cache_key );
 			$filename .= '-' . $cache_key;

@@ -78,7 +78,7 @@ function rocket_first_install() {
 				'cache_mobile'                => 1,
 				'do_caching_mobile_files'     => 0,
 				'cache_logged_user'           => 0,
-				'cache_ssl'                   => ( rocket_is_ssl_website() ) ? 1 : 0,
+				'cache_ssl'                   => rocket_is_ssl_website() ? 1 : 0,
 				'emoji'                       => 1,
 				'embeds'                      => 1,
 				'cache_reject_uri'            => array(),
@@ -103,7 +103,7 @@ function rocket_first_install() {
 				'minify_js'                   => 0,
 				'minify_js_key'               => $minify_js_key,
 				'minify_concatenate_js'       => 0,
-				'minify_google_fonts'         => 0,
+				'minify_google_fonts'         => 1,
 				'minify_html'                 => 0,
 				'manual_preload'              => 0,
 				'automatic_preload'           => 0,
@@ -121,16 +121,14 @@ function rocket_first_install() {
 				'database_all_transients'     => 0,
 				'database_optimize_tables'    => 0,
 				'schedule_automatic_cleanup'  => 0,
-				'automatic_cleanup_frequency' => '',
+				'automatic_cleanup_frequency' => 'daily',
 				'cdn'                         => 0,
 				'cdn_cnames'                  => array(),
 				'cdn_zone'                    => array(),
-				'cdn_ssl'                     => 0,
 				'cdn_reject_files'            => array(),
 				'do_cloudflare'               => 0,
 				'cloudflare_email'            => '',
 				'cloudflare_api_key'          => '',
-				'cloudflare_domain'           => '',
 				'cloudflare_zone_id'          => '',
 				'cloudflare_devmode'          => 0,
 				'cloudflare_protocol_rewrite' => 0,
@@ -143,7 +141,6 @@ function rocket_first_install() {
 		)
 	);
 	rocket_dismiss_box( 'rocket_warning_plugin_modification' );
-	rocket_reset_white_label_values( false );
 }
 add_action( 'wp_rocket_first_install', 'rocket_first_install' );
 
@@ -195,26 +192,17 @@ function rocket_new_upgrade( $wp_rocket_version, $actual_version ) {
 	}
 
 	// Deactivate CloudFlare completely if PHP Version is lower than 5.4.
-	if ( version_compare( $actual_version, '2.8.16', '<' ) && phpversion() < '5.4' ) {
+	if ( version_compare( $actual_version, '2.8.16', '<' ) ) {
 		$options                                = get_option( WP_ROCKET_SLUG );
 		$options['do_cloudflare']               = 0;
 		$options['cloudflare_email']            = '';
 		$options['cloudflare_api_key']          = '';
-		$options['cloudflare_domain']           = '';
 		$options['cloudflare_devmode']          = 0;
 		$options['cloudflare_protocol_rewrite'] = 0;
 		$options['cloudflare_auto_settings']    = 0;
 		$options['cloudflare_old_settings']     = '';
 
 		update_option( WP_ROCKET_SLUG, $options );
-	}
-
-	// Add a value to the new CF zone_id field if the CF domain is set.
-	if ( version_compare( $actual_version, '2.8.21', '<' ) && version_compare( phpversion(), '5.4' ) >= 0 ) {
-		$options = get_option( WP_ROCKET_SLUG );
-		if ( 0 < $options['do_cloudflare'] && '' !== $options['cloudflare_domain'] ) {
-			require WP_ROCKET_ADMIN_PATH . 'compat/cf-upgrader-5.4.php';
-		}
 	}
 
 	// Disable minification options if they're active in Autoptimize.
@@ -249,29 +237,12 @@ function rocket_new_upgrade( $wp_rocket_version, $actual_version ) {
 		rocket_generate_advanced_cache_file();
 	}
 
-	if ( version_compare( $actual_version, '2.11.2', '<' ) ) {
-		$options = get_option( WP_ROCKET_SLUG );
-		$options = is_array( $options ) ? $options : array();
-		$update  = false;
-
-		if ( ! isset( $options['wl_plugin_URI'] ) || 'http://www.wp-rocket.me' === $options['wl_plugin_URI'] ) {
-			$options['wl_plugin_URI'] = 'https://wp-rocket.me';
-			$update                   = true;
+	if ( version_compare( $actual_version, '3.0.3', '<' ) ) {
+		if ( rocket_is_ssl_website() ) {
+			update_rocket_option( 'cache_ssl', 1 );
 		}
 
-		if ( ! isset( $options['wl_author'] ) || 'WP Rocket' === $options['wl_author'] ) {
-			$options['wl_author'] = 'WP Media';
-			$update               = true;
-		}
-
-		if ( ! isset( $options['wl_author_URI'] ) || 'http://www.wp-rocket.me' === $options['wl_author_URI'] ) {
-			$options['wl_author_URI'] = 'https://wp-media.me';
-			$update                   = true;
-		}
-
-		if ( $update ) {
-			update_option( WP_ROCKET_SLUG, $options );
-		}
+		rocket_generate_config_file();
 	}
 }
 add_action( 'wp_rocket_upgrade', 'rocket_new_upgrade', 10, 2 );
