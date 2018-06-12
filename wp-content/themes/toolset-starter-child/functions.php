@@ -1631,7 +1631,8 @@ function layout2job_func(){
 
 // Custom WordPress Footer
 function remove_footer_admin () {
-	echo '&copy; 2018 - Vlogfund';
+	$site_title = get_bloginfo( 'name' );
+	echo '&copy; 2018 - ' . $site_title;
 }
 add_filter('admin_footer_text', 'remove_footer_admin');
 
