@@ -1073,12 +1073,12 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   }
 
     if(isMobile.iOS()) {
-      jQuery('html,body').css({
+      jQuery('html, body').css({
           'position' : 'relative',
           'width' : '100%',
           'height' : '100%',
           '-webkit-overflow-scrolling' : 'touch',
-          'overflow' : 'hidden'
+          'overflow' : 'auto'
         });
       }
 
