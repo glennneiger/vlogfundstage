@@ -7662,28 +7662,6 @@ display: none;
 }
 
 
-.sfc-campaign-archive-vote-bar {
-    background-color: #eee;
-    height: 5px;
-    width: 100%;
-    position: relative;
-    bottom: 0;
-    margin:10px auto;
-    display:block;
-}
-
-.sfc-campaign-archive-vote-progress {
-    background-color: #6b10d6;
-    background-color: var(--brand-color);
-    height: 5px;
-    width: 50%;
-    position: absolute;
-    bottom: 0;
-    border-radius:10px;
-}
-
-
-
 .sfc-campaign-archive-no-results {
     margin: 5px;
 }
