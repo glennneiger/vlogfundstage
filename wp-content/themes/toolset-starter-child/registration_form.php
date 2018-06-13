@@ -1,6 +1,5 @@
 <form id="register_user" class="ajax-auth"  action="register" method="post">
     <p class="status"></p>
-    <input type="text" style="position: fixed; left: -10000000px;" disabled/>
     <input id="signonname" type="text" name="signonname" placeholder="Username" class="sf-popup-input required" required>
     <input id="email" type="text" class="sf-popup-input required email" placeholder="Email" name="email" autocomplete='email' required>
     <input id="signonpassword" type="password" class="sf-popup-input required" placeholder="Password" name="signonpassword" new-password required>
