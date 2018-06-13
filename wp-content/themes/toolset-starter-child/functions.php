@@ -1260,7 +1260,7 @@ add_filter( 'woocommerce_add_to_cart_validation', 'only_one_product_allow_in_car
 
 
 
-/*add_action( 'init', 'blockusers_init' );
+add_action( 'init', 'blockusers_init' );
 function blockusers_init() {
 if ( is_admin() && ! current_user_can('shop_manager') && ! current_user_can('author') && ! current_user_can( 'administrator' ) &&
 ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
@@ -1297,7 +1297,7 @@ function bryce_wc_login_redirect( $redirect ) {
        $redirect = '/account/my-campaigns';
     }
      return $redirect;
-}*/
+}
 
 
 
