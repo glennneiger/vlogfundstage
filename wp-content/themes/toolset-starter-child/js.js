@@ -446,8 +446,8 @@ jQuery(document).ready(function($) {
   //errors
   jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
     toastr.warning('', 'Error!');
-    var TopPosition = jQuery('.page-campaign-form').offset().top;
-    jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
+    /*var TopPosition = jQuery('.page-campaign-form').offset().top;
+    jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');*/
   });
 
 
@@ -464,11 +464,11 @@ jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr(
 });*/
 
 
-$("#cred_form_98_1").on('DOMNodeInserted', function(e) {
+/*jQuery("#cred_form_98_1").on('DOMNodeInserted', function(e) {
     if ( $(e.target).hasClass('wpt-form-error') ) {
         $(e.target).addClass("classname");
     }
-});
+});*/
 
 }
 
@@ -1076,7 +1076,7 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
       jQuery('body').css({
           'position' : 'relative',
           'width' : '100%',
-          'height' : '100%!important',
+          'height' : '100%',
           '-webkit-overflow-scrolling' : 'touch',
           'overflow' : 'hidden',
         });
