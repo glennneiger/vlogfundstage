@@ -5,4 +5,5 @@
     <input id="signonpassword" type="password" class="sf-popup-input required" placeholder="Password" name="signonpassword" new-password required>
     <input type="password" id="password2" class="sf-popup-input required" placeholder="Repeat Password" name="password2" new-password required>
     <input class="frm_final_submit submit_button" type="submit" value="SIGNUP">
+    <input type="hidden" autofocus="true" />
 </form>
