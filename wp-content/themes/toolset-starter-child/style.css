@@ -6520,7 +6520,7 @@ select[name="product_cat[]"], select[name="alt_product_cat"] {
   order: 2;
 
 }
-  .sfc-campaign-youtube-video-wrapper, .sfc-campaign-video-url-hint, .sfc-campaign-channel-logo-wrapper-1, .sfc-campaign-channel-logo-wrapper-2 {
+  .sfc-campaign-video-url-hint, .sfc-campaign-channel-logo-wrapper-1, .sfc-campaign-channel-logo-wrapper-2 {
     display: none;
   }
 
