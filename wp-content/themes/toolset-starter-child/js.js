@@ -528,7 +528,7 @@ jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr(
 	* data.layout (object) The jQuery object for the View layout wrapper
 	*/
 	  var div, n,
-            v = document.querySelectorAll(".sf-campaign-yt-video-thumbnail");
+            v = document.querySelectorAll(".sf-campaign-yt-video-thumbnail, .sf-blog-yt-video-thumbnail");
         for (n = 0; n < v.length; n++) {
             div = document.createElement("div");
             div.setAttribute("data-id", v[n].dataset.id);
@@ -557,6 +557,28 @@ jQuery(".form-control").select2({ minimumResultsForSearch: Infinity });
 
 jQuery( document ).on( 'js_event_wpv_parametric_search_results_updated', function( event, data ) {
 
+
+//blog archive
+  jQuery('a[href="#login"]').click(function(e) {
+    jQuery('#login.sf-popup').addClass('login-popup-visible');
+    jQuery('#register.sf-popup').removeClass('register-popup-visible');
+    e.preventDefault();
+  });
+
+  jQuery('a[href="#register"]').click(function(e) {
+    jQuery('#register.sf-popup').addClass('register-popup-visible');
+    jQuery('#login.sf-popup').removeClass('login-popup-visible');
+    e.preventDefault();
+  });
+
+  jQuery('a[href="#"]').click(function(e) {
+    jQuery('#register.sf-popup').removeClass('register-popup-visible');
+    jQuery('#login.sf-popup').removeClass('login-popup-visible');
+    e.preventDefault();
+  });
+
+
+//campaign archive
   jQuery(".sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
@@ -616,7 +638,7 @@ if( jQuery('select[name=wpv-_nyp] option:selected').val() == 'yes' ) {
 
 
         var div, n,
-            v = document.querySelectorAll(".sf-campaign-yt-video-thumbnail");
+            v = document.querySelectorAll(".sf-campaign-yt-video-thumbnail, .sf-campaign-popular-yt-video-thumbnail");
         for (n = 0; n < v.length; n++) {
             div = document.createElement("div");
             div.setAttribute("data-id", v[n].dataset.id);
@@ -635,6 +657,63 @@ if( jQuery('select[name=wpv-_nyp] option:selected').val() == 'yes' ) {
     jQuery(this).stop();
     this.style.left = '0px';
 } );
+
+
+
+//organization archive
+jQuery('.page-checkout .sfc-checkout-non-clickable').removeAttr('href');
+
+    jQuery('a button.sfc-checkout-add-org').click(function () {
+         jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
+        jQuery(this).addClass('sfc-checkout-add-org-active');
+        jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
+        jQuery(this).html('<strong>Selected</strong>');
+});
+
+
+
+//checkout choose organization
+jQuery('.page-checkout .label-cause:first-of-type').html('You chose the following cause:');
+/*jQuery('input[name="billing_cause"] + label').append(' <i class="fa fa-pencil sfc-checkout-progress-step-0 "></i>');*/
+if (jQuery('input:radio[name=billing_cause]').prop('checked', false) ) {
+       jQuery('label.label-cause:first-of-type').append(' <span class="sfc-checkout-org-not-selected"><i class="fa fa-plus sfc-checkout-progress-step-0"></i> Select your cause</span>');
+    }
+
+/*jQuery('a button.sfc-checkout-add-org').click(function () {
+jQuery('.sfc-ngo-overview, .progress-bar-header-step-1').hide();
+jQuery('.sfc-checkout-progress-step-1').addClass('sfc-checkout-progress-bar-active').fadeIn('1000');
+jQuery('.sfc-checkout-progress-step-2, .progress-bar-header-step-2').fadeIn('1000');
+jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
+jQuery(this).addClass('sfc-checkout-add-org-active');
+jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
+jQuery(this).html('<strong>Selected</strong>');
+jQuery('.sfc-checkout-org-not-selected').hide();
+});
+
+jQuery('.sfc-checkout-progress-step-0').click(function() {
+jQuery('.sfc-ngo-overview, .progress-bar-header-step-1').show();
+jQuery('.sfc-checkout-progress-step-0').addClass('sfc-checkout-progress-bar-active').fadeIn('1000');
+jQuery('.sfc-checkout-progress-step-2, .progress-bar-header-step-2').hide();
+jQuery('.sfc-checkout-progress-step-1 ').removeClass('sfc-checkout-progress-bar-active');
+});*/
+
+
+
+      /*  jQuery(".care").click(function () {
+      jQuery('input:radio[name=organisations][value="Care"]').prop('checked', true); //select radio button second
+});
+
+      jQuery(".world-vision").click(function () {
+      jQuery('input:radio[name=organisations][value="World Vision"]').prop('checked', true); //select radio button second
+        });
+
+   jQuery(".amnesty-international").click(function () {
+      jQuery('input:radio[name=organisations][value="Amnesty International"]').prop('checked', true); //select radio button second
+    });*/
+
+
+
+
 
 
 }); //on. js_event_wpv_parametric_search_results_updated
@@ -1105,6 +1184,9 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
 
 
 
+
+
+
   /** comments **/
   jQuery('.sf-comments-logged-out').click(function() {
     jQuery('.sf-reg-li a').get(0).click();
@@ -1208,7 +1290,48 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   //Blog
   /*******************************************************/
 
+//mc sign up
 
+
+
+  var $form = $('#mc-embedded-subscribe-form')
+  if ($form.length > 0) {
+    $('form input#mc-embedded-subscribe').bind('click', function (event) {
+      if (event) event.preventDefault()
+      register($form)
+    })
+  }
+
+
+function register($form) {
+  $('#mc-embedded-subscribe').val('Sending...');
+  $.ajax({
+    type: $form.attr('method'),
+    url: $form.attr('action'),
+    data: $form.serialize(),
+    cache: false,
+    dataType: 'json',
+    contentType: 'application/json; charset=utf-8',
+    error: function (err) { alert('Could not connect to the registration server. Please try again later.') },
+    success: function (data) {
+      $('#mc-embedded-subscribe').val('subscribe')
+      if (data.result === 'success') {
+        // Yeahhhh Success
+        console.log(data.msg)
+        $('#mce-EMAIL').css('borderColor', '#ffffff')
+        $('#subscribe-result').css({'color':'deeppink', 'font-size':'14px'})
+        $('#subscribe-result').html('<p>Thank you for subscribing. We have sent you a confirmation email.</p>')
+        $('#mce-EMAIL').val('')
+      } else {
+        // Something went wrong, do something to notify the user.
+        console.log(data.msg)
+        $('#mce-EMAIL').css('borderColor', '#ff8282')
+        $('#subscribe-result').css('color', '#ff8282')
+        $('#subscribe-result').html('<p>' + data.msg.substring(4) + '</p>')
+      }
+    }
+  }
+        )};
 
   //nl sign up
 

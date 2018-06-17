@@ -417,7 +417,7 @@ p {
   }
 }
 
-.container-fluid:nth-of-type(2){
+/*.container-fluid:nth-of-type(2){
   padding-top: 54px!important;
 }
 
@@ -425,6 +425,10 @@ p {
   .post-type-archive-product .container-fluid:nth-of-type(2){
     padding-top: 0!important;
   }
+}*/
+
+.header {
+  padding-bottom: 54px;
 }
 
 .site-content-contain {
@@ -1933,6 +1937,12 @@ hr {
     flex-direction: row;
     flex-wrap: wrap;
     padding: 10px;
+}
+
+@media screen and (max-width:996px) {
+  .sf-blog-row {
+      padding: 5px;
+  }
 }
 
 .sfc-blog-container {
