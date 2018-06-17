@@ -431,6 +431,12 @@ p {
   padding-bottom: 54px;
 }
 
+@media screen and (max-width:996px) {
+.post-type-archive-product .header {
+  padding-bottom: 0;
+}
+}
+
 .site-content-contain {
     position: relative;
     width: 100%;

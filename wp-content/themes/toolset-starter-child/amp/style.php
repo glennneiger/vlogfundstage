@@ -394,7 +394,8 @@ amp-carousel > amp-img > img {
 	border-width: 1px 1px 2px;
 	border-radius: 0;
 	background-color: transparent;
-	color: <?php echo sanitize_hex_color( $link_color ); ?>;
+	/*color: <?php echo sanitize_hex_color( $link_color ); ?>;*/
+  color: #202020;
 	cursor: pointer;
 	display: block;
 	font-size: 14px;
