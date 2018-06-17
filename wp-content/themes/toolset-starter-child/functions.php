@@ -1997,3 +1997,189 @@ function vlogfund_smile_mode_theme(){
 }
 add_action('wp_head','vlogfund_smile_mode_theme');
 endif;
+
+
+
+/** admin text and visual editor fix **/
+
+// paste everything below this line in your WP functions.php file below everything else.
+// always backup your data
+
+function allow_all_tinymce_elements_attributes( $init ) {
+
+    // Allow all elements and all attributes
+    $ext = '*[*]';
+
+    // Add to extended_valid_elements if it already exists
+    if ( isset( $init['extended_valid_elements'] ) ) {
+        $init['extended_valid_elements'] .= ',' . $ext;
+    } else {
+        $init['extended_valid_elements'] = $ext;
+    }
+
+    // return value
+    return $init;
+}
+add_filter('tiny_mce_before_init', 'allow_all_tinymce_elements_attributes');
+
+
+
+/*******************************************************/
+/** amp **/
+/*******************************************************/
+
+/*add_action( 'amp_post_template_css', function( $amp_template ) {
+    ?>
+    nav.amp-wp-title-bar {background: #000;}
+    ul.jp-amp-list {
+        list-style: none;
+        display: inline;
+    }
+
+    ul.jp-amp-list li {
+        display: inline;
+        margin: 0 8px;
+    }
+
+		.amp-wp-byline span.amp-wp-author {
+			display: none;
+		}
+
+		footer.amp-wp-footer div p {
+			display: none;
+		}
+    <?php
+});*/
+
+
+
+
+/*add_action( 'pre_amp_render_post', function () {
+    add_filter( 'the_content', function( $content ){
+        if ( has_post_thumbnail() ) {
+            $image = sprintf( '<p class="jp-amp-featured-image">%s</p>', get_the_post_thumbnail() );
+            $content = $image . $content;
+        }
+        return $content;
+    }, 3 );
+});*/
+
+
+/*add_action( 'pre_amp_render_post', function () {
+    add_filter( 'the_content', function( $content ){
+        $menu_name = 'amp';
+        $menu = wp_get_nav_menu_object( $menu_name );
+        if ( ! empty( $menu ) ) {
+            $menu_items = wp_get_nav_menu_items( $menu->term_id );
+            $menu_list = sprintf( '<br /><ul id="%s" class="jp-amp-list">Menu: ', esc_attr( 'amp-jp-menu-' . $menu_name ) );
+            foreach ( $menu_items as $key => $menu_item ) {
+                $menu_list .= sprintf( '<li><a href="%s">%s</a></li>', amp_get_permalink( $menu_item->object_id ), esc_html( $menu_item->title ) );
+            }
+            $menu_list .= '</ul>';
+            $content .= $menu_list;
+        }
+        return $content;
+    }, 1000 );
+});
+
+
+
+add_action( 'pre_amp_render_post', function () {
+    add_filter( 'the_content', function( $content ){
+        $post = get_post();
+        if( is_object( $post ) ){
+            $twitter = add_query_arg( array(
+                'url' => urlencode( get_permalink( $post->ID ) ),
+                'status' => urlencode( $post->post_title )
+            ),'https://twitter.com/share' );
+            $facebook = add_query_arg( array(
+                    'u' => urlencode( get_permalink( $post->ID ) )
+                ), 'https://www.facebook.com/sharer/sharer.php'
+            );
+        }
+        $share = sprintf( '<hr /><ul id="amp-jp-share" class="jp-amp-list">Share: <li id="twitter-share"><a href="%s" title="Share on Twitter">Twitter</a></li><li id="facebook-share"><a href="%s" title="Share on Facebook">Facebook</a></ul>', esc_url_raw( $twitter ), esc_url_raw( $facebook ) );
+        $content  .= $share;
+        return $content;
+    }, 1000 );
+});*/
+
+
+
+add_filter( 'amp_post_template_file', 'amp_set_cutome_style_path', 10, 3 );  // Setting custom stylesheet
+
+function amp_set_cutome_style_path( $file, $type, $post ) {
+
+if ( 'style' === $type ) {
+
+    $file = dirname( __FILE__ ) . '/amp/style.php';
+
+}
+  return $file;
+}
+
+
+
+
+add_filter( 'amp_post_template_data', 'xyz_amp_set_custom_site_icon_url' ); //Changes site icon
+
+function xyz_amp_set_custom_site_icon_url( $data ) {
+
+    $data[ 'site_icon_url' ] = get_stylesheet_directory_uri().'/images/vf-logo.png';
+
+return $data;
+
+}
+
+
+
+
+add_filter( 'amp_post_template_file', 'set_my_amp_custom_template', 10, 3 ); //Setting custom template for amp page
+
+function set_my_amp_custom_template( $file, $type, $post ) {
+
+if ( 'single' === $type ) {
+
+    $file = dirname( __FILE__ ) . '/amp/vf-single.php';
+} if ( 'footer' === $type ) {
+
+    $file = dirname( __FILE__ ) . '/amp/vf-footer.php';
+}
+
+  return $file;
+}
+
+
+
+add_action( 'amp_post_template_head', 'amp_add_google_analytics' );  // Adding google Analytic script to head tag of Amp page
+
+function  amp_add_google_analytics( $amp_template ) { ?>
+
+     <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
+
+<?php }
+
+
+/**
+ * Add related posts to AMP amp_post_article_footer_meta
+ */
+/*function my_amp_post_article_footer_meta( $parts ) {
+
+    $index = 1;
+
+    array_splice( $parts, $index, 0, array( 'my-related-posts' ) );
+
+    return $parts;
+}
+add_filter( 'amp_post_article_footer_meta', 'my_amp_post_article_footer_meta' );
+
+/**
+ * Designate the template file for related posts
+ */
+/*function my_amp_related_posts_path( $file, $template_type, $post ) {
+
+    if ( 'my-related-posts' === $template_type ) {
+        $file = get_stylesheet_directory() . '/amp/related-posts.php';
+    }
+    return $file;
+}
+add_filter( 'amp_post_template_file', 'my_amp_related_posts_path', 10, 3 );
