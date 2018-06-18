@@ -20,8 +20,6 @@ $link_color              = $this->get_customizer_setting( 'link_color' );
 $header_background_color = $this->get_customizer_setting( 'header_background_color' );
 $header_color            = $this->get_customizer_setting( 'header_color' );
 ?>
-
-
 /* Generic WP styling */
 
 .alignright {
@@ -170,7 +168,7 @@ amp-sidebar ul li {
   padding: 5px 0;
 }
 amp-sidebar ul li a {
-  color: #ffffff!important;
+  color: #ffffff;
   text-decoration: none;
 }
 .vf-sidebar-close {
@@ -197,9 +195,9 @@ cursor: pointer;
 	right: 18px;
 	top: 10px;*/
   margin: auto;
-  width: 200px!important;
-  height: 40px!important;
-  display: block!important;
+  width: 200px;
+  height: 40px;
+  display: block;
 }
 
 /* Site Title */
@@ -480,7 +478,7 @@ amp-carousel > amp-img > img {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding: 0!important;
+  padding: 0;
 }
 .sf-footer-legal a {
 font-size: 12px;
@@ -491,7 +489,7 @@ font-size: 12px;
     flex-wrap: wrap;
     justify-content: center;
     background-color: #1b1b1b;
-    padding: 0!important;
+    padding: 0;
 }
 
 .sf-footer-copyright {
@@ -502,20 +500,20 @@ font-size: 12px;
 
 /* Youtube */
 amp-youtube iframe {
-  display: none!important;
+  display: none;
 }
 
-.i-amphtml-element>[placeholder].amp-hidden, .i-amphtml-element>[placeholder].hidden {
+.amp-wp-iframe-placeholder.amp-hidden {
 visibility: visible;
 }
 
 amp-iframe .amp-wp-iframe-placeholder.amp-hidden {
-visibility: hidden!important;
+visibility: hidden;
 }
 
 /* share */
 
 amp-social-share {
-  width: 40px!important;
-height: 30px!important;
+  width: 40px;
+height: 30px;
 }
