@@ -644,7 +644,7 @@ width: 100%;
   text-decoration: none;
   text-align: center;
   margin: auto;
-  padding: 20px;
+  padding: 10px;
 }
 
 .sf-sharing-buttons-floating .sf-sharing-button-messenger a img {
@@ -7514,6 +7514,7 @@ display: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-transform: capitalize;
 }
 
 .sfc-campaign-archive-post-title-inner {
@@ -8210,6 +8211,7 @@ div.sf-campaign-yt-video-thumbnail iframe {
     margin: 0;
     font-size: 24px;
     text-shadow: 1px 1px #fff, 2px 2px #ddd;
+    text-transform: capitalize;
     /*text-align: center;*/
 }
 @media (min-width:576px) {
