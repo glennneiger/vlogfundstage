@@ -162,14 +162,14 @@ $this->load_parts( array( 'html-start' ) );
 
 	<div class="amp-wp-article-content">
 		<?php echo $this->get( 'post_amp_content' ); // WPCS: XSS ok. Handled in AMP_Content::transform(). ?>
-    <amp-social-share id="email" type="email"></amp-social-share>
-  <amp-social-share id="facebook" type="facebook"
+    <amp-social-share id="email" width="40" height="30" type="email"></amp-social-share>
+  <amp-social-share id="facebook" width="40" height="30" type="facebook"
     data-param-app_id="181038895828102"></amp-social-share>
-  <amp-social-share id="google" type="gplus"></amp-social-share>
-  <amp-social-share id="twitter" type="twitter"></amp-social-share>
-  <amp-social-share id="whatsapp" type="whatsapp"></amp-social-share>
-  <amp-social-share id="sms" type="sms"></amp-social-share>
-  <amp-social-share id="messenger" type="facebookmessenger"
+  <amp-social-share id="google" width="40" height="30" type="gplus"></amp-social-share>
+  <amp-social-share id="twitter" width="40" height="30" type="twitter"></amp-social-share>
+  <amp-social-share id="whatsapp" width="40" height="30" type="whatsapp"></amp-social-share>
+  <amp-social-share id="sms" width="40" height="30" type="sms"></amp-social-share>
+  <amp-social-share id="messenger" width="40" height="30" type="facebookmessenger"
     data-share-endpoint="fb-messenger://share"
     data-param-text="Check out this article: TITLE - CANONICAL_URL">
 </amp-social-share>

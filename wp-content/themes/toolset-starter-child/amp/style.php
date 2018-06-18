@@ -513,7 +513,7 @@ visibility: hidden;
 
 /* share */
 
-amp-social-share {
+body article.amp-wp-article amp-social-share {
   width: 40px;
-height: 30px;
+  height: 30px;
 }
