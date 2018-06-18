@@ -168,6 +168,11 @@ jQuery(document).ready(function($) {
   /*******************************************************/
 
 
+  jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).attr('readonly','readonly');
+  jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).hide();
+
+
+
   if (jQuery('.single-product div').hasClass('alert-success')) {
     toastr.success('', 'Campaign saved');
   }
@@ -511,6 +516,10 @@ jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr(
   /*******************************************************/
   //campaign search
   /*******************************************************/
+
+
+jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-post:nth-of-type(4)');
+
 
 
   jQuery('.sfc-campaign-archive-select-genre').click(function() {
@@ -921,6 +930,43 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
 
 
 
+/*change text*/
+
+
+  if (jQuery('body').hasClass('single-product')) {
+	jQuery('span.decomments-autor-name').html(function(){
+		// separate the text by spaces
+		var text= jQuery(this).text().split(' ');
+		// drop the last word and store it in a variable
+		var last = text.pop();
+		// join the text back and if it has more than 1 word add the span tag
+		// to the last word
+		return text.join(" ") + (text.length > 0 ? ' <span class="lastname-comment">'+last+'</span>' : last);
+	});
+
+
+  jQuery(function(){
+        jQuery('.decomments-addform-title h3').each(function() {
+             var oldPhrase4 = jQuery(this).text();
+   var newPhrase4 = oldPhrase4.replace('Add comment', 'How should they collab? Let the world know');
+   jQuery(this).text(newPhrase4);
+          });
+        });
+
+
+ jQuery(function(){
+        jQuery('span.decomments-author').each(function() {
+             var oldPhrase3 = jQuery(this).text();
+   var newPhrase3 = oldPhrase3.replace('Author', 'Creator');
+   jQuery(this).text(newPhrase3);
+          });
+        });
+}
+
+
+
+
+
   /*******************************************************/
   /**account**/
   /*******************************************************/
@@ -970,6 +1016,7 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   //checkout**/
   /*******************************************************/
 
+jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResultsForSearch: Infinity });
 
   /** checkout general **/
 
@@ -1296,7 +1343,7 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
 
   var $form = $('#mc-embedded-subscribe-form')
   if ($form.length > 0) {
-    $('form input#mc-embedded-subscribe').bind('click', function (event) {
+    $('form input#mc-embedded-subscribe, form input[name="subscribe-1"]').bind('click', function (event) {
       if (event) event.preventDefault()
       register($form)
     })
