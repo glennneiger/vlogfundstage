@@ -167,7 +167,7 @@ amp-sidebar ul li {
   width: 180px;
   padding: 5px 0;
 }
-amp-sidebar ul li a {
+amp-sidebar ul li a, amp-sidebar ul li a:visited {
   color: #ffffff;
   text-decoration: none;
 }
@@ -186,7 +186,7 @@ cursor: pointer;
 
 /* Site Icon */
 
-.amp-wp-header .amp-wp-site-icon {
+.amp-wp-header amp-img.amp-wp-site-icon {
 	/** site icon is 32px **/
 	/*background-color: <?php echo sanitize_hex_color( $header_color ); ?>;
 	border: 1px solid <?php echo sanitize_hex_color( $header_color ); ?>;
@@ -503,7 +503,7 @@ amp-youtube iframe {
   display: none;
 }
 
-.amp-wp-iframe-placeholder.amp-hidden {
+body article.amp-wp-article div.amp-wp-article-content amp-youtube img.amp-hidden {
 visibility: visible;
 }
 
