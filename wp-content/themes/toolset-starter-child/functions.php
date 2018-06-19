@@ -1918,6 +1918,19 @@ function vlogfund_datalayer_post_featured_image( $dataLayer, $post = null, $size
 }
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_featured_image' );
 
+//Push post excerpt to dataLayer
+
+function vlogfund_datalayer_post_excerpt( $dataLayer ) {
+
+	global $post;
+
+	if( is_singular() ) :
+		$dataLayer['postExcerpt'] = wp_trim_words( get_the_content($post ), 25 );
+
+	endif;
+	return $dataLayer;
+}
+add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_excerpt' );
 
 
 
