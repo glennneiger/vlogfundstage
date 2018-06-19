@@ -1887,6 +1887,10 @@ function my_custom_fonts() {
 remove_action('wp_head', 'wp_generator');
 
 
+
+/*******************************************************/
+/** dataLayer **/
+/*******************************************************/
 //Pass post status to tag manager
 function vlogfund_datalayer_post_status( $dataLayer ) {
 	global $post;
@@ -1896,6 +1900,27 @@ function vlogfund_datalayer_post_status( $dataLayer ) {
 	return $dataLayer;
 }
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_status' );
+
+//Push featured image to dataLayer
+
+function vlogfund_datalayer_post_featured_image( $dataLayer, $post = null, $size = 'post-thumbnail' ) {
+	//global $post;
+	$post_thumbnail_id = get_post_thumbnail_id( $post );
+
+	if( is_singular() ) :
+		$dataLayer['postFeaturedImage'] = wp_get_attachment_image_url( $post_thumbnail_id, $size );
+
+	elseif ( ! $post_thumbnail_id ) :
+        return false;
+
+	endif;
+	return $dataLayer;
+}
+add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_featured_image' );
+
+
+
+
 //Organization Post Count
 // Get post count for cpt
 add_shortcode('postcount', 'post_count');

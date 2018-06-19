@@ -2206,6 +2206,7 @@ hr {
 .sf-blog-article-title {
     margin: 5px 0;
     height: 40px;
+    line-height: 21px;
 }
 .sf-blog-article-excerpt {
     margin: 10px 0;
