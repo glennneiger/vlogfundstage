@@ -1932,6 +1932,20 @@ function vlogfund_datalayer_post_excerpt( $dataLayer ) {
 }
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_excerpt' );
 
+//Push post modified data to dataLayer
+
+function vlogfund_datalayer_post_modified( $dataLayer ) {
+
+	global $post;
+
+	if( is_singular() ) :
+		$dataLayer['postModified'] = get_the_modified_date( );
+
+	endif;
+	return $dataLayer;
+}
+add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_modified' );
+
 
 
 //Organization Post Count
