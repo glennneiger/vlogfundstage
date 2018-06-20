@@ -834,22 +834,19 @@ function fb_opengraph() {
             $excerpt = get_bloginfo('description');
         }
         ?>
-<meta property="og:title" content="<?php echo the_title(); ?>"/>
-<meta property="og:description" content="<?php echo $excerpt; ?>"/>
-<meta property="og:type" content="campaign"/>
+<meta property="og:type" content="website"/>
 <meta property="og:url" content="<?php echo the_permalink(); ?>"/>
 <meta property="og:site_name" content="<?php echo get_bloginfo(); ?>"/>
 <meta property="og:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
-<meta property="og:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-2" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
 <meta property="og:image:secure_url" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-2" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
 <meta property="og:image:secure_url" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-2" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:site" content="@vlogfund">
+<meta property="fb:app_id" content="181038895828102"/>
 <meta name="twitter:domain" content="<?php echo get_site_url() ?>">
-<meta name="twitter:title" content="<?php echo the_title(); ?>">
-<meta name="twitter:description" content="<?php echo $excerpt; ?>">
 <meta name="twitter:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
 <?php
     } else {
@@ -859,9 +856,39 @@ function fb_opengraph() {
 add_action('wp_head', 'fb_opengraph', 5);
 
 
+//yoast seo remove meta tags from product pages
+
+function remove_yoast_meta_desc_specific_page ( $myfilter ) {
+    if( get_post_type( get_the_ID() ) == 'product' ) {
+        return false;
+    }
+    return $myfilter;
+}
+//add_filter( 'wpseo_metadesc', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_title', 'remove_yoast_meta_desc_specific_page' );
+add_filter( 'wpseo_robots', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_canonical', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_metakeywords', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_locale', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_opengraph_title', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_opengraph_desc', 'remove_yoast_meta_desc_specific_page' );
+add_filter( 'wpseo_opengraph_url', 'remove_yoast_meta_desc_specific_page' );
+add_filter( 'wpseo_opengraph_type', 'remove_yoast_meta_desc_specific_page' );
+add_filter( 'wpseo_opengraph_site_name', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_opengraph_admin', 'remove_yoast_meta_desc_specific_page' );
+add_filter( 'wpseo_opengraph_author_facebook', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_opengraph_show_publish_date', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_twitter_title', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_twitter_description', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_twitter_card_type', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_twitter_site', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_twitter_image', 'remove_yoast_meta_desc_specific_page' );
+//add_filter( 'wpseo_twitter_creator_account', 'remove_yoast_meta_desc_specific_page' );
+add_filter( 'wpseo_json_ld_output', 'remove_yoast_meta_desc_specific_page' );
 
 
 
+//https://gist.github.com/amboutwe/811e92b11e5277977047d44ea81ee9d4
 add_action('wp_head', 'remove_all_wpseo_og', 1);
 function remove_all_wpseo_og() {
     if ( is_page(270)) { //is_single also works
@@ -1904,19 +1931,23 @@ add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_status' );
 //Push featured image to dataLayer
 
 function vlogfund_datalayer_post_featured_image( $dataLayer, $post = null, $size = 'post-thumbnail' ) {
-	//global $post;
+	global $post;
 	$post_thumbnail_id = get_post_thumbnail_id( $post );
 
-	if( is_singular() ) :
+	$yt_thumbnail_url_1 = 'https:\/\/i.ytimg.com/vi/';
+	$yt_thumbnail_url_2 = '/hqdefault.jpg';
+
+	if( get_post_type( get_the_ID() ) == 'post' && ( $post_thumbnail_id ) ) :
 		$dataLayer['postFeaturedImage'] = wp_get_attachment_image_url( $post_thumbnail_id, $size );
 
-	elseif ( ! $post_thumbnail_id ) :
-        return false;
+	elseif ( get_post_type( get_the_ID() ) == 'post' &&  (! $post_thumbnail_id ) ):
+        $dataLayer['postFeaturedImage'] = do_shortcode ($yt_thumbnail_url_1.( '[types field="post-youtube-video-id" output="raw"][/types]' ).$yt_thumbnail_url_2);
 
 	endif;
 	return $dataLayer;
 }
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_featured_image' );
+
 
 //Push post excerpt to dataLayer
 
@@ -1945,6 +1976,33 @@ function vlogfund_datalayer_post_modified( $dataLayer ) {
 	return $dataLayer;
 }
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_modified' );
+
+
+
+//Push Youtube channel logo to dataLayer
+
+function vlogfund_datalayer_campaign_infos ( $dataLayer ) {
+	global $post;
+
+		if( get_post_type( get_the_ID() ) == 'product' ) :
+		$dataLayer['collaborator1'] = do_shortcode ( '[types field="collaborator-1" output="raw"][/types]' );
+		$dataLayer['collaborator2'] = do_shortcode ( '[types field="collaborator-2" output="raw"][/types]' );
+		$dataLayer['collaborator1Image'] = do_shortcode ( '[types field="collaborator-1-image" output="raw"][/types]' );
+    $dataLayer['collaborator2Image'] = do_shortcode ( '[types field="collaborator-2-image" output="raw"][/types]' );
+		$dataLayer['collaborator1YouTubeVideo'] = do_shortcode ( '[types field="youtube-video-collaborator-1" output="raw"][/types]' );
+    $dataLayer['collaborator2YouTubeVideo'] = do_shortcode ( '[types field="youtube-video-collaborator-2" output="raw"][/types]' );
+		$dataLayer['collaborator1Quote'] = do_shortcode ( '[types field="collaborator-1-quote" output="raw"][/types]' );
+    $dataLayer['collaborator2Quote'] = do_shortcode ( '[types field="collaborator-2-quote" output="raw"][/types]' );
+	  $dataLayer['collaborationType'] = do_shortcode ( '[types field="collaboration-type" output="raw"][/types]' );
+
+	endif;
+	return $dataLayer;
+}
+add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_campaign_infos' );
+
+
+
+
 
 
 
