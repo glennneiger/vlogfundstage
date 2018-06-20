@@ -644,7 +644,12 @@ width: 100%;
   text-decoration: none;
   text-align: center;
   margin: auto;
-  padding: 10px;
+  padding: 20px;
+}
+@media screen and (max-width: 996px) {
+  .sf-sharing-buttons-floating li a {
+padding: 10px;
+  }
 }
 
 .sf-sharing-buttons-floating .sf-sharing-button-messenger a img {
@@ -1225,6 +1230,10 @@ body.blog .sf-blog-only {
   opacity: 1;
 }
 .register-popup-visible{
+  visibility: visible;
+  opacity: 1;
+}
+.share-popup-visible{
   visibility: visible;
   opacity: 1;
 }
@@ -8196,7 +8205,7 @@ div.sf-campaign-yt-video-thumbnail iframe {
     flex-direction: row;
     justify-content: space-between;
     position: relative;
-    padding: 0 10px;
+    /*padding: 0 10px;*/
 }
 .sfc-campaign-info-block-item {
    font-size: 14px;
@@ -9018,8 +9027,7 @@ color: var(--brand-color);
     color: var(--brand-color);
 }
 .sfc-campaign-excerpt {
-font-size:12px;
-max-height: 57px;
+max-height: 107px;
 }
 }
 

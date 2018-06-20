@@ -517,9 +517,12 @@ jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr(
   //campaign search
   /*******************************************************/
 
-
+if (jQuery('body').hasClass('post-type-archive-product')) {
 jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-post:nth-of-type(4)');
-
+}
+if (jQuery('body').hasClass('single-product')) {
+jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-post:nth-of-type(1)');
+}
 
 
   jQuery('.sfc-campaign-archive-select-genre').click(function() {
@@ -1226,6 +1229,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
   jQuery('a[href="#"]').click(function(e) {
     jQuery('#register.sf-popup').removeClass('register-popup-visible');
     jQuery('#login.sf-popup').removeClass('login-popup-visible');
+    jQuery('#share.sf-popup').removeClass('share-popup-visible');
     e.preventDefault();
   });
 

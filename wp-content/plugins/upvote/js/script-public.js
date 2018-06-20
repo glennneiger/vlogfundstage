@@ -1,10 +1,10 @@
 /* Custom jQuery Functions
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 ;(function($, window, document, undefined) {
-	
+
 	//Document Ready
 	$(document).ready(function(e) {
-        
+
 		//Upvote Button Click
 		$(document).on('click', '.upvote-btn.vote-me', function(){
 			var $this = $(this);
@@ -47,7 +47,7 @@
 					beforeSend: function(){
 						$this.attr('disabled',true);
 					},
-					complete: function(){					
+					complete: function(){
 					},
 					success: function(response){
 						//alert(response);
@@ -59,6 +59,11 @@
 							$upvote.find('span').html('+ ' + result.count); //For all Upvote on page for same post
 							toastr.success('', 'Thank you for voting');
 							$this.show();
+							setTimeout(function() {
+									jQuery('#share.sf-popup').addClass('share-popup-visible');
+							}, 1500);
+							window.dataLayer = window.dataLayer || [];
+							dataLayer.push({'event': 'upvote'});
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
 						} else if( result.voted == '1' ){
@@ -71,6 +76,6 @@
 			return false;
 		});
     });
-	
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 })(jQuery, window, document);
