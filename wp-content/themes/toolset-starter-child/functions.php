@@ -1934,7 +1934,7 @@ function vlogfund_datalayer_post_featured_image( $dataLayer, $post = null, $size
 	global $post;
 	$post_thumbnail_id = get_post_thumbnail_id( $post );
 
-	$yt_thumbnail_url_1 = 'https:\/\/i.ytimg.com/vi/';
+	$yt_thumbnail_url_1 = 'i.ytimg.com/vi/';
 	$yt_thumbnail_url_2 = '/hqdefault.jpg';
 
 	if( get_post_type( get_the_ID() ) == 'post' && ( $post_thumbnail_id ) ) :
