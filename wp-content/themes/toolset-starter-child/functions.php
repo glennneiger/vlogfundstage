@@ -354,7 +354,7 @@ if( ($_POST['post_status']!='draft') ) {
         //check my_field value
         if (strlen(trim($fields['post_content_substitute']['value'])) < 250 ){
             //set error message for my_field
-            $errors['post_content_substitute']='Please enter at least 250 characters or save your campaign as a draft';
+            $errors['post_content_substitute']='Please enter at least 250 characters or save your collaboration as a draft';
         }
     }
 }
@@ -1033,7 +1033,7 @@ function my_custom_my_account_menu_items( $items ) {
 
     $items = array(
 
-        'my-campaigns' => 'My Campaigns',
+    'my-campaigns' => 'My Campaigns',
 		'orders'            => __( 'Backed Campaigns', 'woocommerce' ),
 		'edit-account' => __('Account', 'woocommerce')
         //'settings'  => __( 'Account Settings', 'woocommerce' ),
@@ -1287,14 +1287,14 @@ add_filter( 'woocommerce_add_to_cart_validation', 'only_one_product_allow_in_car
 
 
 
-add_action( 'init', 'blockusers_init' );
+/*add_action( 'init', 'blockusers_init' );
 function blockusers_init() {
 if ( is_admin() && ! current_user_can('shop_manager') && ! current_user_can('author') && ! current_user_can( 'administrator' ) &&
 ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 wp_redirect( home_url() );
 exit;
 }
-}
+}*/
 
 
 
@@ -1317,10 +1317,10 @@ function custom_login(){
 add_filter('woocommerce_login_redirect', 'bryce_wc_login_redirect');
 function bryce_wc_login_redirect( $redirect ) {
 
-    if ( ! current_user_can( 'administrator' ) && ! current_user_can( 'shop_manager' )  ) {
+    if ( current_user_can( 'administrator' ) || current_user_can( 'shop_manager' ) || current_user_can( 'author' ) || current_user_can( 'editor' )  ) {
      $redirect = '/wp-admin';
 
-    } else if ( current_user_can( 'read' ) ) {
+	 } else if ( current_user_can( 'subscriber' ) || current_user_can( 'customer' ) ) {
        $redirect = '/account/my-campaigns';
     }
      return $redirect;
