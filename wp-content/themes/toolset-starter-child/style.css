@@ -625,8 +625,11 @@ border-color: #dd4b39;
   margin: 0;
   padding: 0;
 }
+.page-about .sf-sharing-buttons-floating {
+  display: none;
+}
 @media screen and (max-width:996px) {
-  .sf-sharing-buttons-floating {
+  .sf-sharing-buttons-floating, .page-about .sf-sharing-buttons-floating {
 bottom: 0;
 top: auto;
 display: flex;
@@ -6038,7 +6041,7 @@ input[name="form_status"] p {
 }
 
 .sfc-collab-form {
-      height: 1800px;
+      height: 2400px;
 }
 
 .loading-spinner {
@@ -6050,6 +6053,57 @@ align-items: center;
 
 .loading-spinner img {
       width: 65%;
+}
+
+
+.loading-spinner:before {
+    border-bottom-color: #ffffff;
+    border-right-color: #ffffff;
+    max-height: auto;
+    max-width: auto;
+}
+
+
+.loading-spinner:before {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    background: transparent;
+    border: 1px solid #ffffff;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    border-radius: 50%;
+    box-sizing: border-box;
+    top: 50%;
+    left: 60%;
+    margin-top: -10px;
+    margin-left: -10px;
+    width: 20px;
+    height: 20px;
+    -webkit-animation: spin 2s linear infinite;
+    -moz-animation: spin 2s linear infinite;
+    -o-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+@media screen and (max-width:576px) {
+  .loading-spinner:before {
+       left: 70%;
+  }
+}
+
+.cred-form-loading-spinner-image {
+  display: none;
+}
+
+input.sfc-campaign-new-button[disabled] {
+  color: #6b10d6;
+}
+
+*, :after, :before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 
@@ -6158,6 +6212,7 @@ select[name="product_cat[]"], select[name="alt_product_cat"] {
     margin: 20px 0;
     display: flex;
     justify-content: center;
+    position: relative;
 }
 
 .sfc-campaign-new-textarea {
