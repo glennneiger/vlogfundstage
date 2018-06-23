@@ -17,8 +17,7 @@
 :root {
     --text-color: #2a2a2a;
     --bg-color: #fafafa;
-    --font-family: -apple-system,BlinkMacSystemFont,SegoeUI, "Helvetica Neue", Helvetica, sans-serif;
-    --title-font-family: apple-system,BlinkMacSystemFont,SegoeUI, "Helvetica Neue", Helvetica, sans-serif;
+    --font-family: -apple-system,BlinkMacSystemFont,“Segoe UI”,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica, Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
     --font-size: 16px;
     --brand-color: #6b10d6;
     --link-color: #202020;
@@ -369,7 +368,7 @@ html, body {
 body {
     background-color: #fafafa;
     position: relative;
-    font-family: apple-system,BlinkMacSystemFont,SegoeUI, "Helvetica Neue", Helvetica, sans-serif;
+    font-family: -apple-system,BlinkMacSystemFont,“Segoe UI”,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica, Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
     /*font-family: var(--font-family);*/
     font-size: 16px;
     /*font-size: var(--font-size);*/
@@ -3511,8 +3510,14 @@ font-size: 16px!important;
 
 
 
+#decomments-comment-section.decomments-comment-section.decomments-comment-section .decomments-comment-list .comment .decomments-comment-body {
+    padding-bottom: 0px!important;
+}
 
-
+.icon-clicked.icon-clicked .decomments-icon-like svg * {
+    stroke: #6b10d6!important;
+    stroke: var(--brand-color)!important;
+}
 
 /*******************************************************/
 /**frontpage slider**/
@@ -5992,7 +5997,7 @@ margin-top: 20px;
 
 
 /** error messages **/
-.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger {
+.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger {
    background: white;
    border-bottom: 2px solid #aa0000;
    padding: 15px 25px;
@@ -6000,7 +6005,7 @@ margin-top: 20px;
     position: relative;
 }
 
-.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger:before {
+.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger:before, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger:before {
      content: "\f057";
      font-family: "Font Awesome 5 Free";
      font-weight: 900;
@@ -6020,8 +6025,16 @@ small.wpt-form-error {
     display: block;
 }
 
-body.wpt-loading{
+body.wpt-loading {
 height: 100vh!important;
+}
+
+input[name="form_status"] p {
+  height: 100vh!important;
+}
+
+.sfc-collab-form {
+      height: 1683px;
 }
 
 .loading-spinner {
@@ -7901,9 +7914,7 @@ span.select2-selection__rendered {
   display: none;
 }
 
-.sfc-campaign-archive-post:nth-of-type(4) {
-  display: none;
-}
+
 
 
 
@@ -8833,7 +8844,7 @@ a .at-icon-wrapper1 {
     border: 1px solid #DCDEDD;
     font-size: 12px;
     cursor: pointer;
-    margin-right: 10px;
+    margin-right: 0;
     font-weight: bold;
 }
 .sfc-campaign-follow:hover {
@@ -8841,6 +8852,19 @@ a .at-icon-wrapper1 {
 }
 
 @media (min-width: 576px) {
+   .sfc-campaign-follow {
+    height: 50px;
+    background: white;
+    box-shadow: 0 2px 4px 0 #DCDEDD;
+    border: 1px solid #DCDEDD;
+    font-size: 18px;
+    cursor: pointer;
+    margin-right: 0;
+       font-weight: normal;
+}
+}
+
+@media (min-width: 996px) {
    .sfc-campaign-follow {
     height: 50px;
     background: white;
@@ -9027,7 +9051,7 @@ color: var(--brand-color);
     color: var(--brand-color);
 }
 .sfc-campaign-excerpt {
-max-height: 105px;
+max-height: 107px;
 }
 }
 
