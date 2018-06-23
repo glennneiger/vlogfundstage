@@ -65,7 +65,7 @@ input[type="url"],
 input[type="week"],
 select:focus,
 textarea {
-  font-size: 16px;
+  font-size: 16px!important;
 }
 input[type='submit'] {
    -webkit-appearance: none;
@@ -2978,6 +2978,10 @@ box-shadow: 0 0 4px 0 #dadddd;
 
 .sf-post-author-row {
     margin: 20px auto;
+}
+
+.sf-post-header-row h1 {
+  line-height: 32px;
 }
 
 .author-img {
@@ -6034,7 +6038,7 @@ input[name="form_status"] p {
 }
 
 .sfc-collab-form {
-      height: 1683px;
+      height: 1800px;
 }
 
 .loading-spinner {
@@ -6164,7 +6168,7 @@ select[name="product_cat[]"], select[name="alt_product_cat"] {
     border-bottom: 1px solid #eee;
     min-height: 200px;
     outline: none;
-    font-size: 14px;
+    font-size: 16px;
     padding: 0 25px;
     overflow: hidden;
     resize: vertical;
@@ -7761,8 +7765,8 @@ display: none;
     display: none;
 }
 .sfc-campaign-archive-no-results-btn {
-   font-size: 20px;
-    padding: 5px 25px;
+    font-size: 20px;
+
     color: white;
     background: #6b10d6;
     background: var(--brand-color);
@@ -7775,6 +7779,10 @@ display: none;
     height: 40px;
     line-height: 20px;
     font-weight: bold;
+}
+.sfc-campaign-archive-no-results-btn a {
+  padding: 10px 25px;
+
 }
 .sfc-campaign-archive-no-results-btn:hover {
     opacity: 0.9;

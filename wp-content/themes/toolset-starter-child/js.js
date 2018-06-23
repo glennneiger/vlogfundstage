@@ -24,9 +24,306 @@ function onElementInserted(containerSelector, elementSelector, callback) {
 onElementInserted('body', '#lbl_generic', function(element) {
     //console.log(element);
     //alert('hi;')
+    console.log('error');
     var TopPosition = jQuery('.page-campaign-form, .page-campaign-form-edit').offset().top;
     jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
     toastr.warning('', 'Error!');
+
+
+
+//run function again if there's an error
+
+
+
+jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).attr('readonly','readonly');
+jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).hide();
+
+
+  jQuery('input[name="wpcf-collaborator-1"]').change(function() {
+    jQuery('.sfc-campaign-keyup-1').val(jQuery(this).val());
+  });
+  jQuery('input[name="wpcf-collaborator-2"]').change(function() {
+    jQuery('.sfc-campaign-keyup-2').val(jQuery(this).val());
+  });
+
+
+  jQuery('.sfc-campaign-yt-preview1, .sfc-campaign-channel-logo-wrapper-1').mouseenter(function() {
+    if (jQuery('input[name="wpcf-youtube-video-collaborator-1"]').val() === "") {
+      jQuery('.sfc-campaign-new-popover-1').css({
+        'display': 'block',
+        '-webkit-animation': 'fade-in .3s linear 1',
+        '-moz-animation': 'fade-in .3s linear 1',
+        '-ms-animation': 'fade-in .3s linear 1'
+      });
+    }
+  });
+
+  jQuery('.sfc-campaign-yt-preview2, .sfc-campaign-channel-logo-wrapper-2').mouseenter(function() {
+    if (jQuery('input[name="wpcf-youtube-video-collaborator-2"]').val() === "") {
+      jQuery('.sfc-campaign-new-popover-2').css({
+        'display': 'block',
+        '-webkit-animation': 'fade-in .3s linear 1',
+        '-moz-animation': 'fade-in .3s linear 1',
+        '-ms-animation': 'fade-in .3s linear 1'
+      });
+    }
+  });
+
+
+  jQuery('.sfc-campaign-yt-preview1, .sfc-campaign-yt-preview2, .sfc-campaign-channel-logo-wrapper-1, .sfc-campaign-channel-logo-wrapper-2').mouseleave(function() {
+    jQuery('.sfc-campaign-new-popover-1, .sfc-campaign-new-popover-2').css({
+      'display': 'none'
+    });
+  });
+
+
+  jQuery('textarea[name="post_content_substitute"]').attr('onmouseover', 'this.focus();this.select()');
+
+  jQuery('select.sfc-campaign-new-select').find('option[value="pending"]').attr('selected', true);
+
+
+
+  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger br, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger br').find('br').remove();
+  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger:first-line, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger:first-line').remove();
+  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child').addClass('sfc-error-tell-us-more');
+
+
+    jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li, .page-campaign-form-edit .page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li').each(function() {
+      var oldPhrase1 = jQuery(this).text();
+      var newPhrase1 = oldPhrase1.replace('Description_substitute:', '');
+      jQuery(this).text(newPhrase1);
+    });
+
+
+
+    jQuery('li.sfc-error-tell-us-more').each(function() {
+      var oldPhrase1 = jQuery(this).text();
+      var newPhrase1 = oldPhrase1.replace('Description_substitute:', '');
+      jQuery(this).text(newPhrase1);
+    });
+
+
+
+
+
+
+  //minimum character count
+  jQuery('textarea[name="post_content_substitute"]').keyup(function() {
+    var max = 250;
+    var len = jQuery(this).val().length;
+    if (len >= max) {
+      jQuery('#charNum').text(' you have reached the minimum');
+    } else {
+      var char = len;
+      jQuery('#charNum').text(char + ' characters added (min. 250)');
+    }
+  });
+
+
+
+
+
+  //Preview Youtube Video +
+  var videobox = document.getElementById('sfc-campaign-new-videobox-1');
+  var videoext = jQuery('[name="wpcf-youtube-video-collaborator-1"]').val();
+
+  // alert(videoext);
+  if (videoext) {
+    jQuery('.sfc-campaign-new-youtube-video-1').hide();
+    if (jQuery('[name="wpcf-youtube-video-collaborator-1"]').val() === "") {
+      videobox.style.display = 'none';
+    } else {
+
+      var url = jQuery(".videourl1").val();
+      $.ajax({
+        url: '/wp-content/themes/toolset-starter-child/process.php',
+        type: 'POST',
+        data: {
+          url: url
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log(data);
+          jQuery("#logo1").attr('src', data.url);
+          jQuery(".imageurl1").val(data.url);
+          jQuery("#sfc-campaign-new-video-preview-1").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+          jQuery("[name='wpcf-youtube-video-collaborator-1']").val('https://www.youtube.com/watch?v=' + data.videoid);
+          jQuery('#sfc-campaign-new-videobox-1').css('display', 'block');
+          jQuery('.sfc-campaign-yt-preview1').css('display', 'flex').fadeIn("slow");
+        }
+      });
+
+
+
+      var url = jQuery('[name="wpcf-youtube-video-collaborator-1"]').val();
+      var ifrm = document.createElement('iframe');
+      ifrm.src = (!url.includes('vimeo')) ? "//www.youtube.com/embed/" + url.split("=")[1] : "//player.vimeo.com/video/" + url.split("/")[3];
+      ifrm.width = '560';
+      ifrm.height = '560';
+      ifrm.frameborder = '0';
+      ifrm.scrolling = 'no';
+      jQuery('#sfc-campaign-new-video-preview-1').html(ifrm);
+      videobox.style.display = 'block';
+    }
+  }
+
+
+
+
+
+
+
+
+  var videobox2 = document.getElementById('sfc-campaign-new-videobox-2');
+  var videoext2 = jQuery('[name="wpcf-youtube-video-collaborator-2"]').val();
+
+
+
+  // alert(videoext2);
+  if (videoext2) {
+    jQuery('.sfc-campaign-new-youtube-video-2').hide();
+
+    if (jQuery('[name="wpcf-youtube-video-collaborator-2"]').val() === "") {
+      videobox2.style.display = "none";
+    } else {
+
+      var url = jQuery(".videourl2").val();
+      $.ajax({
+        url: '/wp-content/themes/toolset-starter-child/process.php',
+        type: 'POST',
+        data: {
+          url: url
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log(data);
+          jQuery("#logo2").attr('src', data.url);
+          jQuery(".imageurl2").val(data.url);
+          jQuery("#sfc-campaign-new-video-preview-2").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+          jQuery("[name='wpcf-youtube-video-collaborator-2']").val('https://www.youtube.com/watch?v=' + data.videoid);
+          jQuery('#sfc-campaign-new-videobox-2').css('display', 'block');
+          jQuery('.sfc-campaign-yt-preview2').css('display', 'flex').fadeIn("slow");
+        }
+      });
+
+
+      var url = jQuery('[name="wpcf-youtube-video-collaborator-2"]').val();
+      var ifrm = document.createElement('iframe');
+      ifrm.src = (!url.includes('vimeo')) ? "//www.youtube.com/embed/" + url.split("=")[1] : "//player.vimeo.com/video/" + url.split("/")[3];
+      ifrm.width = "560";
+      ifrm.height = "560";
+      ifrm.frameborder = "0";
+      ifrm.scrolling = "no";
+      jQuery('#sfc-campaign-new-video-preview-2').html(ifrm);
+      videobox2.style.display = "block";
+    }
+  }
+
+
+  jQuery(".videourl1").on('paste', function(e) {
+    jQuery('.sfc-campaign-new-youtube-video-1').hide();
+    jQuery('.sfc-campaign-collaborator-1-upload-image .js-wpt-field-items .wpt-credfile-preview .wpt-credfile-delete').click();
+    setTimeout(function() {
+      console.log('Pasted');
+      var url = jQuery(".videourl1").val();
+      $.ajax({
+        url: '/wp-content/themes/toolset-starter-child/process.php',
+        type: 'POST',
+        data: {
+          url: url
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log(data);
+          jQuery("#logo1").attr('src', data.url);
+          jQuery(".imageurl1").val(data.url);
+          jQuery("#sfc-campaign-new-video-preview-1").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+          jQuery("[name='wpcf-youtube-video-collaborator-1']").val('https://www.youtube.com/watch?v=' + data.videoid);
+          jQuery('#sfc-campaign-new-videobox-1').css('display', 'block');
+          jQuery('.sfc-campaign-yt-preview1').css('display', 'flex').fadeIn("slow");
+        }
+      });
+    }, 100);
+  });
+
+
+  jQuery(".videourl2").on('paste', function(e) {
+    jQuery('.sfc-campaign-collaborator-2-upload-image .js-wpt-field-items .wpt-credfile-preview .wpt-credfile-delete').click();
+    jQuery('.sfc-campaign-new-youtube-video-2').hide();
+    setTimeout(function() {
+      console.log('Pasted');
+      var url = jQuery(".videourl2").val();
+      $.ajax({
+        url: '/wp-content/themes/toolset-starter-child/process.php',
+        type: 'POST',
+        data: {
+          url: url
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log(data);
+          jQuery("#logo2").attr('src', data.url);
+          jQuery(".imageurl2").val(data.url);
+          jQuery("#sfc-campaign-new-video-preview-2").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+          jQuery("[name='wpcf-youtube-video-collaborator-2']").val('https://www.youtube.com/watch?v=' + data.videoid);
+          jQuery('#sfc-campaign-new-videobox-2').css('display', 'block');
+          jQuery('.sfc-campaign-yt-preview2').css('display', 'flex').fadeIn("slow");
+        }
+      });
+    }, 100);
+  });
+
+
+
+
+  //autocomplete
+
+  jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2'], .sfc-campaign-archive-search-input").autocomplete({
+    source: function(request, response) {
+      $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
+        "hl": "en", // Language
+        "ds": "yt", // Restrict lookup to youtube
+        "jsonp": "suggestCallBack", // jsonp callback function name
+        "q": request.term, // query term
+        "client": "youtube" // force youtube style response, i.e. jsonp
+      });
+      suggestCallBack = function(data) {
+        var suggestions = [];
+        $.each(data[1], function(key, val) {
+          suggestions.push({
+            "value": val[0]
+          });
+        });
+        suggestions.length = 5; // prune suggestions list to only 5 items
+        response(suggestions);
+      };
+    },
+  });
+
+
+
+  //errors
+  jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
+    toastr.warning('', 'Error!');
+  });
+
+
+/*if (jQuery('body').hasClass('page-campaign-form')) {
+jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr('required');
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
 });
 
 
@@ -204,7 +501,7 @@ jQuery(document).ready(function($) {
 
 
 //on ajax submit
-  jQuery( document ).on( "ajaxSuccess", function() {
+/*  jQuery( document ).on( "ajaxSuccess", function() {
     var form_status = jQuery('input[name="form_status"]').val();
     if(form_status == 1){
  //form is loaded first time
@@ -215,291 +512,9 @@ jQuery(document).ready(function($) {
 // the form is submitted
         //alert(12345);
         console.log('success');
-        jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).attr('readonly','readonly');
-        jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).hide();
 
-
-          jQuery('input[name="wpcf-collaborator-1"]').change(function() {
-            jQuery('.sfc-campaign-keyup-1').val(jQuery(this).val());
-          });
-          jQuery('input[name="wpcf-collaborator-2"]').change(function() {
-            jQuery('.sfc-campaign-keyup-2').val(jQuery(this).val());
-          });
-
-
-          jQuery('.sfc-campaign-yt-preview1, .sfc-campaign-channel-logo-wrapper-1').mouseenter(function() {
-            if (jQuery('input[name="wpcf-youtube-video-collaborator-1"]').val() === "") {
-              jQuery('.sfc-campaign-new-popover-1').css({
-                'display': 'block',
-                '-webkit-animation': 'fade-in .3s linear 1',
-                '-moz-animation': 'fade-in .3s linear 1',
-                '-ms-animation': 'fade-in .3s linear 1'
-              });
-            }
-          });
-
-          jQuery('.sfc-campaign-yt-preview2, .sfc-campaign-channel-logo-wrapper-2').mouseenter(function() {
-            if (jQuery('input[name="wpcf-youtube-video-collaborator-2"]').val() === "") {
-              jQuery('.sfc-campaign-new-popover-2').css({
-                'display': 'block',
-                '-webkit-animation': 'fade-in .3s linear 1',
-                '-moz-animation': 'fade-in .3s linear 1',
-                '-ms-animation': 'fade-in .3s linear 1'
-              });
-            }
-          });
-
-
-          jQuery('.sfc-campaign-yt-preview1, .sfc-campaign-yt-preview2, .sfc-campaign-channel-logo-wrapper-1, .sfc-campaign-channel-logo-wrapper-2').mouseleave(function() {
-            jQuery('.sfc-campaign-new-popover-1, .sfc-campaign-new-popover-2').css({
-              'display': 'none'
-            });
-          });
-
-
-          jQuery('textarea[name="post_content_substitute"]').attr('onmouseover', 'this.focus();this.select()');
-
-          jQuery('select.sfc-campaign-new-select').find('option[value="pending"]').attr('selected', true);
-
-
-
-          jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger br, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger br').find('br').remove();
-          jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger:first-line, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger:first-line').remove();
-          jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child').addClass('sfc-error-tell-us-more');
-
-
-            jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li, .page-campaign-form-edit .page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li').each(function() {
-              var oldPhrase1 = jQuery(this).text();
-              var newPhrase1 = oldPhrase1.replace('Description_substitute:', '');
-              jQuery(this).text(newPhrase1);
-            });
-
-
-
-            jQuery('li.sfc-error-tell-us-more').each(function() {
-              var oldPhrase1 = jQuery(this).text();
-              var newPhrase1 = oldPhrase1.replace('Description_substitute:', '');
-              jQuery(this).text(newPhrase1);
-            });
-
-
-
-
-
-
-          //minimum character count
-          jQuery('textarea[name="post_content_substitute"]').keyup(function() {
-            var max = 250;
-            var len = jQuery(this).val().length;
-            if (len >= max) {
-              jQuery('#charNum').text(' you have reached the minimum');
-            } else {
-              var char = len;
-              jQuery('#charNum').text(char + ' characters added (min. 250)');
-            }
-          });
-
-
-
-
-
-          //Preview Youtube Video +
-          var videobox = document.getElementById('sfc-campaign-new-videobox-1');
-          var videoext = jQuery('[name="wpcf-youtube-video-collaborator-1"]').val();
-
-          // alert(videoext);
-          if (videoext) {
-            jQuery('.sfc-campaign-new-youtube-video-1').hide();
-            if (jQuery('[name="wpcf-youtube-video-collaborator-1"]').val() === "") {
-              videobox.style.display = 'none';
-            } else {
-
-              var url = jQuery(".videourl1").val();
-              $.ajax({
-                url: '/wp-content/themes/toolset-starter-child/process.php',
-                type: 'POST',
-                data: {
-                  url: url
-                },
-                dataType: 'json',
-                success: function(data) {
-                  console.log(data);
-                  jQuery("#logo1").attr('src', data.url);
-                  jQuery(".imageurl1").val(data.url);
-                  jQuery("#sfc-campaign-new-video-preview-1").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
-                  jQuery("[name='wpcf-youtube-video-collaborator-1']").val('https://www.youtube.com/watch?v=' + data.videoid);
-                  jQuery('#sfc-campaign-new-videobox-1').css('display', 'block');
-                  jQuery('.sfc-campaign-yt-preview1').css('display', 'flex').fadeIn("slow");
-                }
-              });
-
-
-
-              var url = jQuery('[name="wpcf-youtube-video-collaborator-1"]').val();
-              var ifrm = document.createElement('iframe');
-              ifrm.src = (!url.includes('vimeo')) ? "//www.youtube.com/embed/" + url.split("=")[1] : "//player.vimeo.com/video/" + url.split("/")[3];
-              ifrm.width = '560';
-              ifrm.height = '560';
-              ifrm.frameborder = '0';
-              ifrm.scrolling = 'no';
-              jQuery('#sfc-campaign-new-video-preview-1').html(ifrm);
-              videobox.style.display = 'block';
-            }
-          }
-
-
-
-
-
-
-
-
-          var videobox2 = document.getElementById('sfc-campaign-new-videobox-2');
-          var videoext2 = jQuery('[name="wpcf-youtube-video-collaborator-2"]').val();
-
-
-
-          // alert(videoext2);
-          if (videoext2) {
-            jQuery('.sfc-campaign-new-youtube-video-2').hide();
-
-            if (jQuery('[name="wpcf-youtube-video-collaborator-2"]').val() === "") {
-              videobox2.style.display = "none";
-            } else {
-
-              var url = jQuery(".videourl2").val();
-              $.ajax({
-                url: '/wp-content/themes/toolset-starter-child/process.php',
-                type: 'POST',
-                data: {
-                  url: url
-                },
-                dataType: 'json',
-                success: function(data) {
-                  console.log(data);
-                  jQuery("#logo2").attr('src', data.url);
-                  jQuery(".imageurl2").val(data.url);
-                  jQuery("#sfc-campaign-new-video-preview-2").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
-                  jQuery("[name='wpcf-youtube-video-collaborator-2']").val('https://www.youtube.com/watch?v=' + data.videoid);
-                  jQuery('#sfc-campaign-new-videobox-2').css('display', 'block');
-                  jQuery('.sfc-campaign-yt-preview2').css('display', 'flex').fadeIn("slow");
-                }
-              });
-
-
-              var url = jQuery('[name="wpcf-youtube-video-collaborator-2"]').val();
-              var ifrm = document.createElement('iframe');
-              ifrm.src = (!url.includes('vimeo')) ? "//www.youtube.com/embed/" + url.split("=")[1] : "//player.vimeo.com/video/" + url.split("/")[3];
-              ifrm.width = "560";
-              ifrm.height = "560";
-              ifrm.frameborder = "0";
-              ifrm.scrolling = "no";
-              jQuery('#sfc-campaign-new-video-preview-2').html(ifrm);
-              videobox2.style.display = "block";
-            }
-          }
-
-
-          jQuery(".videourl1").on('paste', function(e) {
-            jQuery('.sfc-campaign-new-youtube-video-1').hide();
-            jQuery('.sfc-campaign-collaborator-1-upload-image .js-wpt-field-items .wpt-credfile-preview .wpt-credfile-delete').click();
-            setTimeout(function() {
-              console.log('Pasted');
-              var url = jQuery(".videourl1").val();
-              $.ajax({
-                url: '/wp-content/themes/toolset-starter-child/process.php',
-                type: 'POST',
-                data: {
-                  url: url
-                },
-                dataType: 'json',
-                success: function(data) {
-                  console.log(data);
-                  jQuery("#logo1").attr('src', data.url);
-                  jQuery(".imageurl1").val(data.url);
-                  jQuery("#sfc-campaign-new-video-preview-1").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
-                  jQuery("[name='wpcf-youtube-video-collaborator-1']").val('https://www.youtube.com/watch?v=' + data.videoid);
-                  jQuery('#sfc-campaign-new-videobox-1').css('display', 'block');
-                  jQuery('.sfc-campaign-yt-preview1').css('display', 'flex').fadeIn("slow");
-                }
-              });
-            }, 100);
-          });
-
-
-          jQuery(".videourl2").on('paste', function(e) {
-            jQuery('.sfc-campaign-collaborator-2-upload-image .js-wpt-field-items .wpt-credfile-preview .wpt-credfile-delete').click();
-            jQuery('.sfc-campaign-new-youtube-video-2').hide();
-            setTimeout(function() {
-              console.log('Pasted');
-              var url = jQuery(".videourl2").val();
-              $.ajax({
-                url: '/wp-content/themes/toolset-starter-child/process.php',
-                type: 'POST',
-                data: {
-                  url: url
-                },
-                dataType: 'json',
-                success: function(data) {
-                  console.log(data);
-                  jQuery("#logo2").attr('src', data.url);
-                  jQuery(".imageurl2").val(data.url);
-                  jQuery("#sfc-campaign-new-video-preview-2").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
-                  jQuery("[name='wpcf-youtube-video-collaborator-2']").val('https://www.youtube.com/watch?v=' + data.videoid);
-                  jQuery('#sfc-campaign-new-videobox-2').css('display', 'block');
-                  jQuery('.sfc-campaign-yt-preview2').css('display', 'flex').fadeIn("slow");
-                }
-              });
-            }, 100);
-          });
-
-
-
-
-          //autocomplete
-
-          jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2'], .sfc-campaign-archive-search-input").autocomplete({
-            source: function(request, response) {
-              $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
-                "hl": "en", // Language
-                "ds": "yt", // Restrict lookup to youtube
-                "jsonp": "suggestCallBack", // jsonp callback function name
-                "q": request.term, // query term
-                "client": "youtube" // force youtube style response, i.e. jsonp
-              });
-              suggestCallBack = function(data) {
-                var suggestions = [];
-                $.each(data[1], function(key, val) {
-                  suggestions.push({
-                    "value": val[0]
-                  });
-                });
-                suggestions.length = 5; // prune suggestions list to only 5 items
-                response(suggestions);
-              };
-            },
-          });
-
-
-
-          //errors
-          jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
-            toastr.warning('', 'Error!');
-          });
-
-
-        if (jQuery('body').hasClass('page-campaign-form')) {
-        jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr('required');
-        }
-
-
-
-
-
-
-
-    }
-}); //end ajax submit
+      }
+}); //end ajax submit*/
 
 
 
@@ -788,12 +803,19 @@ jQuery(document).ready(function($) {
   //errors
   jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
     toastr.warning('', 'Error!');
+
+
+
+
+
+
+
   });
 
 
-if (jQuery('body').hasClass('page-campaign-form')) {
+/*if (jQuery('body').hasClass('page-campaign-form')) {
 jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr('required');
-}
+}*/
 
 
 
