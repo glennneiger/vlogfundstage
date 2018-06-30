@@ -10,7 +10,7 @@
  *
  * @var AMP_Post_Template $this
  */
-
+global $post;
 $this->load_parts( array( 'html-start' ) );
 ?>
 <amp-analytics type="googleanalytics" id="googleanalytics">
@@ -155,10 +155,7 @@ $this->load_parts( array( 'html-start' ) );
 
 	</header>
 
-
 	<?php $this->load_parts( array( 'featured-image' ) ); ?>
-
-
 
 	<div class="amp-wp-article-content">
 		<?php echo $this->get( 'post_amp_content' ); // WPCS: XSS ok. Handled in AMP_Content::transform(). ?>
