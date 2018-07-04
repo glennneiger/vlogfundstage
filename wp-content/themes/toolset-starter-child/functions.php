@@ -1,5 +1,5 @@
 <?php
-//Checking Final Commit Test
+//New changes nick 
 //Override Woocommerce Functionality
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
