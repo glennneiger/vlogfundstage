@@ -277,7 +277,8 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
 
 
   //autocomplete
-
+  var pageWidth = $(window).width();
+if (pageWidth > 996) {
   jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2'], .sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
@@ -299,7 +300,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
       };
     },
   });
-
+}
 
 
   //errors
