@@ -10,6 +10,7 @@
 			var $this = $(this);
 			var $postid = $this.data('id');
 			var $upvote = $('.upvote-count[data-id^="'+$postid+'"]');
+			var $othervotebtn = $('.upvote-btn.vote-me').not($this);
 			if( $this.hasClass('icon') ) { //Icon Button Click
 				var $fill = $this.find('i').data('fill');
 				$.ajax({
@@ -28,6 +29,9 @@
 							$this.parents('.upvote-progress-button').addClass('success-upvote');
 							$this.find('span').html('+ ' + result.count);
 							$upvote.find('span').html('+ ' + result.count); //For all Upvote on page for same post
+							//Other Vote Button
+							$othervotebtn.find('span').html('+ ' + result.count).attr('disabled','disabled');
+							$othervotebtn.parents('.upvote-progress-button').addClass('success-upvote');
 							$this.show();
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
@@ -39,7 +43,7 @@
 					} //Endif
 				});
 			} else { //Normal Button Click
-				var $upvote = $this.parents('.upvote-container, .upvote-container-big').find('.upvote-count');
+				//var $upvote = $this.parents('.upvote-container, .upvote-container-big').find('.upvote-count');
 				$.ajax({
 					url: Upvote.ajaxurl,
 					method:'POST',
@@ -57,6 +61,9 @@
 							$this.text(result.message);
 							$upvote.html('+ '+result.count);
 							$upvote.find('span').html('+ ' + result.count); //For all Upvote on page for same post
+							//Other Vote Button
+							$othervotebtn.text(result.message).attr('disabled','disabled');
+							$othervotebtn.parents('.upvote-progress-button').addClass('success-upvote');
 							toastr.success('', 'Thank you for voting');
 							$this.show();
 							setTimeout(function() {
