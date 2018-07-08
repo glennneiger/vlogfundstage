@@ -520,6 +520,14 @@ jQuery(document).ready(function($) {
 
 
 
+jQuery( document ).on( "ajaxSuccess", function() {
+  var TopPosition = jQuery('.page-campaign-form, .page-campaign-form-edit').offset().top;
+    jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
+});
+
+
+
+
 //normal on form load
   jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).attr('readonly','readonly');
   jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], input[name='wpcf-youtube-video-collaborator-1'], input[name='wpcf-youtube-video-collaborator-2']" ).hide();
