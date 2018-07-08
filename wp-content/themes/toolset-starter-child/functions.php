@@ -1,5 +1,5 @@
 <?php
-//New changes nick 
+//New changes nick
 //Override Woocommerce Functionality
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
@@ -255,6 +255,21 @@ add_shortcode( 'comments_template', 'comments_template_shortcode' );
 /*******************************************************/
 //campaign form && campaign edit form
 /*******************************************************/
+
+
+
+//custom redirect message
+
+
+add_filter( 'gettext', 'custom_cred_redirection_msg_func', 20, 3 );
+
+function custom_cred_redirection_msg_func( $translated_text, $text, $domain ) {
+    if($text == 'Please Wait. You are being redirected...' && $domain = 'wp-cred'){
+        $translated_text = "<br><div><strong style='margin-top:150px;'>Please Wait. You are being redirected...</strong></div>";
+    }
+    return $translated_text;
+}
+
 
 //combine fields into post title fields 98 && 216
 add_action('cred_save_data', 'build_post_title', 10, 2);
