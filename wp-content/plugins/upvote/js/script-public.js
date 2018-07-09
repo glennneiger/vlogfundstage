@@ -10,7 +10,7 @@
 			var $this = $(this);
 			var $postid = $this.data('id');
 			var $upvote = $('.upvote-count[data-id^="'+$postid+'"]');
-			var $othervotebtn = $('.upvote-btn.vote-me').not($this);
+			var $othervotebtn = $('.upvote-btn.vote-me[data-id^="'+$postid+'"]').not($this);
 			if( $this.hasClass('icon') ) { //Icon Button Click
 				var $fill = $this.find('i').data('fill');
 				$.ajax({
@@ -27,8 +27,8 @@
 						var result = $.parseJSON(response);
 						if( result.success == '1' ){
 							$this.parents('.upvote-progress-button').addClass('success-upvote');
-							$this.find('span').html('+ ' + result.count);
-							$upvote.find('span').html('+ ' + result.count); //For all Upvote on page for same post
+							$this.find('span').html(result.count);
+							$upvote.find('span').html(result.count); //For all Upvote on page for same post
 							//Other Vote Button
 							$othervotebtn.find('span').html('+ ' + result.count).attr('disabled','disabled');
 							$othervotebtn.parents('.upvote-progress-button').addClass('success-upvote');
