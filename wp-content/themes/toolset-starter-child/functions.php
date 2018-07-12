@@ -1,9 +1,9 @@
 <?php
-//New changes nick
 //Override Woocommerce Functionality
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
 require_once( get_theme_file_path('/inc/campaign-status-update.php') );
+//AJAX login/register
 require_once( get_theme_file_path() . '/libs/custom-ajax-auth.php' );
 
 if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
@@ -24,7 +24,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
 
 					 wp_register_script('validate-script', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js' );
-				     wp_enqueue_script('validate-script');
+				  wp_enqueue_script('validate-script');
 
 
             wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
@@ -113,13 +113,13 @@ function sf_remove_scripts() {
     wp_deregister_style( 'post-views-counter-frontend' );
 
 
-     wp_dequeue_style( 'ddl-front-end' );
+    wp_dequeue_style( 'ddl-front-end' );
     wp_deregister_style( 'ddl-front-end' );
 
-     wp_dequeue_style( 'views-pagination-style' );
+    wp_dequeue_style( 'views-pagination-style' );
     wp_deregister_style( 'views-pagination-style' );
 
-     wp_dequeue_style( 'onthego-admin-styles' );
+    wp_dequeue_style( 'onthego-admin-styles' );
     wp_deregister_style( 'onthego-admin-styles' );
 
     wp_dequeue_style( 'photoswipe' );
@@ -135,30 +135,12 @@ function sf_remove_scripts() {
     wp_dequeue_style( 'yoast-seo-adminbar' );
     wp_deregister_style( 'yoast-seo-adminbar' );
 
-
-     wp_dequeue_style( 'font_awesome');
-		 wp_deregister_style( 'font_awesome' );
-
+    wp_dequeue_style( 'font_awesome');
+		wp_deregister_style( 'font_awesome' );
 
     wp_dequeue_script( 'wpbootstrap_bootstrap_js' );
-
-
-
-
-
-   // wp_dequeue_script( 'site' );
-   // wp_deregister_script( 'site' );
-
-    // Now register your styles and scripts here
 }
 add_action( 'wp_enqueue_scripts', 'sf_remove_scripts', 20 );
-
-
-
-
-
-
-
 
 
 /**************************************************
@@ -185,12 +167,6 @@ if ( defined('WPDDL_VERSION') && !function_exists( 'include_ddl_layouts' ) ) {
 
 
 //general
-
-
-//add code to footer
-
-
-
 
 // Add lightbox to wordpress
 /*add_action('wp_enqueue_scripts', 'add_thickbox');
@@ -255,6 +231,53 @@ add_shortcode( 'comments_template', 'comments_template_shortcode' );
 /*******************************************************/
 //campaign form && campaign edit form
 /*******************************************************/
+
+
+//validate youtube url 1 format
+
+/*add_filter('cred_form_validate','my_validation_videourl1',10,2);
+function my_validation_videourl1($error_fields, $form_data){
+    //field data are field values and errors
+    list($fields,$errors)=$error_fields;
+    //uncomment this if you want to print the field values
+    //print_r($fields);
+    //validate if specific form
+    if ($form_data['id']==98 || 216 ){
+        //check my_field value
+        if ($fields['videourl1']['value']!='correct_value')
+        {
+            //set error message for my_field
+            $errors['videourl1']='Wrong Value';
+        }
+
+    }
+    //return result
+    return array($fields,$errors);
+}
+
+
+//validate youtube url 2 format
+
+add_filter('cred_form_validate','my_validation_videourl2',10,2);
+function my_validation_videourl2($error_fields, $form_data){
+    //field data are field values and errors
+    list($fields,$errors)=$error_fields;
+    //uncomment this if you want to print the field values
+    //print_r($fields);
+    //validate if specific form
+    if ($form_data['id']==98 || 216 ){
+        //check my_field value
+        if ($fields['videourl2']['value']!='correct_value')
+        {
+            //set error message for my_field
+            $errors['videourl2']='Wrong Value';
+        }
+
+    }
+    //return result
+    return array($fields,$errors);
+}*/
+
 
 
 
@@ -911,16 +934,6 @@ function remove_all_wpseo_og() {
     }
 }
 
-/*function fb_opengraph_thank_you_page() {
-    global $post, $product;
-
-    if(is_single(270)) {
-
-    }
-}*/
-
-
-
 
 //Single Post Meta Tags for YouTube Image
 function single_post_meta_tags(){
@@ -931,12 +944,6 @@ function single_post_meta_tags(){
 <?php endif; //Endif
 }
 add_action('wp_head', 'single_post_meta_tags', 5);
-
-
-
-
-
-
 
 
 
@@ -999,7 +1006,6 @@ function my_custom_endpoints1() {
     add_rewrite_endpoint( 'my-campaigns', EP_ROOT | EP_PAGES );
 
 }
-
 add_action( 'init', 'my_custom_endpoints1' );
 
 
@@ -1008,7 +1014,6 @@ add_action( 'init', 'my_custom_endpoints1' );
     add_rewrite_endpoint( 'settings', EP_ROOT | EP_PAGES );
 
 }
-
 add_action( 'init', 'my_custom_endpoints2' );*/
 
 
@@ -1016,11 +1021,8 @@ add_action( 'init', 'my_custom_endpoints2' );*/
 
 function my_custom_query_vars1( $vars ) {
     $vars[] = 'my-campaigns';
-
-
     return $vars;
 }
-
 add_filter( 'query_vars', 'my_custom_query_vars1', 0 );
 
 
@@ -1367,56 +1369,7 @@ function my_form_shortcode() {
 add_shortcode( 'my_form_shortcode', 'my_form_shortcode' );
 
 
-/*function ajax_login_init(){
-
-    wp_enqueue_script('js', get_theme_file_uri('js.js'), array('jquery'), null, true );
-
-
-    //Global $wp;
-
-    wp_localize_script( 'js', 'ajax_login_object', array(
-        'ajaxurl' => admin_url( 'admin-ajax.php', ( is_ssl() ? 'https' : 'http') ),
-        'redirecturl' => get_permalink(), //$_SERVER[‘REQUEST_URI’], //home_url() also works //home_url(add_query_arg(array(),$wp->request)),
-				//'redirecturl' => add_query_arg ('welc_back', '1', get_permalink ()) ;
-        'loadingmessage' => __('Sending user info, please wait...')
-
-    ));
-
-    // Enable the user with no privileges to run ajax_login() in AJAX
-    add_action( 'wp_ajax_nopriv_ajaxlogin', 'ajax_login' );
-}
-
-// Execute the action only if the user isn't logged in
-if (!is_user_logged_in()) {
-    add_action('init', 'ajax_login_init');
-}
-
-
-function ajax_login(){
-
-    // First check the nonce, if it fails the function will break
-    //check_ajax_referer( 'ajax-login-nonce', 'security_login' );
-
-    // Nonce is checked, get the POST data and sign user on
-    $info = array();
-    $info['user_login'] = $_POST['username'];
-    $info['user_password'] = $_POST['password'];
-    $info['remember'] = true;
-
-    //$user_signon = wp_signon( $info, false ); //can be set to true or replace by $user_signon = wp_signon($info, is_ssl() ? true : false); or $user_signon = wp_signon($info); the function will decide for you
-    $user_signon = wp_signon($info, is_ssl() ? true : false );
-    if ( is_wp_error($user_signon) ){
-        echo json_encode(array('loggedin'=>false, 'message'=>__('Wrong username/email or password.')));
-    } else {
-        echo json_encode(array('loggedin'=>true, 'message'=>__('Login successful, redirecting...')));
-    }
-
-    die();
-}*/
-
-
 //Registration Form
-
 function registration_form_shortcode() {
     ob_start();
     get_template_part('registration_form');
@@ -1425,11 +1378,8 @@ function registration_form_shortcode() {
 add_shortcode( 'registration_form_shortcode', 'registration_form_shortcode' );
 
 
+
 //Login and logout message
-
-
-
-/* Custom Changes */
 function login_footer_add_goodbye_message() {
 	if( ( isset( $_GET['loggedout'] ) && $_GET['loggedout'] == "true" ) || ( isset($_GET['bye'] ) && $_GET['bye'] == 1 ) ) { ?>
 
@@ -1553,31 +1503,6 @@ function update_toolset_view_count2 ( $post_id ) {
     update_post_meta($post_id, 'wpcf-post-view-count', (intval($view_count) + 1));
   }
 }
-
-
-
-/*add_action('cred_save_data', 'get_yt_id_3_data_action',10,2);
-function get_yt_id_3_data_action($post_id, $form_data)
-{
-    // if a specific form
-    if ($form_data['id']==98 || 216)
-    {
-        if (isset($_POST['wpcf-']))
-        {
-            $link = $_POST['wpcf-'];
-            $video_id = explode("?v=", $link); // For videos like http://www.youtube.com/watch?v=...
-            if (empty($video_id[1]))
-                $video_id = explode("/v/", $link); // For videos like http://www.youtube.com/watch/v/..
-
-            $video_id = explode("&", $video_id[1]); // Deleting any other params
-            $video_id = $video_id[0]; // here is your required video ID
-
-            // add it to saved post meta
-            add_post_meta($post_id, 'wpcf-id', $video_id, true);
-        }
-    }
-}*/
-
 
 
 
@@ -1852,35 +1777,8 @@ function recursive_array_search_php_91365( $needle, $haystack )
 
 
 
-//Change product custom post type name
-/*add_filter( 'woocommerce_register_post_type_product', 'custom_post_type_label_woo' );
 
-function custom_post_type_label_woo( $args ){
-    $labels = array(
-        'menu_name'          => _x( 'Campaigns', 'Admin menu name', 'woocommerce' ),
-    );
-
-    $args['labels'] = $labels;
-    return $args;
-}
-
-
-//Change order custom post type name
-add_filter( 'woocommerce_register_post_type_shop_order', 'custom_post_type_label_woo2' );
-
-function custom_post_type_label_woo2( $args ){
-    $labels = array(
-        'menu_name'          => _x( 'Contributions', 'Admin menu name', 'woocommerce' ),
-    );
-
-    $args['labels'] = $labels;
-    return $args;
-}*/
-
-
-
-
-
+//admin styles
 add_action('admin_head', 'my_custom_fonts');
 
 function my_custom_fonts() {
@@ -2030,6 +1928,8 @@ function post_count() {
     return $published_posts . ' ';
 }
 
+
+
 //Milestone Shortcode
 if( !function_exists('vlogfund_campaign_milestone_shortcode') ) :
 function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
@@ -2153,31 +2053,6 @@ add_filter('tiny_mce_before_init', 'allow_all_tinymce_elements_attributes');
 /** amp **/
 /*******************************************************/
 
-/*add_action( 'amp_post_template_css', function( $amp_template ) {
-    ?>
-    nav.amp-wp-title-bar {background: #000;}
-    ul.jp-amp-list {
-        list-style: none;
-        display: inline;
-    }
-
-    ul.jp-amp-list li {
-        display: inline;
-        margin: 0 8px;
-    }
-
-		.amp-wp-byline span.amp-wp-author {
-			display: none;
-		}
-
-		footer.amp-wp-footer div p {
-			display: none;
-		}
-    <?php
-});*/
-
-
-
 
 /*add_action( 'pre_amp_render_post', function () {
     add_filter( 'the_content', function( $content ){
@@ -2282,29 +2157,3 @@ function  amp_add_google_analytics( $amp_template ) { ?>
      <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 
 <?php }
-
-
-/**
- * Add related posts to AMP amp_post_article_footer_meta
- */
-/*function my_amp_post_article_footer_meta( $parts ) {
-
-    $index = 1;
-
-    array_splice( $parts, $index, 0, array( 'my-related-posts' ) );
-
-    return $parts;
-}
-add_filter( 'amp_post_article_footer_meta', 'my_amp_post_article_footer_meta' );
-
-/**
- * Designate the template file for related posts
- */
-/*function my_amp_related_posts_path( $file, $template_type, $post ) {
-
-    if ( 'my-related-posts' === $template_type ) {
-        $file = get_stylesheet_directory() . '/amp/related-posts.php';
-    }
-    return $file;
-}
-add_filter( 'amp_post_template_file', 'my_amp_related_posts_path', 10, 3 );
