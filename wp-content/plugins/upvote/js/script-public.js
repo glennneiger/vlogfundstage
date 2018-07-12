@@ -12,6 +12,9 @@
 			var $upvote = $('.upvote-count[data-id^="'+$postid+'"]');
 			var $othervotebtn = $('.upvote-btn.vote-me[data-id^="'+$postid+'"]').not('.icon').not($this);
 			var $othericonvotebtn = $('.upvote-btn.icon.vote-me[data-id^="'+$postid+'"]').not($this);
+			if( $this.parents('.upvote-progress-button').hasClass('success-upvote') ){
+				return false;
+			}
 			if( $this.hasClass('icon') ) { //Icon Button Click
 				var $fill = $this.find('i').data('fill');
 				$.ajax({
@@ -85,6 +88,11 @@
 					} //Endif
 				});
 			}
+			return false;
+		});
+		//Click on Upvote Count to Vote
+		$(document).on('click', '.upvote-container-big .upvote-count', function(){
+			$(this).parents('.upvote-container-big').find('button.upvote-btn.vote-me').trigger('click');
 			return false;
 		});
     });
