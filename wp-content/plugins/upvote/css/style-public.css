@@ -86,7 +86,7 @@ height: 45px;
 	color:#202020;
 	font-size:18px;
 	font-weight:600;
-	cursor:default;
+	cursor:pointer;
 	position:relative;
 	z-index:1;
 	overflow:hidden;
