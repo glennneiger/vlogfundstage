@@ -235,6 +235,7 @@ add_shortcode( 'comments_template', 'comments_template_shortcode' );
 
 //validate youtube url 1 format
 
+
 /*add_filter('cred_form_validate','my_validation_videourl1',10,2);
 function my_validation_videourl1($error_fields, $form_data){
     //field data are field values and errors
@@ -242,12 +243,13 @@ function my_validation_videourl1($error_fields, $form_data){
     //uncomment this if you want to print the field values
     //print_r($fields);
     //validate if specific form
-    if ($form_data['id']==98 || 216 ){
+    if ($form_data['id']==98 || 216){
         //check my_field value
-        if ($fields['videourl1']['value']!='correct_value')
-        {
+
+        $parts = parse_url($fields['videourl1']['value']);
+        if ($parts['host'] != 'youtube.com' or $parts['host'] != 'www.youtube.com' ) {
             //set error message for my_field
-            $errors['videourl1']='Wrong Value';
+            $errors['videourl1']='Please paste a valid YouTube URL';
         }
 
     }
@@ -265,12 +267,13 @@ function my_validation_videourl2($error_fields, $form_data){
     //uncomment this if you want to print the field values
     //print_r($fields);
     //validate if specific form
-    if ($form_data['id']==98 || 216 ){
+    if ($form_data['id']==98 || 216){
         //check my_field value
-        if ($fields['videourl2']['value']!='correct_value')
-        {
+
+        $parts = parse_url($fields['videourl2']['value']);
+        if ($parts['host'] != 'youtube.com' or $parts['host'] != 'www.youtube.com' ) {
             //set error message for my_field
-            $errors['videourl2']='Wrong Value';
+            $errors['videourl2']='Please paste a valid YouTube URL';
         }
 
     }

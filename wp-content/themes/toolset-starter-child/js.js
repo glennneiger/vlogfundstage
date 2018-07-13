@@ -27,7 +27,7 @@ onElementInserted('body', '#lbl_generic', function(element) {
     console.log('error');
     var TopPosition = jQuery('.page-campaign-form, .page-campaign-form-edit').offset().top;
     jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
-    toastr.warning('', 'Error!');
+    toastr.warning('', 'Please review your collab');
 
 
 
@@ -305,7 +305,7 @@ if (pageWidth > 996) {
 
   //errors
   jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
-    toastr.warning('', 'Error!');
+    toastr.warning('', 'Please review your collab');
   });
 
 
@@ -811,7 +811,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
   //errors
   jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
-    toastr.warning('', 'Error!');
+    toastr.warning('', 'Please review your collab');
 
 
 
@@ -977,9 +977,11 @@ jQuery(".sfc-campaign-archive-reset-button").addClass("show");
 jQuery('button.sfc-campaign-archive-reset-button').click(function (){
 jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
 //jQuery('.rand').addClass('sfc-campaign-archive-search-sort-item-link-active');
-  jQuery('.post_date').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  //jQuery('.post_date').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('._upvote_count').addClass('sfc-campaign-archive-search-sort-item-link-active');
 //jQuery('input:radio[name=wpv_sort_orderby][value="rand"]').click();
-  jQuery('input:radio[name=wpv_sort_orderby][value="post_date"]').click();
+  //jQuery('input:radio[name=wpv_sort_orderby][value="post_date"]').click();
+  jQuery('input:radio[name=wpv_sort_orderby][value="field-_upvote_count"]').click();
 });
 
 //Check if option is selected
@@ -1161,7 +1163,7 @@ jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
 
       if( jQuery ('input:radio[name=wpv_sort_orderby][value="field-_upvote_count"]').is(':checked') ){
     jQuery('ul.sfc-campaign-archive-search-sort li a').removeClass('sfc-campaign-archive-search-sort-item-link-active');
-  jQuery('.field-_upvote_count').addClass('sfc-campaign-archive-search-sort-item-link-active');
+  jQuery('._upvote_count').addClass('sfc-campaign-archive-search-sort-item-link-active');
   }
 
 
