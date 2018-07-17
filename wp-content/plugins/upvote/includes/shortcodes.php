@@ -98,9 +98,6 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 
 	extract( shortcode_atts( array(
 		'postid'	=> get_the_ID(),//Show count by default
-        'show_count'=> 'yes',		//Show count by default
-        'icon' 		=> 'fa-thumbs-o-up',
-		'icon_fill' => 'fa-thumbs-up'//Button label
     ), $atts ) );
 
 	//Get vote count
