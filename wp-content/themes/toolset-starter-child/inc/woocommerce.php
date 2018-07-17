@@ -429,14 +429,26 @@ function vlogfund_woocommerce_product_columns_data( $column, $post_id ) {
 			echo get_post_meta($post_id, '_nyp',true) ? get_post_meta($post_id, '_nyp',true) : '&mdash;';
 			break;
 		case 'campaign-status' : //Campaign Status
-			echo get_post_meta($post_id, 'wpcf-campaign-status',true) ? get_post_meta($post_id, 'wpcf-campaign-status',true) : '&mdash;';
+			$campaign_status = '&mdash;';
+			if( $saved_status = get_post_meta($post_id, 'wpcf-campaign-status',true) ) :
+				$toolset_object = get_option('wpcf-fields');
+				$campaign_statues = $toolset_object['campaign-status']['data']['options'];
+				if( !empty( $campaign_statues ) && is_array( $campaign_statues ) ) :
+					foreach( $campaign_statues as $key => $status ) : //Status
+						if( $status['value'] == $saved_status ) :
+							$campaign_status = $status['title'];
+						endif; //Endif
+					endforeach;
+				endif; //Endif				
+			endif; //Endif
+			echo $campaign_status;
 			break;
 		case 'total_sales' : //Total Sales
 			echo get_post_meta($post_id, '_product_total_sales',true) ? get_post_meta($post_id, '_product_total_sales',true) : '&mdash;';
 			break;
-			case 'upvotes' : //Total Sales
-				echo get_post_meta($post_id, '_upvote_count',true) ? get_post_meta($post_id, '_upvote_count',true) : '&mdash;';
-				break;
+		case 'upvotes' : //Total Sales
+			echo get_post_meta($post_id, '_upvote_count',true) ? get_post_meta($post_id, '_upvote_count',true) : '&mdash;';
+			break;
 	endswitch;
 }
 add_action( 'manage_product_posts_custom_column', 'vlogfund_woocommerce_product_columns_data', 99, 2);
