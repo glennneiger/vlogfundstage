@@ -15,9 +15,9 @@ function ajax_auth_init(){
 
 
     wp_localize_script( 'js', 'ajax_auth_object', array(
+
         'ajaxurl' => admin_url( 'admin-ajax.php', ( is_ssl() ? 'https' : 'http') ),
         'redirecturl' => get_permalink(), //$_SERVER[‘REQUEST_URI’], //home_url() also works //home_url(add_query_arg(array(),$wp->request)),
-				//'redirecturl' => add_query_arg ('welc_back', '1', get_permalink ()) ;
         'loadingmessage' => __('Sending user info, please wait...')
 
     ));

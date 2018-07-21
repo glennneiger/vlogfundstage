@@ -1658,6 +1658,8 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
           toastr.success('', 'Welcome!');
           if ($('body').hasClass('single-post')) {
             $('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
+          } if ($('body').hasClass('page-campaign-form')) {
+            $('a.sf-redirect-to-welc1').get(0).click();
           } else {
             //setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
             window.location.reload(true);
