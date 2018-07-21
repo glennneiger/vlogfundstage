@@ -616,7 +616,7 @@ update_post_meta($post_id, 'wpcf-collaborator-2-image', $_POST['channel_logo_url
 
 /**user redirect**/
 
-add_action( 'template_redirect', 'redirect_to_specific_page' );
+/*add_action( 'template_redirect', 'redirect_to_specific_page' );
 
 function redirect_to_specific_page() {
 
@@ -628,7 +628,7 @@ wp_redirect( '/campaign-form', 301 );
 	wp_redirect( '/campaign-form-get-started', 301 );
 	  exit;
 }
-}
+}*/
 
 
 

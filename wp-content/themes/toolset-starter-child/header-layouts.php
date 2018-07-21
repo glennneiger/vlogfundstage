@@ -13,9 +13,7 @@ remove_theme_mod( 'menu_floating' );
 	<link rel="icon" href="https://www.vlogfund.com/wp-content/uploads/2018/06/V_logo_ICO.ico" type="image/x-icon" />
   <link rel="shortcut icon" href="https://www.vlogfund.com/wp-content/uploads/2018/06/V_logo_ICO.ico" type="image/x-icon" />
 	<?php
-		do_action( 'wpbootstrap_before_wp_head' );
 		wp_head();
-		do_action( 'wpbootstrap_after_wp_head' );
 	?>
 </head>
 
