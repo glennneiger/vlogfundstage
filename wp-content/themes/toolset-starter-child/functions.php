@@ -393,9 +393,9 @@ function my_validation($field_data, $form_data){
 
 if( ($_POST['post_status']!='draft') ) {
         //check my_field value
-        if (strlen(trim($fields['post_content_substitute']['value'])) < 250 ){
+        if (strlen(trim($fields['post_content_substitute']['value'])) < 150 ){
             //set error message for my_field
-            $errors['post_content_substitute']='Please enter at least 250 characters or save your collaboration as a draft';
+            $errors['post_content_substitute']='Please enter at least 150 characters or save your collaboration as a draft';
         }
     }
 }
