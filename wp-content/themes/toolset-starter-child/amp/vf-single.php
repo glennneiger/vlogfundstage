@@ -11,6 +11,8 @@
  * @var AMP_Post_Template $this
  */
 global $post;
+$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'thumbnail' );
+$thumb_url = $thumb['0'];
 $this->load_parts( array( 'html-start' ) );
 ?>
 <amp-analytics type="googleanalytics" id="googleanalytics">
@@ -155,10 +157,21 @@ $this->load_parts( array( 'html-start' ) );
 
 	</header>
 
+
 	<?php $this->load_parts( array( 'featured-image' ) ); ?>
+
+<?php if(empty($thumb_url)){?>
+  <amp-img alt="thumbnail"
+    src="https://i.ytimg.com/vi/<?php echo get_post_meta( $post->ID, 'wpcf-post-youtube-video-id', true); ?>/hqdefault.jpg"
+    width="900"
+    height="675"
+    layout="responsive">
+  </amp-img>
+<?php }?>
 
 	<div class="amp-wp-article-content">
 		<?php echo $this->get( 'post_amp_content' ); // WPCS: XSS ok. Handled in AMP_Content::transform(). ?>
+
     <amp-social-share id="email" width="40" height="30" type="email"></amp-social-share>
   <amp-social-share id="facebook" width="40" height="30" type="facebook"
     data-param-app_id="181038895828102"></amp-social-share>
