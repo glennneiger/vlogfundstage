@@ -147,9 +147,9 @@ blockquote p:last-child {
 /* Sidebar */
 .vf-hamburger {
   position: absolute;
-  top: 18px;
-  right: 18px;
-  font-size: 22px;
+  top: 7px;
+  right: 5px;
+  font-size: 30px;
   background-color: transparent;
   border: none;
   cursor: pointer;
@@ -195,8 +195,8 @@ cursor: pointer;
 	right: 18px;
 	top: 10px;*/
   margin: auto;
-  width: 200px;
-  height: 40px;
+  width: 160px;
+  height: 32px;
   display: block;
 }
 
