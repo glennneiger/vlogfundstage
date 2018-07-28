@@ -8230,7 +8230,7 @@ div.sf-campaign-yt-video-thumbnail iframe {
 }
 
 .sfc-campaign-col {
-    padding: 20px;
+    /*padding: 20px;*/
     /*border:1px solid;*/
     overflow: hidden;
     flex: 1;
@@ -8249,7 +8249,7 @@ div.sf-campaign-yt-video-thumbnail iframe {
         background: white;
     box-shadow: 0 0 4px 0 #dadddd;
          margin: 50px auto;
-         padding: 40px;
+         /*padding: 40px;*/
 }
 }
 
@@ -9253,9 +9253,172 @@ max-height: 107px;
 
 
 
+/*added 22.07.18*/
+/*Refurbish campaign pages*/
+
+.sfc-campaign-upvote-part {
+  width:100%;
+  margin:30px auto auto auto;
+}
+@media (min-width:996px) {
+  .sfc-campaign-upvote-part {
+    width:80%;
+  }
+}
+.sfc-campaign-page-vote-bar {
+  height: 10px;
+    width: 100%;
+    position: relative;
+    bottom: 0;
+    margin: 10px auto;
+    display: block;
+    border-radius: 0;
+    background-color: #eee;
+        margin-top: 5px;
+}
+
+.sfc-campaign-page-vote-progress {
+  background-color: #6b10d6;
+  background-color: var(--brand-color);
+  height: 10px;
+  position: absolute;
+  bottom: 0;
+  border-radius: 0;
+}
+.sfc-campaign-progress-text {
+  font-size: 14px;
+font-weight: 400
+}
 
 
+.upvote-container-big {
+  display: flex;
+  justify-content: space-between;
+          margin-top: 10px;
+}
 
+@media (min-width:996px) {
+  .upvote-container-big {
+        margin-right: 15px;
+  }
+}
+
+.upvote-progress-button {
+    position: relative;
+    text-align: center;
+    margin-right: 10px;
+    width: 100%;
+}
+.upvote-count {
+  justify-content: center;
+    width: 20%;
+    padding: 0 15px;
+}
+.sfc-campaign-upvote-desc {
+  margin-top: 10px;
+      margin-bottom: 30px;
+}
+.sfc-campaign-upvote-desc span {
+  text-decoration: underline;
+}
+
+.sfc-campaign-social-share {
+  display: none;
+}
+@media (min-width:996px) {
+.sfc-campaign-social-share {
+    text-align: center;
+      /*margin-bottom: 30px;*/
+          margin-top: 10px;
+          display: block;
+}
+}
+
+.sfc-campaign-social-link {
+    vertical-align: middle;
+        color: #6b10d6;
+    color: var(--brand-color);
+text-decoration: none;
+}
+
+.sfc-campaign-social-link i:hover {
+        background-color: #6b10d6;
+        background-color: var(--brand-color);
+        color: #ffffff;
+
+}
+
+.sfc-campaign-social-link i {
+    height: 50px;
+    width: 50px;
+    line-height: 50px;
+    transform: skew(-12deg);
+    border: 1px solid var(--brand-color);
+    display: inline-block;
+        box-shadow: 0 2px 4px 0 #DCDEDD;
+}
+
+.sfc-campaign-tabs {
+  display: flex;
+  border-top: 1px dashed #EBEBEB;
+  border-bottom: 1px dashed #EBEBEB;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sfc-campaign-tabs li a {
+  padding: 10px;
+  display: block;
+}
+
+.sfc-campaign-tabs li.active {
+  border-bottom: 1px solid #202020;
+}
+
+.campaign-block {
+   padding: 20px;
+}
+
+@media (min-width:1200px) {
+  .campaign-block {
+     padding: 40px;
+  }
+}
+
+.sfc-campaign-collaboration-type-about {
+  font-size: 2.1em;
+    margin: 20px auto;
+    text-align: center;
+    display: block;
+    font-weight: bold;
+        transform: skewX(-15deg);
+            padding: 15px 0;
+}
+
+.sfc-campaign-collaboration-type-about span {
+  padding: 0 35px;
+    height: 50px;
+    border: 1px solid #202020;
+    text-align: center;
+    cursor: pointer;
+position: relative;
+z-index: 1;
+background: black;
+color: white;
+transform: skewX(-15deg);
+}
+
+.sfc-campaign-author-comment-block-item:first-child {
+  display: flex;
+  align-items: center;
+}
+
+.sfc-campaign-creator {
+  font-size: 14px;
+font-weight: bold;
+color: #2d2d2d;
+}
 /*******************************************************/
 /**account**/
 /*******************************************************/
