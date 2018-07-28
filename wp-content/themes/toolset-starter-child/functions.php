@@ -206,7 +206,7 @@ add_action( 'feed_link', 'vf_custom_rss_feed', 10, 2 );
 
 
 
-//new product feed
+//collaboration feed 1
 
 add_action('init', 'collaborationsRSS');
 function collaborationsRSS(){
@@ -216,6 +216,20 @@ function collaborationsRSS(){
 function collaborationsFeed(){
         get_template_part('rss', 'youtube-collaborations');
 }
+
+
+//collaboration feed 2
+
+add_action('init', 'campaignsRSS');
+function campaignsRSS(){
+        add_feed('campaigns', 'campaignsFeed');
+}
+
+function campaignsFeed(){
+        get_template_part('rss', 'campaigns');
+}
+
+
 
 
 /*******************************************************/
