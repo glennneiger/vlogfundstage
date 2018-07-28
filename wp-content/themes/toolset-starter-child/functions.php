@@ -206,6 +206,18 @@ add_action( 'feed_link', 'vf_custom_rss_feed', 10, 2 );
 
 
 
+//new product feed
+
+add_action('init', 'collaborationsRSS');
+function collaborationsRSS(){
+        add_feed('youtube-collaborations', 'collaborationsFeed');
+}
+
+function collaborationsFeed(){
+        get_template_part('rss', 'youtube-collaborations');
+}
+
+
 /*******************************************************/
 //comments
 /*******************************************************/
