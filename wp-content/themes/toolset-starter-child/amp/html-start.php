@@ -21,8 +21,6 @@
 		<?php $this->load_parts( array( 'style' ) ); ?>
 		<?php do_action( 'amp_post_template_css', $this ); ?>
 	</style>
-	<script type='text/javascript' src='https://cdn.ampproject.org/v0.js' async></script>
-  <script type='text/javascript' src='https://cdn.ampproject.org/v0/amp-youtube-latest.js' async custom-element="amp-youtube"></script>
 	<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
 	<script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
 	<script async custom-element="amp-twitter" src="https://cdn.ampproject.org/v0/amp-twitter-0.1.js"></script>
