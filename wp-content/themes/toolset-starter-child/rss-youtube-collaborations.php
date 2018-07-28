@@ -7,7 +7,7 @@
 //query_posts( $args );
 $args = array(
 	'post_type' => 'product',
-	'showposts' => 10,
+	'showposts' => 30,
 	'post_status'=>'publish',
 	'ignore_sticky_posts' => true,
 );
