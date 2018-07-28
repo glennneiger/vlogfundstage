@@ -22,10 +22,11 @@
 		<?php do_action( 'amp_post_template_css', $this ); ?>
 	</style>
 	<script type='text/javascript' src='https://cdn.ampproject.org/v0.js' async></script>
-<script type='text/javascript' src='https://cdn.ampproject.org/v0/amp-youtube-latest.js' async custom-element="amp-youtube"></script>
+  <script type='text/javascript' src='https://cdn.ampproject.org/v0/amp-youtube-latest.js' async custom-element="amp-youtube"></script>
 	<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
 	<script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
 	<script async custom-element="amp-twitter" src="https://cdn.ampproject.org/v0/amp-twitter-0.1.js"></script>
+	<script async custom-element="amp-instagram" src="https://cdn.ampproject.org/v0/amp-instagram-0.1.js"></script>
 	<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
 </head>
