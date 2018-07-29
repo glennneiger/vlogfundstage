@@ -42,8 +42,8 @@ $this->load_parts( array( 'html-start' ) );
    "request": "event",
 
 "vars": {
-   "eventCategory": "ui-components",
-   "eventAction": "click"
+   "eventCategory": "AMP",
+   "eventAction": "Click"
     }
   },
   "trackClickOnCommentsLink" : {
@@ -51,8 +51,8 @@ $this->load_parts( array( 'html-start' ) );
     "selector": ".amp-wp-comments-link",
     "request": "event",
     "vars": {
-      "eventCategory": "ui-components",
-      "eventAction": "comments-link-click"
+      "eventCategory": "AMP",
+      "eventAction": "Comment"
     }
   },
   "trackClickOnTwitterLink" : {
