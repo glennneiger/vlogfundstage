@@ -139,6 +139,11 @@ function sf_remove_scripts() {
 		wp_deregister_style( 'font_awesome' );
 
     wp_dequeue_script( 'wpbootstrap_bootstrap_js' );
+
+		wp_deregister_script( 'wcviews-onsalebadge.js' );
+       wp_dequeue_script( 'wcviews-onsalebadge.js' );
+
+		wp_dequeue_script( '/wp-content/plugins/woocommerce-views/res/js/wcviews-onsalebadge.js', array(), null );
 }
 add_action( 'wp_enqueue_scripts', 'sf_remove_scripts', 20 );
 
