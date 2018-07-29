@@ -521,8 +521,11 @@ jQuery(document).ready(function($) {
 
 
 jQuery( document ).on( "ajaxSuccess", function() {
+  var cred = jQuery('.cred-form');
+  if (cred.length) {
   var TopPosition = jQuery('.page-campaign-form, .page-campaign-form-edit').offset().top;
     jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
+  }
 });
 
 
@@ -907,20 +910,39 @@ jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-po
 
 jQuery( document ).on( 'js_event_wpv_parametric_search_triggered', function( event, data ) {
 
+
+
 }); //js_event_wpv_parametric_search_triggered
 
 jQuery( document ).on( 'js_event_wpv_parametric_search_started', function( event, data ) {
+
+  var productarchive = jQuery('.post-type-archive-product');
+  if (productarchive.length) {
  var TopPosition = jQuery('.post-type-archive-product').offset().top;
  jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
+ }
 }); //js_event_wpv_parametric_search_started
 
 jQuery( document ).on( 'js_event_wpv_parametric_search_form_updated', function( event, data ) {
 jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
 jQuery(".form-control").select2({ minimumResultsForSearch: Infinity });
+
+
 }); //js_event_wpv_parametric_search_form_updated
 
 jQuery( document ).on( 'js_event_wpv_parametric_search_results_updated', function( event, data ) {
 
+
+//tracking
+
+
+var productarchive = jQuery('.post-type-archive-product');
+if (productarchive.length) {
+window.dataLayer = window.dataLayer || [];
+dataLayer.push({
+  'event': 'collaborationSearch'
+});
+}
 
 //blog archive
   jQuery('a[href="#login"]').click(function(e) {
