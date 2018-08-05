@@ -968,6 +968,19 @@ function remove_all_wpseo_og() {
     }
 }
 
+//noindex campaing form edit page
+
+add_action('wp_head', 'noindex_campaign_form_edit', 1);
+function noindex_campaign_form_edit() {
+  global $post;
+    if ( is_page(220)) { //is_single also works
+
+  ?>
+<meta name="robots" content="noindex,nofollow">
+<?php
+
+    }
+}
 
 //Single Post Meta Tags for YouTube Image
 function single_post_meta_tags(){
@@ -1830,6 +1843,34 @@ function my_custom_fonts() {
   </style>';
 }
 
+
+//styles for editors
+
+//Capabilities for shop managers
+
+function editor_styles_1() {
+
+if ( ! current_user_can( 'administrator' ) ) {
+	echo '<style>
+	#screen-options-link-wrap,
+  .stripe-apple-pay-message,
+	.update-nag,
+	.postbox-container #wpddl_template,
+	[data-wpt-id="wpcf-post-view-count"],
+	.misc-pub-section#post-views,
+	.misc-pub-section.misc-amp-status,
+	.column-comments .post-com-count-wrapper {
+		display: none;
+
+	}
+  td.post_views.column-post_views, td.comments.column-comments {
+		color: transparent;
+	}
+	</style>';
+
+    }
+}
+add_action( 'admin_head', 'editor_styles_1' );
 
 
 
