@@ -341,56 +341,15 @@ jQuery(document).ready(function($) {
   });
 
 
+
   /** burger menu **/
-  jQuery(function() {
-    'use strict';
-
-    // Assign
-    var burgerElem = jQuery('#sf-navigation-burger');
-    var navigationLinks = jQuery('.sf-navigation-item');
-    var accountMenu = jQuery('#sf-navigation-account');
-    var accountItems = jQuery('#sf-navigation-account-items');
-
-    // Events
-    burgerElem.off('click').on('click', burgerClicked);
-    navigationLinks.off('click').on('click', navigationLinkClicked);
-    accountMenu.off('click').on('click', accountMenuClicked);
-
-    // Elements
-    var burger = {
-      open: false,
-      elem: burgerElem
-    };
-
-    var account = {
-      open: false,
-      items: accountItems
-    };
-
-    // Event Functions
-    function burgerClicked() {
-      toggleMobileMenu();
-    }
-
-    function accountMenuClicked() {
-      account.items.toggleClass('sf-navigation-items-menu-open');
-      account.open = !account.open;
-    }
-
-    function navigationLinkClicked() {
-      if (burger.open) {
-        toggleMobileMenu();
-      }
-    }
-
-    // Helper Functions
-    function toggleMobileMenu() {
-      burger.elem.toggleClass('open');
-      burger.open = !burger.open;
-      navigationLinks.toggleClass('sf-hidden');
-    }
+  jQuery('#sf-navigation-burger').click(function() {
+    jQuery('.sf-navigation-item').toggleClass('sf-hidden');
+    jQuery('#sf-navigation-burger').toggleClass('open');
 
   });
+
+
 
 
   /*******************************************************/
@@ -903,6 +862,19 @@ jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-po
             div.onclick = Iframe;
             v[n].appendChild(div);
         }
+
+
+
+        jQuery('.sfc-campaign-archive-post-title-inner').mouseover( function() {
+          if( this.offsetWidth > this.parentNode.offsetWidth ) {
+              $(this).animate({'left': '-'+(this.offsetWidth)+'px'}, 4000, function(){this.style.left='0px';});
+          }
+      } ).mouseout( function() {
+          jQuery(this).stop();
+          this.style.left = '0px';
+      } );
+
+
 });
 
 
@@ -1609,6 +1581,12 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
     e.preventDefault();
   });
 
+  jQuery('a[href="#donate"], .sfc-ngo-single-donate-button').click(function(e) {
+    jQuery('#donate.sf-popup').addClass('donate-popup-visible');
+  jQuery('#register.sf-popup').removeClass('register-popup-visible');
+    jQuery('#login.sf-popup').removeClass('login-popup-visible');
+    e.preventDefault();
+  });
 
 
 
