@@ -2079,7 +2079,7 @@ endif;
 //Check Smile Mode
 if( !function_exists('vlogfund_smile_mode_on') ) :
 function vlogfund_smile_mode_on(){
-	if( isset( $_COOKIE['vlogfundsmilemode'] ) && !empty( $_COOKIE['vlogfundsmilemode'] ) ) :
+	if( !isset( $_COOKIE['vlogfundsmilemode'] ) || empty( $_COOKIE['vlogfundsmilemode'] ) ) :
 		return 1;
 	else :
 		return 0;
