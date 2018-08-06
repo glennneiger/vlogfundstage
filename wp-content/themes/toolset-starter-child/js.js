@@ -1464,27 +1464,42 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
     jQuery('div.nyp').addClass('nyp-selected ');
   });
 
-  jQuery('.sfc-campaign-cta').click(function() {
-    jQuery('.sfc-campaign-choose-amount-wrapper').removeClass('checkout-hide');
-    jQuery(this).addClass('checkout-hide');
-  });
+	jQuery('.sfc-campaign-cta').click(function() {
+		jQuery('.sfc-campaign-choose-amount-wrapper').removeClass('checkout-hide');
+		jQuery(this).addClass('checkout-hide');
+	});
 
 
 
-  /** checkout choose amount **/
+  	/** checkout choose amount **/
+	jQuery('.sfc-checkout-billing-donation-amount input[type="text"]').on('click', function() {
+		jQuery('.sfc-checkout-billing-donation-amount').removeClass('sfc-checkout-billing-donation-amount-active');
+		jQuery(this).parents('.sfc-checkout-billing-donation-amount').addClass('sfc-checkout-billing-donation-amount-active');
+		jQuery('input.product_custom_price').attr('checked', false);
+	});
 
-    jQuery('.sfc-checkout-billing-donation-amount input[type="text"]').on('click', function() {
-    jQuery('.sfc-checkout-billing-donation-amount').removeClass('sfc-checkout-billing-donation-amount-active');
-    jQuery(this).parents('.sfc-checkout-billing-donation-amount').addClass('sfc-checkout-billing-donation-amount-active');
-    jQuery('input.product_custom_price').attr('checked', false);
-  });
 
-
-  var setCookie = function(cname, cvalue) {
-    var d = new Date();
-    d.setTime(d.getTime() + (24 * 60 * 60 * 1000));
-    var expires = "expires=" + d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+	var setCookie = function(cname, cvalue){
+		var d = new Date();
+		d.setTime(d.getTime() + (24 * 60 * 60 * 1000));
+		var expires = "expires=" + d.toUTCString();
+		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+	};
+  
+	var getCookie = function(cname) {
+		var name = cname + "=";
+		var decodedCookie = decodeURIComponent(document.cookie);
+		var ca = decodedCookie.split(';');
+		for(var i = 0; i <ca.length; i++) {
+			var c = ca[i];
+			while (c.charAt(0) == ' ') {
+				c = c.substring(1);
+			}
+			if (c.indexOf(name) == 0) {
+				return c.substring(name.length, c.length);
+			}
+		}
+		return false;
   };
 
   jQuery('button.sfc-checkout-add-org').on('click', function() {
@@ -1837,28 +1852,24 @@ function register($form) {
   });
 
 
-  /**** Smile Switch ****/
-  if (jQuery('.sf-smile-switch').length) {
-    jQuery('.sf-smile-switch input[type="checkbox"]').on('change', function() {
-      setTimeout(function() {
-        jQuery('html,body').animate({
-          scrollTop: 0
-        }, 650);
-      }, 500);
-      if (jQuery(this).is(':checked')) {
-        setCookie('vlogfundsmilemode', 1);
-        toastr.success('', 'Smile mode activated');
-      } else {
-        setCookie('vlogfundsmilemode', 0);
-        toastr.success('', 'Smile mode deactivated');
-      }
-      location.reload(true);
-    });
-  }
-
-
-
-
+  	/**** Smile Switch ****/
+	if( jQuery('.sf-smile-switch').length ){
+		jQuery('.sf-smile-switch input[type="checkbox"]').on('change', function() {
+			setTimeout(function() {
+				jQuery('html,body').animate({
+				  scrollTop: 0
+				}, 650);
+			}, 500);
+			if( !jQuery(this).is(':checked') ){				
+				setCookie('vlogfundsmilemode', 1);
+				toastr.success('', 'Smile mode deactivated');
+			} else {
+				setCookie('vlogfundsmilemode', 0);
+				toastr.success('', 'Smile mode activated');
+			}
+		  	location.reload(true);
+		});
+  	}
 }); //end
 
 
