@@ -7988,7 +7988,7 @@ span.select2-selection__rendered {
 .sf-milestone-txt-content {
   display: none;
 }
-
+.sf-milestone-values.sf-upvote-progress-label{ display:block; }
 
 
 

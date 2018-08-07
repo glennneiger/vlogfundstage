@@ -133,3 +133,32 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 }
 add_shortcode('upvote_icon_button', 'upvote_icon_button_shortcode');
 endif;
+if( !function_exists('upvote_progress_shortcode') ) :
+/**
+ * Upvote Progress Shortcode
+ *
+ * Handles to manage upvote progress shortcode
+ *
+ * @since Upvote 1.0
+ **/
+function upvote_progress_shortcode( $atts, $content = null ){
+	
+	extract( shortcode_atts( array(
+		'postid'	=> get_the_ID(),//Show count by default
+    ), $atts ) );
+	
+	//Get vote count
+	$vote_count = get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
+	$goal_count = get_post_meta( $postid, '_upvote_goal', true ) ? get_post_meta( $postid, '_upvote_goal', true ) : 1000;
+	$vote_progress = ( number_format( ( $vote_count / $goal_count ) * 100, 2 ) );
+	$vote_progress = ( $vote_progress > 100 ) ? 100 : $vote_progress; // Prevent more than 100%
+	$content = '<div class="sf-milestone-progress-wrapper">
+					<div class="sf-milestone-values sf-upvote-progress-label"><span>'.sprintf('%1$s↑ %2$s %3$s↑ %4$s', $vote_count, __('upvotes reached of','upvote'), $goal_count, __('goal','upvote') ).'</span></div>
+					<div class="sf-milestone-progress">
+						<div class="sf-milestone-container" style="width:'.$vote_progress.'%"><span>'.$vote_progress.'%</span></div>
+					</div>					
+				</div>';
+	return $content;
+}
+add_shortcode('upvote_progress','upvote_progress_shortcode');
+endif;
