@@ -12,6 +12,7 @@
 			var $upvote = $('.upvote-count[data-id^="'+$postid+'"]');
 			var $othervotebtn = $('.upvote-btn.vote-me[data-id^="'+$postid+'"]').not('.icon').not($this);
 			var $othericonvotebtn = $('.upvote-btn.icon.vote-me[data-id^="'+$postid+'"]').not($this);
+			var $upvotecountcont = $('span.upvote-count-sc[data-id^="'+$postid+'"]')
 			if( $this.parents('.upvote-progress-button').hasClass('success-upvote') ){
 				return false;
 			}
@@ -33,6 +34,7 @@
 							$this.parents('.upvote-progress-button').addClass('success-upvote');
 							$this.find('span').html(result.count);
 							$upvote.find('span').html(result.count); //For all Upvote on page for same post
+							$upvotecountcont.html(result.count);
 							//Other Vote Button
 							$othericonvotebtn.find('span').html('+ ' + result.count).attr('disabled','disabled');
 							$othericonvotebtn.parents('.upvote-progress-button').addClass('success-upvote');
@@ -67,6 +69,7 @@
 							$this.text(result.message);
 							$upvote.html('+ '+result.count);
 							$upvote.find('span').html('+ ' + result.count); //For all Upvote on page for same post
+							$upvotecountcont.html(result.count);
 							//Other Vote Button
 							$othericonvotebtn.find('span').html('+ ' + result.count).attr('disabled','disabled');
 							$othericonvotebtn.parents('.upvote-progress-button').addClass('success-upvote');
