@@ -157,7 +157,7 @@ function upvote_progress_shortcode( $atts, $content = null ){
 	$vote_progress = ( number_format( ( $vote_count / $goal_count ) * 100, 2 ) );
 	$vote_progress = ( $vote_progress > 100 ) ? 100 : $vote_progress; // Prevent more than 100%
 	$content = '<div class="sf-milestone-progress-wrapper">
-					<div class="sf-milestone-values sf-upvote-progress-label"><span>'.sprintf('%1$s↑ %2$s %3$s↑ %4$s', $vote_count, __('upvotes reached of','upvote'), $goal_count, __('goal','upvote') ).'</span></div>
+					<div class="sf-milestone-values sf-upvote-progress-label"><span>'.sprintf('<span class="upvote-count-sc" data-id="'.$postid.'">%1$s</span>↑ %2$s %3$s↑ %4$s', $vote_count, __('upvotes reached of','upvote'), $goal_count, __('goal','upvote') ).'</span></div>
 					<div class="sf-milestone-progress">
 						<div class="sf-milestone-container" style="width:'.$vote_progress.'%"><span>'.$vote_progress.'%</span></div>
 					</div>					
