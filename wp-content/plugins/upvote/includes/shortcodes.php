@@ -53,7 +53,11 @@ function upvote_button_shortcode( $atts, $content = null ){
 	endif; //Endif
 	//Voted Count
 	if( $show_count == 'yes' ) :
-		$content .= '<div class="upvote-count" data-id="'.$postid.'">+&nbsp;<span>'.$vote_count.'</span></div>';
+		if( !is_user_logged_in() ) : //Check user is not logged in
+			$content .= '<div class="upvote-count" data-id="'.$postid.'"><a href="#register">+&nbsp;<span>'.$vote_count.'</span></a></div>';
+		else :
+			$content .= '<div class="upvote-count" data-id="'.$postid.'">+&nbsp;<span>'.$vote_count.'</span></div>';
+		endif;
 	endif; //Endif
 	$content .= '</div><!--/.upvote-container-->';
 	//Return Content
@@ -80,7 +84,7 @@ function upvote_count_shortcode( $atts, $content = null ){
 	$count = get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
 
 	//Return count
-	return '<span data-id="'.$postid.'">'. $count .'</span>';
+	return '<span class="upvote-count-sc" data-id="'.$postid.'">'. $count .'</span>';
 }
 add_shortcode('upvote_count', 'upvote_count_shortcode');
 endif;
