@@ -9191,16 +9191,17 @@ max-height: 107px;
 
 /*** milestone progress bar ***/
 .sf-milestone-progress {
-	height: 5px;  /* Can be anything */
+	height: 10px;  /* Can be anything */
 	position: relative;
-	background: #fff;
-	box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
+	/*background: #fff;*/
+  background: #eee;
+	/*box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
   border:1px solid #6b10d6;
-	border:1px solid var(--brand-color);
-	margin:10px 0px;
+	border:1px solid var(--brand-color);*/
+	margin:5px auto 10px auto;
 }
 .sf-milestone-progress .sf-milestone-container {
-	display: block;
+	  display: block;
   	height: 100%;
     background-color: #6b10d6;
   	background-color: var(--brand-color);
@@ -9208,18 +9209,21 @@ max-height: 107px;
     background: var(--brand-color);
   	position: relative;
   	overflow: hidden;
-	color:#fff;
-	font-size:12px;
-	padding:1px 0;
+	  color:#fff;
+	  font-size:12px;
+	  padding:1px 0;
+    display: flex;
+    align-items: center;
 }
-.sf-milestone-progress-wrapper .sf-milestone-container span{
+.sf-milestone-progress-wrapper .sf-milestone-container span {
 	position:relative;
 	left:50%;
+  font-size: 8px;
+  font-weight: 700;
 }
-.sf-milestone-progress-wrapper .sf-milestone-values{
-	margin:3px 0;
-  font-weight: bold;
-
+.sf-milestone-progress-wrapper .sf-milestone-values {
+  font-size: 14px;
+  font-weight: 400;
 }
 .sf-milestone-progress-wrapper .sf-milestone-values .end{
 	float:right;
@@ -9231,10 +9235,8 @@ max-height: 107px;
   .sf-milestone-progress-wrapper .sf-milestone-txt-content{
   	display: none;
   }
-  .sf-milestone-progress-wrapper .sf-milestone-values{
-    margin:3px 0;
-    font-weight: bold;
-    font-size: 12px;
+  .sf-milestone-progress-wrapper .sf-milestone-values {
+
   }
 }
 .sf-milestone-progress-wrapper .sf-milestone-txt-content span{
