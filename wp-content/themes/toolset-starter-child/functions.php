@@ -1,5 +1,5 @@
 <?php
-//Override Woocommerce Functionality
+// Override Woocommerce Functionality
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
 require_once( get_theme_file_path('/inc/campaign-status-update.php') );
