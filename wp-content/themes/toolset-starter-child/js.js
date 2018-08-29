@@ -1676,61 +1676,95 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
     username = $('form#login_user #username_').val();
     password = $('form#login_user #password_').val();
     email = '';
+	campaign = '';
+	camp_cat = '';
     //security = $('form#login #security').val();
     if ($(this).attr('id') == 'register_user') {
       action = 'ajaxregister';
       username = $('#signonname').val();
       password = $('#signonpassword').val();
       email = $('#email').val();
+	  campaign = $('form#register_user #campaign').val();
+	  camp_cat = $('form#register_user #camp_cat').val();
       //security = $('#signonsecurity').val();
     }
     ctrl = $(this);
-    $.ajax({
-      type: 'POST',
-      dataType: 'json',
-      url: ajax_auth_object.ajaxurl,
-      data: {
-        'action': action,
-        'username': username,
-        'password': password,
-        'email': email,
-        //'security': security
-      },
-      success: function(data) {
-        $('p.status', ctrl).text(data.message);
-        /*$('.login-w-a').addClass('hide');
-        $('li.account-li').removeClass('hide');
-        toastr.success('', 'Welcome!');*/
-        /*if ($(this).attr('id') == 'register_user') {
-          window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push({
-          event: 'formSubmissionSuccess',
-          formName: 'registerForm'
-          });
-            toastr.success('', 'Welcome!');
-          } else {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-            event: 'formSubmissionSuccess',
-            formName: 'loginForm'
-            });
-              toastr.success('', 'Welcome back!');
-            }*/
-        if (data.loggedin == true) {
-          toastr.success('', 'Welcome!');
-          if ($('body').hasClass('single-post')) {
-            $('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
-          } if ($('body').hasClass('page-campaign-form')) {
-            $('a.sf-redirect-to-welc1').get(0).click();
-          } else {
-            //setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
-            window.location.reload(true);
-          }
-
-        }
-      }
-    });
-    e.preventDefault();
+	$.ajax({
+	  type: 'POST',
+	  dataType: 'json',
+	  url: ajax_auth_object.ajaxurl,
+	  data: {
+		'action': action,
+		'username': username,
+		'password': password,
+		'email': email,
+		'campaign' : campaign,
+		'camp_cat' : camp_cat
+		//'security': security
+	  },
+	  success: function(data) {		  	
+		$('p.status', ctrl).text(data.message);
+		/*$('.login-w-a').addClass('hide');
+		$('li.account-li').removeClass('hide');
+		toastr.success('', 'Welcome!');*/
+		/*if ($(this).attr('id') == 'register_user') {
+		  window.dataLayer = window.dataLayer || [];
+		  window.dataLayer.push({
+		  event: 'formSubmissionSuccess',
+		  formName: 'registerForm'
+		  });
+			toastr.success('', 'Welcome!');
+		  } else {
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({
+			event: 'formSubmissionSuccess',
+			formName: 'loginForm'
+			});
+			  toastr.success('', 'Welcome back!');
+			}*/	
+			
+		if( data.registerin == true ){
+			window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			  'event': 'registrationSuccess'
+			});
+			if ($('body').hasClass('single-post')) {
+				$('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
+			} if ($('body').hasClass('page-campaign-form')) {
+				$('a.sf-redirect-to-welc1').get(0).click();
+			} else {
+				//setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
+				window.location.reload(true);
+			}
+		} else if( data.registerin == false ){
+			window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			  'event': 'registrationFail'
+			});
+		}
+		if( data.loggedin == true ){
+			toastr.success('', 'Welcome!');
+			window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			  'event': 'loginSuccess'
+			});
+			if ($('body').hasClass('single-post')) {
+				$('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
+			} if ($('body').hasClass('page-campaign-form')) {
+				$('a.sf-redirect-to-welc1').get(0).click();
+			} else {
+				//setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
+				window.location.reload(true);
+			}
+		} else if( data.loggedin == false ){	
+			window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			  'event': 'loginFail'
+			});
+		}
+	  }
+	});
+	e.preventDefault();
   });
 
 
