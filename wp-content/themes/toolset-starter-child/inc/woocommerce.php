@@ -281,11 +281,9 @@ if( !function_exists('vlogfund_woocommerce_social_login_subscribe_mailchimp') ) 
  * Woocommerce Social Login Subscribe to Mailchimp
  **/
 function vlogfund_woocommerce_social_login_subscribe_mailchimp( $userdata ){
-	$mailchimp_list = '18f30240e9'; //Mailchimp List ID
-	$mailchimp_api_key = '***REMOVED***'; //Mailchimp API Key
 	include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
-	$MailChimp = new MailChimp( $mailchimp_api_key ); //Check Success
-	$result = $MailChimp->post('lists/'.$mailchimp_list.'/members', array(
+	$MailChimp = new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
+	$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_LIST.'/members', array(
 		'email_address' => $userdata['user_email'],
 		'merge_fields' => array( 'FNAME' => $userdata['first_name'], 'LNAME' => $userdata['last_name'] ),
 		'status' => 'subscribed'

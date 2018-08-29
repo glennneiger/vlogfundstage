@@ -8,6 +8,12 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
  * @author Drew McLellan <drew.mclellan@gmail.com>
  * @version 2.2
  */
+if( !defined('VLOG_MAILCHIMP_LIST') ) :
+	define('VLOG_MAILCHIMP_LIST', '18f30240e9');	
+endif;
+if( !defined('VLOG_MAILCHIMP_API') ) :
+	define('VLOG_MAILCHIMP_API', '***REMOVED***');
+endif;
 class MailChimp
 {
     private $api_key;
