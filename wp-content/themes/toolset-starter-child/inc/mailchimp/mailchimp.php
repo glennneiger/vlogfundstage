@@ -9,10 +9,10 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
  * @version 2.2
  */
 if( !defined('VLOG_MAILCHIMP_LIST') ) :
-	define('VLOG_MAILCHIMP_LIST', '18f30240e9');	
+	define('VLOG_MAILCHIMP_LIST', '18f30240e9');
 endif;
 if( !defined('VLOG_MAILCHIMP_API') ) :
-	define('VLOG_MAILCHIMP_API', 'f5b4f9c0931f387c1d55b71bbe6f2bd3-us17');
+	define('VLOG_MAILCHIMP_API', '4fb180900676e735e385eaf9da91b20f-us17');
 endif;
 class MailChimp
 {
@@ -41,7 +41,7 @@ class MailChimp
     public function __construct($api_key, $api_endpoint = null)
     {
         $this->api_key = $api_key;
-        
+
         if ($api_endpoint === null) {
             if (strpos($this->api_key, '-') === false) {
                 throw new \Exception("Invalid MailChimp API key `{$api_key}` supplied.");
@@ -242,7 +242,7 @@ class MailChimp
                 $this->attachRequestPayload($ch, $args);
                 break;
         }
-        
+
         $responseContent     = curl_exec($ch);
         $response['headers'] = curl_getinfo($ch);
         $response            = $this->setResponseState($response, $responseContent, $ch);
@@ -264,7 +264,7 @@ class MailChimp
     private function prepareStateForRequest($http_verb, $method, $url, $timeout)
     {
         $this->last_error = '';
-        
+
         $this->request_successful = false;
 
         $this->last_response = array(
@@ -286,37 +286,37 @@ class MailChimp
 
     /**
      * Get the HTTP headers as an array of header-name => header-value pairs.
-     * 
+     *
      * The "Link" header is parsed into an associative array based on the
      * rel names it contains. The original value is available under
      * the "_raw" key.
-     * 
+     *
      * @param string $headersAsString
      * @return array
      */
     private function getHeadersAsArray($headersAsString)
     {
         $headers = array();
-        
+
         foreach (explode("\r\n", $headersAsString) as $i => $line) {
             if ($i === 0) { // HTTP code
                 continue;
             }
-            
+
             $line = trim($line);
             if (empty($line)) {
                 continue;
             }
-            
+
             list($key, $value) = explode(': ', $line);
-            
+
             if ($key == 'Link') {
                 $value = array_merge(
                     array('_raw' => $value),
                     $this->getLinkHeaderAsArray($value)
                 );
             }
-            
+
             $headers[$key] = $value;
         }
 
@@ -325,25 +325,25 @@ class MailChimp
 
     /**
      * Extract all rel => URL pairs from the provided Link header value
-     * 
+     *
      * Mailchimp only implements the URI reference and relation type from
      * RFC 5988, so the value of the header is something like this:
-     * 
+     *
      * 'https://us13.api.mailchimp.com/schema/3.0/Lists/Instance.json; rel="describedBy", <https://us13.admin.mailchimp.com/lists/members/?id=XXXX>; rel="dashboard"'
-     * 
+     *
      * @param string $linkHeaderAsString
      * @return array
      */
     private function getLinkHeaderAsArray($linkHeaderAsString)
     {
         $urls = array();
-        
+
         if (preg_match_all('/<(.*?)>\s*;\s*rel="(.*?)"\s*/', $linkHeaderAsString, $matches)) {
             foreach ($matches[2] as $i => $relName) {
                 $urls[$relName] = $matches[1][$i];
             }
         }
-        
+
         return $urls;
     }
 
@@ -386,9 +386,9 @@ class MailChimp
         if ($responseContent === false) {
             $this->last_error = curl_error($ch);
         } else {
-        
+
             $headerSize = $response['headers']['header_size'];
-            
+
             $response['httpHeaders'] = $this->getHeadersAsArray(substr($responseContent, 0, $headerSize));
             $response['body'] = substr($responseContent, $headerSize);
 
