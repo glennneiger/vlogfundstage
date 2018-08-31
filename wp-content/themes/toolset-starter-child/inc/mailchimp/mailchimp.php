@@ -3,7 +3,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 /**
  * Super-simple, minimum abstraction MailChimp API v3 wrapper
  * MailChimp API v3: http://developer.mailchimp.com
- * This wrapper: https://github.com/drewm/mailchimp-api
+ * This wrapper: https://github.com/drewm/mailchimp-apis
  *
  * @author Drew McLellan <drew.mclellan@gmail.com>
  * @version 2.2
