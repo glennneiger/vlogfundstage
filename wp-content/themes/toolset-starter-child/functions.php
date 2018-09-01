@@ -234,7 +234,16 @@ function campaignsFeed(){
         get_template_part('rss', 'campaigns');
 }
 
+//new article feed
 
+add_action('init', 'articlesRSS');
+function articlesRSS(){
+        add_feed('articles', 'articlesFeed');
+}
+
+function articlesFeed(){
+        get_template_part('rss', 'articles');
+}
 
 
 /*******************************************************/
