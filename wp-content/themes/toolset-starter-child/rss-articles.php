@@ -25,7 +25,7 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 
 	$image1=$custom_fields['wpcf-post-youtube-video-id']['0'];
 
-	$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'thumbnail' );
+	$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'full' );
 	$thumb_url = $thumb['0'];
 	?>
 <listing>

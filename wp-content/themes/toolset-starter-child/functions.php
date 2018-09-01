@@ -211,19 +211,19 @@ add_action( 'feed_link', 'vf_custom_rss_feed', 10, 2 );
 
 
 
-//collaboration feed 1
+//collaboration feed 1 for fb catalog (products)
 
-add_action('init', 'collaborationsRSS');
-function collaborationsRSS(){
-        add_feed('youtube-collaborations', 'collaborationsFeed');
+add_action('init', 'youtubeCollaborationsRSS');
+function youtubeCollaborationsRSS(){
+        add_feed('youtube-collaborations', 'youtubeCollaborationsFeed');
 }
 
-function collaborationsFeed(){
+function youtubeCollaborationsFeed(){
         get_template_part('rss', 'youtube-collaborations');
 }
 
 
-//collaboration feed 2
+//collaboration feed 2 for fb catalog (destinations)
 
 add_action('init', 'campaignsRSS');
 function campaignsRSS(){
@@ -234,7 +234,7 @@ function campaignsFeed(){
         get_template_part('rss', 'campaigns');
 }
 
-//new article feed
+//article feed for fb catalog (destinations)
 
 add_action('init', 'articlesRSS');
 function articlesRSS(){
@@ -243,6 +243,29 @@ function articlesRSS(){
 
 function articlesFeed(){
         get_template_part('rss', 'articles');
+}
+
+//article feed for mc
+
+add_action('init', 'postsRSS');
+function postsRSS(){
+        add_feed('posts', 'postsFeed');
+}
+
+function postsFeed(){
+        get_template_part('rss', 'posts');
+}
+
+
+//collaboration feed for mc
+
+add_action('init', 'collaborationsRSS');
+function collaborationsRSS(){
+        add_feed('collaborations', 'collaborationsFeed');
+}
+
+function collaborationsFeed(){
+        get_template_part('rss', 'collaborations');
 }
 
 

@@ -26,7 +26,7 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 	$image1=$custom_fields['wpcf-collaborator-1-image']['0'];
 	$image2=$custom_fields['wpcf-collaborator-2-image']['0'];
 
-	$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'thumbnail' );
+	$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'full' );
 	$thumb_url = $thumb['0'];
 	?>
 <listing>
