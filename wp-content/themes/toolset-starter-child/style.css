@@ -482,6 +482,9 @@ font-size: 14px;
 .single-product .breadcrumb_last {
   display: none!important;
 }
+.breadcrumb_last {
+  display: none!important;
+}
 }
 
 .single-organization  .sf-breadcrumb {
@@ -2065,6 +2068,7 @@ hr {
         margin: 0;
     padding: 0px 25px;
     padding-top: 40px;
+    line-height: normal;
 }
 
 
@@ -3151,12 +3155,8 @@ box-shadow: 0 0 4px 0 #dadddd;
 }
 
 .sf-post-category li, .sf-post-tag a {
-    margin: 0 5px;
+    margin: 2px;
     padding: 0;
-}
-
-.sf-post-category li:nth-of-type(1), .sf-post-tag a:nth-of-type(1) {
-    margin-left: 0;
 }
 
 .sf-post-category li a, .sf-post-tag a {
@@ -3168,7 +3168,7 @@ box-shadow: 0 0 4px 0 #dadddd;
     text-align: center;
     background: #eee;
     padding: 5px 10px;
-    border-radius: 4px;
+    border-radius: 0;
     transition: all 225ms;
   pointer-events: none;
 
@@ -13290,4 +13290,87 @@ font-size: 16px;
 }
 .table-container {
     overflow-x: auto;
+}
+
+
+
+
+
+/*******************************************************/
+/**category, tags archive**/
+/*******************************************************/
+
+
+
+.sfc-archive-name-articles, .sfc-archive-name-articles {
+  display: none;
+}
+
+.category .sfc-archive-name-articles, .tag .sfc-archive-name-articles {
+  display: inline-block;
+}
+
+.sfc-archive-name-collaborations, .sfc-archive-name-collaborations {
+  display: none;
+}
+.tax-product_cat .sfc-archive-name-collaborations, .tax-product_tag .sfc-archive-name-collaborations {
+  display: inline-block;
+}
+
+
+.sfc-cat-tag-archive-title {
+  text-align: center;
+  margin-top:50px;
+
+}
+
+
+.sfc-cat-tag-container {
+ padding: 10px;
+  display:flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+}
+
+.sfc-cat-tag-archive-ul {
+  list-style-type:none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+      align-items: center
+}
+
+.sfc-cat-tag-archive-li {
+   display: inline-block;
+    background-color: #cccccc;
+    color: white;
+    padding: 3px 10px;
+    margin: 5px 5px 10px 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: skewX(-15deg);
+}
+
+
+.sfc-cat-tag-archive-li span {
+   display: flex;
+    align-items: center;
+   transform: skewX(15deg);
+}
+
+.sfc-cat-tag-archive-li span  a {
+
+}
+
+@media screen and (max-width:996px) {
+
+  .sfc-cat-tag-archive-li {
+     transform: skewX(0deg);
+  }
+  .sfc-cat-tag-archive-li span  {
+
+    transform: skewx(0deg);
+  }
 }

@@ -29,7 +29,7 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 	<link><?php bloginfo_rss('url') ?></link>
 	<description><?php bloginfo_rss('description') ?></description>
 	<lastBuildDate><?php echo mysql2date('D, d M Y H:i:s +0000', get_lastpostmodified('GMT'), false); ?></lastBuildDate>
-	<language><?php echo get_option('rss_language'); ?></language>
+	<language>en-US</language>
 	<sy:updatePeriod><?php echo apply_filters( 'rss_update_period', 'hourly' ); ?></sy:updatePeriod>
 	<sy:updateFrequency><?php echo apply_filters( 'rss_update_frequency', '1' ); ?></sy:updateFrequency>
 	<?php do_action('rss2_head'); ?>
@@ -39,7 +39,7 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 
 	$image1=$custom_fields['wpcf-post-youtube-video-id']['0'];
 
-	$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'full' );
+	$thumb = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), 'medium' );
 	$thumb_url = $thumb['0'];
 	?>
 <item>
