@@ -370,7 +370,8 @@ $field1 = get_post_meta($post_id, 'wpcf-collaborator-1', true);
 $field2 = get_post_meta($post_id, 'wpcf-collaborator-2', true);
 $field3 = get_post_meta($post_id, 'wpcf-collaboration-type', true);
 
-$post_title=$field1.' '.$field3.' '.$field2;
+//$post_title=$field1.' '.$field3.' '.$field2;
+$post_title = ucwords($field1) . ' ' . $field3 . ' ' . ucwords($field2);
 $slug = sanitize_title($post_title);
 wp_update_post(array('ID'=>$post_id, 'post_title'=>$post_title,'post_name' => $slug));
 }
