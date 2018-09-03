@@ -10,8 +10,10 @@ $args = array(
 	'showposts' => 30,
 	'post_status'=>'publish',
 	'ignore_sticky_posts' => true,
+	'orderby' => 'ID',
+	'order' => 'DESC'
 );
-$wp_query->query($args);
+$wp_query = new WP_Query($args);
 header('Content-Type: '.feed_content_type('rss-http').'; charset='.get_option('blog_charset'), true);
 echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 ?>
