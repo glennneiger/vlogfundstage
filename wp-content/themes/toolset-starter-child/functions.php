@@ -1432,12 +1432,29 @@ function wp_social_login_change_user_role( $userdata ) {
 	$userdata['role'] = 'subscriber';
 	return $userdata;
 }
-add_action( 'wc_social_login_facebook_new_user_data', 	'wp_social_login_change_user_role', 20); //For Facebook
-add_action( 'wc_social_login_google_new_user_data', 	'wp_social_login_change_user_role', 20); //For Google
+add_filter( 'wc_social_login_facebook_new_user_data', 	'wp_social_login_change_user_role', 20); //For Facebook
+add_filter( 'wc_social_login_google_new_user_data', 	'wp_social_login_change_user_role', 20); //For Google
 
-
-
-
+//Track Social Registration
+function wp_social_registration_track(){ ?>
+	<script type="text/javascript">
+		window.dataLayer = window.dataLayer || [];
+		dataLayer.push({
+			'event': 'socialRegistrationSuccess'
+		});
+	</script>
+<?php
+add_action('wc_social_login_user_account_linked', 'wp_social_registration_track');
+//Track Social Login
+function wp_social_login_track(){ ?>
+	<script type="text/javascript">
+		window.dataLayer = window.dataLayer || [];
+		dataLayer.push({
+			'event': 'socialLoginSuccess'
+		});
+	</script>
+<?php
+add_action('wc_social_login_user_authenticated', 'wp_social_login_track');
 
 //login form
 
