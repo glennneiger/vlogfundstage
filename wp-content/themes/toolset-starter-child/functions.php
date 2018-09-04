@@ -1444,6 +1444,7 @@ function wp_social_registration_track(){ ?>
 		});
 	</script>
 <?php
+}
 add_action('wc_social_login_user_account_linked', 'wp_social_registration_track');
 //Track Social Login
 function wp_social_login_track(){ ?>
@@ -1453,7 +1454,8 @@ function wp_social_login_track(){ ?>
 			'event': 'socialLoginSuccess'
 		});
 	</script>
-<?php
+<?php 
+}
 add_action('wc_social_login_user_authenticated', 'wp_social_login_track');
 
 //login form
