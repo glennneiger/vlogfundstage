@@ -920,7 +920,7 @@ jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-po
           jQuery('#login.sf-popup').removeClass('login-popup-visible');
           e.preventDefault();
         });
-        
+
 
 });
 
@@ -1485,7 +1485,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 		var expires = "expires=" + d.toUTCString();
 		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 	};
-  
+
 	var getCookie = function(cname) {
 		var name = cname + "=";
 		var decodedCookie = decodeURIComponent(document.cookie);
@@ -1702,7 +1702,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 		'camp_cat' : camp_cat
 		//'security': security
 	  },
-	  success: function(data) {		  	
+	  success: function(data) {
 		$('p.status', ctrl).text(data.message);
 		/*$('.login-w-a').addClass('hide');
 		$('li.account-li').removeClass('hide');
@@ -1721,8 +1721,8 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 			formName: 'loginForm'
 			});
 			  toastr.success('', 'Welcome back!');
-			}*/	
-			
+			}*/
+
 		if( data.registerin == true ){
 			window.dataLayer = window.dataLayer || [];
 			dataLayer.push({
@@ -1756,7 +1756,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 				//setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
 				window.location.reload(true);
 			}
-		} else if( data.loggedin == false ){	
+		} else if( data.loggedin == false ){
 			window.dataLayer = window.dataLayer || [];
 			dataLayer.push({
 			  'event': 'loginFail'
@@ -1894,7 +1894,7 @@ function register($form) {
 				  scrollTop: 0
 				}, 650);
 			}, 500);
-			if( !jQuery(this).is(':checked') ){				
+			if( !jQuery(this).is(':checked') ){
 				setCookie('vlogfundsmilemode', 1);
 				toastr.success('', 'Smile mode deactivated');
 			} else {
@@ -1908,6 +1908,13 @@ function register($form) {
 
 
 
+
+
+//close popup
+
+$('.vf-close').click(function() {
+  $('.vf-nl-popop-outer').css('display', 'none');
+});
 
 
 /*******************************************************/
