@@ -1,186 +1,10 @@
-<link rel="stylesheet" id="toastr-style-css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css?ver=4.9.7" type="text/css" media="all" />
-<script type="text/gtmscript" data-gtmsrc="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js?ver=4.9.7"></script>
-
 <style>
-  /*#ouibounce-modal {
-      	display: none;
-    }*/
-
-  /*.vf-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    background: url(data:;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABl0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuNUmK/OAAAAATSURBVBhXY2RgYNgHxGAAYuwDAA78AjwwRoQYAAAAAElFTkSuQmCC) repeat fixed transparent\9;
-    z-index: 9998;
-    color: #fff;
-    transition: opacity 500ms;
-  }
-
-
-  .vf-popup {
-    margin: 0px;
-    z-index: 9999;
-    text-align: center;
-    background: #fff;
-    border-radius: 0;
-    width: 500px;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    color: #000;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    background-clip: padding-box;
-    outline: 0;
-
-  }
-
-  @media screen and (max-width:996px) {
-    .vf-popup {
-      width: 335px;
-    }
-  }*/
-
-  .vf-popup {
-     text-align: center;
-  }
-
-  .vf-popup-header {
-    background: #fafafa;
-    padding: 20px 30px;
-    position: relative;
-    text-align: center;
-  }
-
-  .vf-image {
-    width: 30%;
-  }
-
-  @media screen and (max-width:996px) {
-    .vf-image {
-      width: 40%;
-
-    }
-  }
-
-  .vf-popup-image-1, .vf-popup-image-2 {
-    width: 20%
-  }
-
-  @media screen and (max-width:996px) {
-    .vf-popup-image-1, .vf-popup-image-2 {
-      width: 25%
-    }
-  }
-
-.vf-popup-image-1 {
-  position: absolute;
-  top: 5px;
-  left: 5%;
-  width: 17%;
-
-}
-
-@media screen and (max-width:996px) {
-  .vf-popup-image-1 {
-    position: absolute;
-    top: 5px;
-    left: 15px;
-    width: 17%;
-  }
-}
-
-.vf-popup-image-2 {
-  position: absolute;
-  top: 3px;
-  right: 25px;
-}
-
-@media screen and (max-width:996px) {
-  .vf-popup-image-2 {
-    position: absolute;
-    top: 10%;
-    right: -5px;
-    width: 20%
-  }
-}
-
-
-
-  .vf-popup-content {
-    padding: 10px 30px 5px 30px;
-    background-color: ffffff;
-  }
-
-  /*.vf-close {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    transition: all 200ms;
-    font-size: 30px;
-    font-weight: bold;
-    text-decoration: none;
-    color: #202020;
-    z-index: 9999;
-  }*/
-
-  .vf-close {
-   position: absolute;
-   left: 50%;
-   top: 67%;
-   transform: translate(-50%, -50%);
-   z-index: 999;
-   color: #999;
-   text-decoration: underline;
-   font-size: 15px;
-   cursor: pointer;
-   }
-
-
-
-  .vf-popup .closePopupLink {
-    font-size: 11pt;
-    color: #aaa;
-    margin-left: 30px;
+  :root {
+    --brand-color: #6b10d6;
   }
 
   .vf-form {
     display: flex;
-
-  }
-
-  .vf-popup-title {
-    color: #202020;
-    font-family: sans-serif;
-    font-size: 28px;
-    margin: 0 0 5px 0;
-    width: 70%;
-    margin: auto;
-  }
-
-  /*@media screen and (max-width:996px) {
-    .vf-popup-title {
-      font-size: 26px;
-      width: 100%;
-    }
-  }*/
-
-
-  .vf-popup-text {
-    color: #999;
-    font-family: sans-serif;
-    padding: 0;
-    margin: 10px 0;
-  }
-
-
-  .vf-field-wrapper {
-    display: flex;
-    flex: auto;
   }
 
   .vf-field {
@@ -210,14 +34,6 @@
     border-radius: 0;
   }
 
-  .sf-mc-firstname {
-    margin-right: 5px;
-  }
-
-  .sf-mc-lastname {
-    margin-left: 5px;
-  }
-
   .vf-button {
     display: block;
     margin: 5px auto;
@@ -225,17 +41,16 @@
     font-size: 20px;
     padding: 10px 5px;
     color: #ffffff;
-    background: #ED1C24;
-    background-color: #6b10d6!important;
-    /*background-color: var(--brand-color)!important;*/
-    border: 1px solid #6b10d6!important;
-    /*border: 1px solid var(--brand-color)!important;*/
-    background: ;
+    background-color: #6b10d6 !important;
+    background-color: var(--brand-color) !important;
+    border: 1px solid #6b10d6 !important;
+    border: 1px solid var(--brand-color) !important;
     box-shadow: 2px 2px 2px 1px black;
     box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     font-weight: bold;
     animation: vf_button 2s infinite;
+    outline: none;
   }
 
   @media screen and (max-width:996px) {
@@ -248,8 +63,6 @@
     opacity: 0.9;
     animation: none;
   }
-
-
 
   /** button pulse **/
 
@@ -282,59 +95,37 @@
 
 
 
-  .vf-close {
-    cursor: pointer;
-  }
-
   #subscribe-result {
     font-family: sans-serif;
     position: absolute;
-        bottom: 10px;
+    bottom: 18%;
   }
+
+/*@media screen and (max-width:996px) {
+    #subscribe-result {
+      bottom: 18%;
+    }
+  }*/
 
   #subscribe-result p a {
     color: #ffffff;
   }
 
   #subscribe-result p {
-    font-size: 16px;
+    font-size: 12px;
+    margin: 0;
   }
 </style>
 
 
-<div id="ouibounce-modal">
-  <div class="vf-overlay"></div>
-  <div class="vf-popup">
-    <div class="vf-popup-header">
-      <img class="vf-popup-image-1" src="https://www.vlogfund.com/wp-content/uploads/2018/09/shane-dawson-drawing-xs.png">
-    <img class="vf-image" alt="Vlogfund" src="https://www.vlogfund.com/wp-content/uploads/2018/09/vf-logo-final.png">
-    <img class="vf-popup-image-2" src="https://www.vlogfund.com/wp-content/uploads/2018/09/amber-chamberlain-drawing-xs.png">
-  </div>
-    <div class="vf-popup-content">
-      <h2 class="vf-popup-title">Collaborations. Stories. News.</h2>
-      <p class="vf-popup-text">Never miss an update - Join our mailing list</p>
-      <div>
-        <form action="https://vlogfund.us17.list-manage.com/subscribe/post-json?u=144e2b841120da1b2d05b4e05&id=f7f8eb5e63&c=?" method="get" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="vf-form validate">
-          <input type="email" value="" name="EMAIL" class="vf-field sf-mc-email" id="mce-EMAIL" placeholder="Email" required>
-          <div style="position: absolute; left: -5000px;" aria-hidden="true">
-          <input type="text" name="b_e44c1f194bec93e238615469e_f6f826e769" tabindex="-1" value=""></div>
-          <input type="submit" value="Let's get it" name="subscribe-1" id="mc-embedded-subscribe" class="vf-button mc-submit-1">
-          <div id="subscribe-result"></div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
 
-
-<!--<script>
-  $(document).ready(function() {
-
-    $('body').prepend('<div id="ouibounce-modal"><div class="vf-overlay"></div><div class="vf-popup"><span class="vf-close">×</span><div class="vf-popup-header"><img class="vf-image" alt="Strongfit" src="https://static.wixstatic.com/media/36a7ca_79c072935bc24a5c83660e935e79f8af~mv2.png"></div><div class="vf-popup-content"><h2 class="vf-popup-title">Never miss an update - Join our mailing list</h2><div><form action="https://strongfit.us19.list-manage.com/subscribe/post-json?u=d985451674d2fcb4578ba25cb&id=71f933bd9f&c=?" method="get" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="vf-form validate"><div class="vf-field-wrapper"><input type="text" value="" name="FNAME" class="vf-field sf-mc-firstname" id="mce-FNAME" placeholder="Firstname" required><input type="text" value="" name="LNAME" class="vf-field sf-mc-lastname" id="mce-LNAME" placeholder="Lastname" required></div> <input type="email" value="" name="EMAIL" class="vf-field sf-mc-email" id="mce-EMAIL" placeholder="Email Address" required><div style="position: absolute; left: -5000px;" aria-hidden="true"> <input type="text" name="b_e44c1f194bec93e238615469e_f6f826e769" tabindex="-1" value=""></div><input type="submit" value="Subscribe Now" name="subscribe-1" id="mc-embedded-subscribe" class="vf-button mc-submit-1"><div id="subscribe-result"></div></form></div></div></div></div>');
-
-  });
-</script>-->
-
+<form action="https://vlogfund.us17.list-manage.com/subscribe/post-json?u=144e2b841120da1b2d05b4e05&id=f7f8eb5e63&c=?" method="get" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="vf-form validate">
+  <input type="email" value="" name="EMAIL" class="vf-field sf-mc-email" id="mce-EMAIL" placeholder="Email" required>
+  <div style="position: absolute; left: -5000px;" aria-hidden="true">
+    <input type="text" name="b_e44c1f194bec93e238615469e_f6f826e769" tabindex="-1" value=""></div>
+  <input type="submit" value="Let's get it" name="subscribe-1" id="mc-embedded-subscribe" class="vf-button mc-submit-1">
+  <div id="subscribe-result"></div>
+</form>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
@@ -364,11 +155,11 @@
   });
 
   $('.vf-close').click(function() {
- $('.vf-nl-popop-outer').css('display', 'none');
- $('.vf-blog-nl-sign-up-iframe').css('display', 'none');
+    $('.vf-nl-popop-outer').css('display', 'none');
+    $('.vf-blog-nl-sign-up-iframe').css('display', 'none');
 
 
-});
+  });
 
 
   var $form = $('#mc-embedded-subscribe-form')
@@ -398,11 +189,11 @@
           // Yeahhhh Success
           console.log(data.msg);
           //dataLayer.push({'event': 'SignUp Success'});
-          $('#mce-EMAIL').css('borderColor', '#ffffff');
+          $('#mce-EMAIL').css('borderColor', '#202020');
           $('.vf-button').val('Subscribe Now');
 
           // Notice
-          $('#subscribe-result').css('color', '#ffffff');
+          $('#subscribe-result').css('color', '#202020');
           $('#subscribe-result').html('<p>Thank you for subscribing. We have sent you a confirmation email.</p>');
 
           //toastr.success('', 'Thank you. We will keep you in the loop')
