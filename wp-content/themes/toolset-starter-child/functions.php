@@ -173,6 +173,12 @@ if ( defined('WPDDL_VERSION') && !function_exists( 'include_ddl_layouts' ) ) {
 
 //general
 
+
+
+
+
+
+
 // Add lightbox to wordpress
 /*add_action('wp_enqueue_scripts', 'add_thickbox');
 
@@ -1454,7 +1460,7 @@ function wp_social_login_track(){ ?>
 			'event': 'socialLoginSuccess'
 		});
 	</script>
-<?php 
+<?php
 }
 add_action('wc_social_login_user_authenticated', 'wp_social_login_track');*/
 
@@ -1566,7 +1572,19 @@ add_filter( 'logout_url', 'add_welcome_message_logout_redirect', 100, 2 );
 
 
 
+/** organizations **/
 
+
+/**
+ * Set 'with_front' to false for the 'experts' post type.
+ */
+add_filter( 'register_post_type_args', function( $args, $post_type )
+{
+    if( 'organization' === $post_type && is_array( $args ) )
+            $args['rewrite']['with_front'] = false;
+
+    return $args;
+}, 99, 2 );
 
 
 
