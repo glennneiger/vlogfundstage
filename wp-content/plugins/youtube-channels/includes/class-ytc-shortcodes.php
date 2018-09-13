@@ -26,8 +26,150 @@ class YTC_Shortcodes{
 	**/
 	public function channels_shortcode_callback( $atts, $content = null ){
 		extract( shortcode_atts( array(
-			//Attributes Here
+			'showresults' => 1 //Display Results by Default
 		), $atts, 'ytc_channels' ) );
+		
+		//Enqueue Scripts / Styles
+		wp_enqueue_style( array('ytc-jquery-ui-style', 'ytc-bootstrap-style', 'ytc-styles', 'ytc-select2-style', 'ytc-app-style', 'ytc-tooltipster-style', 'ytc-range-style') );
+		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-popper-script', 'ytc-bootstrap-script', 'ytc-select2-script', 'ytc-scripts', 'ytc-tooltipster-script', 'ytc-app-script') );
+		
+		$q 		= isset( $_GET['q'] ) ? $_GET['q'] : ''; //Search Query
+		$sortby	= isset( $_GET['sortBy'] ) 	? $_GET['sortBy'] 	: 'subscribers'; //Orderby
+		$orderby= isset( $_GET['orderBy'] ) ? $_GET['orderBy'] 	: 'desc'; //Order
+		
+		ob_start(); //Start Buffer ?>
+		
+		<div class="list ytc-container">
+			<div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <?php if( !empty( $q ) ){ ?>
+							<h5><?php echo ytc_get_channels_count( array( 'search' => $q ) ); ?> creators found for keyword: <b><?php echo $q; ?></b></h5>
+                        <?php } else { ?>
+                        	<h5><?php echo ytc_get_channels_count(); ?> creators found </h5>
+                        <?php } ?>
+                    </div><!--/.col-lg-12-->					
+                </div><!--/.row-->
+				
+				<form action="<?php the_permalink();?>" method="GET" id="ytc-search-form">
+					<div class="row">
+						<div class="col-lg-<?php echo current_user_can('administrator') ? '8' : '9';?>">
+							<div class="form-group">
+								<input id="ytc-search-input" name="q" type="search" class="form-control" placeholder="Search Channels..." value="<?php if( isset( $q ) ){ echo $q; } ?>">
+							</div><!--/.form-group-->							
+						</div>
+						<div class="col-lg-<?php echo current_user_can('administrator') ? '2' : '3';?>">
+							<div class="form-group"><button class="btn btn-block btn-primary" id="showfilters">Show Filters</button></div><!--/.form-group-->
+						</div>
+						<?php if( current_user_can('administrator') ) : //Check User Is Admin ?>
+							<div class="col-lg-2">
+								<button class="btn btn-block btn-primary add-channel" data-toggle="modal" data-target="#addChannelModal"><?php _e('Add Channel','youtube-channels');?></button>							
+							</div><!--/.col-lg-2-->
+						<?php endif; //Endif ?>
+					</div><!--/.row-->				
+					<div class="row" id="filters" style="display:none">
+						<div class="col-lg-6">
+							<div class="form-group">
+								<label for="ytc-sortBy">Sort by</label>
+								<select onchange="this.form.submit()" name="sortBy" id="ytc-sortBy" class="form-control" id="">
+								   <option value="subscribers" <?php selected( 'subscribers', $sortby );?>>Subscribers</option>
+								   <option value="views" <?php selected( 'views', $sortby );?>>Views</option>
+							   </select>							
+							</div><!--/.form-group-->
+						</div><!--/.col-lg-6-->
+						<div class="col-lg-6">
+							<div class="form-group">
+								<label for="ytc-orderBy">Order By</label>
+								<select onchange="this.form.submit()" name="orderBy" id="ytc-orderBy" class="form-control" id="">
+								   <option value="asc" <?php selected( 'asc', $orderby );?>>Ascending</option>
+								   <option value="desc" <?php selected( 'desc', $orderby );?>>Descending</option>
+							   </select>							
+							</div><!--/.form-group-->
+						</div><!--/.col-lg-6-->
+					</div><!--/.row-->
+				</form>
+				<div class="row tags-container"><div class="col-lg-12 tag"></div></div>				
+				<div id="ytc-searchloader" style="display:none"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
+				<div class="row" id="ytc-channles-list">
+					<?php if( $showresults ) : //Check Show Results
+						ytc_get_channels_list( array( 'search' => $q, 'order' => $orderby, 'orderby' => $sortby ) ); //Print Channels List
+					endif; //Edif ?>
+				</div><!--/.row-->
+				<?php if( ytc_get_channels_count( array( 'search' => $q ) ) > 40 ){ ?>
+					<div class="row">
+						<div class="col-lg-12 text-center"><button id="ytc-loadmore" class="btn btn-danger">Load More</button><br><br></div>
+					</div><!--/.row-->
+				<?php } ?>
+			</div><!--/.container-->
+		</div><!--/.list-->
+		
+		<!-- Channel Info Modal-->
+		<div class="modal" id="infomodal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<!-- Modal Header -->
+					<div class="modal-header" style="background:#e13b2b;display:block">
+						<p style="color:white;margin-bottom:0"><i class="fa fa-eye"></i> <span id="cviews"></span> <span class="float-right"> <i class="fa fa-users"></i> <span id="csubs"></span></span></p>                        
+					</div><!--/.modal-header-->
+					<div class="modal-body">
+                        <center>
+							<div class="form-group"><h4 id="ctitle"></h4></div>
+                            <div class="form-group"><img id="cimg" width="150" class="img-fluid rounded-circle"/></div>
+                            <div class="form-group">
+								<button data-title="Latest Videos" class="showvideos btn btn-danger"><i class="fa fa-video"></i></button>
+								<button data-twitter="" data-title="Latest Tweets" class="showtweets btn btn-primary"><i class="fab fa-twitter"></i></button>
+								<a href="" target="_blank" style="color:white" class="instagram btn instagram"><i class="fab fa-instagram"></i></a>
+								<a id="facebook" href="" target="_blank" style="color:white;background:#3B5998" class="btn"><i class="fab fa-facebook"></i></a>
+								<a id="snapchat" href="" target="_blank" style="color:black;background:#FFFC00;" class="btn"><i class="fab fa-snapchat-square"></i></a>
+								<a id="website" href="" target="_blank" style="color:white" class="btn btn-success"><i class="fas fa-globe"></i></a>
+								<a id="gplus" href="" target="_blank" style="color:white;background:#d34836" class="btn"><i class="fab fa-google-plus-square"></i></a>
+								<a id="vk" href="" target="_blank" style="color:white;background:#4c75a3" class="btn"><i class="fab fa-vk"></i></a>
+                            </div><!--/.form-group-->
+                            <div class="form-group"><h4 id="detailtitle">Latest Videos</h4></div>
+                            <p id="videoloader"><i class="fa fa-spinner fa-spin"></i></p>
+                            <div id="cvideos">
+                               <div class="youtubes" data-embed="qs3t7zgKmAk">
+                                    <div class="play-button"></div>
+                                </div>
+                            </div>
+                            <div id="tweets"></div>
+                        </center>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Close</button>
+                        </div>
+					</div><!--/.modal-body-->
+				</div><!--/.modal-content-->
+			</div><!--/.modal-dialog-->
+		</div><!--/#infomodal-->
+		
+		<?php if( current_user_can('administrator') ) : //Check User Is Admin ?>
+		
+			<!-- Add Channel Modal -->
+			<div class="modal" id="addChannelModal">
+				<div class="modal-dialog">
+					<div class="modal-content">			
+						<!-- Modal Header -->
+						<div class="modal-header">
+							<h4 class="modal-title"><?php _e('Add Channel','youtube-channels');?></h4>
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+						</div>
+						<form action="" id="addchannelform" method="post">
+							<!-- Modal body -->
+							<div class="modal-body">			
+								<div class="form-group"><input name="id"  type="text" class="form-control" placeholder="Enter Channel ID"></div>
+								<div id="msg"></div>
+								<div class="form-group"><button id="addchannelbtn" class="btn btn-danger btn-block" type="submit">Submit</button></div>
+							</div><!--/.modal-body-->
+						</form><!--/#addchannelform-->
+					</div><!--/.modal-content-->
+				</div><!--/.modal-dialog-->
+			</div><!--/#myModal-->
+
+		<?php endif; //Endif  ?>
+
+		<?php $content = ob_get_contents(); //End Buffer
+		ob_get_clean();
+		return $content;
 	}
 	
 }
