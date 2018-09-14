@@ -139,6 +139,11 @@
 			var views = $("#"+channelid+'-views').text();
 			var instagram = $(this).attr('data-instagram');
 			var twitter = $(this).attr('data-twitter');
+			var snapchat = $(this).attr('data-snapchat');
+			var facebook = $(this).attr('data-facebook');
+			var vk = $(this).attr('data-vk');
+			var website = $(this).attr('data-website');
+			var gplus = $(this).attr('data-gplus');
 			$(".showtweets").attr('data-twitter', channelid);
 			$("#ctitle").html(title);
 			$("#csubs").html(subs);
@@ -150,14 +155,49 @@
 			$("#tweets").hide();
 			$("#cvideos").show();
 			$("#detailtitle").html('Latest Videos');
-			if( instagram!='' ){
+			if(instagram!=''){
 				$(".instagram").attr('href', instagram);
 				$(".instagram").show();
 			}else{
 				$(".instagram").hide();
 			}
+			
+			if(facebook!=''){
+				$("#facebook").attr('href', facebook);
+				$("#facebook").show();
+			}else{
+				$("#facebook").hide();
+			}
+					
+			if(snapchat!=''){
+				$("#snapchat").attr('href', snapchat);
+				$("#snapchat").show();
+			}else{
+				$("#snapchat").hide();
+			}
+			
+			if(website!=''){
+				$("#website").attr('href', website);
+				$("#website").show();
+			}else{
+				$("#website").hide();
+			}
+			
+			if(gplus!=''){
+				$("#gplus").attr('href', gplus);
+				$("#gplus").show();
+			}else{
+				$("#gplus").hide();
+			}
+			
+			if(vk!=''){
+				$("#vk").attr('href', vk);
+				$("#vk").show();
+			}else{
+				$("#vk").hide();
+			}
 		
-			if( twitter!='' ){
+			if( twitter != '' ){
 				$("#tweets").empty();
 				$("#tweets").html('<a class="twitter-timeline" href="https://twitter.com/'+twitter+'?ref_src=twsrc%5Etfw">Tweets by '+twitter+'</a>');
 				$("#tweets").append($("<script />", { src: 'https://platform.twitter.com/widgets.js' }));
