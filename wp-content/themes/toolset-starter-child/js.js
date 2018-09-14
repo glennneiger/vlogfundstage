@@ -5,7 +5,7 @@ function onElementInserted(containerSelector, elementSelector, callback) {
     var onMutationsObserved = function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.addedNodes.length) {
-                var elements = $(mutation.addedNodes).find(elementSelector);
+                var elements = jQuery(mutation.addedNodes).find(elementSelector);
                 for (var i = 0, len = elements.length; i < len; i++) {
                     callback(elements[i]);
                 }
@@ -13,7 +13,7 @@ function onElementInserted(containerSelector, elementSelector, callback) {
         });
     };
 
-    var target = $(containerSelector)[0];
+    var target = jQuery(containerSelector)[0];
     var config = { childList: true, subtree: true };
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
     var observer = new MutationObserver(onMutationsObserved);
@@ -1289,7 +1289,7 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   //campaign read more
 
 
-  $('.sfc-description-section').each(function(index, element) {
+  jQuery('.sfc-description-section').each(function(index, element) {
     console.log($(this).find('.sfc-campaign-excerpt').outerHeight());
     var cont_len = $(this).find('.sfc-campaign-excerpt').height();
     if (cont_len < 55)
@@ -1298,7 +1298,7 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
 
 
 
-  $('.sfc-read-more').on('click', function(e) {
+  jQuery('.sfc-read-more').on('click', function(e) {
     if ($(this).parents('.sfc-description-section').hasClass('open')) {
       $(this).parents('.sfc-description-section').removeClass('open');
       $(this).text('..read more');
@@ -1669,7 +1669,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 
 
   // Perform AJAX login/register on form submit
-  $('form#login_user, form#register_user').on('submit', function(e) {
+  jQuery('form#login_user, form#register_user').on('submit', function(e) {
     if (!$(this).valid()) return false;
     $('p.status', this).show().text(ajax_auth_object.loadingmessage);
     action = 'ajaxlogin';
@@ -1912,8 +1912,8 @@ function register($form) {
 
 //close popup
 
-$('.vf-close').click(function() {
-  $('.vf-nl-popop-outer').css('display', 'none');
+jQuery('.vf-close').click(function() {
+  jQuery('.vf-nl-popop-outer').css('display', 'none');
 });
 
 
