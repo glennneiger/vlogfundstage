@@ -78,7 +78,5 @@ require_once( YTC_PLUGIN_PATH . 'includes/plugin-functions.php' );
 require_once( YTC_PLUGIN_PATH . 'includes/class-ytc-ajax.php' );
 //Class Admin
 //require_once( YTC_PLUGIN_PATH . 'includes/class-ytc-admin.php' );
-//Class Public
-require_once( YTC_PLUGIN_PATH . 'includes/class-ytc-public.php' );
 //Class Shortcode
 require_once( YTC_PLUGIN_PATH . 'includes/class-ytc-shortcodes.php' );

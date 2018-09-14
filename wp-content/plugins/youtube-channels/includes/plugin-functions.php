@@ -256,7 +256,7 @@ function ytc_get_channel_loop( $channeldata ) { ?>
 					<?php echo ytc_number_abbs( $channeldata['views'] ); ?>
 				</span> <span id="<?php echo $channeldata['id']; ?>-subs" title="Subscribers Count" class="fa-pull-right details"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channeldata['subscribers'] == 0 ) ? 'N/A' : ytc_number_abbs( $channeldata['subscribers'] ); ?></span>
 			</div><!--/.by-->
-			<a href="#" class="showinfoimg"><img id="<?php echo $channeldata['id']; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channeldata['image'] ?>" alt=""></a>
+			<a href="#" class="showinfoimg"><img class="b-lazy" id="<?php echo $channeldata['id']; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channeldata['image'] ?>" alt=""></a>
 			<h2><a class="showinfo" data-gplus="<?php echo $channeldata['gplus']; ?>" data-twitter="<?php echo $channeldata['twitter']; ?>" data-instagram="<?php echo $channeldata['instagram']; ?>" data-facebook="<?php echo $channeldata['facebook']; ?>" data-website="<?php echo $channeldata['website']; ?>" data-snapchat="<?php echo $channeldata['snapchat']; ?>" data-vk="<?php echo $channeldata['vk']; ?>" data-channelid="<?php echo $channeldata['id']; ?>" data-title="<?php echo $channeldata['title']; ?>" target="_blank" href="https://www.youtube.com/channel/<?php echo $channeldata['id']; ?>">
 				<?php echo ytc_get_channel_short_title( $channeldata['title'] ); ?>
 			</a></h2>

@@ -33,13 +33,6 @@
 		
 		//Init Function
 		var init = function(){
-			var imgDefer = document.getElementsByTagName('img');
-			for( var i = 0; i < imgDefer.length; i++ ){
-				if (imgDefer[i].getAttribute('data-src')) {
-					imgDefer[i].setAttribute('src', imgDefer[i].getAttribute('data-src'));
-				}
-			}
-		
 			$('.details').tooltipster({
 				delay: 10,
 				contentAsHTML: true,
@@ -60,6 +53,9 @@
 			});
 		};
 		window.onload = init();
+		
+		//LazyLoad Images
+		var blazy = new Blazy();
 		
 		//Get URL Parameter
 		var getUrlParameter = function getUrlParameter(sParam) {
@@ -103,6 +99,8 @@
 						$('#ytc-channles-list').show();
 						count++;
 						init();
+						//LazyLoad Images
+						blazy.revalidate();
 					 }else{
 						$('#ytc-channles-list').html('No records found');
 					 }
@@ -270,47 +268,15 @@
 						elem.prop('disabled', false);
 						elem.html('Load More');
 						$('#ytc-channles-list').append(data);
-						//imgLazyLoadAndTooltipser(data);
-						var imgDefer = $(data).find('img');
-						for( var i = 0; i < imgDefer.length; i++ ){
-							if( imgDefer[i].getAttribute('data-src') ){
-								imgDefer[i].setAttribute('src', imgDefer[i].getAttribute('data-src'));
-							}
-						}
+						//LazyLoad Images
+						blazy.revalidate();
+						init();
 					}else{
 						elem.html('No more records');
 					}
 				},
 			});
-        });
-		//Load Lazyload + Tooltipser
-		var imgLazyLoadAndTooltipser = function( $obj ){
-			var imgDefer = $($obj).filter('img');
-			for( var i = 0; i < imgDefer.length; i++ ){
-				if( imgDefer[i].getAttribute('data-src') ){
-					imgDefer[i].setAttribute('src', imgDefer[i].getAttribute('data-src'));
-				}
-			}
-			$($obj).find('.details').tooltipster({
-				delay: 10,
-				contentAsHTML: true,
-				maxWidth: 500,
-				interactive: true,
-				multiple: false,
-				//delay: [0, 200],
-				trigger: 'custom',
-				triggerOpen: {
-					mouseenter: true,
-					touchstart: true
-				},
-				triggerClose: {
-					click: true,
-					mouseleave: true,
-					tap: true
-				}
-			});
-		};
+        });		
 	});
-	
 /*-----------------------------------------------------------*/
 })(jQuery, window, document);
