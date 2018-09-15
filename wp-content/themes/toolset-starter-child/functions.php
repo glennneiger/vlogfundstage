@@ -10,7 +10,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 	function ref_enqueue_main_stylesheet() {
 		if ( ! is_admin() ) {
 			wp_enqueue_script('jquery');
-			wp_enqueue_style( 'main', get_template_directory_uri() . '/style.css', array(), null );
+			//wp_enqueue_style( 'main', get_template_directory_uri() . '/style.css', array(), null );
 			wp_enqueue_style( 'child-style', get_stylesheet_directory_uri() . '/style.css', array(), null );
 
 
@@ -25,7 +25,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
 
 					 wp_register_script('validate-script', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js', array('jquery'), '1.0', true );
-				  wp_enqueue_script('validate-script');
+				   wp_enqueue_script('validate-script');
 
 
             wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
@@ -145,21 +145,26 @@ function sf_remove_scripts() {
 
     wp_dequeue_script( 'wpbootstrap_bootstrap_js' );
 
-		wp_deregister_script( 'wcviews-onsalebadge.js' );
-       wp_dequeue_script( 'wcviews-onsalebadge.js' );
+		/*wp_deregister_style( 'wc-social-login-frontend-inline' );
+    wp_dequeue_style( 'wc-social-login-frontend-inline' );
 
-		wp_dequeue_script( '/wp-content/plugins/woocommerce-views/res/js/wcviews-onsalebadge.js', array(), null );
+		wp_deregister_style( 'wc-social-login-frontend' );
+    wp_dequeue_style( 'wc-social-login-frontend' );*/
+
 }
 add_action( 'wp_enqueue_scripts', 'sf_remove_scripts', 20 );
 
 
 
-//dequeu scripts and styles conditionally
+//dequeu scripts and styles conditionally on about, faq, terms, policy  and rules & guidelines page
 add_action( 'wp_enqueue_scripts', 'deregister_scripts', 99 );
 function deregister_scripts(){
 
 	global $post;
 	if( is_page('about') || is_page('faq') || is_page('terms') || is_page('policy') || is_page('rules-and-guidelines') ) :
+
+
+		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
 
 		//Remove Unnecessary Styles
 		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style',
@@ -186,7 +191,7 @@ function deregister_scripts(){
 }
 
 
-//dequeu scripts and styles conditionally
+//dequeu scripts and styles conditionally on signle blog posts
 add_action( 'wp_enqueue_scripts', 'deregister_scripts2', 99 );
 function deregister_scripts2(){
 
@@ -194,7 +199,7 @@ function deregister_scripts2(){
 	if( is_single() ) :
 
 		//Remove Unnecessary Styles
-		$deregister_styles = array('decomments1', 'decomments-ie1', 'dashicons', 'upvote-public-style',
+		$deregister_styles = array('decomments1', 'decomments-ie1', 'dashicons', 'upvote-public-style1',
 						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
 						'select2-style', 'tmpl-wp-playlist-current-item' );
 		foreach( $deregister_styles as $style_handle ) :
@@ -206,6 +211,78 @@ function deregister_scripts2(){
 		$deregister_scripts = array('views-pagination-script1', 'woocommerce_views_onsale_badge_js', 'knockout', 'ddl-layouts-frontend',
 						'wp-mediaelement1', 'mediaelement-migrate1', 'owl-carousel', 'toolset-utils', 'layouts-theme-integration-layouts_loader',
 						'decomments1', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
+						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
+						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
+		foreach( $deregister_scripts as $script_handle ) :
+			wp_dequeue_script( $script_handle );
+			wp_deregister_script( $script_handle );
+		endforeach;
+
+	endif; //Endif
+}
+
+
+
+//dequeu scripts and styles conditionally on signle blog archive
+add_action( 'wp_enqueue_scripts', 'deregister_scripts3', 99 );
+function deregister_scripts3(){
+
+	global $post;
+	if( is_home() ) :
+
+		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
+
+		//Remove Unnecessary Styles
+		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style',
+						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
+						'select2-style', 'tmpl-wp-playlist-current-item' );
+		foreach( $deregister_styles as $style_handle ) :
+			wp_dequeue_style( $style_handle );
+			wp_deregister_style( $style_handle );
+		endforeach;
+
+		//Remove Unnecessary Scripts
+		$deregister_scripts = array('views-pagination-script1', 'woocommerce_views_onsale_badge_js', 'knockout', 'ddl-layouts-frontend',
+						'wp-mediaelement1', 'mediaelement-migrate1', 'owl-carousel', 'toolset-utils', 'layouts-theme-integration-layouts_loader',
+						'decomments', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
+						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
+						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
+		foreach( $deregister_scripts as $script_handle ) :
+			wp_dequeue_script( $script_handle );
+			wp_deregister_script( $script_handle );
+		endforeach;
+
+	endif; //Endif
+}
+
+
+
+
+//dequeue scripts and styles conditionally on shop page
+add_action( 'wp_enqueue_scripts', 'deregister_scripts4', 99 );
+function deregister_scripts4(){
+
+	global $post;
+	if( is_shop() ) :
+
+
+		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
+
+		//Remove Unnecessary Styles
+		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style1',
+						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
+						'select2-style', 'tmpl-wp-playlist-current-item' );
+		foreach( $deregister_styles as $style_handle ) :
+			wp_dequeue_style( $style_handle );
+			wp_deregister_style( $style_handle );
+		endforeach;
+
+		//Remove Unnecessary Scripts
+		$deregister_scripts = array('views-pagination-script1', 'woocommerce_views_onsale_badge_js', 'knockout', 'ddl-layouts-frontend',
+						'wp-mediaelement1', 'mediaelement-migrate1', 'owl-carousel', 'toolset-utils', 'layouts-theme-integration-layouts_loader',
+						'decomments', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
 						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
@@ -355,6 +432,8 @@ if ( defined('WPDDL_VERSION') && !function_exists( 'include_ddl_layouts' ) ) {
 
 
 //general
+
+
 
 
 

@@ -19,6 +19,8 @@ remove_theme_mod( 'menu_floating' );
 
 <body <?php body_class(); ?>>
 <?php if ( function_exists( 'gtm4wp_the_gtm_tag' ) ) { gtm4wp_the_gtm_tag(); } ?>
+
+<?php if ( is_home() || is_single() ) { ?>
 <div id="fb-root"></div>
 <script>(function(d, s, id) {
   var js, fjs = d.getElementsByTagName(s)[0];
@@ -27,3 +29,4 @@ remove_theme_mod( 'menu_floating' );
   js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.0&appId=181038895828102&autoLogAppEvents=1';
   fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script>
+<?php } ?>
