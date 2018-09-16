@@ -26,24 +26,13 @@ $this->load_parts( array( 'html-start' ) );
   "on": "visible",
   "request": "pageview"
 },
-"track anchor clicks": {
-   "on": "click",
-   "selector": "a",
-   "request": "event",
-
-"vars": {
-  "eventId": "42",
-   "eventLabel": "clicked on a link"
-  }
-},
-"trackEvent": {
+"trackClickOnRelatedArticle": {
    "selector": "#amp-related-article",
    "on": "click",
    "request": "event",
-
-"vars": {
-   "eventCategory": "AMP",
-   "eventAction": "Click"
+   "vars": {
+     "eventCategory": "AMP",
+     "eventAction": "Click Related Article"
     }
   },
   "trackClickOnCommentsLink" : {
@@ -52,7 +41,7 @@ $this->load_parts( array( 'html-start' ) );
     "request": "event",
     "vars": {
       "eventCategory": "AMP",
-      "eventAction": "Comment"
+      "eventAction": "Click Comment Link"
     }
   },
   "trackClickOnTwitterLink" : {
@@ -60,8 +49,8 @@ $this->load_parts( array( 'html-start' ) );
     "selector": "#twitter",
     "request": "social",
     "vars": {
-        "socialNetwork": "twitter",
-        "socialAction": "tweet",
+        "socialNetwork": "Twitter",
+        "socialAction": "Share",
         "socialTarget": "https://www.vlogfund.com"
     }
   },
@@ -70,8 +59,8 @@ $this->load_parts( array( 'html-start' ) );
       "selector": "#facebook",
       "request": "social",
       "vars": {
-          "socialNetwork": "facebook",
-          "socialAction": "share",
+          "socialNetwork": "Facebook",
+          "socialAction": "Share",
           "socialTarget": "https://www.vlogfund.com"
       }
     },
@@ -80,8 +69,8 @@ $this->load_parts( array( 'html-start' ) );
         "selector": "#email",
         "request": "social",
         "vars": {
-            "socialNetwork": "email",
-            "socialAction": "email",
+            "socialNetwork": "Email",
+            "socialAction": "Share",
             "socialTarget": "https://www.vlogfund.com"
         }
       },
@@ -90,8 +79,8 @@ $this->load_parts( array( 'html-start' ) );
           "selector": "#google",
           "request": "social",
           "vars": {
-              "socialNetwork": "google",
-              "socialAction": "share",
+              "socialNetwork": "Google",
+              "socialAction": "Share",
               "socialTarget": "https://www.vlogfund.com"
           }
         },
@@ -100,8 +89,8 @@ $this->load_parts( array( 'html-start' ) );
             "selector": "#whatsapp",
             "request": "social",
             "vars": {
-                "socialNetwork": "whatsapp",
-                "socialAction": "share",
+                "socialNetwork": "Whatsapp",
+                "socialAction": "Share",
                 "socialTarget": "https://www.vlogfund.com"
             }
           },
@@ -110,8 +99,8 @@ $this->load_parts( array( 'html-start' ) );
               "selector": "#messenger",
               "request": "social",
               "vars": {
-                  "socialNetwork": "messenger",
-                  "socialAction": "share",
+                  "socialNetwork": "Messenger",
+                  "socialAction": "Share",
                   "socialTarget": "https://www.vlogfund.com"
               }
             },
@@ -120,8 +109,8 @@ $this->load_parts( array( 'html-start' ) );
                 "selector": "#sms",
                 "request": "social",
                 "vars": {
-                    "socialNetwork": "sms",
-                    "socialAction": "share",
+                    "socialNetwork": "Sms",
+                    "socialAction": "Share",
                     "socialTarget": "https://www.vlogfund.com"
                 }
               }
