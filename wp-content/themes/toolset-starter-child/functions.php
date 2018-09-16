@@ -145,6 +145,9 @@ function sf_remove_scripts() {
 
     wp_dequeue_script( 'wpbootstrap_bootstrap_js' );
 
+      wp_dequeue_script( 'theme_js' );
+
+
 		/*wp_deregister_style( 'wc-social-login-frontend-inline' );
     wp_dequeue_style( 'wc-social-login-frontend-inline' );
 
@@ -260,7 +263,7 @@ function deregister_scripts3(){
 
 
 
-//dequeue scripts and styles conditionally on shop page
+//dequeue scripts and styles conditionally on organization archive
 add_action( 'wp_enqueue_scripts', 'deregister_scripts4', 99 );
 function deregister_scripts4(){
 
@@ -296,6 +299,42 @@ function deregister_scripts4(){
 
 
 
+//dequeue scripts and styles conditionally on organization archive
+add_action( 'wp_enqueue_scripts', 'deregister_scripts5', 99 );
+function deregister_scripts5(){
+
+	global $post;
+	if( is_post_type_archive( 'organization' ) ) :
+
+
+		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
+
+		//Remove Unnecessary Styles
+		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style',
+						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
+						'select2-style', 'tmpl-wp-playlist-current-item' );
+		foreach( $deregister_styles as $style_handle ) :
+			wp_dequeue_style( $style_handle );
+			wp_deregister_style( $style_handle );
+		endforeach;
+
+		//Remove Unnecessary Scripts
+		$deregister_scripts = array('views-pagination-script1', 'woocommerce_views_onsale_badge_js', 'knockout', 'ddl-layouts-frontend',
+						'wp-mediaelement1', 'mediaelement-migrate1', 'owl-carousel', 'toolset-utils', 'layouts-theme-integration-layouts_loader',
+						'decomments', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
+						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
+						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
+		foreach( $deregister_scripts as $script_handle ) :
+			wp_dequeue_script( $script_handle );
+			wp_deregister_script( $script_handle );
+		endforeach;
+
+	endif; //Endif
+}
+
+
+
 
 
 
@@ -307,6 +346,15 @@ function remove_my_action(){
 
 
 
+//remove wc social login style
+
+function sv_wc_social_login_dequeue_styles() {
+	wp_deregister_style( 'wc-social-login-frontend' );
+}
+add_action( 'woocommerce_after_edit_account_form', 'sv_wc_social_login_dequeue_styles', 11 );
+
+
+//remove wc gallery
 
 remove_theme_support( 'wc-product-gallery-zoom' );
 remove_theme_support( 'wc-product-gallery-lightbox' );
@@ -432,14 +480,6 @@ if ( defined('WPDDL_VERSION') && !function_exists( 'include_ddl_layouts' ) ) {
 
 
 //general
-
-
-
-
-
-
-
-
 
 // Add lightbox to wordpress
 /*add_action('wp_enqueue_scripts', 'add_thickbox');
