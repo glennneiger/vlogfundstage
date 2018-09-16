@@ -44,6 +44,8 @@
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
                             toastr.success('', 'Thank you for voting!');
+							window.dataLayer = window.dataLayer || [];
+							dataLayer.push({'event': 'upvote'});					
 						} else if( result.voted == '1' ){
 							$this.find('i').addClass($fill);
 							$this.remove();

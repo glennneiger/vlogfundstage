@@ -2359,6 +2359,50 @@ function vlogfund_datalayer_post_modified( $dataLayer ) {
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_modified' );
 
 
+//pass page Info to dataLayer
+
+function vlogfund_datalayer_page( $dataLayer ) {
+	global $post;
+	if( is_product() ) {
+		$dataLayer['page'] = 'Collaboration Campaign';
+	} if( is_front_page() ) {
+		$dataLayer['page'] = 'Home';
+	} if( is_page('create-a-new-youtube-collaboration') || is_page('edit-your-youtube-collaboration') ) {
+		$dataLayer['page'] = 'Collaboration Form';
+	} if( is_shop() ) {
+		$dataLayer['page'] = 'Collaboration Archive';
+	} if( is_home() ) {
+		$dataLayer['page'] = 'Blog Archive';
+	} if( is_singular( 'post' ) ) {
+		$dataLayer['page'] = 'Blog Article';
+	} if( is_post_type_archive( 'organization' ) ) {
+		$dataLayer['page'] = 'Organization Archive';
+	} if( is_singular( 'organization' ) ) {
+		$dataLayer['page'] = 'Organization Profile';
+	} if( is_page('faq') ) {
+		$dataLayer['page'] = 'FAQ';
+	} if( is_page('terms') ) {
+		$dataLayer['page'] = 'Terms';
+	} if( is_page('privacy') ) {
+		$dataLayer['page'] = 'Privacy';
+	} if( is_page('rules-and-guidelines') ) {
+		$dataLayer['page'] = 'Rules and Guidelines';
+	} if( is_page('account') ) {
+		$dataLayer['page'] = 'Account';
+	} if( is_404() ) {
+		$dataLayer['page'] = '404';
+	} if( is_cart() ) {
+		$dataLayer['page'] = 'Checkout - Choose Organization';
+	} if( is_checkout() ) {
+		$dataLayer['page'] = 'Checkout - Billing Details';
+	} if ( is_wc_endpoint_url( 'order-received' ) ) {
+		$dataLayer['page'] = 'Checkout - Thank You';
+	}
+	return $dataLayer;
+}
+add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_page' );
+
+//is_post_type_archive( 'organization' )
 
 //Push Youtube channel logo to dataLayer
 

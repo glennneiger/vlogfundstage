@@ -1369,6 +1369,22 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   /**account**/
   /*******************************************************/
 
+  if ( (document.documentElement.textContent || document.documentElement.innerText ).indexOf('Account details changed successfully.') > -1 ) {
+    window.dataLayer = window.dataLayer || [];
+    dataLayer.push({
+      'event': 'updateAccountSuccess'
+    });
+  }
+
+    if (jQuery("body.woocommerce-edit-account .woocommerce-error")[0]){
+    window.dataLayer = window.dataLayer || [];
+    dataLayer.push({
+      'event': 'updateAccountFail'
+    });
+  }
+
+
+
 
 
 
@@ -1850,15 +1866,19 @@ function register($form) {
       } else {
         // Something went wrong, do something to notify the user.
         console.log(data.msg)
-        $('#mce-EMAIL').css('borderColor', '#ff8282')
-        $('#subscribe-result').css('color', '#ff8282')
-        $('#subscribe-result').html('<p>' + data.msg.substring(4) + '</p>')
+        $('#mce-EMAIL').css('borderColor', '#ff8282');
+        $('#subscribe-result').css('color', '#ff8282');
+        $('#subscribe-result').html('<p>' + data.msg.substring(4) + '</p>');
+        window.dataLayer = window.dataLayer || [];
+        dataLayer.push({
+          'event': 'signupFail'
+        });
       }
     }
   }
         )};
 
-  //nl sign up
+  //nl sign up event
 
   jQuery(window).load(function() {
 
@@ -1874,8 +1894,7 @@ function register($form) {
 
           window.dataLayer = window.dataLayer || [];
           dataLayer.push({
-            'event': 'formSubmitted',
-            'formName': 'Newsletter Widget'
+            'event': 'signupSuccess'
           });
 
         }

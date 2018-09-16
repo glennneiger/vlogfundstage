@@ -141,12 +141,44 @@ jQuery(document).ready(function () {
       } else {
         // Something went wrong, do something to notify the user.
         console.log(data.msg)
-        jQuery('#mce-EMAIL-2').css('borderColor', '#ff8282')
-        jQuery('#subscribe-result-2').css('color', '#ff8282')
-        jQuery('#subscribe-result-2').html('<p>' + data.msg.substring(4) + '</p>')
+        jQuery('#mce-EMAIL-2').css('borderColor', '#ff8282');
+        jQuery('#subscribe-result-2').css('color', '#ff8282');
+        jQuery('#subscribe-result-2').html('<p>' + data.msg.substring(4) + '</p>');
+        window.dataLayer = window.dataLayer || [];
+        dataLayer.push({
+          'event': 'signupFail'
+        });
       }
     }
   }
 
         )};
+
+
+        //nl sign up event
+
+        jQuery(window).load(function() {
+
+          jQuery('.mc-submit-2').on("click", function(event) {
+
+            var $input = jQuery(this).parent().find('input');
+            not_empty = ('' !== $input.val()) ? true : false;
+
+            setTimeout(function() {
+              event.preventDefault();
+              var m_text = jQuery('#subscribe-result-2 p').text();
+              if (m_text == 'Thank you for subscribing. We have sent you a confirmation email.' && true === not_empty) {
+
+                window.dataLayer = window.dataLayer || [];
+                dataLayer.push({
+                  'event': 'signupSuccess'
+                });
+
+              }
+            }, 2000);
+
+          });
+
+        });
+
 </script>
