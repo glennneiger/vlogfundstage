@@ -76,7 +76,5 @@ register_activation_hook( __FILE__, 'ytc_plugin_deactivation' );
 require_once( YTC_PLUGIN_PATH . 'includes/plugin-functions.php' );
 //AJAX Callback
 require_once( YTC_PLUGIN_PATH . 'includes/class-ytc-ajax.php' );
-//Class Admin
-//require_once( YTC_PLUGIN_PATH . 'includes/class-ytc-admin.php' );
 //Class Shortcode
 require_once( YTC_PLUGIN_PATH . 'includes/class-ytc-shortcodes.php' );
