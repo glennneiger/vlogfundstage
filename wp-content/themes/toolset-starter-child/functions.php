@@ -28,7 +28,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 				   wp_enqueue_script('validate-script');
 
 
-            
+
 
 
              wp_register_script( 'toastr-script', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js', '', '', true );
@@ -455,6 +455,15 @@ function grd_woocommerce_script_cleaner() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'grd_woocommerce_script_cleaner', 99 );
+
+
+
+//remove other wp related things
+
+
+remove_action( 'wp_head', 'wlwmanifest_link' ) ;
+remove_action( 'wp_head', 'rsd_link' ) ;
+
 
 
 
