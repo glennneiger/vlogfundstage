@@ -20,7 +20,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 						wp_register_style( 'jqueryui-css', 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css' );
 						wp_enqueue_style('jqueryui-css');
 
-						wp_register_script( 'jqueryui-script', 'https://code.jquery.com/ui/1.12.1/jquery-ui.js' );
+						wp_register_script( 'jqueryui-script', 'https://code.jquery.com/ui/1.12.1/jquery-ui.js', '', '', true );
 					 wp_enqueue_script('jqueryui-script');
 
 
@@ -28,17 +28,10 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 				   wp_enqueue_script('validate-script');
 
 
-            wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
-            wp_enqueue_style('select2-style');
-
-            wp_register_script( 'select2-script', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js' );
-            wp_enqueue_script('select2-script');
+            
 
 
-             wp_register_style( 'toastr-style', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css' );
-            wp_enqueue_style('toastr-style');
-
-             wp_register_script( 'toastr-script', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js' );
+             wp_register_script( 'toastr-script', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js', '', '', true );
             wp_enqueue_script('toastr-script');
 
 
@@ -56,14 +49,23 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 			wp_enqueue_style( 'responsive-style', get_stylesheet_directory_uri() . '/css/responsive.css', array(), null );
 			wp_enqueue_style( 'normalize-style', get_stylesheet_directory_uri() . '/css/normalize.css', array(), null );
 
-			wp_enqueue_script( 'modernizr-script', get_stylesheet_directory_uri() . '/js/vendor/modernizr.min.js', array(), null );
-			wp_enqueue_script( 'waypoints-script', get_stylesheet_directory_uri() . '/js/vendor/waypoints.min.js', array(), null );
+			wp_enqueue_script( 'modernizr-script', get_stylesheet_directory_uri() . '/js/vendor/modernizr.min.js', array(), null, true );
+			wp_enqueue_script( 'waypoints-script', get_stylesheet_directory_uri() . '/js/vendor/waypoints.min.js', array(), null, true );
 
-			wp_enqueue_script( 'slick-script', get_stylesheet_directory_uri() . '/js/vendor/slick.min.js', array(), null );
+			wp_enqueue_script( 'slick-script', get_stylesheet_directory_uri() . '/js/vendor/slick.min.js', array(), null, true );
 
-				wp_enqueue_script( 'general-script', get_stylesheet_directory_uri() . '/js/general.js', array(), null );
+				wp_enqueue_script( 'general-script', get_stylesheet_directory_uri() . '/js/general.js', array(), null, true );
 
-				wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null );
+				wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
+
+		}
+		if ( is_post_type_archive( 'organization' ) || is_shop() || is_checkout() ) {
+
+			wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
+			wp_enqueue_style('select2-style');
+
+			wp_register_script( 'select2-script', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', '', '', true );
+			wp_enqueue_script('select2-script');
 
 		}
 
@@ -1989,6 +1991,9 @@ add_filter( 'wp_mail_from_name', 'wpb_sender_name' );
 // add GTM to admin
 
 function add_gtm() {
+	$domain = 'www.vlogfund.com';
+if( ($_SERVER['HTTP_HOST']) == $domain ){
+
 
     echo '<script type="text/javascript">';
     echo '(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({"gtm.start":
@@ -1999,7 +2004,11 @@ j=d.createElement(s),dl=l!="dataLayer"?"&l="+l:"";j.async=true;j.src=
     echo '</script>';
 }
 
+}
 add_filter('admin_head', 'add_gtm');
+
+
+
 
 
 
@@ -2154,15 +2163,16 @@ function cc_hide_admin_bar() {
   }
 }*/
 
-add_action( 'after_setup_theme', 'my_website_remove_admin_bar' );
+/*add_action( 'after_setup_theme', 'my_website_remove_admin_bar' );
 add_action('set_current_user', 'my_website_remove_admin_bar');
 function my_website_remove_admin_bar() {
    if ( ! current_user_can( 'administrator' ) )
       show_admin_bar( false );
 
-}
+}*/
 
 
+show_admin_bar( false );
 
 
 

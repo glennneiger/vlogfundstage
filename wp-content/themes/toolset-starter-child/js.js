@@ -1430,7 +1430,9 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   //checkout**/
   /*******************************************************/
 
+if (jQuery('body').hasClass('.page-checkout')) {
 jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResultsForSearch: Infinity });
+}
 
   /** checkout general **/
 
