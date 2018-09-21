@@ -59,7 +59,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 				wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
 
 		}
-		if ( is_post_type_archive( 'organization' ) || is_shop() || is_checkout() ) {
+		if ( is_post_type_archive( 'organization' ) || is_shop() || is_checkout() || is_home() ) {
 
 			wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
 			wp_enqueue_style('select2-style');
