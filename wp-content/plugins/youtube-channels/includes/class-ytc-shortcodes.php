@@ -97,7 +97,7 @@ class YTC_Shortcodes{
 						</div>
 						<?php if( current_user_can('administrator') ) : //Check User Is Admin ?>
 							<div class="col-lg-2">
-								<button class="btn btn-block btn-primary add-channel" data-toggle="modal" data-target="#addChannelModal"><?php _e('Add Channel','youtube-channels');?></button>							
+								<button type="button" class="btn btn-block btn-primary add-channel" data-toggle="modal" data-target="#addChannelModal"><?php _e('Add Channel','youtube-channels');?></button>							
 							</div><!--/.col-lg-2-->
 						<?php endif; //Endif ?>
 					</div><!--/.row-->				
@@ -124,9 +124,11 @@ class YTC_Shortcodes{
 				</form>
 				<div class="row tags-container"><div class="col-lg-12 tag"></div></div>				
 				<div id="ytc-searchloader" style="display:none"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
-				<div class="row" id="ytc-channles-list">
+				<div class="row" id="ytc-channles-list">				
 					<?php if( $showresults ) : //Check Show Results
-						ytc_get_channels_list( array( 'search' => $q, 'order' => $orderby, 'orderby' => $sortby ) ); //Print Channels List
+
+						ytc_get_channels_list( array( 'search' => $q, 'order' => $orderby, 'orderby' => $sortby ) );
+						
 					endif; //Edif ?>
 				</div><!--/.row-->
 				<?php if( ytc_get_channels_count( array( 'search' => $q ) ) > 40 ){ ?>
@@ -190,7 +192,7 @@ class YTC_Shortcodes{
 						<form action="" id="addchannelform" method="post">
 							<!-- Modal body -->
 							<div class="modal-body">			
-								<div class="form-group"><input name="id"  type="text" class="form-control" placeholder="Enter Channel ID"></div>
+								<div class="form-group"><input name="channel_id" id="channel_id"  type="text" class="form-control" placeholder="Enter Channel ID"></div>
 								<div id="msg"></div>
 								<div class="form-group"><button id="addchannelbtn" class="btn btn-danger btn-block" type="submit">Submit</button></div>
 							</div><!--/.modal-body-->

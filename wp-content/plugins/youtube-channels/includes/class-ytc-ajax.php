@@ -52,9 +52,9 @@ class YTC_Ajax_Callbacks{
 	public function ytc_get_particual_channel(){
 
 		if( isset( $_POST['id'] ) && !empty( $_POST['id'] ) ) : //Check Channel ID
-			$channelid 	= $_POST['id'];
+			$channelid 	= get_post_meta( $_POST['id'], 'wpcf-channel_id', true);
 			$posturl 	= "https://www.googleapis.com/youtube/v3/search?key=".YTC_YOUTUBE_KEY."&channelId=$channelid&part=snippet,id&type=video&order=date&maxResults=5";
-			$data 		= file_get_contents( $posturl, false);
+			$data 		= file_get_contents( $posturl, false );
 			$response 	= json_decode( $data );
 			$html 	= '';
 			foreach( $response->items as $item ){
@@ -73,32 +73,36 @@ class YTC_Ajax_Callbacks{
 	 **/	
 	public function ytc_add_channel(){
 
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'yt_channels';
+		global $wpdb;		
 		
-		if( isset( $_POST['id'] ) && !empty( $_POST['id'] ) ) {			
-        	$id = $wpdb->_real_escape( $_POST['id'] );			
-			if( empty( $id ) ){
+		if( isset( $_POST['channel_id'] ) && !empty( $_POST['channel_id'] ) ) {			
+        	$channel_id = $wpdb->_real_escape( $_POST['channel_id'] );			
+			if( empty( $channel_id ) ){
 				echo "<div class='alert alert-danger'><strong>Error!</strong> Please enter channelid!!</div>";
-			} elseif( !empty( $id ) ){				
-				if( ytc_channel_exists( $id ) ){
+			} elseif( !empty( $channel_id ) ){				
+				if( ytc_channel_exists( $channel_id ) ){
 					echo "<div class='alert alert-danger'><strong>Error!</strong> Channel already exists!!</div>";
 				} else {
-					$posturl = 'https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id='.$id.'&key='.YTC_YOUTUBE_KEY;
-					$data = file_get_contents( $posturl, false);
-					$response = json_decode($data);
+					$posturl 	= 'https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id='.$channel_id.'&key='.YTC_YOUTUBE_KEY;
+					$data 		= file_get_contents( $posturl, false);
+					$response 	= json_decode( $data );
 					if( !isset( $response->items[0]->snippet->title ) ){
 						echo "<div class='alert alert-danger'><strong>Error!</strong> Wrong Channel Id!!</div>";
 					} else {
-						$insert_data = array();
-						$insert_data['channelid'] = $id;
-						$insert_data['name'] 		= isset( $response->items[0]->snippet->title )		? $response->items[0]->snippet->title : '';
-						$insert_data['country'] 	= isset( $response->items[0]->snippet->country ) 	? $response->items[0]->snippet->country : 'N/A';
-						$insert_data['subscribers'] = isset( $response->items[0]->statistics->subscriberCount ) ? $response->items[0]->statistics->subscriberCount : 0;
-						$insert_data['views']		= isset( $response->items[0]->statistics->viewCount )		? $response->items[0]->statistics->viewCount : 0;
-						//$insert_data['logo']		= isset( $response->items[0]->snippet->thumbnails->high->url ) ? $response->items[0]->snippet->thumbnails->high->url : '';						
-						$wpdb->insert( $table_name, $insert_data );
-						if( $wpdb->insert_id ){
+						//Insert Channel Data
+						$insert_data = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish',
+											'post_title' 	=> ( isset( $response->items[0]->snippet->title ) ? $response->items[0]->snippet->title : '' ),
+											'post_content' 	=> ( isset( $response->items[0]->snippet->description ) ? $response->items[0]->snippet->description : '' ) );
+						$inserted_id = wp_insert_post( $insert_data );
+						if( !empty( $inserted_id ) ){
+							update_post_meta( $inserted_id, 'wpcf-channel_id', $channel_id );
+							update_post_meta( $inserted_id, 'wpcf-channel_img', 		( isset( $response->items[0]->snippet->thumbnails->medium->url ) ? $response->items[0]->snippet->thumbnails->medium->url : '' ) );
+							update_post_meta( $inserted_id, 'wpcf-channel_country', 	( isset( $response->items[0]->snippet->country ) 			? $response->items[0]->snippet->country : 'N/A' ) );
+							update_post_meta( $inserted_id, 'wpcf-channel_subscribers', ( isset( $response->items[0]->statistics->subscriberCount ) ? $response->items[0]->statistics->subscriberCount : 0 ) );
+							update_post_meta( $inserted_id, 'wpcf-channel_views', 		( isset( $response->items[0]->statistics->viewCount )		? $response->items[0]->statistics->viewCount : 0 ) );
+							update_post_meta( $inserted_id, 'wpcf-channel_videos', 		( isset( $response->items[0]->statistics->videoCount )		? $response->items[0]->statistics->videoCount : 0 ) );
+							update_post_meta( $inserted_id, 'wpcf-channel_keywords',	( isset( $response->items[0]->brandingSettings->channel->keywords )		? $response->items[0]->brandingSettings->channel->keywords : '' ) );
+							update_post_meta( $inserted_id, 'wpcf-channel_web',			( isset( $response->items[0]->invideoPromotion->items->id->websiteUrl )	? $response->items[0]->invideoPromotion->items->id->websiteUrl : '' ) );
 							echo "<div class='alert alert-success'><strong>Success!</strong> Channel Added Successfuly!!</div>";
 						} else {
 							echo "<div class='alert alert-danger'><strong>Error!</strong> Something went wrong try again!!</div>";
@@ -117,16 +121,14 @@ class YTC_Ajax_Callbacks{
 	**/
 	public function ytc_search_autocomplete(){
 		
-		global $wpdb;
-		
 		//Check Search Not Empty
 		if( isset( $_GET['term'] ) && !empty( $_GET['term'] ) ){
-			$return_arr = array();
-			$table_name = $wpdb->prefix . 'yt_channels';
-			$results = $wpdb->get_results( "SELECT name,channelid FROM $table_name WHERE 1=1 AND name LIKE '%".esc_sql( $_GET['term'] )."%' LIMIT 10", ARRAY_A );
-			if( !empty( $results ) ){
-				foreach( $results as $row ) :
-					$return_arr[] = array( 'value' => $row['name'], 'channelid' => $row['channelid'] );
+			$return_arr = array();			
+			$channels = get_posts( array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'posts_per_page' => 10, 's' => $_GET['term'] ) );			
+			if( !empty( $channels ) ){
+				foreach( $channels as $channel ) :
+					$channel_id = get_post_meta( $channel->ID, 'wpcf-channel_id', true ); 		//Channel ID
+					$return_arr[] = array( 'value' => $channel->post_title, 'channelid' => $channel_id );
 				endforeach; //Endforeach
 			}
 			//Send Response

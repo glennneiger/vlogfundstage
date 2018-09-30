@@ -98,9 +98,9 @@
 						$('#ytc-channles-list').append(data);
 						$('#ytc-channles-list').show();
 						count++;
-						init();
 						//LazyLoad Images
 						blazy.revalidate();
+						init();						
 					 }else{
 						$('#ytc-channles-list').html('No records found');
 					 }
@@ -228,10 +228,11 @@
 				type: 'POST',
 				url: YTC_Obj.ajaxurl, //'ajax/ajaxaddchannel.php',
 				data: $('#addchannelform').serialize() + '&action=ytc_add_channel',
-				success: function (data) {
+				success: function(data){
 					btn.prop('disabled', false);
 					btn.html('Submit');
-					$("#msg").html(data);
+					$('#msg').html(data);
+					$('#addchannelform input#$channel_id').val('');
 				}
 			});
 		});

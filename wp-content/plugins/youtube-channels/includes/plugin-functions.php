@@ -57,40 +57,6 @@ function ytc_get_channel_short_title( $string ){
 	return strlen( $string ) > 14 ? substr( $string, 0, 14 ) . '...' : $string;
 }
 endif;
-if( !function_exists('ytc_update_subscribers') ) :
-/**
- * Update Subscribers of Channels
- * 
- * @since YouTube Channels 1.0
- **/
-function ytc_update_subscribers($channelid, $subs){
-	global $wpdb;
-	$wpdb->update( $wpdb->prefix . 'yt_channels', array( 'subscribers' => $subs ), array( 'channelid' => $channelid ) );
-}
-endif;
-if( !function_exists('ytc_update_views') ) :
-/**
- * Update Views of Channels
- * 
- * @since YouTube Channels 1.0
- **/
-function ytc_update_views($channelid, $views){
-	global $wpdb;
-	$wpdb->update( $wpdb->prefix . 'yt_channels', array( 'views' => $views ), array( 'channelid' => $channelid ) );    
-}
-endif;
-if( !function_exists('ytc_get_channel_socials') ) :
-/**
- * Get Socials of Channel
- * 
- * @since YouTube Channels 1.0
- **/
-function ytc_get_channel_socials($channelid){
-	global $wpdb;
-	$socials = $wpdb->get_row( $wpdb->prepare( "SELECT instagram,twitter,facebook,website,gplus,snapchat,vk FROM ".$wpdb->prefix . "yt_channels WHERE 1=1 AND channelid='%s'", esc_sql( $channelid ) ), ARRAY_A );
-	return $socials;
-}
-endif;
 if( !function_exists('ytc_get_channels_count') ) :
 /**
  * Get Channels Count
@@ -99,51 +65,14 @@ if( !function_exists('ytc_get_channels_count') ) :
  **/
 function ytc_get_channels_count( $args = array() ){
 	
-	global $wpdb;
-	$query = 'SELECT COUNT(*) FROM '.$wpdb->prefix . 'yt_channels'.' WHERE 1=1';
-	if( isset( $args['search'] ) ) {
-		$query .= ' AND name LIKE "%'.esc_sql( $args['search'] ).'%"';
-	}
-	$channels_count = $wpdb->get_var( $query );
-	return $channels_count;	
-}
-endif;
-if( !function_exists('ytc_get_channel_ids') ) :
-/**
- * Get YouTube Channel IDs
- *
- * Handles to get youtube channel IDs
- *
- * @since YouTube Channels 1.0
- **/
-function ytc_get_channel_ids( $args = array() ) {
-	
-	global $wpdb;
-	
-	$table_name = $wpdb->prefix . 'yt_channels';
-	
-	$offset = ( isset( $args['offset'] ) && !empty( $args['offset'] ) ) ? $args['offset'] : 0;
-	$limit 	= ( isset( $args['limit'] ) && !empty( $args['limit'] ) ) 	? $args['limit'] : 40;	
-	$order 	= ( isset( $args['order'] ) && !empty( $args['order'] ) ) 	? $args['order'] : 'desc';
-	$orderby= ( isset( $args['orderby'] ) && !empty( $args['orderby'] ) ) ? $args['orderby'] : 'subscribers';
-	
-	$query = "SELECT channelid FROM $table_name WHERE 1=1";
-	
+	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids' );
 	if( isset( $args['search'] ) && !empty( $args['search'] ) ) {
-		$query .= " AND name LIKE '%".esc_sql( $args['search'] )."%'";
-	} elseif( isset( $args['channelid'] ) && !empty( $args['channelid'] ) ) { //Specific Channel
-		$query .= " AND channelid='".esc_sql( $args['channelid'] )."'";
+		$query_args['s'] = $args['search'];
 	}
-	
-	//Orderby
-	$query .= " ORDER BY ".$orderby." ".strtoupper( $order );
-	//Limit and Offset
-	$query .= " LIMIT $offset, $limit";
-	
-	//Get Channels
-	$results = $wpdb->get_col( $query );
-	
-	return $results;
+	$channels = new WP_Query( $query_args );
+	$channels_count = $channels->found_posts;
+	wp_reset_postdata();
+	return $channels_count;	
 }
 endif;
 if( !function_exists('ytc_channel_exists') ) :
@@ -155,10 +84,8 @@ if( !function_exists('ytc_channel_exists') ) :
  * @since YouTube Channels 1.0
  **/
 function ytc_channel_exists( $id ) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'yt_channels';
-	$channel_exists = $wpdb->get_row( $wpdb->prepare( "SELECT channelid FROM $table_name WHERE 1=1 AND channelid='%s'", $id ) );
-	return ( !empty( $channel_exists ) ? true : false );
+	$channels = get_posts( array( 'post_type' => 'youtube_channels', 'post_status' => 'any', 'posts_per_page' => -1, 'meta_key' => 'wpcf-channel_id', 'meta_value' => $id ) );
+	return ( !empty( $channels ) && ( count( $channels ) > 0 ) ? true : false );
 }
 endif;
 if( !function_exists('ytc_get_channels_list') ) :
@@ -171,72 +98,56 @@ if( !function_exists('ytc_get_channels_list') ) :
  **/
 function ytc_get_channels_list( $args = array() ){
 	
-	$ord = isset( $args['order'] ) ? $args['order'] : 'desc';
-	$sort = isset( $args['orderby'] ) ? $args['orderby'] : 'subscribers';
+	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'orderby' => 'meta_value' );
+	
+	if( isset( $args['search'] ) && !empty( $args['search'] ) ) {
+		$query_args['s'] = $args['search'];
+	} elseif( isset( $args['channelid'] ) && !empty( $args['channelid'] ) ) { //Specific Channel
+		$query_args['meta_query'] = array( array( 'key' => 'wpcf-channel_id', 'value' => esc_sql( $args['channelid'] ) ) );
+	}
+	
+	//Offset
+	if( isset( $args['offset'] ) && !empty( $args['offset'] ) ) {
+		$query_args['offset'] = $args['offset'];
+	}
+	
+	//Limit
+	if( isset( $args['limit'] ) && !empty( $args['limit'] ) ) {
+		$query_args['posts_per_page'] = $args['limit'];
+	} else {
+		$query_args['posts_per_page'] = 40;
+	}
+	
+	//Order
+	if( isset( $args['order'] ) && !empty( $args['order'] ) ) {
+		$query_args['order'] = $args['order'];						
+	} else {
+		$query_args['order'] = 'ASC';
+	}
+	
+	//Orderby
+	if( isset( $args['orderby'] ) && !empty( $args['orderby'] ) ) {
+		$query_args['meta_key'] = 'wpcf-channel_' . $args['orderby'];
+	} else {
+		$query_args['meta_key'] = 'wpcf-channel_subscribers';
+	}
 		
 	//Get Channels
-	$results = ytc_get_channel_ids( $args );
+	$channels = new WP_Query( $query_args );
 	
-	if( !empty( $results ) ){
+	if( $channels->have_posts() ) :
+		
+		while( $channels->have_posts() ) : $channels->the_post();
+		
+			ytc_get_channel_loop(); //Channel Loop
+			
+		endwhile; //Endwhile
 
-		$ids = implode(',', $results);
-		$posturl = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics,topicDetails&order=viewCount&id='.$ids.'&key='.YTC_YOUTUBE_KEY;
-		$data = file_get_contents( $posturl, false);
-		$response = json_decode($data);		
-		$i = 0;
-		$channeldata = array();
-		foreach( $response->items as $item ){
-			$channeldata[$i]['id'] 			=	$item->id;
-			$channeldata[$i]['title'] 		=	$item->snippet->title;
-			$channeldata[$i]['subscribers'] =	$item->statistics->subscriberCount != 0 ? $item->statistics->subscriberCount: 0;
-			$channeldata[$i]['views'] 		=	$item->statistics->viewCount;
-			$channeldata[$i]['image'] 		=	$item->snippet->thumbnails->high->url;
-			$channeldata[$i]['country'] 	=	isset( $item->snippet->country ) ? $item->snippet->country : 'N/A';
-			$channeldata[$i]['description'] =	$item->snippet->description;
-			$channeldata[$i]['videos'] 		=	$item->statistics->videoCount;
-			$channeldata[$i]['keywords']	=	isset( $item->brandingSettings->channel->keywords ) ? $item->brandingSettings->channel->keywords : 'N/A';
-			$socialmedia = ytc_get_channel_socials( $item->id );
-			$channeldata[$i]['instagram']	=	$socialmedia['instagram'];
-			$channeldata[$i]['twitter'] 	=	$socialmedia['twitter'];
-			$channeldata[$i]['facebook']	=	$socialmedia['facebook'];
-			$channeldata[$i]['website'] 	=	$socialmedia['website'];
-			$channeldata[$i]['gplus'] 		=	$socialmedia['gplus'];
-			$channeldata[$i]['snapchat']	=	$socialmedia['snapchat'];
-			$channeldata[$i]['vk'] 			=	$socialmedia['vk'];
-			ytc_update_subscribers( $item->id, $item->statistics->subscriberCount );
-			ytc_update_views( $item->id, $item->statistics->viewCount );
-			$i++;
-		}
-		
-		if( $sort == 'views' ){
-			if( $ord == 'asc' ){
-				usort( $channeldata, function($item1, $item2) {
-					return $item1['views'] <=> $item2['views'];
-				});
-			} else {
-				usort($channeldata, function($item1, $item2) {
-					return $item2['views'] <=> $item1['views'];
-				});
-			}
-		} elseif( $sort == 'subscribers' ){
-			if( $ord == 'asc' ){
-				usort($channeldata, function($item1, $item2) {
-					return $item1['subscribers'] <=> $item2['subscribers'];
-				});
-			}else{
-				usort($channeldata, function($item1, $item2) {
-					return $item2['subscribers'] <=> $item1['subscribers'];
-				});
-			}
-		}		
-		
-		for( $i = 0; $i < count( $channeldata ); $i++ ) {
-			//Get Channel Loop Block
-			ytc_get_channel_loop( $channeldata[$i] );
-		}
-	} else { 
-		echo '<div class="ytc-no-channels"><p>No channels found.</p></div>'; 
-	}
+	endif;
+
+	//Reset Post Data
+	wp_reset_postdata();
+	
 }
 endif;
 if( !function_exists('ytc_get_channel_loop') ) :
@@ -247,20 +158,34 @@ if( !function_exists('ytc_get_channel_loop') ) :
  *
  * @since YouTube Channels 1.0
  **/
-function ytc_get_channel_loop( $channeldata ) { ?>
+function ytc_get_channel_loop( $post_id = 0 ) {
 	
-	<div class="col-lg-3 col-sm-6" id="<?php echo $channeldata['id']; ?>">
+	$post_id = empty( $post_id ) ? get_the_ID() : $post_id;
+	$channel_id 		= get_post_meta( $post_id, 'wpcf-channel_id', true ); 		//Channel ID
+	$channel_views 		= get_post_meta( $post_id, 'wpcf-channel_views', true ) 		? get_post_meta( $post_id, 'wpcf-channel_views', true ) : 'N/A'; 	//Views								
+	$channel_subscribers= get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) 	? get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) : 'N/A' ; 	//Subscribers
+	$channel_keywords 	= get_post_meta( $post_id, 'wpcf-channel_keywords', true ); //Keywords
+	$channel_img 		= get_post_meta( $post_id, 'wpcf-channel_img', true ) ? get_post_meta( $post_id, 'wpcf-channel_img', true ) : YTC_PLUGIN_URL . 'assets/images/default.png'; 		//Image 
+	$channel_gplus 		= get_post_meta( $post_id, 'wpcf-channel_gplus', true );	//Google+
+	$channel_tw 		= get_post_meta( $post_id, 'wpcf-channel_tw', true ); 		//Twitter
+	$channel_insta		= get_post_meta( $post_id, 'wpcf-channel_insta', true ); 	//Instagram
+	$channel_fb 		= get_post_meta( $post_id, 'wpcf-channel_fb', true ); 		//Facebook
+	$channel_web 		= get_post_meta( $post_id, 'wpcf-channel_web', true ); 		//Website
+	$channel_snap 		= get_post_meta( $post_id, 'wpcf-channel_snap', true ); 	//Snapchat
+	$channel_vk 		= get_post_meta( $post_id, 'wpcf-channel_vk', true ); 		//VK ?>
+	
+	<div class="col-lg-3 col-sm-6" id="<?php echo $channel_id; ?>">
 		<div class="box grid recipes">
 			<div class="by"><i class="fa fa-eye" aria-hidden="true"></i>
-				<span id="<?php echo $channeldata['id']; ?>-views" title="Total Views Count" style="color:white" class="details">
-					<?php echo ytc_number_abbs( $channeldata['views'] ); ?>
-				</span> <span id="<?php echo $channeldata['id']; ?>-subs" title="Subscribers Count" class="fa-pull-right details"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channeldata['subscribers'] == 0 ) ? 'N/A' : ytc_number_abbs( $channeldata['subscribers'] ); ?></span>
+				<span id="<?php echo $channel_id; ?>-views" title="Total Views Count" style="color:white" class="details">
+					<?php echo ytc_number_abbs( $channel_views ); ?>
+				</span> <span id="<?php echo $channel_id; ?>-subs" title="Subscribers Count" class="fa-pull-right details"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channel_subscribers == 0 ) ? 'N/A' : ytc_number_abbs( $channel_subscribers ); ?></span>
 			</div><!--/.by-->
-			<a href="#" class="showinfoimg"><img class="b-lazy" id="<?php echo $channeldata['id']; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channeldata['image'] ?>" alt=""></a>
-			<h2><a class="showinfo" data-gplus="<?php echo $channeldata['gplus']; ?>" data-twitter="<?php echo $channeldata['twitter']; ?>" data-instagram="<?php echo $channeldata['instagram']; ?>" data-facebook="<?php echo $channeldata['facebook']; ?>" data-website="<?php echo $channeldata['website']; ?>" data-snapchat="<?php echo $channeldata['snapchat']; ?>" data-vk="<?php echo $channeldata['vk']; ?>" data-channelid="<?php echo $channeldata['id']; ?>" data-title="<?php echo $channeldata['title']; ?>" target="_blank" href="https://www.youtube.com/channel/<?php echo $channeldata['id']; ?>">
-				<?php echo ytc_get_channel_short_title( $channeldata['title'] ); ?>
+			<a href="https://www.youtube.com/channel/<?php echo $channel_id; ?>" class="showinfoimg"><img class="b-lazy" id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
+			<h2><a href="https://www.youtube.com/channel/<?php echo $channel_id; ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>" target="_blank">
+				<?php echo ytc_get_channel_short_title( get_the_title() ); ?>
 			</a></h2>
-			<p><span class="details" title='<p><span style="text-decoration:underline">Channel Title:</span><br><?php echo ytc_get_short_desc( $channeldata['title'] );  ?></p><p><span style="text-decoration:underline">Description:</span><br><?php echo ytc_get_short_desc($channeldata['description']); ?></p><p><span style="text-decoration:underline">Country:</span><br><?php echo ytc_get_short_desc( $channeldata['country'] ); ?></p><p><span style="text-decoration:underline">Keywords:</span><br><?php echo ytc_get_short_desc( $channeldata['keywords'] ); ?></p>'> <i class="fa fa-info-circle" style="color:#e13b2b;cursor:pointer"></i> More</span> - <span class="details" title="Total Videos Count"><i class="fa fa-video" style="color:#e13b2b"></i> <b><?php echo $channeldata['videos']; ?></b></span></p><br>
+			<p><span class="details" title='<p><span style="text-decoration:underline">Channel Title:</span><br><?php echo ytc_get_short_desc( get_the_title() );  ?></p><p><span style="text-decoration:underline">Description:</span><br><?php echo ytc_get_short_desc( get_the_content() ); ?></p><p><span style="text-decoration:underline">Country:</span><br><?php echo ytc_get_short_desc( $channel_country ); ?></p><p><span style="text-decoration:underline">Keywords:</span><br><?php echo ytc_get_short_desc( $channel_keywords ); ?></p>'> <i class="fa fa-info-circle" style="color:#e13b2b;cursor:pointer"></i> More</span> - <span class="details" title="Total Videos Count"><i class="fa fa-video" style="color:#e13b2b"></i> <b><?php echo $channel_videos; ?></b></span></p><br>
 		</div><!--/.box-->
 	</div><!--/.col-lg-3-->
 	

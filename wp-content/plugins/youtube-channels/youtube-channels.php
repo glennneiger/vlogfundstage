@@ -29,34 +29,7 @@ endif;
  * @since YouTube Channels 1.0
  **/
 function ytc_plugin_activation() {
-	global $wpdb;
-	
-
-	$charset_collate = $wpdb->get_charset_collate();
-	$table_name = $wpdb->prefix . 'yt_channels';
-    // Activation code here...
-	$sql = "CREATE TABLE IF NOT EXISTS $table_name (		  
-		 `id` int(11) NOT NULL AUTO_INCREMENT,
-		 `channelid` varchar(255) CHARACTER SET latin1 NOT NULL,
-		 `logo` varchar(500) CHARACTER SET latin1 NOT NULL,
-		 `name` varchar(255) CHARACTER SET latin1 NOT NULL,
-		 `country` varchar(255) CHARACTER SET latin1 NOT NULL,
-		 `subscribers` bigint(20) NOT NULL,
-		 `views` bigint(20) NOT NULL,
-		 `topics` varchar(255) CHARACTER SET latin1 NOT NULL,
-		 `bio` varchar(255) CHARACTER SET latin1 NOT NULL,
-		 `twitter` varchar(255) NOT NULL,
-		 `instagram` varchar(255) NOT NULL,
-		 `facebook` varchar(255) NOT NULL,
-		 `gplus` varchar(255) NOT NULL,
-		 `website` varchar(255) NOT NULL,
-		 `snapchat` varchar(255) NOT NULL,
-		 `vk` varchar(255) NOT NULL,
-		 PRIMARY KEY (`id`)
-		) $charset_collate;";
-
-	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	dbDelta( $sql ); //Run the Table Query
+	//Activation code here...
 }
 register_activation_hook( __FILE__, 'ytc_plugin_activation' );
 /**
@@ -67,11 +40,13 @@ register_activation_hook( __FILE__, 'ytc_plugin_activation' );
  * @since YouTube Channels 1.0
  **/
 function ytc_plugin_deactivation() {
-
-    // Activation code here...
+    //Dectivation code here...
 }
 register_activation_hook( __FILE__, 'ytc_plugin_deactivation' );
 //Load Files
+//Register Custom Post Types
+//YouTube Channels
+require_once( YTC_PLUGIN_PATH . 'includes/custom-posts/youtube-channels.php' );
 //Common Functions
 require_once( YTC_PLUGIN_PATH . 'includes/plugin-functions.php' );
 //AJAX Callback
