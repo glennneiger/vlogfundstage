@@ -689,6 +689,24 @@ wp_update_post(array('ID'=>$post_id, 'post_title'=>$post_title,'post_name' => $s
 }
 }
 
+
+//capitalize title of collaborator 1 and collaborator 2 field
+function tssupp_capitalise_field( $post_id, $form_data ){
+
+    if ( in_array( $form_data['id'], array( 98, 216 ) ) ) { // Edit form IDs
+ 
+        $slug = 'collaborator-1'; // Edit field slug
+				$slug = 'collaborator-2';
+
+        $field = get_post_meta( $post_id, 'wpcf-' . $slug, true );
+        $field = ucwords($field);
+        update_post_meta( $post_id, 'wpcf-' . $slug, $field );
+    }
+}
+add_action( 'cred_save_data', 'tssupp_capitalise_field', 10, 2 );
+
+
+
 //set post status 98 && 216
 
 	function customize_cred_form_98( $post_id, $form_data ){
