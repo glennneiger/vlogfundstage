@@ -691,19 +691,31 @@ wp_update_post(array('ID'=>$post_id, 'post_title'=>$post_title,'post_name' => $s
 
 
 //capitalize title of collaborator 1 and collaborator 2 field
-function tssupp_capitalise_field( $post_id, $form_data ){
+function capitalise_field_collaborator_1( $post_id, $form_data ){
 
     if ( in_array( $form_data['id'], array( 98, 216 ) ) ) { // Edit form IDs
- 
+
         $slug = 'collaborator-1'; // Edit field slug
-				$slug = 'collaborator-2';
 
         $field = get_post_meta( $post_id, 'wpcf-' . $slug, true );
         $field = ucwords($field);
         update_post_meta( $post_id, 'wpcf-' . $slug, $field );
     }
 }
-add_action( 'cred_save_data', 'tssupp_capitalise_field', 10, 2 );
+add_action( 'cred_save_data', 'capitalise_field_collaborator_1', 10, 2 );
+
+function capitalise_field_collaborator_2( $post_id, $form_data ){
+
+    if ( in_array( $form_data['id'], array( 98, 216 ) ) ) { // Edit form IDs
+ 
+        $slug = 'collaborator-2'; // Edit field slug
+
+        $field = get_post_meta( $post_id, 'wpcf-' . $slug, true );
+        $field = ucwords($field);
+        update_post_meta( $post_id, 'wpcf-' . $slug, $field );
+    }
+}
+add_action( 'cred_save_data', 'capitalise_field_collaborator_2', 10, 2 );
 
 
 
