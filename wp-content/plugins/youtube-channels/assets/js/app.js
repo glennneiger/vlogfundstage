@@ -217,25 +217,6 @@
 			});
 		});
 		
-		//On Add Channel Submit		
-		$('#addchannelform').on('submit', function (e) {
-			var btn = $("#addchannelbtn");
-			e.preventDefault();
-			$("#msg").html('');
-			btn.prop('disabled', true);
-			btn.html('<i class="fa fa-spinner fa-spin"></i>');
-			$.ajax({
-				type: 'POST',
-				url: YTC_Obj.ajaxurl, //'ajax/ajaxaddchannel.php',
-				data: $('#addchannelform').serialize() + '&action=ytc_add_channel',
-				success: function(data){
-					btn.prop('disabled', false);
-					btn.html('Submit');
-					$('#msg').html(data);
-					$('#addchannelform input#$channel_id').val('');
-				}
-			});
-		});
 		
 		//Show/Hide Filter	
 		var show = false;

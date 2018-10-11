@@ -18,9 +18,6 @@ endif;
 if( !defined('YTC_PLUGIN_PATH') ) : //Plugin Path
 	define('YTC_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 endif;
-if( !defined('YTC_YOUTUBE_KEY') ) : //YouTube Key
-	define('YTC_YOUTUBE_KEY', 'AIzaSyA7dxlViSTWdJGzgq-EhRcdiRKTU-FS2xA' );
-endif;
 /**
  * Plugin Activation 
  * 
@@ -29,7 +26,7 @@ endif;
  * @since YouTube Channels 1.0
  **/
 function ytc_plugin_activation() {
-	//Activation code here...
+	//Plugin Activation	
 }
 register_activation_hook( __FILE__, 'ytc_plugin_activation' );
 /**
@@ -40,7 +37,8 @@ register_activation_hook( __FILE__, 'ytc_plugin_activation' );
  * @since YouTube Channels 1.0
  **/
 function ytc_plugin_deactivation() {
-    //Dectivation code here...
+	//Clear Cron Jobs on Deactivation of Plugin
+	wp_clear_scheduled_hook('ytc_daily_update_channels');
 }
 register_activation_hook( __FILE__, 'ytc_plugin_deactivation' );
 //Load Files
