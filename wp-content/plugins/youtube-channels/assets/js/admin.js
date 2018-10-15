@@ -2,38 +2,40 @@
 /*-----------------------------------------------------------*/
 ;(function($, window, document, undefined) {
 	
-	
+	//Update Youtube Channels
+	var channelUpdateInt;
 	//Update Channels Button
 	$('a.update-channels-btn').on('click', function(){
-		var total_count = 0;
-		var counter = 1;
-		///setInterval(function() {
+		$('.result-count, .update-channel-progress-wrap').show();
+		channelUpdateInt = setInterval(function(){
+			var total_count = parseInt( $('.result-count').find('.total').html() );		
 			$.ajax({
 				url: ajaxurl,
-				data: { action: 'ytc_update_channels', secure: YTC_Admin_Obj.secure, counter: counter },
+				data: { action: 'ytc_update_channels', secure: YTC_Admin_Obj.secure },
 				dataType: 'json',
 				async:false,
 				method: 'POST',
-				beforeSend: function(){
-					$('.result-count, .update-channel-progress-wrap').show();
-					$('.result-count').find('.total').html(0);
-					$('.result-count').find('.updated').html(0);
-				},
-				success: function(result){					
-					if( result.success == 1 ){						
+				success: function(result){
+					if( result.success == 1 ){
+						var last_updated = parseInt( $('.result-count').find('.updated').text() );
 						if( result.total_count ){
 							$('.result-count').find('.total').html( result.total_count );
 							total_count = result.total_count;
 						}
 						if( result.updated ){
-							var last_updated = $('.result-count').find('.update').html();
-							$('.result-count').find('.updated').html( result.updated + last_updated );
+							var total_updated = parseInt( result.updated + last_updated );
+							$('.result-count').find('.updated').text( total_updated );
+							var progress = ( ( total_updated * 100 ) / total_count );
+							$('.update-channel-progress').css('width', progress + '%');
 						}
-						counter++;
+						if( result.left_update <= 0 ){
+							clearInterval(channelUpdateInt);
+							alert('All records updated successfully.');
+						}
 					}
 				}
 			});
-		//}, 3000); //3 seconds
+		}, 3000);		
 		return false;
 	});
 	

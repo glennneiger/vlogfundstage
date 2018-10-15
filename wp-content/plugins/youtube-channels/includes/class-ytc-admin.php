@@ -57,15 +57,19 @@ class YTC_Admin{
 	 **/
 	public function update_channels_submenu_callback(){
 		
+		global $wpdb;
+		$date_before = date('Y-m-d', strtotime('-4days'));
+		$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_modified <= '$date_before';" );
+		
 		echo '<div class="wrap">';
 		echo '<h2>'.__('Update Channels','youtube-channels').'</h2><br>';
 		echo '<style type="text/css">';
-		echo '.update-channel-progress-wrap{ width: 100%; background-color: grey; margin-bottom:20px; display:none; }';
+		echo '.update-channel-progress-wrap{ width: 100%; background-color: #d3d3d3; margin-bottom:20px; display:none; }';
 		echo '.update-channel-progress{ width:0%; height: 30px; background-color: green; }';
 		echo '.result-count{ margin-bottom:20px; display:none; }';
 		echo '</style>';
 		echo '<div class="update-channel-progress-wrap"><div class="update-channel-progress"></div></div>';
-		echo '<div class="result-count">Updated <span class="updated"></span> out of <span class="total"></span></div>';
+		echo '<div class="result-count">Updated <span class="updated">0</span> out of <span class="total">'.$total_to_update.'</span></div>';
 		echo '<a href="#" class="button button-primary update-channels-btn">'.__('Update','youtube-channels').'</a>';
 		echo '<p>Records will be updated which are updated on or before '.date('Y-m-d', strtotime('-4days')).'</p>';
 		echo '<div class="update-channel-results"></div>';		
@@ -85,25 +89,22 @@ class YTC_Admin{
 		else : //Else Process Update
 			$response = array('updated' => 0);
 			$date_before = date('Y-m-d', strtotime('-4days'));
-			if( isset( $_POST['counter'] ) && $_POST['counter'] == 1 ) :
-				$response['total_count'] = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_modified <= '$date_before';" );
-			endif;
+			$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_modified <= '$date_before';" );
 			$youtube_keys = array('AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE', 'AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks', 'AIzaSyCojt9gvT7vj511o4eRCPAA0x2IDBULJzY');
-			$query = "SELECT m1.meta_value FROM $wpdb->posts`
+			$query = "SELECT m1.meta_value FROM $wpdb->posts
 					LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
 					WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
 					AND m1.meta_key = 'wpcf-channel_id'
-					AND $wpdb->posts.post_modified <= '$date_before' ORDER BY $wpdb->posts.post_modified ASC LIMIT 45;";
+					AND $wpdb->posts.post_modified <= '$date_before' LIMIT 120;";
 			$all_channels = $wpdb->get_col( $query );
 			$updated = 0;
 			if( !empty( $all_channels ) ) : //Check Channel Data
-				$channel_slots = array_chunk( $all_channels, 15 );				
-				foreach( $channel_slots as $key => $channels_list ) :			
-					$channel_ids = implode(',', $all_channels );
+				$channel_slots = array_chunk( $all_channels, 40 );				
+				foreach( $channel_slots as $channels_list ) :			
+					$channel_ids = implode(',', $channels_list );
 					$yt_rand_key = array_rand( $youtube_keys );
 					$use_yt_key = $youtube_keys[$yt_rand_key]; //YTC_YOUTUBE_KEY; //
-					$channel_url = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics,topicDetails&key='.$use_yt_key.'&id='.$channel_ids;
-					$response['channels'] = $channel_url;
+					$channel_url = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics&key='.$use_yt_key.'&id='.$channel_ids;
 					$channel_data = file_get_contents( $channel_url, false);
 					$channel_results = json_decode( $channel_data );					
 					if( !empty( $channel_results->items ) ) : //Update the Channel Data
@@ -121,12 +122,13 @@ class YTC_Admin{
 								update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
 								update_post_meta( $post_id, 'wpcf-channel_img', 		$channel->snippet->thumbnails->medium->url );
 								update_post_meta( $post_id, 'wpcf-channel_videos', 		$channel->statistics->videoCount );
-								$updated++;
+								$updated++;							
 							endif;
 						endforeach; //Endforeach
-					endif; //Endif			
-				endforeach;
+					endif; //Endif
+				endforeach;				
 			endif; //Endif
+			$response['left_update'] = ( $total_to_update - $updated );
 			$response['updated'] = $updated;
 			$response['success'] = 1;
 			wp_send_json( $response );
