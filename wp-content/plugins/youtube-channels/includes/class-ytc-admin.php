@@ -63,6 +63,7 @@ class YTC_Admin{
 		
 		echo '<div class="wrap">';
 		echo '<h2>'.__('Update Channels','youtube-channels').'</h2><br>';
+		echo '<p><strong>'.__('Update may take some time. Please do not close your browser or refresh the page until the process is complete.', 'youtube-channels').'</strong></p>';
 		echo '<style type="text/css">';
 		echo '.update-channel-progress-wrap{ width: 100%; background-color: #d3d3d3; margin-bottom:20px; display:none; }';
 		echo '.update-channel-progress{ width:0%; height: 30px; background-color: green; }';
