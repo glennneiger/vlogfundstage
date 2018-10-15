@@ -184,8 +184,7 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 			<a href="https://www.youtube.com/channel/<?php echo $channel_id; ?>" class="showinfoimg"><img class="b-lazy" id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
 			<h2><a href="https://www.youtube.com/channel/<?php echo $channel_id; ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>" target="_blank">
 				<?php echo ytc_get_channel_short_title( get_the_title() ); ?>
-			</a></h2>
-			<p><span class="details" title='<p><span style="text-decoration:underline">Channel Title:</span><br><?php echo ytc_get_short_desc( get_the_title() );  ?></p><p><span style="text-decoration:underline">Description:</span><br><?php echo ytc_get_short_desc( get_the_content() ); ?></p><p><span style="text-decoration:underline">Country:</span><br><?php echo ytc_get_short_desc( $channel_country ); ?></p><p><span style="text-decoration:underline">Keywords:</span><br><?php echo ytc_get_short_desc( $channel_keywords ); ?></p>'> <i class="fa fa-info-circle" style="color:#e13b2b;cursor:pointer"></i> More</span> - <span class="details" title="Total Videos Count"><i class="fa fa-video" style="color:#e13b2b"></i> <b><?php echo $channel_videos; ?></b></span></p><br>
+			</a></h2><br>
 		</div><!--/.box-->
 	</div><!--/.col-lg-3-->
 	
