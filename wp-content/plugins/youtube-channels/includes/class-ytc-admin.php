@@ -1,0 +1,140 @@
+<?php
+/**
+ * Admin Class
+ *
+ * Handles all admin functions
+ *
+ * @since YouTube Channels 1.0 
+ **/
+defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+if( !class_exists('YTC_Admin') ) :
+
+class YTC_Admin{
+	
+	//Construct which run class
+	public function __construct(){		
+		//Admin Menu
+		add_action( 'admin_menu', array( $this, 'register_sub_menu' ) );
+		//Enqueue Scripts
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
+		//Admin AJAX
+		add_action( 'wp_ajax_ytc_update_channels', array( $this, 'ytc_update_channels' ) );
+	}
+	
+	/**
+	 * Enqueue All Scripts / Styles
+	 *
+	 * @since YouTube Channels 1.0
+	 **/
+	public function register_scripts( $hook ){
+		if( $hook != 'youtube_channels_page_update-channels ' ) : 
+			//Script for Admin Function
+			wp_enqueue_script( 'ytc-admin-script', YTC_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), null, true );
+			wp_localize_script( 'ytc-admin-script', 'YTC_Admin_Obj', array( 'secure'  => wp_create_nonce( 'ytc-secure-code' ) ) );
+		endif; //Endif
+	}
+	
+	/**
+     * Register submenu
+	 *
+     * @since YouTube Channels 1.0
+     */
+    public function register_sub_menu() {
+		add_submenu_page( 
+            'edit.php?post_type=youtube_channels', 
+			__('Update Channels','youtube-channels'), 
+			__('Update Channels', 'youtube-channels'),
+			'manage_options',
+			'update-channels',
+			array( $this, 'update_channels_submenu_callback' )
+        );
+    }
+	
+	/**
+	 * Update Channels Submenu Page
+	 *
+	 * @since YouTube Channels 1.0
+	 **/
+	public function update_channels_submenu_callback(){
+		
+		echo '<div class="wrap">';
+		echo '<h2>'.__('Update Channels','youtube-channels').'</h2><br>';
+		echo '<style type="text/css">';
+		echo '.update-channel-progress-wrap{ width: 100%; background-color: grey; margin-bottom:20px; display:none; }';
+		echo '.update-channel-progress{ width:0%; height: 30px; background-color: green; }';
+		echo '.result-count{ margin-bottom:20px; display:none; }';
+		echo '</style>';
+		echo '<div class="update-channel-progress-wrap"><div class="update-channel-progress"></div></div>';
+		echo '<div class="result-count">Updated <span class="updated"></span> out of <span class="total"></span></div>';
+		echo '<a href="#" class="button button-primary update-channels-btn">'.__('Update','youtube-channels').'</a>';
+		echo '<p>Records will be updated which are updated on or before '.date('Y-m-d', strtotime('-4days')).'</p>';
+		echo '<div class="update-channel-results"></div>';		
+		echo '</div>';
+	}
+	
+	/**
+	 * AJAX Callback For Update Channels
+	 *
+	 * @since YouTube Channels 1.0
+	 **/
+	public function ytc_update_channels(){
+		global $wpdb;		
+		if( ! check_ajax_referer( 'ytc-secure-code', 'secure' ) ) :
+			wp_send_json_error( 'Invalid security token.' );
+			wp_die(); //To Proper Output
+		else : //Else Process Update
+			$response = array('updated' => 0);
+			$date_before = date('Y-m-d', strtotime('-4days'));
+			if( isset( $_POST['counter'] ) && $_POST['counter'] == 1 ) :
+				$response['total_count'] = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_modified <= '$date_before';" );
+			endif;
+			$youtube_keys = array('AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE', 'AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks', 'AIzaSyCojt9gvT7vj511o4eRCPAA0x2IDBULJzY');
+			$query = "SELECT m1.meta_value FROM $wpdb->posts`
+					LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
+					WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
+					AND m1.meta_key = 'wpcf-channel_id'
+					AND $wpdb->posts.post_modified <= '$date_before' ORDER BY $wpdb->posts.post_modified ASC LIMIT 45;";
+			$all_channels = $wpdb->get_col( $query );
+			$updated = 0;
+			if( !empty( $all_channels ) ) : //Check Channel Data
+				$channel_slots = array_chunk( $all_channels, 15 );				
+				foreach( $channel_slots as $key => $channels_list ) :			
+					$channel_ids = implode(',', $all_channels );
+					$yt_rand_key = array_rand( $youtube_keys );
+					$use_yt_key = $youtube_keys[$yt_rand_key]; //YTC_YOUTUBE_KEY; //
+					$channel_url = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics,topicDetails&key='.$use_yt_key.'&id='.$channel_ids;
+					$response['channels'] = $channel_url;
+					$channel_data = file_get_contents( $channel_url, false);
+					$channel_results = json_decode( $channel_data );					
+					if( !empty( $channel_results->items ) ) : //Update the Channel Data
+						foreach( $channel_results->items as $channel ) :
+							$post_id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE 1=1 AND meta_key = 'wpcf-channel_id' AND meta_value = '".$channel->id."';" );
+							if( !empty( $post_id ) ) :
+								$updated_post = wp_update_post( array(
+									'ID' => $post_id,
+									'post_title'   => $channel->snippet->title,
+									'post_content' => $channel->snippet->description,
+								) );						
+								 //Update Related Details
+								update_post_meta( $post_id, 'wpcf-channel_views', 		$channel->statistics->viewCount );
+								update_post_meta( $post_id, 'wpcf-channel_subscribers', $channel->statistics->subscriberCount );
+								update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
+								update_post_meta( $post_id, 'wpcf-channel_img', 		$channel->snippet->thumbnails->medium->url );
+								update_post_meta( $post_id, 'wpcf-channel_videos', 		$channel->statistics->videoCount );
+								$updated++;
+							endif;
+						endforeach; //Endforeach
+					endif; //Endif			
+				endforeach;
+			endif; //Endif
+			$response['updated'] = $updated;
+			$response['success'] = 1;
+			wp_send_json( $response );
+			wp_die();
+		endif; //Endif
+	}
+	
+}
+//Run Class
+$ytc_admin = new YTC_Admin();
+endif;

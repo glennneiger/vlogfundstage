@@ -226,15 +226,16 @@ if( !function_exists('ytc_register_schedule_events') ) :
  **/
 function ytc_register_schedule_events(){
 	//Daily Update the YouTube Channels	
-	if( !wp_next_scheduled( 'ytc_daily_update_channels' ) ) :
+	/*if( !wp_next_scheduled( 'ytc_daily_update_channels' ) ) :
 		$ve = get_option( 'gmt_offset' ) > 0 ? '-' : '+';
 		//wp_schedule_event( strtotime( '00:00 tomorrow ' . $ve . absint( get_option( 'gmt_offset' ) ) . ' HOURS' ), 'ytc_2min', 'ytc_daily_update_channels' );
 		//wp_schedule_event( time(), 'ytc_2min', 'ytc_daily_update_channels' );
 		wp_schedule_event( time(), 'ytc_1min', 'ytc_daily_update_channels' );
-    endif;	
+    endif;*/
 }
-add_action('init', 'ytc_register_schedule_events');
+//add_action('init', 'ytc_register_schedule_events');
 endif;
+
 if( !function_exists('ytc_daily_update_channels_data') ) :
 /**
  * Update Chanels Daily
@@ -246,7 +247,11 @@ if( !function_exists('ytc_daily_update_channels_data') ) :
 function ytc_daily_update_channels_data() {
 	
 	global $wpdb;
-	$youtube_keys = array('AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE', 'AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks');
+	$youtube_keys = array('AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE', 'AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks');	
+	/*$query = "SELECT m1.meta_value FROM $wpdb->posts
+			LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
+			WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
+			AND m1.meta_key = 'wpcf-channel_id' ORDER BY $wpdb->posts.post_modified ASC;";*/
 	$query = "SELECT m1.meta_value FROM $wpdb->posts
 			LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
 			WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
@@ -260,7 +265,7 @@ function ytc_daily_update_channels_data() {
 		foreach( $channel_slots as $channels_list ) :			
 			$channel_ids = implode(',', $channels_list );
 			$yt_rand_key = array_rand( $youtube_keys );
-			$use_yt_key	 = $youtube_keys[$yt_rand_key]; //YTC_YOUTUBE_KEY; //
+			$use_yt_key = $youtube_keys[$yt_rand_key]; //YTC_YOUTUBE_KEY; //
 			$channel_url = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics,topicDetails&key='.$use_yt_key.'&id='.$channel_ids;
 			$channel_data = file_get_contents( $channel_url, false);
 			$channel_results = json_decode( $channel_data );
@@ -285,7 +290,54 @@ function ytc_daily_update_channels_data() {
 			endif; //Endif			
 		endforeach;
 	endif; //Endif
+	/*ob_start();
+	echo '<pre>';
+	//print_r($all_channels);
+	//print_r($updated);
+	print_r($not_updated);
+	echo '</pre>';
+	$content = ob_get_contents();
+	ob_get_clean();
+	wp_mail('wptestworld@gmail.com', 'Cron Updated Records - ' . date('Y-m-d H:i:s') . ' - ' . $counter, 'Cron Updated Records - ' . $counter . "\n\r\n\r" . $content);*/
 }
 add_action('ytc_daily_update_channels', 'ytc_daily_update_channels_data');
 //add_action('init', 'ytc_daily_update_channels_data');
 endif;
+/*function just_check_query_time(){
+	global $wpdb;
+	echo $query = "SELECT m1.meta_value FROM $wpdb->posts
+			LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
+			WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
+			AND m1.meta_key = 'wpcf-channel_id'
+			AND $wpdb->posts.post_modified < ( now() - INTERVAL 1 DAY ) ORDER BY $wpdb->posts.post_modified ASC LIMIT 160;";
+	$all_channels = $wpdb->get_col( $query );
+	$channel_slots = array_chunk( $all_channels, 40 );
+	$counter = 0;
+	$updated = array();
+	foreach( $channel_slots as $channels_list ) :
+		$channel_ids = implode(',', $channels_list );
+		$channel_url = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics,topicDetails&id='.$channel_ids.'&key='.YTC_YOUTUBE_KEY;
+		$channel_data = file_get_contents( $channel_url, false);
+		$channel_results = json_decode( $channel_data );
+		if( !empty( $channel_results->items ) ) : //Update the Channel Data
+			foreach( $channel_results->items as $channel ) :
+				$post_id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE 1=1 AND meta_key = 'wpcf-channel_id' AND meta_value='".$channel->id."';" );
+				if( !empty( $post_id ) ) :
+					$updated_post = wp_update_post( array(
+						'ID' => $post_id,
+						'post_title'   => $channel->snippet->title,
+						'post_content' => $channel->snippet->description,
+					) );						
+					 //Update Related Details
+					update_post_meta( $post_id, 'wpcf-channel_views', 		$channel->statistics->viewCount );
+					update_post_meta( $post_id, 'wpcf-channel_subscribers', $channel->statistics->subscriberCount );
+					update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
+					update_post_meta( $post_id, 'wpcf-channel_img', 		$channel->snippet->thumbnails->medium->url );
+					update_post_meta( $post_id, 'wpcf-channel_videos', 		$channel->statistics->videoCount );					
+				endif;				
+				$counter++;
+			endforeach; //Endforeach
+		endif; //Endif		
+	endforeach;	
+}
+add_action('wp', 'just_check_query_time');*/

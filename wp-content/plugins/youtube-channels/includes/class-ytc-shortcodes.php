@@ -87,14 +87,19 @@ class YTC_Shortcodes{
 				
 				<form action="<?php the_permalink();?>" method="GET" id="ytc-search-form">
 					<div class="row">
-						<div class="col-lg-9">
+						<div class="col-lg-<?php echo current_user_can('administrator') ? '8' : '9';?>">
 							<div class="form-group">
 								<input id="ytc-search-input" name="q" type="search" class="form-control" placeholder="Search Channels..." value="<?php if( isset( $q ) ){ echo $q; } ?>">
 							</div><!--/.form-group-->							
 						</div>
-						<div class="col-lg-3">
+						<div class="col-lg-<?php echo current_user_can('administrator') ? '2' : '3';?>">
 							<div class="form-group"><button class="btn btn-block btn-primary" id="showfilters">Show Filters</button></div><!--/.form-group-->
-						</div>						
+						</div>
+						<?php if( current_user_can('administrator') ) : //Check User Is Admin ?>
+							<div class="col-lg-2">
+								<button type="button" class="btn btn-block btn-primary add-channel" data-toggle="modal" data-target="#addChannelModal"><?php _e('Add Channel','youtube-channels');?></button>							
+							</div><!--/.col-lg-2-->
+						<?php endif; //Endif ?>
 					</div><!--/.row-->				
 					<div class="row" id="filters" style="display:none">
 						<div class="col-lg-6">
@@ -172,6 +177,32 @@ class YTC_Shortcodes{
 				</div><!--/.modal-content-->
 			</div><!--/.modal-dialog-->
 		</div><!--/#infomodal-->
+		
+		<?php if( current_user_can('administrator') ) : //Check User Is Admin ?>
+		
+			<!-- Add Channel Modal -->
+			<div class="modal" id="addChannelModal">
+				<div class="modal-dialog">
+					<div class="modal-content">			
+						<!-- Modal Header -->
+						<div class="modal-header">
+							<h4 class="modal-title"><?php _e('Add Channel','youtube-channels');?></h4>
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+						</div>
+						<form action="" id="addchannelform" method="post">
+							<!-- Modal body -->
+							<div class="modal-body">			
+								<div class="form-group"><input name="channel_id" id="channel_id"  type="text" class="form-control" placeholder="Enter Channel ID"></div>
+								<div id="msg"></div>
+								<div class="form-group"><button id="addchannelbtn" class="btn btn-danger btn-block" type="submit">Submit</button></div>
+							</div><!--/.modal-body-->
+						</form><!--/#addchannelform-->
+					</div><!--/.modal-content-->
+				</div><!--/.modal-dialog-->
+			</div><!--/#myModal-->
+
+		<?php endif; //Endif  ?>
+
 		<?php $content = ob_get_contents(); //End Buffer
 		ob_get_clean();
 		return $content;
