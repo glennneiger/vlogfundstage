@@ -187,9 +187,6 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 			</a></h2>
 		</div><!--/.box-->
 	</div><!--/.col-lg-3-->
-	<!--<div class="sfc-campaign-archive-post"></div>
-	<div class="sfc-campaign-archive-post"></div>
-	<div class="sfc-campaign-archive-post"></div>-->
 <?php }
 
 endif;

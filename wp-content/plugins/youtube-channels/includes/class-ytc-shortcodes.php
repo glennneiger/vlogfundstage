@@ -142,6 +142,10 @@ class YTC_Shortcodes{
 
 
 					endif; //Edif ?>
+
+					<div class="sfc-campaign-archive-post"></div>
+					<div class="sfc-campaign-archive-post"></div>
+					<div class="sfc-campaign-archive-post"></div>
 				</div><!--/.row-->
 			</div>
 				<?php if( ytc_get_channels_count( array( 'search' => $q ) ) > 40 ){ ?>
@@ -151,7 +155,6 @@ class YTC_Shortcodes{
 
 
 				<?php } ?>
-
 		</div><!--/.list-->
 
 		<!-- Channel Info Modal-->

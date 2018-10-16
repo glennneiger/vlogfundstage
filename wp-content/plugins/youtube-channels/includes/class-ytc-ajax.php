@@ -4,13 +4,13 @@
  *
  * Handles all ajax callbacks requests
  *
- * @since YouTube Channels 1.0 
+ * @since YouTube Channels 1.0
  **/
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 if( !class_exists('YTC_Shortcodes') ) :
 
 class YTC_Ajax_Callbacks{
-	
+
 	//Construct which run class
 	function __construct(){
 		//Searched Channels
@@ -18,10 +18,10 @@ class YTC_Ajax_Callbacks{
 		add_action( 'wp_ajax_nopriv_ytc_get_channels', 	array( $this, 'ytc_get_channels' ) );
 		//Autocomplete Channels
 		add_action( 'wp_ajax_ytc_search_autocomplete',			array( $this, 'ytc_search_autocomplete' ) );
-		add_action( 'wp_ajax_nopriv_ytc_search_autocomplete',	array( $this, 'ytc_search_autocomplete' ) );		
-		//Get Individual Channel		
+		add_action( 'wp_ajax_nopriv_ytc_search_autocomplete',	array( $this, 'ytc_search_autocomplete' ) );
+		//Get Individual Channel
 		add_action( 'wp_ajax_ytc_get_channel',			array( $this, 'ytc_get_particual_channel' ) );
-		add_action( 'wp_ajax_nopriv_ytc_get_channel',	array( $this, 'ytc_get_particual_channel' ) );		
+		add_action( 'wp_ajax_nopriv_ytc_get_channel',	array( $this, 'ytc_get_particual_channel' ) );
 		//Add New Channel
 		add_action( 'wp_ajax_ytc_add_channel',			array( $this, 'ytc_add_channel' ) );
 		add_action( 'wp_ajax_nopriv_ytc_add_channel',	array( $this, 'ytc_add_channel' ) );
@@ -31,21 +31,30 @@ class YTC_Ajax_Callbacks{
 	 * Get Channels Data
 	 **/
 	public function ytc_get_channels(){
-		
+
 		//Search
 		if( isset( $_POST['term'] ) && !empty( $_POST['term'] ) ) :
 			ytc_get_channels_list( array( 'search' => $_POST['term'] ) );
+			echo '<div class="sfc-campaign-archive-post"></div>
+			      <div class="sfc-campaign-archive-post"></div>
+			      <div class="sfc-campaign-archive-post"></div>';
 		elseif( isset( $_POST['channelid'] ) && !empty( $_POST['channelid'] ) ) : //Choose From Autocomplete
 			ytc_get_channels_list( array( 'channelid' => $_POST['channelid'] ) );
+			echo '<div class="sfc-campaign-archive-post"></div>
+			      <div class="sfc-campaign-archive-post"></div>
+			      <div class="sfc-campaign-archive-post"></div>';
 		elseif( isset( $_POST['normal'] ) && !empty( $_POST['normal'] ) ) : //Normal Channels
 			$args = array( 'orderby' => $_POST['sortby'], 'order' => $_POST['orderby'], 'limit' => 40, 'offset' => $_POST['offset'] );
 			//Get Channels
 			ytc_get_channels_list( $args );
-		endif; //Endif		
+			echo '<div class="sfc-campaign-archive-post"></div>
+			      <div class="sfc-campaign-archive-post"></div>
+			      <div class="sfc-campaign-archive-post"></div>';
+		endif; //Endif
 		wp_die(); //To Through Proper Result
 	}
-	
-	
+
+
 	/**
 	 * Get Specific Channel Data form ID
 	 **/
@@ -58,8 +67,8 @@ class YTC_Ajax_Callbacks{
 			$response 	= json_decode( $data );
 			$html 	= '';
 			foreach( $response->items as $item ){
-				$html .= '<div class="youtubes" data-embed="'.$item->id->videoId.'"> 
-								<div class="play-button"></div> 
+				$html .= '<div class="youtubes" data-embed="'.$item->id->videoId.'">
+								<div class="play-button"></div>
 								<img class="thumbs" src="https://img.youtube.com/vi/'.$item->id->videoId.'/sddefault.jpg">
 							</div>';
 			}
@@ -67,19 +76,19 @@ class YTC_Ajax_Callbacks{
 		endif;
 		wp_die(); //To Through Proper Result
 	}
-	
+
 	/**
 	 * Add New Channel
-	 **/	
+	 **/
 	public function ytc_add_channel(){
 
-		global $wpdb;		
-		
-		if( isset( $_POST['channel_id'] ) && !empty( $_POST['channel_id'] ) ) {			
-        	$channel_id = $wpdb->_real_escape( $_POST['channel_id'] );			
+		global $wpdb;
+
+		if( isset( $_POST['channel_id'] ) && !empty( $_POST['channel_id'] ) ) {
+        	$channel_id = $wpdb->_real_escape( $_POST['channel_id'] );
 			if( empty( $channel_id ) ){
 				echo "<div class='alert alert-danger'><strong>Error!</strong> Please enter channelid!!</div>";
-			} elseif( !empty( $channel_id ) ){				
+			} elseif( !empty( $channel_id ) ){
 				if( ytc_channel_exists( $channel_id ) ){
 					echo "<div class='alert alert-danger'><strong>Error!</strong> Channel already exists!!</div>";
 				} else {
@@ -115,16 +124,16 @@ class YTC_Ajax_Callbacks{
 		}
 		wp_die(); //To Through Proper Result
 	}
-	
+
 	/**
 	* Autocomplete Search Channels
 	**/
 	public function ytc_search_autocomplete(){
-		
+
 		//Check Search Not Empty
 		if( isset( $_GET['term'] ) && !empty( $_GET['term'] ) ){
-			$return_arr = array();			
-			$channels = get_posts( array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'posts_per_page' => 10, 's' => $_GET['term'] ) );			
+			$return_arr = array();
+			$channels = get_posts( array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'posts_per_page' => 10, 's' => $_GET['term'] ) );
 			if( !empty( $channels ) ){
 				foreach( $channels as $channel ) :
 					$channel_id = get_post_meta( $channel->ID, 'wpcf-channel_id', true ); 		//Channel ID
