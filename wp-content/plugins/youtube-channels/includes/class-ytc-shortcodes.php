@@ -158,13 +158,13 @@ class YTC_Shortcodes{
 		</div><!--/.list-->
 
 		<!-- Channel Info Modal-->
-		<div class="modal" id="infomodal">
+		<!--<div class="modal" id="infomodal">
 			<div class="modal-dialog">
 				<div class="modal-content">
-					<!-- Modal Header -->
+
 					<div class="modal-header" style="background:#e13b2b;display:block">
 						<p style="color:white;margin-bottom:0"><i class="fa fa-eye"></i> <span id="cviews"></span> <span class="float-right"> <i class="fa fa-users"></i> <span id="csubs"></span></span></p>
-					</div><!--/.modal-header-->
+					</div>
 					<div class="modal-body">
                         <center>
 							<div class="form-group"><h4 id="ctitle"></h4></div>
@@ -178,7 +178,7 @@ class YTC_Shortcodes{
 								<a id="website" href="" target="_blank" style="color:white" class="btn btn-success"><i class="fas fa-globe"></i></a>
 								<a id="gplus" href="" target="_blank" style="color:white;background:#d34836" class="btn"><i class="fab fa-google-plus-square"></i></a>
 								<a id="vk" href="" target="_blank" style="color:white;background:#4c75a3" class="btn"><i class="fab fa-vk"></i></a>
-                            </div><!--/.form-group-->
+                            </div>
                             <div class="form-group"><h4 id="detailtitle">Latest Videos</h4></div>
                             <p id="videoloader"><i class="fa fa-spinner fa-spin"></i></p>
                             <div id="cvideos">
@@ -191,10 +191,10 @@ class YTC_Shortcodes{
 
                             <button type="button" class="close-modal" data-dismiss="modal">Close</button>
 
-					</div><!--/.modal-body-->
-				</div><!--/.modal-content-->
-			</div><!--/.modal-dialog-->
-		</div><!--/#infomodal-->
+					</div>
+				</div>
+			</div>
+		</div>-->
 		<?php $content = ob_get_contents(); //End Buffer
 		ob_get_clean();
 		return $content;
