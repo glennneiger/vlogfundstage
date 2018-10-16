@@ -33,15 +33,11 @@ class YTC_Shortcodes{
 		wp_register_style( 'ytc-styles', 			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null );
 		//App Style
 		wp_register_style( 'ytc-app-style',			YTC_PLUGIN_URL . 'assets/css/app.css', array(), null );
-		//Tooltipster Style
-		wp_register_style( 'ytc-tooltipster-style',	YTC_PLUGIN_URL . 'assets/css/tooltipster.bundle.css', array(), null );		
 		
 		//BLazy
 		wp_register_script( 'ytc-blazy-script', 	YTC_PLUGIN_URL . 'assets/js/blazy.min.js', array('jquery'), null, true );
 		//Bootstrap Script
 		wp_register_script( 'ytc-bootstrap-script',	YTC_PLUGIN_URL . 'assets/js/bootstrap.min.js', array('jquery'), null, true );
-		//Tooltipster Script
-		wp_register_script( 'ytc-tooltipster-script',YTC_PLUGIN_URL . 'assets/js/tooltipster.bundle.js', array('jquery'), null, true );
 		//Script for Public Function
 		wp_register_script( 'ytc-app-script', 		YTC_PLUGIN_URL . 'assets/js/app.js', array('jquery'), null, true );		
 		wp_localize_script( 'ytc-app-script', 'YTC_Obj', array( 'ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ) ) );
@@ -58,8 +54,8 @@ class YTC_Shortcodes{
 		), $atts, 'ytc_channels' ) );
 		
 		//Enqueue Scripts / Styles
-		wp_enqueue_style( array( 'ytc-bootstrap-style', 'ytc-styles', 'ytc-app-style', 'ytc-tooltipster-style') );
-		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-blazy-script', 'ytc-bootstrap-script', 'ytc-tooltipster-script', 'ytc-app-script') );
+		wp_enqueue_style( array( 'ytc-bootstrap-style', 'ytc-styles', 'ytc-app-style') );
+		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-blazy-script', 'ytc-bootstrap-script', 'ytc-app-script') );
 		
 		$q 		= isset( $_GET['q'] ) ? $_GET['q'] : ''; //Search Query
 		$sortby	= isset( $_GET['sortBy'] ) 	? $_GET['sortBy'] 	: 'subscribers'; //Orderby
@@ -81,10 +77,15 @@ class YTC_Shortcodes{
 				
 				<form action="<?php the_permalink();?>" method="GET" id="ytc-search-form">
 					<div class="row">
-						<div class="col-lg-9">
+						<div class="col-lg-7">
 							<div class="form-group">
 								<input id="ytc-search-input" name="q" type="search" class="form-control" placeholder="Search Channels..." value="<?php if( isset( $q ) ){ echo $q; } ?>">
-							</div><!--/.form-group-->							
+							</div><!--/.form-group-->
+						</div>
+						<div class="col-lg-2">
+							<div class="form-group">
+								<button type="submit" class="btn btn-block btn-primary">Search</button>
+							</div><!--/.form-group-->
 						</div>
 						<div class="col-lg-3">
 							<div class="form-group"><button class="btn btn-block btn-primary" id="showfilters">Show Filters</button></div><!--/.form-group-->

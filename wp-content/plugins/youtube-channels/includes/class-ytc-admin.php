@@ -59,7 +59,8 @@ class YTC_Admin{
 		
 		global $wpdb;
 		$date_before = date('Y-m-d', strtotime('-4days'));
-		$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_modified <= '$date_before';" );
+		$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_status = 'publish' AND post_type = 'youtube_channels' AND post_modified <= '$date_before';" );
+		$total_to_update = !empty( $total_to_update ) ? $total_to_update : 0;
 		
 		echo '<div class="wrap">';
 		echo '<h2>'.__('Update Channels','youtube-channels').'</h2><br>';
@@ -95,7 +96,7 @@ class YTC_Admin{
 			$query = "SELECT m1.meta_value FROM $wpdb->posts
 					LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
 					WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
-					AND m1.meta_key = 'wpcf-channel_id'
+					AND m1.meta_key = 'wpcf-channel_id' AND $wpdb->posts.post_status = 'publish'
 					AND $wpdb->posts.post_modified <= '$date_before' LIMIT 120;";
 			$all_channels = $wpdb->get_col( $query );
 			$updated = 0;
@@ -115,7 +116,6 @@ class YTC_Admin{
 								$updated_post = wp_update_post( array(
 									'ID' => $post_id,
 									'post_title'   => $channel->snippet->title,
-									'post_content' => $channel->snippet->description,
 								) );						
 								 //Update Related Details
 								update_post_meta( $post_id, 'wpcf-channel_views', 		$channel->statistics->viewCount );
@@ -123,6 +123,7 @@ class YTC_Admin{
 								update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
 								update_post_meta( $post_id, 'wpcf-channel_img', 		$channel->snippet->thumbnails->medium->url );
 								update_post_meta( $post_id, 'wpcf-channel_videos', 		$channel->statistics->videoCount );
+								update_post_meta( $post_id, 'wpcf-channel_description', $channel->snippet->description );
 								$updated++;							
 							endif;
 						endforeach; //Endforeach

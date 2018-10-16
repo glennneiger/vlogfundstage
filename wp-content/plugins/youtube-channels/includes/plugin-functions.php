@@ -177,9 +177,9 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 	<div class="col-lg-3 col-sm-6" id="<?php echo $channel_id; ?>">
 		<div class="box grid recipes">
 			<div class="by"><i class="fa fa-eye" aria-hidden="true"></i>
-				<span id="<?php echo $channel_id; ?>-views" title="Total Views Count" style="color:white" class="details">
+				<span id="<?php echo $channel_id; ?>-views" style="color:white">
 					<?php echo ytc_number_abbs( $channel_views ); ?>
-				</span> <span id="<?php echo $channel_id; ?>-subs" title="Subscribers Count" class="fa-pull-right details"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channel_subscribers == 0 ) ? 'N/A' : ytc_number_abbs( $channel_subscribers ); ?></span>
+				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channel_subscribers == 0 ) ? 'N/A' : ytc_number_abbs( $channel_subscribers ); ?></span>
 			</div><!--/.by-->
 			<a href="https://www.youtube.com/channel/<?php echo $channel_id; ?>" class="showinfoimg"><img class="b-lazy" id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
 			<h2><a href="https://www.youtube.com/channel/<?php echo $channel_id; ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>" target="_blank">
