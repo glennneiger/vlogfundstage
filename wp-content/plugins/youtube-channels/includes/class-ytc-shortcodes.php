@@ -33,23 +33,10 @@ class YTC_Shortcodes{
 		wp_register_style( 'ytc-styles', 			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null );
 		//App Style
 		wp_register_style( 'ytc-app-style',			YTC_PLUGIN_URL . 'assets/css/app.css', array(), null );
-<<<<<<< HEAD
-		//Tooltipster Style
-		//wp_register_style( 'ytc-tooltipster-style',	YTC_PLUGIN_URL . 'assets/css/tooltipster.bundle.css', array(), null );
-
 		//BLazy
 		wp_register_script( 'ytc-blazy-script', 	YTC_PLUGIN_URL . 'assets/js/blazy.min.js', array('jquery'), null, true );
 		//Bootstrap Script
 		//wp_register_script( 'ytc-bootstrap-script',	YTC_PLUGIN_URL . 'assets/js/bootstrap.min.js', array('jquery'), null, true );
-		//Tooltipster Script
-		//wp_register_script( 'ytc-tooltipster-script',YTC_PLUGIN_URL . 'assets/js/tooltipster.bundle.js', array('jquery'), null, true );
-=======
-
-		//BLazy
-		wp_register_script( 'ytc-blazy-script', 	YTC_PLUGIN_URL . 'assets/js/blazy.min.js', array('jquery'), null, true );
-		//Bootstrap Script
-		wp_register_script( 'ytc-bootstrap-script',	YTC_PLUGIN_URL . 'assets/js/bootstrap.min.js', array('jquery'), null, true );
->>>>>>> ef22391875a79397dc820eb6a1654c34934dc648
 		//Script for Public Function
 		wp_register_script( 'ytc-app-script', 		YTC_PLUGIN_URL . 'assets/js/app.js', array('jquery'), null, true );
 		wp_localize_script( 'ytc-app-script', 'YTC_Obj', array( 'ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ) ) );
@@ -80,49 +67,66 @@ class YTC_Shortcodes{
      <div class="sfc-campaign-archive">
 			<div class="fc-campaign-archive-container">
                 <div class="sfc-campaign-archive-heading">
-                    <h1 class="sfc-campaign-archive-title">Your favorite YouTubers</h1>
+                    <h1 class="sfc-campaign-archive-title">Discover your favorite YouTubers</h1>
                 </div><!--/.row-->
 
+
 				<form action="<?php the_permalink();?>" method="GET" id="ytc-search-form" class="sfc-campaign-archive-search">
-					<div class="row">
+					<div class="sfc-campaign-archive-search-fields">
 
-						<div class="col-lg-7">
-							<div class="form-group">
-								<input id="ytc-search-input" name="q" type="search" class="form-control" placeholder="Search Channels..." value="<?php if( isset( $q ) ){ echo $q; } ?>">
+
+							<div class="sfc-campaign-archive-search-item">
+								<span class="fa fa-search sfc-campaign-search-icon"></span>
+								<input id="ytc-search-input" name="q" type="search" class="form-control sfc-campaign-archive-search-input" placeholder="Search Channels..." value="<?php if( isset( $q ) ){ echo $q; } ?>">
 							</div><!--/.form-group-->
-						</div>
 
-						<div class="col-lg-2">
-							<div class="form-group">
-								<button type="submit" class="btn btn-block btn-primary">Search</button>
+
+
+							<div class="sfc-campaign-archive-search-item">
+								<button type="submit" class="btn btn-block btn-primary sfc-youtube-channel-search-button">Search</button>
 							</div><!--/.form-group-->
-						</div>
 
-						<div class="col-lg-3">
-							<div class="form-group"><button class="btn btn-block btn-primary" id="showfilters">Show Filters</button></div><!--/.form-group-->
-						</div>
+
+
+							<!--<div class="sfc-campaign-archive-search-item">
+								<button class="btn btn-block btn-primary" id="showfilters">Show Filters</button>
+							</div>--><!--/.form-group-->
+
 
 					</div><!--/.row-->
-					<div class="row" id="filters" style="display:none">
-						<div class="col-lg-6">
-							<div class="form-group">
+
+
+					<div class="row ytc-filters" id="filters" style="display:one">
+
+							<div class="ytc-filter-group">
 								<label for="ytc-sortBy">Sort by</label>
 								<select onchange="this.form.submit()" name="sortBy" id="ytc-sortBy" class="form-control" id="">
 								   <option value="subscribers" <?php selected( 'subscribers', $sortby );?>>Subscribers</option>
 								   <option value="views" <?php selected( 'views', $sortby );?>>Views</option>
 							   </select>
 							</div><!--/.form-group-->
-						</div><!--/.col-lg-6-->
-						<div class="col-lg-6">
-							<div class="form-group">
+
+
+							<div class="ytc-filter-group">
 								<label for="ytc-orderBy">Order By</label>
 								<select onchange="this.form.submit()" name="orderBy" id="ytc-orderBy" class="form-control" id="">
 								   <option value="asc" <?php selected( 'asc', $orderby );?>>Ascending</option>
 								   <option value="desc" <?php selected( 'desc', $orderby );?>>Descending</option>
 							   </select>
 							</div><!--/.form-group-->
-						</div><!--/.col-lg-6-->
+
 					</div><!--/.row-->
+
+
+
+				</form>
+
+				</div><!--/.container-->
+			</div>
+
+				<div class="row tags-container"><div class="tag"></div></div>
+				<div id="ytc-searchloader" style="display:none"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
+        <div class="sfc-campaign-archive-container">
 
 					<?php if( !empty( $q ) ){ ?>
 <span><?php echo ytc_get_channels_count( array( 'search' => $q ) ); ?> creators found for keyword: <b><?php echo $q; ?></b></span>
@@ -130,25 +134,22 @@ class YTC_Shortcodes{
 						<span><?php echo ytc_get_channels_count(); ?> creators found </span>
 					<?php } ?>
 
-				</form>
-				</div><!--/.container-->
-			</div>
 
-				<div class="row tags-container"><div class="col-lg-12 tag"></div></div>
-				<div id="ytc-searchloader" style="display:none"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
-        <div class="sfc-campaign-archive-container">
 				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">
 					<?php if( $showresults ) : //Check Show Results
 
 						ytc_get_channels_list( array( 'search' => $q, 'order' => $orderby, 'orderby' => $sortby ) );
 
+
 					endif; //Edif ?>
 				</div><!--/.row-->
 			</div>
 				<?php if( ytc_get_channels_count( array( 'search' => $q ) ) > 40 ){ ?>
-					<div class="row">
-						<div class="col-lg-12 text-center"><button id="ytc-loadmore" class="btn btn-danger">Load More</button><br><br></div>
-					</div><!--/.row-->
+
+
+							<button id="ytc-loadmore" class="sfc-ytc-load-more-button">Load More</button>
+
+
 				<?php } ?>
 
 		</div><!--/.list-->
@@ -184,9 +185,9 @@ class YTC_Shortcodes{
                             </div>
                             <div id="tweets"></div>
                         </center>
-                        <div class="form-group">
-                            <button type="button" class="btn btn-danger btn-block close-modal" data-dismiss="modal">Close</button>
-                        </div>
+
+                            <button type="button" class="close-modal" data-dismiss="modal">Close</button>
+
 					</div><!--/.modal-body-->
 				</div><!--/.modal-content-->
 			</div><!--/.modal-dialog-->

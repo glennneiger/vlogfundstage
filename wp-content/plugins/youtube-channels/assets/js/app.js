@@ -1,10 +1,10 @@
 /* Custom General jQuery
 /*-----------------------------------------------------------*/
 ;(function($, window, document, undefined) {
-	
+
 	var search = false;
 	var count = 0;
-	
+
 	$(document).ready(function() {
 
 		//Show Tweets Click
@@ -13,14 +13,14 @@
 			$("#cvideos").hide();
 			$("#tweets").show();
 		});
-	
+
 		//Show Videos Click
 		$(".showvideos").on('click', function(){
 			$("#detailtitle").html($(this).attr('data-title'));
 			$("#tweets").hide();
 			$("#cvideos").show();
 		});
-		
+
 		//Youtubes Click
 		$(document).on('click', '.youtubes', function(){
 			var iframe = document.createElement( "iframe" );
@@ -30,10 +30,10 @@
 			this.innerHTML = "";
 			this.appendChild( iframe );
 		});
-		
+
 		//LazyLoad Images
 		var blazy = new Blazy();
-		
+
 		//Get URL Parameter
 		var getUrlParameter = function getUrlParameter(sParam) {
 			var sPageURL = decodeURIComponent(window.location.search.substring(1)),
@@ -41,13 +41,13 @@
 				sParameterName,
 				i;
 			for( i = 0; i < sURLVariables.length; i++ ){
-				sParameterName = sURLVariables[i].split('=');		
+				sParameterName = sURLVariables[i].split('=');
 				if ( sParameterName[0] === sParam ){
 					return sParameterName[1] === undefined ? true : sParameterName[1];
 				}
 			}
 		};
-		
+
 		//Search Auto Complete
 		$("#ytc-search-input").autocomplete({
 			source: YTC_Obj.ajaxurl + '?action=ytc_search_autocomplete',
@@ -60,7 +60,7 @@
 				}
 				$('#ytc-channles-list').hide();
 				$('#ytc-searchloader').show();
-				$('#ytc-loadmore').hide();				
+				$('#ytc-loadmore').hide();
 				$.ajax({
 					url: YTC_Obj.ajaxurl, //"ajax/getdata",
 					data : { action: 'ytc_get_channels', channelid: ui.item.channelid, offset:0 },
@@ -70,13 +70,13 @@
 					},
 					success : function(data){
 					 if( data ){
-						$("#ytc-search-input").val('');						
+						$("#ytc-search-input").val('');
 						$('#ytc-searchloader').hide();
 						$('#ytc-channles-list').append(data);
 						$('#ytc-channles-list').show();
 						count++;
 						//LazyLoad Images
-						blazy.revalidate();					
+						blazy.revalidate();
 					 }else{
 						$('#ytc-channles-list').html('No records found');
 					 }
@@ -84,7 +84,7 @@
 				});
 			}
 		});
-		
+
 		//Remove Button Click
 		$(document).on('click', '.removebtn', function(e){
 			e.preventDefault();
@@ -96,13 +96,13 @@
 			   window.location.reload();
 			}
 		});
-		
+
 		//Show Image Information
 		$(document).on('click','.showinfoimg',function(e){
 			e.preventDefault();
 			$(this).parent().find('.showinfo').trigger('click');
 		});
-		
+
 		//Show Information
 		$(document).on('click','.showinfo',function(e){
 			e.preventDefault();
@@ -125,7 +125,8 @@
 			$("#cimg").attr('src', img);
 			$("#videoloader").show();
 			$("#cvideos").empty();
-			$('#infomodal').modal('show');
+			//$('#infomodal').modal('show');
+			$('#infomodal').show();
 			$("#tweets").hide();
 			$("#cvideos").show();
 			$("#detailtitle").html('Latest Videos');
@@ -135,42 +136,42 @@
 			}else{
 				$(".instagram").hide();
 			}
-			
+
 			if(facebook!=''){
 				$("#facebook").attr('href', facebook);
 				$("#facebook").show();
 			}else{
 				$("#facebook").hide();
 			}
-					
+
 			if(snapchat!=''){
 				$("#snapchat").attr('href', snapchat);
 				$("#snapchat").show();
 			}else{
 				$("#snapchat").hide();
 			}
-			
+
 			if(website!=''){
 				$("#website").attr('href', website);
 				$("#website").show();
 			}else{
 				$("#website").hide();
 			}
-			
+
 			if(gplus!=''){
 				$("#gplus").attr('href', gplus);
 				$("#gplus").show();
 			}else{
 				$("#gplus").hide();
 			}
-			
+
 			if(vk!=''){
 				$("#vk").attr('href', vk);
 				$("#vk").show();
 			}else{
 				$("#vk").hide();
 			}
-		
+
 			if( twitter != '' ){
 				$("#tweets").empty();
 				$("#tweets").html('<a class="twitter-timeline" href="https://twitter.com/'+twitter+'?ref_src=twsrc%5Etfw">Tweets by '+twitter+'</a>');
@@ -179,7 +180,7 @@
 			}else{
 				$('.showtweets').hide();
 			}
-		
+
 			$.ajax({
 				url: YTC_Obj.ajaxurl, //"ajax/ajaxgetvideos",
 				type: 'POST',
@@ -192,8 +193,14 @@
 				},
 			});
 		});
-		
-		//On Add Channel Submit		
+
+		//close modal
+
+		$('.close-modal').click(function() {
+			$('.modal').hide();
+		});
+
+		//On Add Channel Submit
 		$('#addchannelform').on('submit', function (e) {
 			var btn = $("#addchannelbtn");
 			e.preventDefault();
@@ -212,9 +219,9 @@
 				}
 			});
 		});
-		
-		//Show/Hide Filter	
-		var show = false;
+
+		//Show/Hide Filter
+		/*var show = false;
 		$('#showfilters').on('click', function(e){
 			  e.preventDefault();
 			  if( show == false ){
@@ -226,8 +233,8 @@
 				  $(this).html('Show Filters')
 				  show = false;
 			  }
-		});
-		
+		});*/
+
 		//Load More
 		var offset = 0;
         $(document).on('click', '#ytc-loadmore', function(e) {
@@ -239,7 +246,7 @@
 			$.ajax({
 				url: YTC_Obj.ajaxurl, //"ajax/getdata",
 				data : { action: 'ytc_get_channels', normal: 1, offset: offset, order: getUrlParameter('orderBy'), sort: getUrlParameter('sortBy') },
-				type: 'POST',               
+				type: 'POST',
 				success : function(data){
 					if( data ){
 						elem.prop('disabled', false);
@@ -252,7 +259,7 @@
 					}
 				},
 			});
-        });		
+        });
 	});
 /*-----------------------------------------------------------*/
 })(jQuery, window, document);

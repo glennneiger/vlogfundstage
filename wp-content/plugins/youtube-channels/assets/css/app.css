@@ -97,3 +97,53 @@ input[type="search"]::-webkit-search-cancel-button {
 #infomodal.modal, #addChannelModal.modal{ z-index:9999; }
 #addChannelModal.modal{ padding-top:100px; }
 #addChannelModal.modal div.alert.alert-success{ display:block; }
+
+
+
+
+
+.sfc-youtube-channel-search-button {
+    background: #6b10d6;
+    background: var(--brand-color);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    height: 50px;
+    padding: 0 20px;
+    cursor: pointer;
+    border: none;
+    text-shadow: none;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.ytc-filters {
+	text-align: center;
+    display: flex;
+    justify-content: center;
+    color: white;
+    margin-top: 30px;
+}
+
+.ytc-filter-group {
+	margin: auto 5px;
+}
+
+.sfc-ytc-load-more-button {
+	margin: auto;
+	display: block;
+	border: 0;
+	background: #6b10d6;
+  background: var(--brand-color);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  text-shadow: none;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+	margin-top: 20px;
+}

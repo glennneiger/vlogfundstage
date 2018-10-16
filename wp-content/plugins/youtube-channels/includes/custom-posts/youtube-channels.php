@@ -4,13 +4,13 @@
  *
  * Handles all register custom post type youtube channels
  *
- * @since YouTube Channels 1.0 
+ * @since YouTube Channels 1.0
  **/
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 if( !function_exists('ytc_register_youtube_channels_post_type') ) :
 function ytc_register_youtube_channels_post_type(){
-	
+
 	//YouTube Channels
 	$yt_channels_labels = array(
 		'name'				=>	_x( 'YouTube Channels', 'post type general name', 'youtube-channels' ),
@@ -28,7 +28,7 @@ function ytc_register_youtube_channels_post_type(){
 		'not_found'         =>	__( 'No channels found.', 'youtube-channels' ),
 		'not_found_in_trash'=>	__( 'No channels found in Trash.', 'youtube-channels' )
 	);
-	
+
 	//Post Type Arguments
 	$yt_channels_args = array(
 		'labels'			=>	$yt_channels_labels,
@@ -48,7 +48,7 @@ function ytc_register_youtube_channels_post_type(){
 	);
 	//Register Post Type
 	register_post_type( 'youtube_channels', $yt_channels_args );
-	
+
 }
 add_action( 'init', 'ytc_register_youtube_channels_post_type' );
 endif;
@@ -61,7 +61,7 @@ if( !function_exists('ytc_channels_updated_messages') ) :
  * @return array Amended post update messages with new CPT update messages.
  **/
 function ytc_channels_updated_messages( $messages ){
-	
+
 	$post             = get_post();
 	$post_type        = get_post_type( $post );
 	$post_type_object = get_post_type_object( $post_type );
@@ -86,7 +86,7 @@ function ytc_channels_updated_messages( $messages ){
 	);
 
 	if ( $post_type_object->publicly_queryable && 'youtube_channels' === $post_type ) {
-		
+
 		$permalink = get_permalink( $post->ID );
 		$view_link = sprintf( ' <a href="%s">%s</a>', esc_url( $permalink ), __( 'View Channel', 'youtube-channels' ) );
 		$messages[ $post_type ][1] .= $view_link;

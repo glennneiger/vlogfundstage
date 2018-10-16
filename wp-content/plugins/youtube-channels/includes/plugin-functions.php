@@ -98,7 +98,7 @@ if( !function_exists('ytc_get_channels_list') ) :
  **/
 function ytc_get_channels_list( $args = array() ){
 
-	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'orderby' => 'meta_value' );
+	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'orderby' => 'meta_value_num' );
 
 	if( isset( $args['search'] ) && !empty( $args['search'] ) ) {
 		$query_args['s'] = $args['search'];
@@ -187,9 +187,9 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 			</a></h2>
 		</div><!--/.box-->
 	</div><!--/.col-lg-3-->
+	<!--<div class="sfc-campaign-archive-post"></div>
 	<div class="sfc-campaign-archive-post"></div>
-  <div class="sfc-campaign-archive-post"></div>
-  <div class="sfc-campaign-archive-post"></div>
-
+	<div class="sfc-campaign-archive-post"></div>-->
 <?php }
+
 endif;
