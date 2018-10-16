@@ -31,29 +31,6 @@
 			this.appendChild( iframe );
 		});
 		
-		//Init Function
-		var init = function(){
-			$('.details').tooltipster({
-				delay: 10,
-				contentAsHTML: true,
-				maxWidth: 500,
-				interactive: true,
-				multiple: false,
-				//delay: [0, 200],
-				trigger: 'custom',
-				triggerOpen: {
-					mouseenter: true,
-					touchstart: true
-				},
-				triggerClose: {
-					click: true,
-					mouseleave: true,
-					tap: true
-				}
-			});
-		};
-		window.onload = init();
-		
 		//LazyLoad Images
 		var blazy = new Blazy();
 		
@@ -99,8 +76,7 @@
 						$('#ytc-channles-list').show();
 						count++;
 						//LazyLoad Images
-						blazy.revalidate();
-						init();						
+						blazy.revalidate();					
 					 }else{
 						$('#ytc-channles-list').html('No records found');
 					 }
@@ -271,7 +247,6 @@
 						$('#ytc-channles-list').append(data);
 						//LazyLoad Images
 						blazy.revalidate();
-						init();
 					}else{
 						elem.html('No more records');
 					}
