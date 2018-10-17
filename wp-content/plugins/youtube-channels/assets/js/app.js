@@ -8,17 +8,17 @@
 	$(document).ready(function() {
 
 		//Show Tweets Click
-		$(".showtweets").on('click', function(){
-			$("#detailtitle").html($(this).attr('data-title'));
-			$("#cvideos").hide();
-			$("#tweets").show();
+		$('.showtweets').on('click', function(){
+			$('#detailtitle').html($(this).attr('data-title'));
+			$('#cvideos').hide();
+			$('#tweets').show();
 		});
 
 		//Show Videos Click
-		$(".showvideos").on('click', function(){
-			$("#detailtitle").html($(this).attr('data-title'));
-			$("#tweets").hide();
-			$("#cvideos").show();
+		$('.showvideos').on('click', function(){
+			$('#detailtitle').html($(this).attr('data-title'));
+			$('#tweets').hide();
+			$('#cvideos').show();
 		});
 
 		//Youtubes Click
@@ -58,28 +58,27 @@
 					$("#homelink").text("Clear Search");
 					search = true;
 				}
-				$('#ytc-channles-list').hide();
-				$('#ytc-searchloader').show();
-				$('#ytc-loadmore').hide();
 				$.ajax({
 					url: YTC_Obj.ajaxurl, //"ajax/getdata",
 					data : { action: 'ytc_get_channels', channelid: ui.item.channelid, offset:0 },
 					type: 'POST',
 					beforeSend: function(){
 						$(".tag").append('<a href="#">'+ui.item.label+' <span data-channelid="'+ui.item.channelid+'" class="removebtn" style="margin-left:15px;font-size:20px">x</span></a>');
+						$('#ytc-channles-list').hide();
+						$('#ytc-searchloader').show();
+						$('#ytc-loadmore').hide();
 					},
 					success : function(data){
-					 if( data ){
-						$("#ytc-search-input").val('');
-						$('#ytc-searchloader').hide();
-						$('#ytc-channles-list').append(data);
-						$('#ytc-channles-list').show();
-						count++;
-						//LazyLoad Images
-						blazy.revalidate();
-					 }else{
-						$('#ytc-channles-list').html('No records found');
-					 }
+						if( data ){
+							$('#ytc-search-input').val('');
+							$('#ytc-searchloader').hide();
+							$('#ytc-channles-list').html(data);
+							$('#ytc-channles-list').show();
+							count++;
+							new Blazy(); //LazyLoad Images
+						}else{
+							$('#ytc-channles-list').html('No records found');
+						}
 					},
 				});
 			}
@@ -97,169 +96,80 @@
 			}
 		});
 
-		//Show Image Information
-		$(document).on('click','.showinfoimg',function(e){
-			e.preventDefault();
-			$(this).parent().find('.showinfo').trigger('click');
-		});
-
-		//Show Information
-		$(document).on('click','.showinfo',function(e){
-			e.preventDefault();
-			var title = $(this).attr('data-title');
-			var channelid = $(this).attr('data-channelid');
-			var subs = $("#"+channelid+'-subs').text();
-			var img = $("#"+channelid+'-img').attr('src');
-			var views = $("#"+channelid+'-views').text();
-			var instagram = $(this).attr('data-instagram');
-			var twitter = $(this).attr('data-twitter');
-			var snapchat = $(this).attr('data-snapchat');
-			var facebook = $(this).attr('data-facebook');
-			var vk = $(this).attr('data-vk');
-			var website = $(this).attr('data-website');
-			var gplus = $(this).attr('data-gplus');
-			$(".showtweets").attr('data-twitter', channelid);
-			$("#ctitle").html(title);
-			$("#csubs").html(subs);
-			$("#cviews").html(views);
-			$("#cimg").attr('src', img);
-			$("#videoloader").show();
-			$("#cvideos").empty();
-			//$('#infomodal').modal('show');
-			$('#infomodal').show();
-			$("#tweets").hide();
-			$("#cvideos").show();
-			$("#detailtitle").html('Latest Videos');
-			if(instagram!=''){
-				$(".instagram").attr('href', instagram);
-				$(".instagram").show();
-			}else{
-				$(".instagram").hide();
-			}
-
-			if(facebook!=''){
-				$("#facebook").attr('href', facebook);
-				$("#facebook").show();
-			}else{
-				$("#facebook").hide();
-			}
-
-			if(snapchat!=''){
-				$("#snapchat").attr('href', snapchat);
-				$("#snapchat").show();
-			}else{
-				$("#snapchat").hide();
-			}
-
-			if(website!=''){
-				$("#website").attr('href', website);
-				$("#website").show();
-			}else{
-				$("#website").hide();
-			}
-
-			if(gplus!=''){
-				$("#gplus").attr('href', gplus);
-				$("#gplus").show();
-			}else{
-				$("#gplus").hide();
-			}
-
-			if(vk!=''){
-				$("#vk").attr('href', vk);
-				$("#vk").show();
-			}else{
-				$("#vk").hide();
-			}
-
-			if( twitter != '' ){
-				$("#tweets").empty();
-				$("#tweets").html('<a class="twitter-timeline" href="https://twitter.com/'+twitter+'?ref_src=twsrc%5Etfw">Tweets by '+twitter+'</a>');
-				$("#tweets").append($("<script />", { src: 'https://platform.twitter.com/widgets.js' }));
-				$('.showtweets').show();
-			}else{
-				$('.showtweets').hide();
-			}
-
-			$.ajax({
-				url: YTC_Obj.ajaxurl, //"ajax/ajaxgetvideos",
-				type: 'POST',
-				data: { action: 'ytc_get_channel', id:channelid },
-				success : function(data){
-					if( data ){
-						$("#videoloader").hide();
-						$("#cvideos").html(data);
-					}
-				},
-			});
-		});
-
-		//close modal
-
-		$('.close-modal').click(function() {
-			$('.modal').hide();
-		});
-
-		//On Add Channel Submit
-		$('#addchannelform').on('submit', function (e) {
-			var btn = $("#addchannelbtn");
-			e.preventDefault();
-			$("#msg").html('');
-			btn.prop('disabled', true);
-			btn.html('<i class="fa fa-spinner fa-spin"></i>');
-			$.ajax({
-				type: 'POST',
-				url: YTC_Obj.ajaxurl, //'ajax/ajaxaddchannel.php',
-				data: $('#addchannelform').serialize() + '&action=ytc_add_channel',
-				success: function(data){
-					btn.prop('disabled', false);
-					btn.html('Submit');
-					$('#msg').html(data);
-					$('#addchannelform input#$channel_id').val('');
-				}
-			});
-		});
-
-		//Show/Hide Filter
-		/*var show = false;
-		$('#showfilters').on('click', function(e){
-			  e.preventDefault();
-			  if( show == false ){
-				  $("#filters").slideDown();
-				  $(this).html('Hide Filters')
-				  show = true;
-			  }else{
-				  $("#filters").slideUp();
-				  $(this).html('Show Filters')
-				  show = false;
-			  }
-		});*/
-
-		//Load More
-		var offset = 0;
+		//Load More		
         $(document).on('click', '#ytc-loadmore', function(e) {
             e.preventDefault();
+			var $search = $('#ytc-search-input').val();
+			var $orderby = $('#ytc-orderBy').val();
+			var $sortby = $('#ytc-sortBy').val();
+			var $paged = $('#ytc-page').val();
             var elem = $(this);
             elem.prop('disabled', true);
-            elem.html('<i class="fa fa-spinner fa-spin"></i> Loading');
-            offset += 40;
+            elem.html('<i class="fa fa-spinner fa-spin"></i> Loading');			
 			$.ajax({
-				url: YTC_Obj.ajaxurl, //"ajax/getdata",
-				data : { action: 'ytc_get_channels', normal: 1, offset: offset, order: getUrlParameter('orderBy'), sort: getUrlParameter('sortBy') },
+				url: YTC_Obj.ajaxurl,
+				data : { action: 'ytc_loadmore_channels', paged: $paged, search: $search, order: $orderby, sort: $sortby },
 				type: 'POST',
-				success : function(data){
-					if( data ){
+				success : function(result){
+					if( result.html ){
 						elem.prop('disabled', false);
 						elem.html('Load More');
-						$('#ytc-channles-list').append(data);
-						//LazyLoad Images
-						blazy.revalidate();
+						$(result.html).insertBefore( $('#ytc-channles-list').find('.sfc-campaign-archive-post:first') );
+						new Blazy(); //LazyLoad Images
 					}else{
 						elem.html('No more records');
+					}
+					if( result.more_page ){ //More
+						$('#ytc-loadmore').show();
+					} else {
+						$('#ytc-loadmore').hide();
+					}
+					if( result.paged ){
+						$('#ytc-page').val(result.paged);
 					}
 				},
 			});
         });
+		
+		//On Submit of Search Form
+		$('#ytc-search-form').on('submit', function(){
+			var $search = $('#ytc-search-input').val();
+			var $orderby = $('#ytc-orderBy').val();
+			var $sortby = $('#ytc-sortBy').val();			
+			if( typeof $search !== 'undefined' && $search !== '' ){
+				$.ajax({
+					url: YTC_Obj.ajaxurl,
+					data : { action: 'ytc_search_channels', search: $search, order: $orderby, sort: $sortby },
+					type: 'POST',
+					beforeSend: function(){
+						$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').hide();
+						$('#ytc-searchloader').show();
+					},
+					complete: function(){
+						$('#ytc-searchloader').hide();
+						$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').show();						
+					},
+					success : function(result){
+						if( result.html ){							
+							$('#ytc-channles-list').html(result.html);
+							$('#ytc-page').val(1);
+							new Blazy(); //LazyLoad Images
+						} else {
+							elem.html('No more records');
+						}
+						if( result.more_page ){ //More
+							$('#ytc-loadmore').show();
+						} else {
+							$('#ytc-loadmore').hide();
+						}
+						if( result.found_posts ){ //More
+							$('#ytc-creators-wrap').show().find('.count').html(result.found_posts);
+						}
+					},
+				});
+			}
+			return false;
+		});
 	});
 /*-----------------------------------------------------------*/
 })(jQuery, window, document);

@@ -147,3 +147,6 @@ input[type="search"]::-webkit-search-cancel-button {
   text-transform: uppercase;
 	margin-top: 20px;
 }
+#ytc-searchloader{
+	display:none;
+}

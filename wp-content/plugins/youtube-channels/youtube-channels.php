@@ -18,10 +18,6 @@ endif;
 if( !defined('YTC_PLUGIN_PATH') ) : //Plugin Path
 	define('YTC_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 endif;
-if( !defined('YTC_YOUTUBE_KEY') ) : //YouTube Key
-	//define('YTC_YOUTUBE_KEY', 'AIzaSyA7dxlViSTWdJGzgq-EhRcdiRKTU-FS2xA' );
-	define('YTC_YOUTUBE_KEY', 'AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE' );
-endif;
 /**
  * Plugin Activation 
  * 
