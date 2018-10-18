@@ -122,7 +122,7 @@ function ytc_get_channels_list( $args = array() ){
 	if( isset( $args['order'] ) && !empty( $args['order'] ) ) {
 		$query_args['order'] = $args['order'];
 	} else {
-		$query_args['order'] = 'ASC';
+		$query_args['order'] = 'DESC';
 	}
 
 	//Orderby

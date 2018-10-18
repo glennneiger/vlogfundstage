@@ -86,8 +86,8 @@ class YTC_Shortcodes{
 							<div class="ytc-filter-group">
 								<label for="ytc-orderBy">Order By</label>
 								<select name="orderBy" id="ytc-orderBy" class="form-control">
-								   <option value="asc">Ascending</option>
-								   <option value="desc">Descending</option>
+									<option value="desc">Descending</option>
+								   <option value="asc">Ascending</option>								   
 							   </select>
 							</div><!--/.form-group-->
 						</div><!--/.row-->
