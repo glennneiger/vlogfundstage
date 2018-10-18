@@ -65,6 +65,7 @@ class YTC_Shortcodes{
 							<div class="sfc-campaign-archive-search-item">
 								<span class="fa fa-search sfc-campaign-search-icon"></span>
 								<input id="ytc-search-input" name="q" type="search" class="form-control sfc-campaign-archive-search-input" placeholder="Search Channels..." value="<?php if( isset( $q ) ){ echo $q; } ?>">
+								<button type="button" class="sfc-campaign-archive-reset-button ide wpv-reset-trigger js-wpv-reset-trigger">X</button>
 							</div><!--/.form-group-->
 							<div class="sfc-campaign-archive-search-item">
 								<button type="submit" class="btn btn-block btn-primary sfc-youtube-channel-search-button">Search</button>

@@ -60,24 +60,34 @@
 				}
 				$.ajax({
 					url: YTC_Obj.ajaxurl, //"ajax/getdata",
-					data : { action: 'ytc_get_channels', channelid: ui.item.channelid, offset:0 },
+					data : { action: 'ytc_search_channels', channelid: ui.item.channelid },
 					type: 'POST',
 					beforeSend: function(){
 						$(".tag").append('<a href="#">'+ui.item.label+' <span data-channelid="'+ui.item.channelid+'" class="removebtn" style="margin-left:15px;font-size:20px">x</span></a>');
-						$('#ytc-channles-list').hide();
+						$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').hide();
 						$('#ytc-searchloader').show();
-						$('#ytc-loadmore').hide();
 					},
-					success : function(data){
-						if( data ){
+					complete: function(){
+						$('#ytc-searchloader').hide();
+						$('#ytc-channles-list, #ytc-creators-wrap').show();						
+					},
+					success : function(result){
+						if( result.html ){
 							$('#ytc-search-input').val('');
-							$('#ytc-searchloader').hide();
-							$('#ytc-channles-list').html(data);
-							$('#ytc-channles-list').show();
+							$('#ytc-channles-list').html(result.html);
+							$('#ytc-page').val(1);
 							count++;
 							new Blazy(); //LazyLoad Images
 						}else{
 							$('#ytc-channles-list').html('No records found');
+						}
+						if( typeof result.more_page !== 'undefined' && result.more_page > 0 ){ //More
+							$('#ytc-loadmore').show();
+						} else {
+							$('#ytc-loadmore').hide();
+						}
+						if( result.found_posts ){ //More
+							$('#ytc-creators-wrap').show().find('.count').html(result.found_posts);
 						}
 					},
 				});
@@ -114,12 +124,12 @@
 					if( result.html ){
 						elem.prop('disabled', false);
 						elem.html('Load More');
-						$(result.html).insertBefore( $('#ytc-channles-list').find('.sfc-campaign-archive-post:first') );
+						$(result.html).insertAfter( $('#ytc-channles-list').find('.col-lg-3.sfc-campaign-archive-post:last') );
 						new Blazy(); //LazyLoad Images
 					}else{
 						elem.html('No more records');
 					}
-					if( result.more_page ){ //More
+					if( typeof result.more_page !== 'undefined' && result.more_page > 0 ){ //More
 						$('#ytc-loadmore').show();
 					} else {
 						$('#ytc-loadmore').hide();
@@ -131,42 +141,53 @@
 			});
         });
 		
+		//Show Search Results
+		var ytcSearchResults = function(){
+			var $search = $('#ytc-search-input').val();
+			var $orderby = $('#ytc-orderBy').val();
+			var $sortby = $('#ytc-sortBy').val();
+			$.ajax({
+				url: YTC_Obj.ajaxurl,
+				data : { action: 'ytc_search_channels', search: $search, order: $orderby, sort: $sortby },
+				type: 'POST',
+				beforeSend: function(){
+					$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').hide();
+					$('#ytc-searchloader').show();
+				},
+				complete: function(){
+					$('#ytc-searchloader').hide();
+					$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').show();						
+				},
+				success : function(result){
+					if( result.html ){							
+						$('#ytc-channles-list').html(result.html);
+						$('#ytc-page').val(1);
+						new Blazy(); //LazyLoad Images
+					} else {
+						elem.html('No more records');
+					}
+					if( typeof result.more_page !== 'undefined' && result.more_page > 0 ){ //More
+						$('#ytc-loadmore').show();
+					} else {
+						$('#ytc-loadmore').hide();
+					}
+					if( result.found_posts ){ //More
+						$('#ytc-creators-wrap').show().find('.count').html(result.found_posts);
+					}
+				},
+			});
+		};
+		
+		//On Change of Sort / Order By
+		$('#ytc-sortBy, #ytc-orderBy').on('change', function(){
+			ytcSearchResults();
+		});
+		
 		//On Submit of Search Form
 		$('#ytc-search-form').on('submit', function(){
 			var $search = $('#ytc-search-input').val();
-			var $orderby = $('#ytc-orderBy').val();
-			var $sortby = $('#ytc-sortBy').val();			
 			if( typeof $search !== 'undefined' && $search !== '' ){
-				$.ajax({
-					url: YTC_Obj.ajaxurl,
-					data : { action: 'ytc_search_channels', search: $search, order: $orderby, sort: $sortby },
-					type: 'POST',
-					beforeSend: function(){
-						$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').hide();
-						$('#ytc-searchloader').show();
-					},
-					complete: function(){
-						$('#ytc-searchloader').hide();
-						$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').show();						
-					},
-					success : function(result){
-						if( result.html ){							
-							$('#ytc-channles-list').html(result.html);
-							$('#ytc-page').val(1);
-							new Blazy(); //LazyLoad Images
-						} else {
-							elem.html('No more records');
-						}
-						if( result.more_page ){ //More
-							$('#ytc-loadmore').show();
-						} else {
-							$('#ytc-loadmore').hide();
-						}
-						if( result.found_posts ){ //More
-							$('#ytc-creators-wrap').show().find('.count').html(result.found_posts);
-						}
-					},
-				});
+				ytcSearchResults(); //Search Result
 			}
 			return false;
 		});

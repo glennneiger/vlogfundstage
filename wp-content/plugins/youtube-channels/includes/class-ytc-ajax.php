@@ -54,23 +54,26 @@ class YTC_Ajax_Callbacks{
 
 		$response = array();
 		$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 
-						'orderby' => 'meta_value_num', 'order' => $_POST['orderby'], 'paged' => 1, 'posts_per_page' => 40 );
+						'orderby' => 'meta_value_num', 'order' => $_POST['order'], 'paged' => 1, 'posts_per_page' => 40 );
 
 		//Orderby
-		if( isset( $_POST['orderby'] ) && !empty( $_POST['orderby'] ) ) {
-			$query_args['meta_key'] = 'wpcf-channel_' . $_POST['orderby'];
-		} else {
+		if( isset( $_POST['sort'] ) && !empty( $_POST['sort'] ) ) :
+			$query_args['meta_key'] = 'wpcf-channel_' . $_POST['sort'];
+		else :
 			$query_args['meta_key'] = 'wpcf-channel_subscribers';
-		}
-		if( isset( $_POST['search'] ) && !empty( $_POST['search'] ) ) {
+		endif;
+		//Check Search
+		if( isset( $_POST['search'] ) && !empty( $_POST['search'] ) ) :
 			$query_args['s'] = $_POST['search'];
-		}
+		elseif( isset( $_POST['channelid'] ) && !empty( $_POST['channelid'] ) ) :
+			$query_args['meta_query'] = array( array( 'key' => 'wpcf-channel_id', 'value' => esc_sql( $_POST['channelid'] ) ) );
+		endif;
 
 		ob_start(); //Start Output
-
+		
 		//Get Channels
 		$channels = new WP_Query( $query_args );
-	
+		
 		if( $channels->have_posts() ) :
 	
 			while( $channels->have_posts() ) : $channels->the_post();
