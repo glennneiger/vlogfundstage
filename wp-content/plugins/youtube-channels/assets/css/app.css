@@ -150,3 +150,18 @@ input[type="search"]::-webkit-search-cancel-button {
 #ytc-searchloader{
 	display:none;
 }
+
+input[type="time"]::--webkit-clear-button {
+	display: none;
+}
+
+input[type="time"]::-webkit-clear-button {
+	display: none;
+}
+input[type=text]::-ms-clear {
+	display: none;
+}
+
+input::-webkit-search-cancel-button {
+	display: none;
+}
