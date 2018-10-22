@@ -14,8 +14,14 @@ class YTC_Ajax_Callbacks{
 	//Construct which run class
 	function __construct(){
 		//Searched Channels
-		add_action( 'wp_ajax_ytc_get_channels', 		array( $this, 'ytc_get_channels' ) );
-		add_action( 'wp_ajax_nopriv_ytc_get_channels', 	array( $this, 'ytc_get_channels' ) );
+		add_action( 'wp_ajax_ytc_search_channels', 			array( $this, 'ytc_search_channels' ) );
+		add_action( 'wp_ajax_nopriv_ytc_search_channels', 	array( $this, 'ytc_search_channels' ) );
+		//Searched Channels
+		add_action( 'wp_ajax_ytc_get_channels', 			array( $this, 'ytc_get_channels' ) );
+		add_action( 'wp_ajax_nopriv_ytc_get_channels', 		array( $this, 'ytc_get_channels' ) );
+		//Load more Channels
+		add_action( 'wp_ajax_ytc_loadmore_channels', 		array( $this, 'ytc_loadmore_channels' ) );
+		add_action( 'wp_ajax_nopriv_ytc_loadmore_channels', array( $this, 'ytc_loadmore_channels' ) );
 		//Autocomplete Channels
 		add_action( 'wp_ajax_ytc_search_autocomplete',			array( $this, 'ytc_search_autocomplete' ) );
 		add_action( 'wp_ajax_nopriv_ytc_search_autocomplete',	array( $this, 'ytc_search_autocomplete' ) );
@@ -26,34 +32,113 @@ class YTC_Ajax_Callbacks{
 		add_action( 'wp_ajax_ytc_add_channel',			array( $this, 'ytc_add_channel' ) );
 		add_action( 'wp_ajax_nopriv_ytc_add_channel',	array( $this, 'ytc_add_channel' ) );
 	}
-
+	
 	/**
 	 * Get Channels Data
 	 **/
 	public function ytc_get_channels(){
-
+		
 		//Search
 		if( isset( $_POST['term'] ) && !empty( $_POST['term'] ) ) :
 			ytc_get_channels_list( array( 'search' => $_POST['term'] ) );
-			echo '<div class="sfc-campaign-archive-post"></div>
-			      <div class="sfc-campaign-archive-post"></div>
-			      <div class="sfc-campaign-archive-post"></div>';
 		elseif( isset( $_POST['channelid'] ) && !empty( $_POST['channelid'] ) ) : //Choose From Autocomplete
 			ytc_get_channels_list( array( 'channelid' => $_POST['channelid'] ) );
-			echo '<div class="sfc-campaign-archive-post"></div>
-			      <div class="sfc-campaign-archive-post"></div>
-			      <div class="sfc-campaign-archive-post"></div>';
-		elseif( isset( $_POST['normal'] ) && !empty( $_POST['normal'] ) ) : //Normal Channels
-			$args = array( 'orderby' => $_POST['sortby'], 'order' => $_POST['orderby'], 'limit' => 40, 'offset' => $_POST['offset'] );
-			//Get Channels
-			ytc_get_channels_list( $args );
-			echo '<div class="sfc-campaign-archive-post"></div>
-			      <div class="sfc-campaign-archive-post"></div>
-			      <div class="sfc-campaign-archive-post"></div>';
-		endif; //Endif
+		endif; //Endif		
 		wp_die(); //To Through Proper Result
 	}
 
+	/**
+	 * Get Search Channels Data
+	 **/
+	public function ytc_search_channels(){
+
+		$response = array();
+		$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 
+						'orderby' => 'meta_value_num', 'order' => $_POST['order'], 'paged' => 1, 'posts_per_page' => 40 );
+
+		//Orderby
+		if( isset( $_POST['sort'] ) && !empty( $_POST['sort'] ) ) :
+			$query_args['meta_key'] = 'wpcf-channel_' . $_POST['sort'];
+		else :
+			$query_args['meta_key'] = 'wpcf-channel_subscribers';
+		endif;
+		//Check Search
+		if( isset( $_POST['search'] ) && !empty( $_POST['search'] ) ) :
+			$query_args['s'] = $_POST['search'];
+		elseif( isset( $_POST['channelid'] ) && !empty( $_POST['channelid'] ) ) :
+			$query_args['meta_query'] = array( array( 'key' => 'wpcf-channel_id', 'value' => esc_sql( $_POST['channelid'] ) ) );
+		endif;
+
+		ob_start(); //Start Output
+		
+		//Get Channels
+		$channels = new WP_Query( $query_args );
+		
+		if( $channels->have_posts() ) :
+	
+			while( $channels->have_posts() ) : $channels->the_post();
+	
+				ytc_get_channel_loop(); //Channel Loop
+	
+			endwhile; //Endwhile
+	
+		endif;
+		
+		$response['html'] = ob_get_contents();
+		ob_get_clean();
+		$response['html'] .= '<div class="sfc-campaign-archive-post"></div><div class="sfc-campaign-archive-post"></div><div class="sfc-campaign-archive-post"></div>';				
+		$response['found_posts'] = $channels->found_posts;
+		
+		//Reset Post Data
+		wp_reset_postdata();
+		wp_send_json( $response );	
+		wp_die(); //To Through Proper Result
+	}
+
+	/**
+	 * Load More Channels
+	 **/
+	public function ytc_loadmore_channels(){
+		
+		$response = array();
+		$paged = isset( $_POST['paged'] ) && !empty( $_POST['paged'] ) ? ( intval( $_POST['paged'] ) + 1 ) : 1;
+		$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'posts_per_page' => 40,
+						'orderby' => 'meta_value_num', 'order' => $_POST['orderby'], 'paged' => $paged  );
+		//Orderby
+		if( isset( $_POST['orderby'] ) && !empty( $_POST['orderby'] ) ) {
+			$query_args['meta_key'] = 'wpcf-channel_' . $_POST['orderby'];
+		} else {
+			$query_args['meta_key'] = 'wpcf-channel_subscribers';
+		}
+		if( isset( $_POST['search'] ) && !empty( $_POST['search'] ) ) {
+			$query_args['s'] = $_POST['search'];
+		}
+
+		ob_start(); //Start Output
+
+		//Get Channels
+		$channels = new WP_Query( $query_args );
+	
+		if( $channels->have_posts() ) :
+	
+			while( $channels->have_posts() ) : $channels->the_post();
+	
+				ytc_get_channel_loop(); //Channel Loop
+	
+			endwhile; //Endwhile
+	
+		endif; //Endif
+		
+		$response['html'] = ob_get_contents();
+		ob_get_clean();
+		$response['more_page'] = ( $channels->max_num_pages > $paged ) ? 1 : 0; //More Pages
+		$response['paged'] = $paged;
+		
+		//Reset Post Data
+		wp_reset_postdata();
+		wp_send_json( $response );	
+		wp_die(); //To Through Proper Result
+	}
 
 	/**
 	 * Get Specific Channel Data form ID
