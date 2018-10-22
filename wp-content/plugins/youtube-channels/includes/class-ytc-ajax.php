@@ -52,7 +52,7 @@ class YTC_Ajax_Callbacks{
 	 **/
 	public function ytc_search_channels(){
 
-		$response = array();
+		$response = $meta_query = array();
 		$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 
 						'orderby' => 'meta_value_num', 'order' => $_POST['order'], 'paged' => 1, 'posts_per_page' => 40 );
 
@@ -66,9 +66,17 @@ class YTC_Ajax_Callbacks{
 		if( isset( $_POST['search'] ) && !empty( $_POST['search'] ) ) :
 			$query_args['s'] = $_POST['search'];
 		elseif( isset( $_POST['channelid'] ) && !empty( $_POST['channelid'] ) ) :
-			$query_args['meta_query'] = array( array( 'key' => 'wpcf-channel_id', 'value' => esc_sql( $_POST['channelid'] ) ) );
+			$meta_query[] = array( 'key' => 'wpcf-channel_id', 'value' => esc_sql( $_POST['channelid'] ) );
 		endif;
-
+		
+		if( isset( $_POST['order'] ) && $_POST['order'] == 'asc' 
+			&& isset( $_POST['sort'] ) && $_POST['sort'] == 'subscribers' ) :
+			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'value' => 0, 'compare' => '>' );
+			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'compare' => 'EXISTS' );
+		endif;
+		if( !empty( $meta_query ) ) :
+			$query_args['meta_query'] = $meta_query;
+		endif;
 		ob_start(); //Start Output
 		
 		//Get Channels
@@ -87,7 +95,8 @@ class YTC_Ajax_Callbacks{
 		$response['html'] = ob_get_contents();
 		ob_get_clean();
 		$response['html'] .= '<div class="sfc-campaign-archive-post"></div><div class="sfc-campaign-archive-post"></div><div class="sfc-campaign-archive-post"></div>';				
-		$response['found_posts'] = $channels->found_posts;
+		$response['found_posts'] = '<strong class="count">'.$channels->found_posts.'</strong> '. ( ( $channels->found_posts > 1 ) ? 'creators' : 'creator' ) . ' found';
+		$response['more_page'] = ( $channels->max_num_pages > 1 ) ? 1 : 0; //More Pages
 		
 		//Reset Post Data
 		wp_reset_postdata();

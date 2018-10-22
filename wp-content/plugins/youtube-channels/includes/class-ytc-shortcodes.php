@@ -99,9 +99,8 @@ class YTC_Shortcodes{
 
 
         	<div class="sfc-campaign-archive-container">
-
-						<div class="row tags-container"><div class="tag"></div></div>
-						<div id="ytc-searchloader"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
+				<div class="row tags-container"><div class="tag"></div></div>
+				<div id="ytc-searchloader"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
 				<div id="ytc-creators-wrap"><strong class="count"><?php echo ytc_get_channels_count(); ?></strong> creators found </div>
 				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">
 					<?php if( $showresults ) : //Check Show Results
