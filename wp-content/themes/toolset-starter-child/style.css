@@ -2491,6 +2491,25 @@ div.sf-play {
   display: flex;
   position: relative;
   justify-content: center;
+
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: auto;
+  position: relative;
+}
+
+.sf-blog-yt-video-thumbnails .sf-blog-yt-video-thumbnails-inner {
+    background-color: rgba(255, 255, 255, 0.9);
+    height: auto;
+    width: 100%;
+    opacity: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    padding: 0;
+    transition: opacity .5s;
 }
 
 .sf-blog-yt-video-thumbnail {
@@ -2512,6 +2531,13 @@ div.sf-play {
     width: 100%;
     height: 215px;
     max-height: 100%;
+  }
+
+  .blog .sf-blog-item:first-child .sf-blog-yt-video-thumbnail, .single-post .sf-blog-item:first-child .sf-blog-yt-video-thumbnail {
+    height: 300px;
+  }
+  .blog .sf-blog-item:first-child .sf-blog-yt-video-thumbnail img, .single-post .sf-blog-item:first-child .sf-blog-yt-video-thumbnail img {
+    height: 300px;
   }
 }
 
@@ -12536,7 +12562,7 @@ body.page-about.fade-out {
   .sf-banner-contentbox { position:absolute; max-width:1320px; padding:0 20px; top:0; left:0; right:0; width:100%; height:100%; margin:0 auto; }
   .sf-banner-content { padding:60px 0 0 30px; position:absolute; left:0; top:50%; -webkit-transform:translateY(-50%); transform:translateY(-50%); color:#fff; max-width:630px; width:100%; z-index:1; }
   .sf-banner-content h1 { color:#fff; line-height:1.1944; font-size:70px; text-transform:uppercase; margin-bottom:50px; }
-  .sf-banner-content h1:after { content:''; display:block; height:4px; width:80px; background:#fff; margin-top:20px; }
+  /*.sf-banner-content h1:after { content:''; display:block; height:4px; width:80px; background:#fff; margin-top:20px; }*/
 
   .sf-main-slider { position:relative; height:100%; width:100%; }
   .sf-main-slider .slick-list, .sf-main-slider .slick-track, .sf-main-slider .sf-item { height:100%; width:100%; position:absolute; top:0; left:0; }
@@ -12685,6 +12711,61 @@ body.page-about.fade-out {
   overflow-x: auto;
 }
 
+
+
+.page-about h1, .page-about h2 {
+  font-weight: 900;
+}
+
+.page-about h1 {
+  margin:0 0 30px;
+}
+
+.page-about h2 {
+  font-size:66px;
+  margin-bottom: 0;
+  line-height:1.1818;
+}
+
+
+
+/* =Layout Width
+========================================================================================*/
+.page-about .sf-wrap {
+  max-width:1320px;
+  width:100%;
+  margin:0 auto;
+  padding-left:20px;
+  padding-right:20px;
+}
+
+@media only screen and (max-width: 1340px) {
+.page-about h2 {
+    font-size: 56px;
+}
+}
+
+@media only screen and (max-width: 1100px) {
+.page-about h2 {
+    font-size: 50px;
+}
+}
+@media only screen and (max-width: 767px) {
+.page-about h2 {
+    font-size: 44px;
+}
+}
+@media only screen and (max-width: 567px) {
+.page-about h2 {
+    font-size: 38px;
+
+}
+}
+@media only screen and (max-width: 479px) {
+.page-about h2 {
+    font-size: 28px;
+}
+}
 
 /*******************************************************/
 /**category, tags archive**/
