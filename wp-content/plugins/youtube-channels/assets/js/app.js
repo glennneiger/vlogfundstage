@@ -63,13 +63,13 @@
 					data : { action: 'ytc_search_channels', channelid: ui.item.channelid },
 					type: 'POST',
 					beforeSend: function(){
-						$(".tag").append('<a href="#">'+ui.item.label+' <span data-channelid="'+ui.item.channelid+'" class="removebtn" style="margin-left:15px;font-size:20px">x</span></a>');
+						$(".tag").append('<a href="#">'+ui.item.label+' <span data-channelid="'+ui.item.channelid+'" class="removebtn"><i class="fas fa-times"></i></span></a>');
 						$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').hide();
 						$('#ytc-searchloader').show();
 					},
 					complete: function(){
 						$('#ytc-searchloader').hide();
-						$('#ytc-channles-list, #ytc-creators-wrap').show();						
+						$('#ytc-channles-list, #ytc-creators-wrap').show();
 					},
 					success : function(result){
 						if( result.html ){
@@ -106,7 +106,7 @@
 			}
 		});
 
-		//Load More		
+		//Load More
         $(document).on('click', '#ytc-loadmore', function(e) {
             e.preventDefault();
 			var $search = $('#ytc-search-input').val();
@@ -115,7 +115,7 @@
 			var $paged = $('#ytc-page').val();
             var elem = $(this);
             elem.prop('disabled', true);
-            elem.html('<i class="fa fa-spinner fa-spin"></i> Loading');			
+            elem.html('<i class="fa fa-spinner fa-spin"></i> Loading');
 			$.ajax({
 				url: YTC_Obj.ajaxurl,
 				data : { action: 'ytc_loadmore_channels', paged: $paged, search: $search, order: $orderby, sort: $sortby },
@@ -140,7 +140,7 @@
 				},
 			});
         });
-		
+
 		//Show Search Results
 		var ytcSearchResults = function(){
 			var $search = $('#ytc-search-input').val();
@@ -156,10 +156,10 @@
 				},
 				complete: function(){
 					$('#ytc-searchloader').hide();
-					$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').show();						
+					$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').show();
 				},
 				success : function(result){
-					if( result.html ){							
+					if( result.html ){
 						$('#ytc-channles-list').html(result.html);
 						$('#ytc-page').val(1);
 						new Blazy(); //LazyLoad Images
@@ -177,12 +177,12 @@
 				},
 			});
 		};
-		
+
 		//On Change of Sort / Order By
 		$('#ytc-sortBy, #ytc-orderBy').on('change', function(){
 			ytcSearchResults();
 		});
-		
+
 		//On Submit of Search Form
 		$('#ytc-search-form').on('submit', function(){
 			var $search = $('#ytc-search-input').val();

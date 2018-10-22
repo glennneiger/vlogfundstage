@@ -65,7 +65,7 @@ class YTC_Shortcodes{
 							<div class="sfc-campaign-archive-search-item">
 								<span class="fa fa-search sfc-campaign-search-icon"></span>
 								<input id="ytc-search-input" name="q" type="search" class="form-control sfc-campaign-archive-search-input" placeholder="Search Channels..." value="<?php if( isset( $q ) ){ echo $q; } ?>">
-								<button type="button" class="sfc-campaign-archive-reset-button ide wpv-reset-trigger js-wpv-reset-trigger">X</button>
+								<button type="button" class="sfc-campaign-archive-reset-button wpv-reset-trigger js-wpv-reset-trigger"><i class="fas fa-times"></i></button>
 							</div><!--/.form-group-->
 							<div class="sfc-campaign-archive-search-item">
 								<button type="submit" class="btn btn-block btn-primary sfc-youtube-channel-search-button">Search</button>
@@ -74,7 +74,7 @@ class YTC_Shortcodes{
 								<button class="btn btn-block btn-primary" id="showfilters">Show Filters</button>
 							</div><!--/.form-group--> */?>
 						</div><!--/.row-->
-	
+
 						<div class="row ytc-filters" id="filters" style="display:one">
 							<div class="ytc-filter-group">
 								<label for="ytc-sortBy">Sort by</label>
@@ -87,7 +87,7 @@ class YTC_Shortcodes{
 								<label for="ytc-orderBy">Order By</label>
 								<select name="orderBy" id="ytc-orderBy" class="form-control">
 									<option value="desc">Descending</option>
-								   <option value="asc">Ascending</option>								   
+								   <option value="asc">Ascending</option>
 							   </select>
 							</div><!--/.form-group-->
 						</div><!--/.row-->
@@ -95,11 +95,15 @@ class YTC_Shortcodes{
 				</div><!--/.container-->
 			</div><!--/.sfc-campaign-archive-->
 
-			<div class="row tags-container"><div class="tag"></div></div>			
-			<div id="ytc-searchloader"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
-        	<div class="sfc-campaign-archive-container">				
+
+
+
+        	<div class="sfc-campaign-archive-container">
+
+						<div class="row tags-container"><div class="tag"></div></div>
+						<div id="ytc-searchloader"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
 				<div id="ytc-creators-wrap"><strong class="count"><?php echo ytc_get_channels_count(); ?></strong> creators found </div>
-				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">					
+				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">
 					<?php if( $showresults ) : //Check Show Results
 						ytc_get_channels_list();
 					endif; //Edif ?>
@@ -109,15 +113,15 @@ class YTC_Shortcodes{
 				</div><!--/.row-->
 			</div><!--/.sfc-campaign-archive-container-->
 			<input type="hidden" id="ytc-page" value="1"/>
-			<?php if( ytc_get_channels_count() > 40 ){ ?>				
+			<?php if( ytc_get_channels_count() > 40 ){ ?>
 				<button id="ytc-loadmore" class="sfc-ytc-load-more-button">Load More</button>
 			<?php } ?>
 		</div><!--/.list-->
-		
+
 		<?php /*<!-- Channel Info Modal-->
 			<!--<div class="modal" id="infomodal">
 				<div class="modal-dialog">
-					<div class="modal-content">	
+					<div class="modal-content">
 						<div class="modal-header" style="background:#e13b2b;display:block">
 							<p style="color:white;margin-bottom:0"><i class="fa fa-eye"></i> <span id="cviews"></span> <span class="float-right"> <i class="fa fa-users"></i> <span id="csubs"></span></span></p>
 						</div>
@@ -144,7 +148,7 @@ class YTC_Shortcodes{
 								</div>
 								<div id="tweets"></div>
 							</center>
-							<button type="button" class="close-modal" data-dismiss="modal">Close</button>	
+							<button type="button" class="close-modal" data-dismiss="modal">Close</button>
 						</div>
 					</div>
 				</div>
