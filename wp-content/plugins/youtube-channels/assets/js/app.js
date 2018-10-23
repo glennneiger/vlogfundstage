@@ -63,18 +63,24 @@
 					data : { action: 'ytc_search_channels', channelid: ui.item.channelid },
 					type: 'POST',
 					beforeSend: function(){
-						$(".tag").append('<a href="#">'+ui.item.label+' <span data-channelid="'+ui.item.channelid+'" class="removebtn"><i class="fas fa-times"></i></span></a>');
+						$('.tag').append('<a href="#">'+ui.item.label+' <span data-channelid="'+ui.item.channelid+'" class="removebtn"><i class="fas fa-times"></i></span></a>');
 						$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').hide();
 						$('#ytc-searchloader').show();
 					},
 					complete: function(){
 						$('#ytc-searchloader').hide();
-						$('#ytc-channles-list, #ytc-creators-wrap').show();
+						$('#ytc-channles-list').show();
 					},
 					success : function(result){
 						if( result.html ){
 							$('#ytc-search-input').val('');
-							$('#ytc-channles-list').html(result.html);
+							if( $('.tag').find('a').length > 1 ) {
+								$(result.html).find('div.sfc-campaign-archive-post:empty').remove();
+								$(result.html).insertAfter( $('#ytc-channles-list').find('.col-lg-3.sfc-campaign-archive-post:last') );
+							} else {
+								$('#ytc-channles-list').html(result.html);
+							}
+							
 							$('#ytc-page').val(1);
 							count++;
 							new Blazy(); //LazyLoad Images
@@ -86,9 +92,9 @@
 						} else {
 							$('#ytc-loadmore').hide();
 						}
-						if( result.found_posts ){ //More
-							$('#ytc-creators-wrap').show().find('.count').html(result.found_posts);
-						}
+						/*if( result.found_posts ){ //More
+							$('#ytc-creators-wrap').show().html(result.found_posts);
+						}*/
 					},
 				});
 			}
@@ -156,7 +162,7 @@
 				},
 				complete: function(){
 					$('#ytc-searchloader').hide();
-					$('#ytc-channles-list, #ytc-loadmore, #ytc-creators-wrap').show();
+					$('#ytc-channles-list, #ytc-creators-wrap').show();
 				},
 				success : function(result){
 					if( result.html ){
@@ -172,7 +178,7 @@
 						$('#ytc-loadmore').hide();
 					}
 					if( result.found_posts ){ //More
-						$('#ytc-creators-wrap').show().find('.count').html(result.found_posts);
+						$('#ytc-creators-wrap').show().html(result.found_posts);
 					}
 				},
 			});
@@ -187,6 +193,7 @@
 		$('#ytc-search-form').on('submit', function(){
 			var $search = $('#ytc-search-input').val();
 			if( typeof $search !== 'undefined' && $search !== '' ){
+				$('.tag').html('');
 				ytcSearchResults(); //Search Result
 			}
 			return false;
