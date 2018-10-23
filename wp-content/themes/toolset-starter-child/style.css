@@ -2494,6 +2494,15 @@ div.sf-play {
 
   width: 100%;
   height: auto;
+  margin: auto;
+  position: relative;
+}
+
+.blog .sf-blog-yt-video-thumbnails {
+  position: relative;
+
+  width: 100%;
+  height: auto;
   display: block;
   margin: auto;
   position: relative;
@@ -2536,8 +2545,14 @@ div.sf-play {
   .blog .sf-blog-item:first-child .sf-blog-yt-video-thumbnail, .single-post .sf-blog-item:first-child .sf-blog-yt-video-thumbnail {
     height: 300px;
   }
+  .single-post .sf-post-suggestions .sf-blog-item:first-child .sf-blog-yt-video-thumbnail {
+    height: 215px;
+  }
   .blog .sf-blog-item:first-child .sf-blog-yt-video-thumbnail img, .single-post .sf-blog-item:first-child .sf-blog-yt-video-thumbnail img {
     height: 300px;
+  }
+  .single-post .sf-post-suggestions .sf-blog-item:first-child .sf-blog-yt-video-thumbnail img {
+    height: 215px;
   }
 }
 
