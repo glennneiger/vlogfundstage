@@ -79,7 +79,8 @@ input.text,
 input[type="text"],
 input[type="button"],
 input[type="submit"],
-.input-checkbox {
+.input-checkbox,
+button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -7906,14 +7907,11 @@ span.select2-selection__rendered {
 
 .sfc-campaign-status-notification {
 
-  color: white;
-  display: flex;
-  /*height: 40px;*/
-  justify-content: flex-start;
-  align-items: center;
+  color: #ffffff;
   font-weight: bold;
-  font-size: 14px;
-  padding: 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .sfc-campaign-status-notification-pending {
@@ -7922,6 +7920,59 @@ span.select2-selection__rendered {
 
 .sfc-campaign-status-notification-draft {
   background: orange;
+}
+
+.sfc-campaign-status-notification-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  padding: 20px;
+  align-self: center;
+}
+
+.sfc-campaign-status-notification-item:first-child {
+   border-right: 1px solid #ffffff;
+}
+
+.sfc-campaign-status-notification-item:last-child {
+   border-left: 1px solid #ffffff;
+}
+
+@media screen and (max-width:996px) {
+
+  .sfc-campaign-status-notification-item:first-child {
+     border-right: 0;
+     border-bottom: 1px solid #ffffff;
+  }
+
+  .sfc-campaign-status-notification-item:last-child {
+     border-left: 0;
+     border-top: 1px solid #ffffff;
+  }
+
+  .sfc-campaign-status-notification-item {
+    flex: auto;
+  }
+}
+
+.sfc-campaign-status-notification-item div {
+  margin: 5px;
+  font-size: 16px;
+}
+
+.sfc-campaign-status-notificaiton-button {
+  padding: 10px 20px;
+   font-size: 16px;
+   font-weight: bold;
+   border: 1px solid;
+   box-shadow: 1px 1px 1px;
+   cursor: pointer;
+   transition: 225ms;
+}
+.sfc-campaign-status-notificaiton-button:hover {
+   box-shadow: 0 0 0;
 }
 
 div.alert.alert-success {

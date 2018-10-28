@@ -25,9 +25,13 @@ onElementInserted('body', '#lbl_generic', function(element) {
     //console.log(element);
     //alert('hi;')
     console.log('error');
-    var TopPosition = jQuery('.page-campaign-form, .page-campaign-form-edit').offset().top;
+    var top = jQuery('.page-campaign-form, .page-edit-your-youtube-collaboration');
+    if (top.length) {
+    var TopPosition = top.offset().top;
     jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
     toastr.warning('', 'Please review your collab');
+    }
+
 
 
 
@@ -79,7 +83,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
 
   jQuery('textarea[name="post_content_substitute"]').attr('onmouseover', 'this.focus();this.select()');
 
-  jQuery('select.sfc-campaign-new-select').find('option[value="pending"]').attr('selected', true);
+  //jQuery('select.sfc-campaign-new-select').find('option[value="pending"]').attr('selected', true);
 
 
 
@@ -480,9 +484,9 @@ jQuery(document).ready(function($) {
 
 
 jQuery( document ).on( "ajaxSuccess", function() {
-  var cred = jQuery('.cred-form');
+  var cred = jQuery('.cred-form, .page-campaign-form, .page-edit-your-youtube-collaboration');
   if (cred.length) {
-  var TopPosition = jQuery('.page-campaign-form, .page-campaign-form-edit').offset().top;
+  var TopPosition = cred.offset().top;
     jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
   }
 });
@@ -546,7 +550,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
   jQuery('textarea[name="post_content_substitute"]').attr('onmouseover', 'this.focus();this.select()');
 
 
-  jQuery('select.sfc-campaign-new-select').find('option[value="pending"]').attr('selected', true);
+  //jQuery('select.sfc-campaign-new-select').find('option[value="pending"]').attr('selected', true);
 
 
 
