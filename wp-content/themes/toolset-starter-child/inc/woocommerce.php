@@ -512,3 +512,73 @@ function vlogfund_update_columns_data( $column, $post_id ) {
 }
 add_action( 'manage_update_posts_custom_column', 'vlogfund_update_columns_data', 99, 2);
 endif;
+//Change Category Label
+if( !function_exists('vlogfund_update_category_tax_label') ) :
+function vlogfund_update_category_tax_label( $args ){
+	$args['label'] = $args['labels']['name'] = __( 'Campaign categories', 'woocommerce' );
+	return $args;
+}
+add_filter('woocommerce_taxonomy_args_product_cat', 'vlogfund_update_category_tax_label', 99);
+endif;
+//Change Tags Label
+if( !function_exists('vlogfund_update_tags_tax_label') ) :
+function vlogfund_update_tags_tax_label( $args ){
+	$args['label'] = $args['labels']['name'] = __( 'Campaign tags', 'woocommerce' );
+	return $args;
+}
+add_filter('woocommerce_taxonomy_args_product_tag', 'vlogfund_update_tags_tax_label', 99);
+endif;
+//Change Metabox Label
+if( !function_exists('vlogfund_update_metabox_titles') ) :
+function vlogfund_update_metabox_titles() {
+    global $wp_meta_boxes; // array of defined meta boxes
+ 	$wp_meta_boxes['product']['normal']['default']['postexcerpt']['title'] = __('Campaign short description', 'woocommerce');
+	$wp_meta_boxes['product']['side']['low']['woocommerce-product-images']['title'] = __('Campaign gallery', 'woocommerce');
+	$wp_meta_boxes['product']['normal']['high']['woocommerce-product-data']['title'] = __('Campaign data','woocommerce');	
+}
+add_action('add_meta_boxes', 'vlogfund_update_metabox_titles', 99);
+endif;
+//Change Selector
+if( !function_exists('vlogfund_product_type_selector') ) :
+function vlogfund_product_type_selector( $args ){
+	return array('simple'   => __( 'Simple campaign', 'woocommerce' ));
+}
+add_filter('product_type_selector', 'vlogfund_product_type_selector', 99);
+endif;
+//Remove Metabox Tabs
+if( !function_exists('vlogfund_remove_admin_meta_tabs') ) :
+function vlogfund_remove_admin_meta_tabs($tabs){
+    unset( $tabs['inventory'], $tabs['shipping'], $tabs['attribute'], $tabs['variations'] );
+	$tabs['linked_product']['label'] = __('Linked Campaign');
+    return $tabs;
+}
+add_filter('woocommerce_product_data_tabs', 'vlogfund_remove_admin_meta_tabs', 99, 1);
+endif;
+//Update Product Type Options
+if( !function_exists('vlogfund_nyp_options_update') ) :
+function vlogfund_nyp_options_update( $options ){
+	$options['nyp']['label'] = __('Accept Donations');
+	return $options;
+}
+add_filter( 'product_type_options', 'vlogfund_nyp_options_update', 99 );
+endif;
+//Remove Submenu Page
+if( !function_exists('vlogfund_wc_remove_submenu_page') ) :
+function vlogfund_wc_remove_submenu_page() {
+	remove_submenu_page( 'edit.php?post_type=product', 'product_attributes' ); //Product Attributes Page
+}
+add_action( 'admin_menu', 'vlogfund_wc_remove_submenu_page', 99 );
+endif;
+
+if( !function_exists('vlogfund_wc_author_email_show') ) :
+function vlogfund_wc_author_email_show( $output ){
+	global $pagenow, $post_type, $post;
+	if( $pagenow == 'post.php' && $post_type == 'product' ) :
+		$output .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+		$get_userdata = get_userdata( $post->post_author );
+		$output .= sprintf('<a href="mailto:%1$s">%1$s</a>', antispambot( $get_userdata->user_email ) );
+	endif;
+	return $output;
+}
+add_filter( 'wp_dropdown_users', 'vlogfund_wc_author_email_show', 99 );
+endif;
