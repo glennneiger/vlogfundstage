@@ -1269,6 +1269,25 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   //campaign
   /*******************************************************/
 
+  if (localStorage.getItem("sf-notice-campaigns") === null) {
+} else {
+    jQuery('.sf-notice-campaigns').hide();
+  }
+
+  $('#tabs div.tab').hide();
+$('#tabs div.tab:first').show();
+$('#tabs ul li:first').addClass('active');
+
+$('#tabs ul li a').click(function(){
+$('#tabs ul li').removeClass('active');
+$(this).parent().addClass('active');
+var currentTab = $(this).attr('href');
+$('#tabs div.tab').hide();
+$(currentTab).show();
+return false;
+});
+
+
   jQuery('.single-product .sf-campaign-yt-video-thumbnail:first-child').click(function() {
     jQuery('.sf-campaign-item-inner-1').addClass('hide1');
   });

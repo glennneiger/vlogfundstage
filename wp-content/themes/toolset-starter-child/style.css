@@ -476,6 +476,10 @@ padding-top: 0!important;
   z-index: 9;
 }
 
+.single-product .sf-breadcrumb {
+  display: none;
+}
+
 @media screen and (max-width:996px) {
   .sf-breadcrumb {
     font-size: 14px;
@@ -1319,7 +1323,7 @@ opacity: 1;
   text-align: left;
   margin: auto;
   color: #202020;
-  font-size: x-large;
+  font-size: x-large!important;
 }
 
 .sf-popup-status .status, .wc-social-login.form-row-wide p {
@@ -2933,7 +2937,7 @@ div.sf-blog-yt-video-thumbnail-trending iframe {
 
 
 .sf-post-author-row {
-  margin: 20px auto;
+  margin: 20px auto 5px auto;
 }
 
 .sf-post-header-row h1 {
@@ -3328,6 +3332,44 @@ div.sf-post-yt-video-thumbnail iframe {
 .sf-post-suggestions h2 {
   margin: auto;
   text-align: center;
+}
+
+
+
+
+.sf-comments-counter-bubble {
+  position: relative;
+	background: #cccccc;
+	border-radius: 0;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 3px 10px;
+  text-align: center;
+  transform: skewX(-15deg);
+  display: inline-flex;
+}
+.sf-comments-counter-bubble span {
+    transform: skewX(15deg);
+    font-weight: bold;
+  }
+.sf-comments-counter-bubble:after {
+  content: '';
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border: 8px solid transparent;
+	border-top-color: #cccccc;
+	border-bottom: 0;
+	border-left: 0;
+	margin-left: -4px;
+	margin-bottom: -8px;
+}
+
+.sf-post-header-row h1 {
+    line-height: 32px;
+    margin-top: 5px;
 }
 
 
@@ -7519,7 +7561,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-transform: capitalize;
+  /*text-transform: capitalize;*/
 }
 
 .sfc-campaign-archive-post-title-inner {
@@ -7894,6 +7936,39 @@ span.select2-selection__rendered {
 
 
 
+.post-type-archive-product .sfc-campaign-images {
+  margin-top:0;
+}
+
+.post-type-archive-product .sfc-campaign-image {
+  height: 185px;
+}
+
+@media screen and (min-width:440px) {
+  .post-type-archive-product .sfc-campaign-image {
+     height: 200px;
+}
+}
+
+
+@media screen and (min-width:470px) {
+  .post-type-archive-product .sfc-campaign-image {
+     height: 220px;
+}
+}
+
+@media screen and (min-width:500px) {
+  .post-type-archive-product .sfc-campaign-image {
+     height: 250px;
+}
+}
+
+@media screen and (min-width:540px) {
+  .post-type-archive-product .sfc-campaign-image {
+     height: 150px;
+}
+}
+
 
 
 
@@ -7902,6 +7977,37 @@ span.select2-selection__rendered {
 /*******************************************************/
 /**campaign**/
 /*******************************************************/
+
+
+.sf-notice {
+border: 2px dashed #dadddd;
+margin-top: 20px;
+padding: 20px;
+background: oldlace;
+}
+
+.sf-notice i {
+text-align: right;
+float: right;
+cursor: pointer;
+transition: 225ms;
+}
+
+.sf-notice i:hover {
+opacity: 0.8;
+}
+
+.sf-notice-button {
+border: 1px solid;
+box-shadow: 1px 1px 1px;
+font-weight: bold;
+cursor: pointer;
+transition: 225ms;
+}
+
+.sf-notice-button:hover {
+box-shadow: 0 0 0;
+}
 
 
 
@@ -8254,7 +8360,7 @@ flex-basis: 15%;
   margin: 0;
   font-size: 24px;
   text-shadow: 1px 1px #fff, 2px 2px #ddd;
-  text-transform: capitalize;
+  /*text-transform: capitalize;*/
   /*text-align: center;*/
 }
 @media (min-width:576px) {
