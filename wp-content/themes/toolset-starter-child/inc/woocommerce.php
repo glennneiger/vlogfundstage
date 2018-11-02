@@ -570,6 +570,7 @@ function vlogfund_wc_remove_submenu_page() {
 add_action( 'admin_menu', 'vlogfund_wc_remove_submenu_page', 99 );
 endif;
 
+//Add Author Email to Product Edit Screen
 if( !function_exists('vlogfund_wc_author_email_show') ) :
 function vlogfund_wc_author_email_show( $output ){
 	global $pagenow, $post_type, $post;
