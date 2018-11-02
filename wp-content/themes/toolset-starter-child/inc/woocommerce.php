@@ -583,3 +583,75 @@ function vlogfund_wc_author_email_show( $output ){
 }
 add_filter( 'wp_dropdown_users', 'vlogfund_wc_author_email_show', 99 );
 endif;
+
+//Submit Youtube Campaign Create Subscribe to Mailchimp
+if( !function_exists('vlogfund_wc_subscribe_mailchimp_campaign') ) :
+function vlogfund_wc_subscribe_mailchimp_campaign( $post_id, $form_data ){
+	if( $form_data['post_type'] == 'product' ) :
+		$postdata 	= get_post( $post_id );
+		$userdata 	= get_userdata( $postdata->post_author );	
+		if( !empty( $userdata ) ) :
+			$first_name = get_user_meta($userdata->ID, 'first_name', true);
+			$last_name 	= get_user_meta($userdata->ID, 'last_name', true);
+			include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
+			$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success		
+			$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);
+			$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash);
+			if( $mc_exist['status'] != 404 ) : //Exist Then Update 
+				//Update Existing Users
+				$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash, array(
+					'email_address' => $userdata->user_email,
+					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $postdata->post_status ),
+					'status' => 'subscribed'
+				));			
+			else :
+				$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members', array(
+					'email_address' => $userdata->user_email,
+					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $postdata->post_title, 'STATUS' => $postdata->post_status ),
+					'status' => 'subscribed'
+				));			
+			endif;			
+		endif; //Endif
+	endif;	//Endif
+}
+add_action('cred_submit_complete_98',	'vlogfund_wc_subscribe_mailchimp_campaign', 99,2);
+add_action('cred_submit_complete_216',	'vlogfund_wc_subscribe_mailchimp_campaign', 99,2);
+endif;
+
+//Submit Youtube Campaign Subscribe to Mailchimp When Updating from Admin
+if( !function_exists('vlogfund_wc_subscribe_mailchimp_campaign_admin') ) :
+function vlogfund_wc_subscribe_mailchimp_campaign_admin( $post_id, $post ){
+	
+	// If this is just a revision, don't send the email.
+	if ( wp_is_post_revision( $post_id ) || $post->post_type !== 'product' ) :
+		return;
+	endif; //Endif	
+	$userdata 	= get_userdata( $post->post_author );	
+	if( !empty( $userdata ) ) :
+		$first_name = get_user_meta($userdata->ID, 'first_name', true);
+		$last_name 	= get_user_meta($userdata->ID, 'last_name', true);
+		$all_status = array('0' => 'Neutral', '1' => 'Vote', '2' => 'Contribute', '3' => 'Declined', '4' => 'Success', '5' => 'Draft', '6' => 'Pending');
+		$saved_status = isset( $_POST['wpcf']['campaign-status'] ) ? $_POST['wpcf']['campaign-status'] : 0;
+		include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
+		$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success		
+		$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);
+    	$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash);
+		if( $mc_exist['status'] != 404 ) : //Exist Then Update 
+			//Update Existing Users
+			$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash, array(
+				'email_address' => $userdata->user_email,
+				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $all_status[$saved_status] ),
+				'status' => 'subscribed'
+			));			
+		else :
+			$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members', array(
+				'email_address' => $userdata->user_email,
+				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $all_status[$saved_status] ),
+				'status' => 'subscribed'
+			));			
+		endif;
+		
+	endif; //Endif	
+}
+add_action('save_post',	'vlogfund_wc_subscribe_mailchimp_campaign_admin', 30, 2);
+endif;
