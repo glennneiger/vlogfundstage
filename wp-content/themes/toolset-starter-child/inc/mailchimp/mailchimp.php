@@ -12,10 +12,10 @@ if( !defined('VLOG_MAILCHIMP_LIST') ) :
 	define('VLOG_MAILCHIMP_LIST', '18f30240e9');
 endif;
 if( !defined('VLOG_MAILCHIMP_CAMPAIGN_LIST') ) :
-	define('VLOG_MAILCHIMP_CAMPAIGN_LIST', '18f30240e9');
+	define('VLOG_MAILCHIMP_CAMPAIGN_LIST', '12e55dde9f');
 endif;
 if( !defined('VLOG_MAILCHIMP_API') ) :
-	define('VLOG_MAILCHIMP_API', '4fb180900676e735e385eaf9da91b20f-us17');
+	define('VLOG_MAILCHIMP_API', '006d6c9797ef73202b20d38877c6ab07-us17');
 endif;
 class MailChimp
 {
