@@ -591,6 +591,7 @@ function vlogfund_wc_subscribe_mailchimp_campaign( $post_id, $form_data ){
 		$postdata 	= get_post( $post_id );
 		$userdata 	= get_userdata( $postdata->post_author );	
 		if( !empty( $userdata ) ) :
+			$user_posts = new WP_Query( array('posts_per_page' => -1, 'post_type' => 'product', 'post_status' => 'any', 'fields' => 'ids', 'author' => $userdata->ID ) );
 			$first_name = get_user_meta($userdata->ID, 'first_name', true);
 			$last_name 	= get_user_meta($userdata->ID, 'last_name', true);
 			include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
@@ -601,16 +602,17 @@ function vlogfund_wc_subscribe_mailchimp_campaign( $post_id, $form_data ){
 				//Update Existing Users
 				$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash, array(
 					'email_address' => $userdata->user_email,
-					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $postdata->post_status ),
+					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $postdata->post_status, 'COUNT' => $user_posts->found_posts ),
 					'status' => 'subscribed'
 				));			
 			else :
 				$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members', array(
 					'email_address' => $userdata->user_email,
-					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $postdata->post_title, 'STATUS' => $postdata->post_status ),
+					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $postdata->post_title, 'STATUS' => $postdata->post_status, 'COUNT' => count( $user_posts->found_posts ) ),
 					'status' => 'subscribed'
 				));			
-			endif;			
+			endif;
+			wp_reset_postdata();
 		endif; //Endif
 	endif;	//Endif
 }
