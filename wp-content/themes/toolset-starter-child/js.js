@@ -320,8 +320,92 @@ jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr(
 
 
 
+//Twitter 1
+  $('.tweetLink1').on('input', function() {
+      var url = $('.tweetLink1').val();
+                  if(url)
+                  {
+                      $.ajax({
+                          url: "https://api.twitter.com/1/statuses/oembed.json?url="+url,
+                          dataType: "jsonp",
+                          async: false,
+                          success: function(data){
+
+                              var withoutscripttag1 = $('blockquote', data.html);
+                              var withoutscripttag1 = withoutscripttag1['prevObject'][0];
+                              $("#withoutscripttag1").html(withoutscripttag1);
+                              $(".embedCode1").val($("#withoutscripttag1").html());
+                              $("#twitter-preview1").html(data.html)
+
+                          }
+                      });
+                  }
+  })
 
 
+  //Twitter 2
+    $('.tweetLink2').on('input', function() {
+        var url = $('.tweetLink2').val();
+                    if(url)
+                    {
+                        $.ajax({
+                            url: "https://api.twitter.com/1/statuses/oembed.json?url="+url,
+                            dataType: "jsonp",
+                            async: false,
+                            success: function(data){
+
+                                var withoutscripttag2 = $('blockquote', data.html);
+                                var withoutscripttag2 = withoutscripttag2['prevObject'][0];
+                                $("#withoutscripttag2").html(withoutscripttag2);
+                                $(".embedCode2").val($("#withoutscripttag2").html());
+                                $("#twitter-preview2").html(data.html)
+                            }
+                        });
+                    }
+    })
+
+
+
+
+
+    //help
+
+    //2
+    jQuery('.sfc-campaign-help-icon2').click(function() {
+      jQuery('.sfc-campaign-help-icon2').css( 'z-index', '9998' );
+      jQuery('.sfc-campaign-help-close2').css( 'z-index', '9999' );
+      jQuery('.sfc-campaign-help-inner2').css( {
+        'opacity' : '1',
+        'transition:' : 'opacity .2s',
+        'z-index' : '9999'
+      });
+    });
+
+    jQuery('.sfc-campaign-help-close2').click(function() {
+      jQuery('.sfc-campaign-help-inner2').css( {
+        'opacity' : '0',
+        'z-index' : '-1'
+      });
+    });
+
+
+    //4
+    jQuery('.sfc-campaign-help-icon4').click(function() {
+      jQuery('.sfc-campaign-help-icon4').css( 'z-index', '9998' );
+      jQuery('.sfc-campaign-help-close4').css( 'z-index', '9999' );
+      jQuery('.sfc-campaign-help-inner4').css( {
+        'opacity' : '1',
+        'transition:' : 'opacity .2s',
+        'z-index' : '9999'
+      });
+    });
+
+    jQuery('.sfc-campaign-help-close4').click(function() {
+      jQuery('.sfc-campaign-help-inner4').css( {
+        'opacity' : '0',
+        'z-index' : '-1'
+      });
+    });
 
 
 
@@ -462,6 +546,93 @@ jQuery(document).ready(function($) {
   /*******************************************************/
 
 
+
+//help
+
+//2
+jQuery('.sfc-campaign-help-icon2').click(function() {
+  jQuery('.sfc-campaign-help-icon2').css( 'z-index', '9998' );
+  jQuery('.sfc-campaign-help-close2').css( 'z-index', '9999' );
+  jQuery('.sfc-campaign-help-inner2').css( {
+    'opacity' : '1',
+    'transition:' : 'opacity .2s',
+    'z-index' : '9999'
+  });
+});
+
+jQuery('.sfc-campaign-help-close2').click(function() {
+  jQuery('.sfc-campaign-help-inner2').css( {
+    'opacity' : '0',
+    'z-index' : '-1'
+  });
+});
+
+
+//4
+jQuery('.sfc-campaign-help-icon4').click(function() {
+  jQuery('.sfc-campaign-help-icon4').css( 'z-index', '9998' );
+  jQuery('.sfc-campaign-help-close4').css( 'z-index', '9999' );
+  jQuery('.sfc-campaign-help-inner4').css( {
+    'opacity' : '1',
+    'transition:' : 'opacity .2s',
+    'z-index' : '9999'
+  });
+});
+
+jQuery('.sfc-campaign-help-close4').click(function() {
+  jQuery('.sfc-campaign-help-inner4').css( {
+    'opacity' : '0',
+    'z-index' : '-1'
+  });
+});
+
+
+
+
+
+//Twitter 1
+  $('.tweetLink1').on('input', function() {
+      var url = $('.tweetLink1').val();
+                  if(url)
+                  {
+                      $.ajax({
+                          url: "https://api.twitter.com/1/statuses/oembed.json?url="+url,
+                          dataType: "jsonp",
+                          async: false,
+                          success: function(data){
+
+                              var withoutscripttag1 = $('blockquote', data.html);
+                              var withoutscripttag1 = withoutscripttag1['prevObject'][0];
+                              $("#withoutscripttag1").html(withoutscripttag1);
+                              $(".embedCode1").val($("#withoutscripttag1").html());
+                              $("#twitter-preview1").html(data.html)
+
+                          }
+                      });
+                  }
+  })
+
+
+  //Twitter 2
+    $('.tweetLink2').on('input', function() {
+        var url = $('.tweetLink2').val();
+                    if(url)
+                    {
+                        $.ajax({
+                            url: "https://api.twitter.com/1/statuses/oembed.json?url="+url,
+                            dataType: "jsonp",
+                            async: false,
+                            success: function(data){
+
+                                var withoutscripttag2 = $('blockquote', data.html);
+                                var withoutscripttag2 = withoutscripttag2['prevObject'][0];
+                                $("#withoutscripttag2").html(withoutscripttag2);
+                                $(".embedCode2").val($("#withoutscripttag2").html());
+                                $("#twitter-preview2").html(data.html)
+                            }
+                        });
+                    }
+    })
 
 
 //on ajax submit

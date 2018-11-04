@@ -31,6 +31,8 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
             wp_enqueue_script( 'js', get_stylesheet_directory_uri() . '/js.js', array(), null );
 
+
+
 		}
 		if ( is_page('about') && ! is_admin() ) {
 
@@ -59,6 +61,11 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 			wp_register_script( 'select2-script', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', '', '', true );
 			wp_enqueue_script('select2-script');
 
+		}
+
+		if ( is_product() ) {
+			wp_register_script( 'twitter-script', 'https://platform.twitter.com/widgets.js', '', '', true );
+			wp_enqueue_script( 'twitter-script' );
 		}
 
 
@@ -707,7 +714,7 @@ add_action( 'cred_save_data', 'capitalise_field_collaborator_1', 10, 2 );
 function capitalise_field_collaborator_2( $post_id, $form_data ){
 
     if ( in_array( $form_data['id'], array( 98, 216 ) ) ) { // Edit form IDs
- 
+
         $slug = 'collaborator-2'; // Edit field slug
 
         $field = get_post_meta( $post_id, 'wpcf-' . $slug, true );
