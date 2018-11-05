@@ -1415,7 +1415,7 @@ opacity: 1;
   display: block;
 }
 
-.single-product .sf-popup-register-to-comment-h2, .page-campaign-form .sf-popup-register-h2, .sf-popup-register-to-comment-h2, .sf-popup-register-to-create-a-campaign-h2, .page-campaign-form .sf-popup-register-h2, .page-campaign-form-get-started .sf-popup-register-h2, .page-campaign-form .sf-popup-register-to-comment-h2, .page-campaign-form-get-started .sf-popup-register-to-comment-h2, .single-post .sf-popup-register-h2 {
+.single-product .sf-popup-register-to-comment-h2, .page-create-a-new-youtube-collaboration .sf-popup-register-h2, .sf-popup-register-to-comment-h2, .sf-popup-register-to-create-a-campaign-h2, .page-create-a-new-youtube-collaboration .sf-popup-register-h2, .page-create-a-new-youtube-collaboration-get-started .sf-popup-register-h2, .page-create-a-new-youtube-collaboration .sf-popup-register-to-comment-h2, .page-create-a-new-youtube-collaboration-get-started .sf-popup-register-to-comment-h2, .single-post .sf-popup-register-h2 {
   display: none;
 }
 
@@ -1426,16 +1426,16 @@ opacity: 1;
 
 
 
-.page-campaign-form .sf-popup-register-to-create-a-campaign-h2, .page-campaign-form-get-started .sf-popup-register-to-create-a-campaign-h2 {
+.page-create-a-new-youtube-collaboration .sf-popup-register-to-create-a-campaign-h2, .page-create-a-new-youtube-collaboration-get-started .sf-popup-register-to-create-a-campaign-h2 {
   display: block;
 }
 
 
-.sf-popup-register-to-edit-campaign, .page-campaign-form-edit .sf-popup-register-h2, .page-campaign-form-edit .sf-popup-register-to-comment-h2, .page-campaign-form-edit .sf-popup-register-to-create-a-campaign-h2 {
+.sf-popup-register-to-edit-campaign, .page-edit-your-youtube-collaboration .sf-popup-register-h2, .page-edit-your-youtube-collaboration .sf-popup-register-to-comment-h2, .page-edit-your-youtube-collaboration .sf-popup-register-to-create-a-campaign-h2 {
   display: none;
 }
 
-.page-campaign-form-edit .sf-popup-register-to-edit-campaign {
+.page-edit-your-youtube-collaboration .sf-popup-register-to-edit-campaign {
   display: block;
 }
 
@@ -2764,7 +2764,7 @@ div.sf-blog-yt-video-thumbnail-trending iframe {
   box-shadow: inset 0 0 5px #eee!important;
   border-left: 4px solid var(--brand-color)!important;
   outline: none!important;
-  line-height: 10px!important;
+  line-height: normal!important;
   border-radius: 0px!important;
   font-size: 12px!important;
   width: 100%!important;
@@ -2812,6 +2812,12 @@ div.sf-blog-yt-video-thumbnail-trending iframe {
 
 .single-post .f-post .at-share-btn-elements a {
   color: white!important;
+}
+
+@media screen and (max-width:996px) {
+.sf-post-author-row-share {
+  display: none;
+}
 }
 
 .single-post p {
@@ -4031,13 +4037,13 @@ btn {
   color: #ffffff;
 }
 
-.page-campaign-form .sfc-campaign-new-how-it-works-item h3, .page-campaign-form-get-started .sfc-campaign-new-how-it-works-item h3 {
+/*.page-create-a-new-youtube-collaboration .sfc-campaign-new-how-it-works-item h3, .page-create-a-new-youtube-collaboration-get-started .sfc-campaign-new-how-it-works-item h3 {
   color: #999;
   font-weight: bold;
   text-align: center;
   font-size: 16px;
   text-shadow: none;
-}
+}*/
 
 @media (min-width: 776px) {
   .sfc-campaign-new-how-it-works-item h3 {
@@ -4048,13 +4054,13 @@ btn {
     font-size: 24px;
     text-shadow: 2px 1px 0 black, 3px 2px 0 rgba(5, 5, 5, 0.95);
   }
-  .page-campaign-form .sfc-campaign-new-how-it-works-item h3, .page-campaign-form-get-started .sfc-campaign-new-how-it-works-item h3, .page-campaign-form-edit .sfc-campaign-new-how-it-works-item h3 {
+  /*.page-create-a-new-youtube-collaboration .sfc-campaign-new-how-it-works-item h3, .page-create-a-new-youtube-collaboration-get-started .sfc-campaign-new-how-it-works-item h3, .page-edit-your-youtube-collaboration .sfc-campaign-new-how-it-works-item h3 {
     color: #999;
     font-weight: bold;
     text-align: center;
     font-size: 18px;
     text-shadow: none;
-  }
+  }*/
 }
 
 .single-organization .sfc-campaign-new-how-it-works-item h3 {
@@ -6027,7 +6033,7 @@ display: none;
 
 
 /** error messages **/
-.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger {
+.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger {
   background: white;
   border-bottom: 2px solid #aa0000;
   padding: 15px 25px;
@@ -6035,7 +6041,7 @@ display: none;
   position: relative;
 }
 
-.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger:before, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger:before {
+.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger:before, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger:before {
   content: "\f057";
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
@@ -6109,8 +6115,21 @@ input[name="form_status"] p {
   animation: spin 2s linear infinite;
 }
 
+.page-create-a-new-youtube-collaboration .loading-spinner:before {
+  left: 50%;
+}
+
+.page-edit-your-youtube-collaboration .loading-spinner:before {
+  left: 60%;
+}
+
+
 @media screen and (max-width:576px) {
-  .loading-spinner:before {
+  .page-create-a-new-youtube-collaboration .loading-spinner:before {
+    left: 50%;
+  }
+
+  .page-edit-your-youtube-collaboration .loading-spinner:before {
     left: 70%;
   }
 }
@@ -6120,7 +6139,7 @@ input[name="form_status"] p {
 }
 
 input.sfc-campaign-new-button[disabled] {
-  color: #6b10d6;
+  color: transparent;
 }
 
 *, :after, :before {
@@ -6468,6 +6487,12 @@ select[name="product_cat[]"], select[name="alt_product_cat"] {
   z-index: 4;
 }
 
+@media screen and (max-width:996px) {
+  .sfc-campaign-new-popover-3 {
+     display: none!important;
+  }
+}
+
 .sfc-campaign-new-popover-3:before {
   display: block;
   right: 100%;
@@ -6621,6 +6646,7 @@ select[name="product_cat[]"], select[name="alt_product_cat"] {
   list-style-type: none;
   padding: 0;
   position: relative;
+  z-index: 1000;
 }
 
 .wpt-form-set-radios-wpcf-collaboration-type .wpt-form-radio-label {
@@ -6808,7 +6834,7 @@ input[name="wpcf-collaborator-1"], input[name="wpcf-collaborator-2"] {
   bottom: 0;
   left: 0;
   position: absolute;
-  padding:0;
+  padding:0 15px 0 0;
   transition: opacity .5s;
   display: flex;
   align-items: center;
@@ -6835,26 +6861,25 @@ input[name="wpcf-collaborator-1"], input[name="wpcf-collaborator-2"] {
     color: #ffffff;
     border: 1px solid #000;
     font-size: 10px;
-    height: 15px;
-    width: 15px;
-    top: 5px;
-    right: 5px;
+    height: 17px;
+    width: 17px;
+    top: 8px;
+    right: 8px;
     border-radius: 50%;
     background: black;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding-top: 1px;
 }
 
 .sfc-campaign-help-wrap {
-  top: 5px;
-  right: 5px;
-  z-index: 9999;
+  z-index: 999;
   position: absolute;
   cursor: pointer;
-  font-size: 15px;
-  top: 7px;
-  right: 7px;
+  font-size: 17px;
+  top: 10px;
+  right: 10px;
   border-radius: 50%;
   display: flex;
   justify-content: center;

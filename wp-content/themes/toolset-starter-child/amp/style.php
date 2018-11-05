@@ -364,6 +364,42 @@ amp-carousel > amp-img > img {
 	min-height: 48px;
 }
 
+/* AMP Banner */
+
+.sf-blog-banner {
+  display: flex;
+  color: #ffffff;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  background: #eee;
+  flex: auto;
+  text-align: center;
+  background-position: center center;
+  padding: 30px 0;
+	margin: 0 -16px 0;
+	overflow: hidden;
+}
+
+.sf-get-started {
+	background-color: #dc2c5d;
+	border: none;
+	background: #dc2c5d;
+	color: #ffffff;
+	border-radius: 0;
+	text-transform: uppercase;
+	padding: 15px 25px;
+	cursor: pointer;
+	box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+	position: relative;
+	font-size: 24px;
+	font-weight: bold;
+}
+.sf-get-started:hover {
+	opacity:0.8;
+}
+
 /* Article Footer Meta */
 
 .amp-wp-article-footer .amp-wp-meta {

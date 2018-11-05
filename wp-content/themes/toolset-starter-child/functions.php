@@ -91,10 +91,10 @@ function sf_remove_scripts() {
     wp_dequeue_style( 'ref_woocommerce' );
     wp_deregister_style( 'ref_woocommerce' );
 
-     wp_dequeue_style( 'woocommerce-smallscreen' );
+    wp_dequeue_style( 'woocommerce-smallscreen' );
     wp_deregister_style( 'woocommerce-smallscreen' );
 
-     wp_dequeue_style( 'woocommerce-layout' );
+    wp_dequeue_style( 'woocommerce-layout' );
     wp_deregister_style( 'woocommerce-layout' );
 
     wp_dequeue_style( 'woocommerce_views_onsale_badge' );
@@ -146,7 +146,7 @@ function sf_remove_scripts() {
 
     wp_dequeue_script( 'wpbootstrap_bootstrap_js' );
 
-      wp_dequeue_script( 'theme_js' );
+    wp_dequeue_script( 'theme_js' );
 
 
 		/*wp_deregister_style( 'wc-social-login-frontend-inline' );

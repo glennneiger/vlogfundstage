@@ -25,7 +25,7 @@ onElementInserted('body', '#lbl_generic', function(element) {
     //console.log(element);
     //alert('hi;')
     console.log('error');
-    var top = jQuery('.page-campaign-form, .page-edit-your-youtube-collaboration');
+    var top = jQuery('.page-create-a-new-youtube-collaboration, .page-edit-your-youtube-collaboration');
     if (top.length) {
     var TopPosition = top.offset().top;
     jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
@@ -87,12 +87,12 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
 
 
 
-  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger br, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger br').find('br').remove();
-  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger:first-line, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger:first-line').remove();
-  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child').addClass('sfc-error-tell-us-more');
+  jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger br, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger br').find('br').remove();
+  jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger:first-line, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger:first-line').remove();
+  jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child').addClass('sfc-error-tell-us-more');
 
 
-    jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li, .page-campaign-form-edit .page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li').each(function() {
+    jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li').each(function() {
       var oldPhrase1 = jQuery(this).text();
       var newPhrase1 = oldPhrase1.replace('Description_substitute:', '');
       jQuery(this).text(newPhrase1);
@@ -313,11 +313,22 @@ if (pageWidth > 996) {
   });
 
 
-/*if (jQuery('body').hasClass('page-campaign-form')) {
+/*if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration')) {
 jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr('required');
 }*/
 
 
+
+
+//copy text quote to hidden field
+
+jQuery('input[name="tweet_url_1"]').change(function() {
+  jQuery('.embedCode1').val(jQuery(this).val());
+});
+
+jQuery('input[name="tweet_url_2"]').change(function() {
+  jQuery('.embedCode2').val(jQuery(this).val());
+});
 
 
 //Twitter 1
@@ -372,16 +383,19 @@ jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr(
 
     //2
     jQuery('.sfc-campaign-help-icon2').click(function() {
-      jQuery('.sfc-campaign-help-icon2').css( 'z-index', '9998' );
-      jQuery('.sfc-campaign-help-close2').css( 'z-index', '9999' );
+      jQuery('.sfc-campaign-new-popover-3').css( 'display', 'none' );
+      jQuery('.sfc-campaign-help-icon2').css( 'z-index', '998' );
+      jQuery('.sfc-campaign-help-close2').css( 'z-index', '999' );
+      jQuery('.wpt-form-set-radios-wpcf-collaboration-type').css( 'z-index', '998' );
       jQuery('.sfc-campaign-help-inner2').css( {
         'opacity' : '1',
         'transition:' : 'opacity .2s',
-        'z-index' : '9999'
+        'z-index' : '999'
       });
     });
 
     jQuery('.sfc-campaign-help-close2').click(function() {
+      jQuery('.wpt-form-set-radios-wpcf-collaboration-type').css( 'z-index', '1000' );
       jQuery('.sfc-campaign-help-inner2').css( {
         'opacity' : '0',
         'z-index' : '-1'
@@ -391,12 +405,13 @@ jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr(
 
     //4
     jQuery('.sfc-campaign-help-icon4').click(function() {
-      jQuery('.sfc-campaign-help-icon4').css( 'z-index', '9998' );
-      jQuery('.sfc-campaign-help-close4').css( 'z-index', '9999' );
+      jQuery('.sfc-campaign-new-popover-3').css( 'display', 'none' );
+      jQuery('.sfc-campaign-help-icon4').css( 'z-index', '998' );
+      jQuery('.sfc-campaign-help-close4').css( 'z-index', '999' );
       jQuery('.sfc-campaign-help-inner4').css( {
         'opacity' : '1',
         'transition:' : 'opacity .2s',
-        'z-index' : '9999'
+        'z-index' : '999'
       });
     });
 
@@ -547,20 +562,24 @@ jQuery(document).ready(function($) {
 
 
 
+
 //help
 
 //2
 jQuery('.sfc-campaign-help-icon2').click(function() {
-  jQuery('.sfc-campaign-help-icon2').css( 'z-index', '9998' );
-  jQuery('.sfc-campaign-help-close2').css( 'z-index', '9999' );
+  jQuery('.sfc-campaign-new-popover-3').css( 'display', 'none' );
+  jQuery('.sfc-campaign-help-icon2').css( 'z-index', '998' );
+  jQuery('.sfc-campaign-help-close2').css( 'z-index', '999' );
+  jQuery('.wpt-form-set-radios-wpcf-collaboration-type').css( 'z-index', '998' );
   jQuery('.sfc-campaign-help-inner2').css( {
     'opacity' : '1',
     'transition:' : 'opacity .2s',
-    'z-index' : '9999'
+    'z-index' : '999'
   });
 });
 
 jQuery('.sfc-campaign-help-close2').click(function() {
+  jQuery('.wpt-form-set-radios-wpcf-collaboration-type').css( 'z-index', '1000' );
   jQuery('.sfc-campaign-help-inner2').css( {
     'opacity' : '0',
     'z-index' : '-1'
@@ -570,12 +589,13 @@ jQuery('.sfc-campaign-help-close2').click(function() {
 
 //4
 jQuery('.sfc-campaign-help-icon4').click(function() {
-  jQuery('.sfc-campaign-help-icon4').css( 'z-index', '9998' );
-  jQuery('.sfc-campaign-help-close4').css( 'z-index', '9999' );
+  jQuery('.sfc-campaign-new-popover-3').css( 'display', 'none' );
+  jQuery('.sfc-campaign-help-icon4').css( 'z-index', '998' );
+  jQuery('.sfc-campaign-help-close4').css( 'z-index', '999' );
   jQuery('.sfc-campaign-help-inner4').css( {
     'opacity' : '1',
     'transition:' : 'opacity .2s',
-    'z-index' : '9999'
+    'z-index' : '999'
   });
 });
 
@@ -588,7 +608,15 @@ jQuery('.sfc-campaign-help-close4').click(function() {
 
 
 
+//copy text quote to hidden field
 
+jQuery('input[name="tweet_url_1"]').change(function() {
+  jQuery('.embedCode1').val(jQuery(this).val());
+});
+
+jQuery('input[name="tweet_url_2"]').change(function() {
+  jQuery('.embedCode2').val(jQuery(this).val());
+});
 
 //Twitter 1
   $('.tweetLink1').on('input', function() {
@@ -655,7 +683,7 @@ jQuery('.sfc-campaign-help-close4').click(function() {
 
 
 jQuery( document ).on( "ajaxSuccess", function() {
-  var cred = jQuery('.cred-form, .page-campaign-form, .page-edit-your-youtube-collaboration');
+  var cred = jQuery('.cred-form, .page-create-a-new-youtube-collaboration, .page-edit-your-youtube-collaboration');
   if (cred.length) {
   var TopPosition = cred.offset().top;
     jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
@@ -727,12 +755,12 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
 
 
-  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger br, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger br').find('br').remove();
-  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger:first-line, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger:first-line').remove();
-  jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child, .page-campaign-form-edit #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child').addClass('sfc-error-tell-us-more');
+  jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger br, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger br').find('br').remove();
+  jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger:first-line, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger:first-line').remove();
+  jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li:last-child').addClass('sfc-error-tell-us-more');
 
   jQuery(function() {
-    jQuery('.page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li, .page-campaign-form-edit .page-campaign-form #lbl_generic.wpt-form-error.alert.alert-danger ul li').each(function() {
+    jQuery('.page-create-a-new-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li, .page-edit-your-youtube-collaboration #lbl_generic.wpt-form-error.alert.alert-danger ul li').each(function() {
       var oldPhrase1 = jQuery(this).text();
       var newPhrase1 = oldPhrase1.replace('Description_substitute:', '');
       jQuery(this).text(newPhrase1);
@@ -959,17 +987,17 @@ jQuery( document ).on( "ajaxSuccess", function() {
   });
 
 
-/*if (jQuery('body').hasClass('page-campaign-form')) {
+/*if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration')) {
 jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr('required');
 }*/
 
 
 
   //select taxonomy
-  jQuery('.page-campaign-form select[name="product_cat[]"], .page-campaign-form-edit select[name="product_cat[]"], .page-campaign-form-edit select[name="alt_product_cat"]').prepend('<option value="">- Select a Category-</option>');
-  jQuery('.page-campaign-form select[name="alt_product_cat"] option[value=""], .page-campaign-form-edit select[name="alt_product_cat"] option[value=""]').remove();
-  jQuery('.page-campaign-form select[name="alt_product_cat"], .page-campaign-form-edit select[name="alt_product_cat"]').prepend('<option value="">- Select a Category-</option>');
-  jQuery('.page-campaign-form select[name="product_cat[]"] option[value=""], .page-campaign-form select[name="alt_product_cat"] option[value=""], .page-campaign-form-edit select[name="product_cat[]"] option[value=""], .page-campaign-form-edit select[name="alt_product_cat"] option[value=""]').attr('selected', 'selected');
+  /*jQuery('.page-create-a-new-youtube-collaboration select[name="product_cat[]"], .page-edit-your-youtube-collaboration select[name="product_cat[]"], .page-edit-your-youtube-collaboration select[name="alt_product_cat"]').prepend('<option value="">- Select a Category-</option>');
+  jQuery('.page-create-a-new-youtube-collaboration select[name="alt_product_cat"] option[value=""], .page-edit-your-youtube-collaboration select[name="alt_product_cat"] option[value=""]').remove();
+  jQuery('.page-create-a-new-youtube-collaboration select[name="alt_product_cat"], .page-edit-your-youtube-collaboration select[name="alt_product_cat"]').prepend('<option value="">- Select a Category-</option>');
+  jQuery('.page-create-a-new-youtube-collaboration select[name="product_cat[]"] option[value=""], .page-create-a-new-youtube-collaboration select[name="alt_product_cat"] option[value=""], .page-edit-your-youtube-collaboration select[name="product_cat[]"] option[value=""], .page-edit-your-youtube-collaboration select[name="alt_product_cat"] option[value=""]').attr('selected', 'selected');*/
 
 
 
@@ -1942,7 +1970,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 			});
 			if ($('body').hasClass('single-post')) {
 				$('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
-			} if ($('body').hasClass('page-campaign-form')) {
+			} if ($('body').hasClass('page-create-a-new-youtube-collaboration')) {
 				$('a.sf-redirect-to-welc1').get(0).click();
 			} else {
 				//setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
@@ -1962,7 +1990,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 			});
 			if ($('body').hasClass('single-post')) {
 				$('span.sf-comment-register a.sf-comment-register-redirect').get(0).click();
-			} if ($('body').hasClass('page-campaign-form')) {
+			} if ($('body').hasClass('page-create-a-new-youtube-collaboration')) {
 				$('a.sf-redirect-to-welc1').get(0).click();
 			} else {
 				//setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
