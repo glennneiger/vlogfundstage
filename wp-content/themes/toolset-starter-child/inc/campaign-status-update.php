@@ -137,7 +137,7 @@ function vlogfund_post_status_update( $post_id, $post ){
 
 	$_note = '';
 	if( isset( $_POST['_campaign_status_note'] ) && !empty( $_POST['_campaign_status_note'] ) && $_POST['_campaign_status_note_type'] == 'customer' ) :
-		$_note = '<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">'.nl2br( sanitize_text_field( $_POST['_campaign_status_note'] ) ).'</p>';
+		$_note = '<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">'.nl2br( stripslashes_deep( $_POST['_campaign_status_note'] ) ).'</p>';
 	endif; //Endif
 
 	//Check Old Status and New Status
