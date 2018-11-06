@@ -135,12 +135,17 @@ function vlogfund_post_status_update( $post_id, $post ){
 		update_post_meta($post->ID, '_campaign_status_notes',$saved_notes);
 	endif; //Endif
 
+	$_note = '';
+	if( isset( $_POST['_campaign_status_note'] ) && !empty( $_POST['_campaign_status_note'] ) && $_POST['_campaign_status_note_type'] == 'customer' ) :
+		$_note = '<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">'.nl2br( $_POST['_campaign_status_note'] ).'</p>';
+	endif; //Endif
+
 	//Check Old Status and New Status
 	if( $new_status !== $old_status ) :
 
 		if( $sub_body = vlogfund_post_status_get_email_subject_body( $new_status ) ) :
-			$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
-			$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url() );
+			$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
+			$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), $_note );
 			$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 			$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 			add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
@@ -153,11 +158,7 @@ function vlogfund_post_status_update( $post_id, $post ){
 			$get_voted_users = get_users( array( 'meta_key' => '_upvote_for_'.$post_id, 'meta_value' => 1 ) );
 			if( !empty( $get_voted_users ) && ( $sub_body = vlogfund_post_status_get_email_subject_body( 'vote-contribute' ) ) ) : //Find Users who voted for this post
 				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
-				$status_note = '';
-				if( isset( $_POST['_campaign_status_note'] ) && !empty( $_POST['_campaign_status_note'] ) && $_POST['_campaign_status_note_type'] == 'customer' ) :
-					$status_note = '<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">'.$_POST['_campaign_status_note'].'</p>';
-				endif; //Endif
-				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), $status_note );
+				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), $_note );
 				$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 				$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 				add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
