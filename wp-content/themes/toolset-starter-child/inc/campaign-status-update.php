@@ -215,8 +215,8 @@ function vlogfund_post_cred_save_data($post_id, $form_data){
 			$post_status = ( $_POST['post_status'] == 'pending' ) ? 5 : 6;
             update_post_meta($post_id, 'wpcf-campaign-status', $post_status);
 			if( $sub_body = vlogfund_post_status_get_email_subject_body( $post_status ) ) :
-				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
-				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url() );
+				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
+				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), '' );
 				$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 				$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 				add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
