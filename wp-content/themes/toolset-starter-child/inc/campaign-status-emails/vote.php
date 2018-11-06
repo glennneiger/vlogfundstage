@@ -137,6 +137,7 @@
                               <th style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left">
                                 <center data-parsed="" style="min-width:532px;width:100%">
                                   <h1 class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:inherit;font-family:Helvetica,Arial,sans-serif;font-size:34px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center;word-wrap:normal"><strong>Your campaign<br>%%POST_TITLE%%<br>was officially approved</strong></h1>
+								  %%STATUS_NOTE%%
                                   <p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">Be the first one to comment and vote or</p>
                                 </center>
                               </th>

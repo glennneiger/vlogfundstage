@@ -124,6 +124,16 @@ function vlogfund_post_status_update( $post_id, $post ){
 	if( wp_is_post_revision( $post_id ) && 'product' !== $post_type ) :
 		return $post_id;
 	endif;
+	
+	//Update the Status Notes
+	if( isset( $_POST['_campaign_status_note'] ) && !empty( $_POST['_campaign_status_note'] ) ) :
+		$current_user = wp_get_current_user();
+		$saved_notes = get_post_meta($post->ID, '_campaign_status_notes', true) ? get_post_meta($post->ID, '_campaign_status_notes', true) : array();
+		$new_note = array( 'content' => $_POST['_campaign_status_note'], 'date' => current_time('timestamp'), 'type' => $_POST['_campaign_status_note_type'], 'by_user' => $current_user->user_login );
+		$saved_notes[] = $new_note;
+		//Update Notes
+		update_post_meta($post->ID, '_campaign_status_notes',$saved_notes);
+	endif; //Endif
 
 	//Check Old Status and New Status
 	if( $new_status !== $old_status ) :
@@ -142,8 +152,12 @@ function vlogfund_post_status_update( $post_id, $post ){
 		if( $old_status == '2' && $new_status == '3' ) :
 			$get_voted_users = get_users( array( 'meta_key' => '_upvote_for_'.$post_id, 'meta_value' => 1 ) );
 			if( !empty( $get_voted_users ) && ( $sub_body = vlogfund_post_status_get_email_subject_body( 'vote-contribute' ) ) ) : //Find Users who voted for this post
-				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
-				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url() );
+				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
+				$status_note = '';
+				if( isset( $_POST['_campaign_status_note'] ) && !empty( $_POST['_campaign_status_note'] ) && $_POST['_campaign_status_note_type'] == 'customer' ) :
+					$status_note = '<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">'.$_POST['_campaign_status_note'].'</p>';
+				endif; //Endif
+				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), $status_note );
 				$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 				$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 				add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
@@ -188,6 +202,9 @@ function vlogfund_post_inserted_update( $post_id, $post ){
 endif;
 
 if( !function_exists('vlogfund_post_cred_save_data') ) :
+/**
+ * Send Email to User When Submit Campaign
+ **/
 function vlogfund_post_cred_save_data($post_id, $form_data){
 
 	// if a specific form
@@ -210,4 +227,54 @@ function vlogfund_post_cred_save_data($post_id, $form_data){
     endif; //Endif
 }
 add_action('cred_save_data', 'vlogfund_post_cred_save_data',100,2);
+endif;
+
+if( !function_exists('vlogfund_campaign_notes_metabox') ) :
+/**
+ * Add Meta for Campaign Notes
+ **/
+function vlogfund_campaign_notes_metabox(){
+	//Campaign Notes
+    add_meta_box( 'campaign-notes', __( 'Campaign Notes' ), 'vlogfund_campaign_notes_callback', 'product', 'side', 'high' );
+}
+add_action( 'add_meta_boxes', 'vlogfund_campaign_notes_metabox' );
+endif;
+if( !function_exists('vlogfund_campaign_notes_callback') ) :
+/**
+ * Add Meta for Campaign Notes Callback
+ **/
+function vlogfund_campaign_notes_callback( $post ){
+	$saved_notes = get_post_meta($post->ID, '_campaign_status_notes', true);
+	echo '<ul class="order_notes">';
+	if( !empty( $saved_notes ) ) :
+		foreach( array_reverse( $saved_notes ) as $note ) :
+			if( isset( $note['content'] ) && !empty( $note['content'] ) ) :
+				echo '<li class="note'.( ( $note['type'] == 'customer' ) ? ' customer-note' : '').'">';
+					echo '<div class="note_content"><p>'.$note['content'].'</p></div>';
+					echo '<p class="meta"><abbr class="exact-date">'.sprintf('%1$s %2$s %3$s %4$s', __('added on'), date('F j, Y', $note['date']), __('at'), date('H:i a', $note['date'])).'</abbr> '. sprintf('%1$s %2$s', __('by'), $note['by_user']).'</p>';
+				echo '</li>';
+			endif; //Endif
+		endforeach; //Endforeach
+	else : //Else
+		echo '<li>There are no notes yet.</li>';
+	endif;
+	echo '</ul>';
+	echo '<style type="text/css">';
+	echo '.campaign_add_note #_campaign_status_note{ width: 100%; height: 50px; }';
+	echo '.campaign_add_note{ border-top: 1px solid #ddd; }';
+	echo '</style>';
+	echo '<div class="campaign_add_note">';
+	echo '<p>';
+		echo '<label for="_campaign_status_note">Add note</label>';
+		echo '<textarea type="text" name="_campaign_status_note" id="_campaign_status_note" class="input-text" cols="20" rows="5"></textarea>';
+	echo '</p>';
+	echo '<p>';
+	echo '<label for="_campaign_status_note_type" class="screen-reader-text">Note type</label>';
+	echo '<select name="_campaign_status_note_type" id="_campaign_status_note_type">';
+		echo '<option value="private">Private note</option>';
+		echo '<option value="customer">Note to customer</option>';
+		echo '</select>';
+	echo '</p>';
+	echo '</div>';
+}
 endif;
