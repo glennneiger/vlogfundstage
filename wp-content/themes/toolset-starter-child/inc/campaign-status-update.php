@@ -273,7 +273,7 @@ function vlogfund_campaign_notes_callback( $post ){
 	echo '<label for="_campaign_status_note_type" class="screen-reader-text">Note type</label>';
 	echo '<select name="_campaign_status_note_type" id="_campaign_status_note_type">';
 		echo '<option value="private">Private note</option>';
-		echo '<option value="customer">Note to customer</option>';
+		echo '<option value="customer">Note to creator</option>';
 		echo '</select>';
 	echo '</p>';
 	echo '</div>';
