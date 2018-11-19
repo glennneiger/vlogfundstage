@@ -6,6 +6,7 @@
  *
  * @since Upvote 1.0
  **/
+
 if( !function_exists('upvote_button_shortcode') ) :
 /**
  * Upvote Button Shortcode
@@ -26,26 +27,30 @@ function upvote_button_shortcode( $atts, $content = null ){
     ), $atts ) );
 
 	//Get vote count
-	$vote_count = get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
+	$vote_count = get_post_meta( $postid, '_upvote_count', true ) 	? get_post_meta( $postid, '_upvote_count', true ) : 0;
 	//Get saved votes
-	$vote_users = get_post_meta( $postid, '_upvote_users', true ) ? get_post_meta( $postid, '_upvote_users', true ) : array();
-
+	$vote_users = get_post_meta( $postid, '_upvote_users', true ) 	? get_post_meta( $postid, '_upvote_users', true ) : array();
+	//Get User IPs
+	$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )		? get_post_meta( $postid, '_upvote_ips', true ) 	: array();
+	//Guest Vote	
+	$voted_guest = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? intval( $_COOKIE['_voted'] ) : 0;
+	
 	//Load Public Script
 	wp_enqueue_script('upvote-public-script');
 
 	//Button for Vote
 	$content = '<div class="upvote-container-big">';
-	if( !is_user_logged_in() ) : //Check user is not logged in
+	if( !is_user_logged_in() && ( ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button">
 						<a href="#register"><button class="upvote-btn" data-id="'.$postid.'">'.$label.'</button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
 					</div><!-- /progress-button -->';
 	else : //Else
-		if( in_array( $user_ID, $vote_users ) ) : //Check user already voted or not
+		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || in_array( upvote_get_ip(), $vote_ips ) ) : //Check user already voted or not
 			$content .= '<div class="upvote-progress-button success-upvote">
 							<button disabled="disabled">'.__('You already voted','upvote').'</button>
 						 </div><!-- /progress-button -->';//Already voted
-		else : //Else
+		elseif( ( $voted_guest < UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) : //Else
 			$content .= '<div class="upvote-progress-button">
 							<button class="upvote-btn vote-me" data-id="'.$postid.'">'.$label.'</button>
 						</div><!-- /progress-button -->';
@@ -53,7 +58,7 @@ function upvote_button_shortcode( $atts, $content = null ){
 	endif; //Endif
 	//Voted Count
 	if( $show_count == 'yes' ) :
-		if( !is_user_logged_in() ) : //Check user is not logged in
+		if( !is_user_logged_in() || ( $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) : //Check user is not logged in
 			$content .= '<div class="upvote-count" data-id="'.$postid.'"><a href="#register">+&nbsp;<span>'.$vote_count.'</span></a></div>';
 		else :
 			$content .= '<div class="upvote-count" data-id="'.$postid.'">+&nbsp;<span>'.$vote_count.'</span></div>';
@@ -108,23 +113,27 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 	$vote_count = get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
 	//Get saved votes
 	$vote_users = get_post_meta( $postid, '_upvote_users', true ) ? get_post_meta( $postid, '_upvote_users', true ) : array();
-
+	//Get User IPs
+	$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )   ? get_post_meta( $postid, '_upvote_ips', true ) 	: array();
+	//Guest Vote	
+	$voted_guest = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? intval( $_COOKIE['_voted'] ) : 0;
+	
 	//Load Public Script
 	wp_enqueue_script('upvote-public-script');
-
+	
 	//Button for Vote
 	$content = '<div class="upvote-container">';
-	if( !is_user_logged_in() ) : //Check user is not logged in
+	if( !is_user_logged_in() && ( ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button icon">
 						<a href="#register"><button class="upvote-btn icon">↑&nbsp;<span>'.$vote_count.'</span></button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
 					</div><!-- /progress-button -->';
 	else : //Else
-		if( in_array( $user_ID, $vote_users ) ) : //Check user already voted or not
+		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || in_array( upvote_get_ip(), $vote_ips ) ) : //Check user already voted or not
 			$content .= '<div class="upvote-progress-button icon success-upvote">
 							<button disabled="disabled">↑&nbsp;<span>'.$vote_count.'</span></button>
 						 </div><!-- /progress-button -->';//Already voted
-		else : //Else
+		elseif( ( $voted_guest < UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) : //Else
 			$content .= '<div class="upvote-progress-button icon">
 							<button class="upvote-btn icon vote-me" data-id="'.$postid.'">↑&nbsp;<span>'.$vote_count.'</span></button>
 						</div><!-- /progress-button -->';

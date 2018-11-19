@@ -45,7 +45,11 @@
 							$this.trigger('upvote', result);
                             toastr.success('', 'Thank you for voting!');
 							window.dataLayer = window.dataLayer || [];
-							dataLayer.push({'event': 'upvote'});					
+							dataLayer.push({'event': 'upvote'});
+							if( result.guest_limit_reached == 1 ) {								
+								//$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
+								location.reload();
+							}
 						} else if( result.voted == '1' ){
 							$this.find('i').addClass($fill);
 							$this.remove();
@@ -86,6 +90,10 @@
 							dataLayer.push({'event': 'upvote'});
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
+							if( result.guest_limit_reached == '1' ) {							
+								//$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
+								location.reload();
+							}
 						} else if( result.voted == '1' ){
 							$('<span class="already-voted">' + result.message + '</span>').insertAfter( $this );
 							$this.remove();

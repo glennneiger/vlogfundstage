@@ -12,6 +12,10 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 if( !defined('UPVOTE_PLUGIN_URL') ) :
 	define('UPVOTE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 endif;
+if( !defined('UPVOTE_ALLOWED_VOTES_GUEST') ) :
+	define('UPVOTE_ALLOWED_VOTES_GUEST', 1 );
+endif;
+
 /**
  * Plugin Activation 
  * 
