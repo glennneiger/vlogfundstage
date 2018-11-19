@@ -56,7 +56,8 @@ function upvote_enqueue_scripts(){
 	//Localize Script
 	wp_localize_script( 'upvote-public-script', 'Upvote', array( 'ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ),
 																'loaderurl' => UPVOTE_PLUGIN_URL . '/images/ajax-spinner.gif',
-																'product_page' => is_singular('product') ? 1 : 0 ) );
+																'product_page' => is_singular('product') ? 1 : 0,
+																'logged_in' => is_user_logged_in() ? 1 : 0 ) );
 }
 add_action('wp_enqueue_scripts', 'upvote_enqueue_scripts');
 endif;

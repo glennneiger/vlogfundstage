@@ -47,8 +47,8 @@
 							window.dataLayer = window.dataLayer || [];
 							dataLayer.push({'event': 'upvote'});
 							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {								
-								//$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
-								location.reload();
+								$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
+								//location.reload();
 							}
 						} else if( result.voted == '1' ){
 							$this.find('i').addClass($fill);
@@ -84,14 +84,14 @@
 							toastr.success('', 'Thank you for voting');
 							$this.show();
 							setTimeout(function() {
-									jQuery('#share.sf-popup').addClass('share-popup-visible');
+								jQuery('#share.sf-popup').addClass('share-popup-visible');
 							}, 1500);
 							window.dataLayer = window.dataLayer || [];
 							dataLayer.push({'event': 'upvote'});
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
 							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {							
-								//$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
+								$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
 								location.reload();
 							}
 						} else if( result.voted == '1' ){
@@ -107,6 +107,14 @@
 		$(document).on('click', '.upvote-container-big .upvote-count', function(){
 			$(this).parents('.upvote-container-big').find('button.upvote-btn.vote-me').trigger('click');
 			return false;
+		});
+		
+		//Click on Register Button
+		$(document).on('click', 'a[href^="#register"]', function(e){
+			e.preventDefault();
+			if( Upvote.logged_in == 0 ) {
+				$('a[href^="#register"]').trigger('click');
+			}
 		});
     });
 
