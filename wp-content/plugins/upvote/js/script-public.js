@@ -46,7 +46,7 @@
                             toastr.success('', 'Thank you for voting!');
 							window.dataLayer = window.dataLayer || [];
 							dataLayer.push({'event': 'upvote'});
-							if( result.guest_limit_reached == 1 ) {								
+							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {								
 								//$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
 								location.reload();
 							}
@@ -90,7 +90,7 @@
 							dataLayer.push({'event': 'upvote'});
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
-							if( result.guest_limit_reached == '1' ) {							
+							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {							
 								//$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
 								location.reload();
 							}
