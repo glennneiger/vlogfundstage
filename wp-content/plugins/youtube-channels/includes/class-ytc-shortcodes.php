@@ -18,6 +18,8 @@ class YTC_Shortcodes{
 		add_action( 'wp_enqueue_scripts', array( $this,'register_scripts' ) );
 		//Channels Shortcode
 		add_shortcode( 'ytc_channels', array($this, 'channels_shortcode_callback') );
+		//Channels Shortcode
+		add_shortcode( 'ytc_channel_single', array($this, 'channels_single_shortcode_callback') );
 	}
 
 	/**
@@ -29,6 +31,11 @@ class YTC_Shortcodes{
 
 		//Common Styles
 		wp_register_style( 'ytc-styles', 			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null );
+		
+		if( is_singular('youtube_channels') ) { //Check Youtube Channel Page
+			wp_register_style( 'ytc-detail-style',	YTC_PLUGIN_URL . 'assets/css/yt-detail.css', array(), null );
+			wp_register_script( 'ytc-twitter-script', 	'https://platform.twitter.com/widgets.js', array(), null, true );
+		}
 		//App Style
 		wp_register_style( 'ytc-app-style',			YTC_PLUGIN_URL . 'assets/css/app.css', array(), null );
 		//BLazy
@@ -44,6 +51,7 @@ class YTC_Shortcodes{
 	* Handles to list all youtube channels with shortcode
 	**/
 	public function channels_shortcode_callback( $atts, $content = null ){
+		
 		extract( shortcode_atts( array(
 			'showresults' => 1 //Display Results by Default
 		), $atts, 'ytc_channels' ) );
@@ -94,10 +102,6 @@ class YTC_Shortcodes{
 					</form>
 				</div><!--/.container-->
 			</div><!--/.sfc-campaign-archive-->
-
-
-
-
         	<div class="sfc-campaign-archive-container">
 				<div class="row tags-container"><div class="tag"></div></div>
 				<div id="ytc-searchloader"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
@@ -155,6 +159,23 @@ class YTC_Shortcodes{
 		?>
 		<?php $content = ob_get_contents(); //End Buffer
 		ob_get_clean();
+		return $content;
+	}
+	
+	/**
+	* Channels Shortcode
+	*
+	* Handles to list all youtube channels with shortcode
+	**/
+	public function channels_single_shortcode_callback( $atts, $content = null ){
+		
+		wp_enqueue_style( array( 'ytc-detail-style' ) );
+		wp_enqueue_script( array('ytc-twitter-script') );
+		
+		ob_start(); //Start Buffer
+		include_once( YTC_PLUGIN_PATH . '/includes/channels-single.php');
+		$content = ob_get_contents(); //Get Content
+		ob_get_clean(); //Clean Buffer
 		return $content;
 	}
 

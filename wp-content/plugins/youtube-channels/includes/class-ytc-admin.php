@@ -92,7 +92,6 @@ class YTC_Admin{
 			$response = array('updated' => 0);
 			$date_before = date('Y-m-d', strtotime('-4days'));
 			$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_modified <= '$date_before';" );
-			$youtube_keys = array('AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE', 'AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks', 'AIzaSyCojt9gvT7vj511o4eRCPAA0x2IDBULJzY');
 			$query = "SELECT m1.meta_value FROM $wpdb->posts
 					LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
 					WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
@@ -103,9 +102,8 @@ class YTC_Admin{
 			if( !empty( $all_channels ) ) : //Check Channel Data
 				$channel_slots = array_chunk( $all_channels, 40 );				
 				foreach( $channel_slots as $channels_list ) :			
-					$channel_ids = implode(',', $channels_list );
-					$yt_rand_key = array_rand( $youtube_keys );
-					$use_yt_key = $youtube_keys[$yt_rand_key]; //YTC_YOUTUBE_KEY; //
+					$channel_ids = implode(',', $channels_list );					
+					$use_yt_key = ytc_youtube_api_key(); //YTC_YOUTUBE_KEY; //
 					$channel_url = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics&key='.$use_yt_key.'&id='.$channel_ids;
 					$channel_data = file_get_contents( $channel_url, false);
 					$channel_results = json_decode( $channel_data );					

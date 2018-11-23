@@ -7,6 +7,17 @@
  * @since YouTube Channels 1.0
  **/
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+if( !function_exists('ytc_youtube_api_key') ) :
+/**
+ * Return YouTube API Key
+ **/
+function ytc_youtube_api_key(){
+	$youtube_keys = array('AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE', 'AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks', 'AIzaSyCojt9gvT7vj511o4eRCPAA0x2IDBULJzY');
+	$yt_rand_key = array_rand( $youtube_keys );
+	$use_yt_key = $youtube_keys[$yt_rand_key];
+	return $use_yt_key;
+}
+endif;
 if( !function_exists('ytc_number_abbs') ) :
 /**
  * Create Number with Short Abberivation
@@ -188,5 +199,24 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 		</div><!--/.box-->
 	</div><!--/.col-lg-3-->
 <?php }
-
 endif;
+if( !function_exists('ytc_get_channel_latest_videos') ) :
+/**
+ * Get Latest Channel Videos
+ *
+ * Handles to get latest channel videos
+ **/
+function ytc_get_channel_latest_videos( $channel_id, $videos = 2 ){
+	$youtube_key = ytc_youtube_api_key();
+	$posturl = "https://www.googleapis.com/youtube/v3/search?key=$youtube_key&channelId=$channel_id&part=snippet,id&type=video&order=date&maxResults=$videos";
+	$data = file_get_contents($posturl, false);
+	$response = json_decode($data);
+	$result_videos = array();	
+	if( !empty( $response->items ) ) : //Check Response
+		foreach( $response->items as $item ) :
+			$result_videos[] = array( 'id' => $item->id->videoId, 'title' => $item->snippet->title );
+		endforeach;
+	endif;
+	return $result_videos;
+}
+endif; //Endif
