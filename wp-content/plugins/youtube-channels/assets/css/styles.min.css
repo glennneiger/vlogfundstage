@@ -171,7 +171,8 @@
     padding: 10px 15px;
     text-align: left;
     color: #fff;
-    background-color: #e13b2b
+    background: #6b10d6;
+    background: var(--brand-color);
 }
 
 .box.grid.recipes .tag,
@@ -266,7 +267,8 @@
     padding: 10px 15px;
     text-align: left;
     color: #fff;
-    background-color: #e13b2b
+    background: #6b10d6;
+    background: var(--brand-color);
 }
 
 .ytc-page {

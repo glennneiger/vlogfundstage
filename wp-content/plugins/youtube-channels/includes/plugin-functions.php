@@ -193,7 +193,7 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channel_subscribers == 0 ) ? 'N/A' : ytc_number_abbs( $channel_subscribers ); ?></span>
 			</div><!--/.by-->
 			<a href="<?php the_permalink(); ?>" class="showinfoimg"><img class="b-lazy" id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
-			<h2><a href="<?php the_permalink(); ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>" target="_blank">
+			<h2><a href="<?php the_permalink(); ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>">
 				<?php echo ytc_get_channel_short_title( get_the_title() ); ?>
 			</a></h2>
 		</div><!--/.box-->
@@ -206,12 +206,12 @@ if( !function_exists('ytc_get_channel_latest_videos') ) :
  *
  * Handles to get latest channel videos
  **/
-function ytc_get_channel_latest_videos( $channel_id, $videos = 2 ){
+function ytc_get_channel_latest_videos( $channel_id, $videos = 6 ){
 	$youtube_key = ytc_youtube_api_key();
 	$posturl = "https://www.googleapis.com/youtube/v3/search?key=$youtube_key&channelId=$channel_id&part=snippet,id&type=video&order=date&maxResults=$videos";
 	$data = file_get_contents($posturl, false);
 	$response = json_decode($data);
-	$result_videos = array();	
+	$result_videos = array();
 	if( !empty( $response->items ) ) : //Check Response
 		foreach( $response->items as $item ) :
 			$result_videos[] = array( 'id' => $item->id->videoId, 'title' => $item->snippet->title );

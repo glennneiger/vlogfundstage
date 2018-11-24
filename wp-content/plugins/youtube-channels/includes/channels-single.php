@@ -10,8 +10,8 @@
 	$subscribers = !empty( $subscribers ) ? ytc_number_abbs( $subscribers ) : 0;
 	$views = get_post_meta(get_the_ID(), 'wpcf-channel_views', true);
 	$views = !empty( $views ) ? ytc_number_abbs( $views ) : 0;
-	
-	$tw 	= get_post_meta(get_the_ID(), 'wpcf-channel_tw', true);	
+
+	$tw 	= get_post_meta(get_the_ID(), 'wpcf-channel_tw', true);
 	$insta 	= get_post_meta(get_the_ID(), 'wpcf-channel_insta', true);
 	$fb 	= get_post_meta(get_the_ID(), 'wpcf-channel_fb', true);
 	$gplus 	= get_post_meta(get_the_ID(), 'wpcf-channel_insta', true);
@@ -20,19 +20,22 @@
 	$vk 	= get_post_meta(get_the_ID(), 'wpcf-channel_vk', true);
 	$channel_id = get_post_meta(get_the_ID(), 'wpcf-channel_id', true);
 	$age 	= get_post_meta(get_the_ID(), 'wpcf-channel_dob', true);
-	$gender = get_post_meta(get_the_ID(), 'wpcf-channel_gender', true);	
+	$gender = get_post_meta(get_the_ID(), 'wpcf-channel_gender', true);
 	if( !empty( $age ) ) :
 		$cdate = new DateTime(date('Y-m-d', current_time('timestamp')));
-		$bdate = new DateTime(date('Y-m-d', $age));	
+		$bdate = new DateTime(date('Y-m-d', $age));
 		$diff = $bdate->diff($cdate);
 		$age = $diff->y;
 	endif; //Endif
-	if( $banner = get_post_meta(get_the_ID(), 'wpcf-channel_banner', true) ) : //Check Banner ?>	
+	if( $banner = get_post_meta(get_the_ID(), 'wpcf-channel_banner', true) ) : //Check Banner ?>
 		<img class="channel-banner-img" src="<?php echo $banner;?>" alt="<?php the_title();?>"/>
+	<?php else : //Default Logo ?>
+		<div class="channel-banner-placeholder"></div>
 	<?php endif; //Endif ?>
+
 	<div class="channel-details-wrapper">
 		<div class="container-main">
-			<div class="channel-profile-box channel-section">
+			<div class="channel-profile-box channel-section" style="max-width:600px;">
 				<div class="channel-content">
 					<figure class="channel-logo">
 						<?php if( $logo = get_post_meta( get_the_ID(), 'wpcf-channel_img', true ) ) : //Check Channel Logo ?>
@@ -97,13 +100,18 @@
 					</div><!--/.keywords-row-->
 				<?php endif; //Endif ?>
 			</div><!--/.channel-profile-box-->
+
 			<div class="latest-videos-section channel-section">
+
+				<div class="latest-videos">
+				<div class="latest-vidoes-section-headline">
 				<h2>Latest Videos</h2>
-				<a href="https://www.youtube.com/channel/<?php echo $channel_id;?>" class="channel-btn show-videos" target="_blank">Show all Videos</a>
+				<!--<a href="https://www.youtube.com/channel/<?php echo $channel_id;?>" class="channel-btn show-videos" target="_blank">Show all Videos</a>-->
+				</div>
 				<?php if( $latest_videos = ytc_get_channel_latest_videos( $channel_id ) ) : ?>
-					<div class="grid-cols2">
+					<div class="grid-cols2 mobile-scroll-row">
 						<?php foreach( $latest_videos as $video ) : //Video List ?>
-							<div class="grid-col">
+							<div class="grid-col mobile-scroll-row-item">
 								<div class="channel-video-box">
 									<div class="channel-video">
 										<iframe width="560" height="315" src="https://www.youtube.com/embed/<?php echo $video['id'];?>" allow="autoplay; encrypted-media" allowfullscreen></iframe>
@@ -114,15 +122,42 @@
 						<?php endforeach; //Endforeach ?>
 					</div><!--/.grid-cols-->
 				<?php endif; //Endif ?>
-			</div><!--/.latest-videos-section-->		
+			  </div>
+
+       <?php if( !empty( $tw ) ) : //Check Twitter ?>
+				<div class="latest-tweets">
+					<h2>Latest Tweets</h2>
+					<div class="tweets-list">
+						<div class="grid-cols2 grid-cols2-sm">
+							<div class="grid-col">
+								<div class="tweet-box"><a class="twitter-timeline" data-height="600" data-width="500" href="<?php echo esc_url( $tw );?>"></a></div><!--/.tweet-box-->
+							</div><!--/.grid-col-->
+						</div><!--/.grid-cols-->
+					</div><!--/.tweets-list-->
+				</div><!--/.latest-tweets-section-->
+				<?php endif; //Endif ?>
+
+
+
+			</div><!--/.latest-videos-section-->
+
+
 			<div class="related-collaborations-section channel-section">
-				<h2>Related Collaborations</h2>
-				<?php echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]'); ?>
+
+				<!--<h2>Make These Collaborations Come True</h2>-->
+
+				<?php echo do_shortcode('<!--[wpv-view name="campaign-search" view_display="layout" limit="3"]-->'); ?>
+
+				<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);">
+     <h2>Make YouTube Collaborations Come True</h2>
+     <a href="/youtube-collaborations"><button class="sf-get-started">Let's get it</button></a>
+   </div>
+
 			</div><!--/.related-collaborations-section-->
 			<?php $rba_big = get_posts( array('post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => 1, 'orderby' => 'rand' ) );
 				$rba_big = array_shift( $rba_big ); ?>
 			<div class="related-blog-section channel-section">
-				<h2>Related Blog Articles</h2>
+				<h2>Blog Articles</h2>
 				<div class="grid-cols2 grid-cols2-sm cols-parent">
 					<?php if( !empty( $rba_big ) ) : //Check Big Article ?>
 						<div class="grid-col">
@@ -134,7 +169,7 @@
 										<?php elseif( $rba_big_thumb = get_the_post_thumbnail_url( $rba_big->ID, 'medium_large') ) : //Check Thumbnail ?>
 											<img src="<?php echo $rba_big_thumb;?>" alt="<?php echo get_the_title( $rba_big->ID );?>">
 										<?php else : //Else ?>
-											<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/630x450.jpg" alt="<?php echo get_the_title( $rbapost->ID );?>">												
+											<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/630x450.jpg" alt="<?php echo get_the_title( $rbapost->ID );?>">
 										<?php endif; //Endif ?>
 									</figure>
 									<h4><?php echo get_the_title( $rba_big->ID );?></h4>
@@ -159,7 +194,7 @@
 													<?php elseif( $rbapost_thumb = get_the_post_thumbnail_url( $rbapost->ID, 'product-thumbnail') ) : //Check Thumbnail ?>
 														<img src="<?php echo $rbapost_thumb;?>" alt="<?php echo get_the_title( $rbapost->ID );?>">
 													<?php else : //Else ?>
-														<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/305x215.jpg" alt="<?php echo get_the_title( $rbapost->ID );?>">												
+														<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/305x215.jpg" alt="<?php echo get_the_title( $rbapost->ID );?>">
 													<?php endif; //Endif ?>
 												</figure>
 												<h4><?php echo get_the_title( $rbapost->ID );?></h4>
@@ -172,21 +207,21 @@
 								<?php endforeach; //Endforeach ?>
 							</div><!--/.grid-cols2-->
 						</div><!--/.grid-col-->
-					<?php endif; //Endif 
+					<?php endif; //Endif
 					wp_reset_postdata(); //Reset Post Data ?>
 				</div><!--/.grid-cols-->
 			</div><!--/.related-blog-section-->
-			<?php if( !empty( $tw ) ) : //Check Twitter ?>
+			<!--<?php if( !empty( $tw ) ) : //Check Twitter ?>
 				<div class="latest-tweets-section channel-section">
 					<h2>Latest Tweets</h2>
 					<div class="tweets-list">
 						<div class="grid-cols2 grid-cols2-sm">
 							<div class="grid-col">
-								<div class="tweet-box"><a class="twitter-timeline" data-height="600" data-width="500" href="<?php echo esc_url( $tw );?>"></a></div><!--/.tweet-box-->
-							</div><!--/.grid-col-->				
-						</div><!--/.grid-cols-->
-					</div><!--/.tweets-list-->
-				</div><!--/.latest-tweets-section-->
-			<?php endif; //Endif ?>
+								<div class="tweet-box"><a class="twitter-timeline" data-height="600" data-width="500" href="<?php echo esc_url( $tw );?>"></a></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			<?php endif; //Endif ?>-->
 		</div><!--/.container-main-->
 	</div><!--/.channel-details-wrapper-->
