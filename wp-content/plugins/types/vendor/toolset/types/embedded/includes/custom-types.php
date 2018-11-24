@@ -86,6 +86,7 @@ function wpcf_custom_types_default() {
 function wpcf_custom_types_init() {
 	$post_type_option = new Types_Utils_Post_Type_Option();
     $custom_types = $post_type_option->get_post_types();
+    $needs_flush_rewrite_rules = false;
     if ( !empty( $custom_types ) ) {
         foreach ( $custom_types as $post_type => $data ) {
             if ( empty($data) ) {
@@ -98,7 +99,21 @@ function wpcf_custom_types_init() {
                 continue;
             }
             wpcf_custom_types_register( $post_type, $data );
+
+            if(
+            	array_key_exists( '_needs_flush_rewrite_rules', $data )
+                && $data['_needs_flush_rewrite_rules'] === true
+            ) {
+            	$needs_flush_rewrite_rules = true;
+            	// Unset the flag, we need it only once.
+            	unset( $custom_types[ $post_type ]['_needs_flush_rewrite_rules'] );
+            	$post_type_option->update_post_types( $custom_types );
+            }
         }
+    }
+
+    if( $needs_flush_rewrite_rules ) {
+    	flush_rewrite_rules();
     }
 
     // rearrange menu items
@@ -166,8 +181,8 @@ function types_menu_order( $menu ) {
 
 /**
  * @param $menu
- * @param $data
- * @param $menu_position
+ * @param $current_url
+ * @param $target_url
  *
  * @return mixed
  */
@@ -192,8 +207,8 @@ function types_menu_order_item_sort( &$menu, $current_url, $target_url ) {
  * This function is be used to rearrange the admin menu order
  *
  * @param $menu
- * @param $item_move The item index which should be moved
- * @param $item_target The item index where $item_move should be placed after
+ * @param mixed $item_move The item index which should be moved
+ * @param mixed $item_target The item index where $item_move should be placed after
  */
 function wpcf_custom_types_menu_order_move( &$menu, $item_move, $item_target ) {
 
@@ -218,13 +233,13 @@ function wpcf_custom_types_menu_order_move( &$menu, $item_move, $item_target ) {
 
 /**
  * Registers post type.
- * 
- * @param type $post_type
- * @param type $data 
+ *
+ * @param string $post_type
+ * @param array $data
+ *
+ * @return bool
  */
 function wpcf_custom_types_register( $post_type, $data ) {
-
-    global $wpcf;
 
     if ( !empty( $data['disabled'] ) ) {
         return false;
@@ -240,6 +255,10 @@ function wpcf_custom_types_register( $post_type, $data ) {
         }
         foreach ( $data['labels'] as $label_key => $label ) {
             $data['labels'][$label_key] = $label = stripslashes( $label );
+
+            // Allows several instances of %s in the label.
+            $label = str_replace( '%s', '%1$s', $label );
+
             switch ( $label_key ) {
                 case 'add_new_item':
                 case 'edit_item':
@@ -402,6 +421,16 @@ function wpcf_custom_types_register( $post_type, $data ) {
 		unset( $data['taxonomies'] );
 	}
 
+	// This is required for pre 3.0.6 created RFGs
+	// The problem was that we only set 'public' to false, but as our cpt registration always define
+	// all options, the 'public' value is meaningless and each option must be set explicit
+	if( isset( $data['is_repeating_field_group'] ) && $data['is_repeating_field_group'] ) {
+		$data[ 'exclude_from_search' ] = true;
+		$data[ 'publicly_queryable'] = false;
+		$data[ 'show_in_nav_menus'] = false;
+		$data[ 'show_ui'] = false;
+	}
+
     $args = register_post_type( $post_type, apply_filters( 'wpcf_type', $data, $post_type ) );
 
     do_action( 'wpcf_type_registered', $args );
@@ -409,15 +438,15 @@ function wpcf_custom_types_register( $post_type, $data ) {
 
 /**
  * Revised rewrite.
- * 
+ *
  * We force slugs now. Submitted and sanitized slug. Set slugs localized (WPML).
  * More solid way to force WP slugs.
- * 
+ *
  * @see https://icanlocalize.basecamphq.com/projects/7393061-wp-views/todo_items/153925180/comments
  * @since 1.1.3.2
  * @param type $data
  * @param type $post_type
- * @return boolean 
+ * @return boolean
  */
 function wpcf_filter_type( $data, $post_type ) {
     if ( !empty( $data['rewrite']['enabled'] ) ) {
@@ -441,7 +470,7 @@ function wpcf_filter_type( $data, $post_type ) {
         //
         // CHANGED leave it for reference if we need
         // to return handling slugs back to WP.
-        // 
+        //
         // We unset slug settings and leave WP to handle it himself.
         // Let WP decide what slugs should be!
 //        if (!empty($data['rewrite']['custom']) && $data['rewrite']['custom'] != 'normal') {
@@ -459,7 +488,7 @@ function wpcf_filter_type( $data, $post_type ) {
 
 /**
  * Returns active post types.
- * 
+ *
  * @return array
  * @deprecated Use the Post Type API instead: https://git.onthegosystems.com/toolset/toolset-common/wikis/post-type-api
  * @since unknown
@@ -658,8 +687,8 @@ function types_rename_build_in_post_types_menu() {
 
                     if( $submenu_new_key )
                         $submenu[$post_edit_page][$submenu_new_key][0] = isset( $data['labels']['singular_name'] )
-                            ? 'Add ' . $data['labels']['singular_name']
-                            : 'Add ' . $data['labels']['name'];
+                            ? sprintf( _x( 'Add %s', 'Add "Post Type Singular Name"', 'wpcf' ), $data['labels']['singular_name'] )
+                            : sprintf( _x( 'Add %s', 'Add "Post Type Plural Name"', 'wpcf' ), $data['labels']['name'] );
 
                 }
             }

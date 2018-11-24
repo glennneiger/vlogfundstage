@@ -1,5 +1,7 @@
 /*
  * Example of ted created by WPCF_Editor::renderTedSettings()
+ *
+ * @since .2. Probably DEPRECATED
  */
 /*var ted = {
     fieldID: null,
@@ -15,11 +17,11 @@
 /*
  * Knockout inner bindings for Editor modal form.
  */
-var tedForm = {
-    cb_mode: ko.observable(ted.params.mode || 'db'),
-    cbs_mode: ko.observable(ted.params.mode || 'display_all'),
-    date_mode: ko.observable(ted.params.style || 'text'),
-    dateStyling: function() {
+var tedForm = function() {
+    this.cb_mode = ko.observable(ted.params.mode || 'db');
+    this.cbs_mode = ko.observable(ted.params.mode || 'display_all');
+    this.date_mode = ko.observable(ted.params.style || 'text');
+    this.dateStyling = function() {
         var menu = tedFrame.menu();
         if (this.date_mode() == 'calendar') {
             menu.find('#menu-item-styling').show();
@@ -29,16 +31,16 @@ var tedForm = {
             menu.find('#types-modal-css-class').attr('disabled', 'disabled');
         }
         return true;
-    },
-    imageResize: ko.observable(ted.params.resize != 'stretch' ? (ted.params.resize || 'proportional') : 'proportional'),
-    image_size: ko.observable(ted.params.image_size || 'full'),
-    imageKeepProportional: ko.observable(ted.params.resize != 'stretch'),
-    imagePaddingColor: function() {
+    };
+    this.imageResize = ko.observable(ted.params.resize != 'stretch' ? (ted.params.resize || 'proportional') : 'proportional');
+    this.image_size = ko.observable(ted.params.image_size || 'full');
+    this.imageKeepProportional = ko.observable(ted.params.resize != 'stretch');
+    this.imagePaddingColor = function() {
         return ted.params.padding_color == 'transparent' ? '#FFFFFF' : ted.params.padding_color;
-    },
-    imagePaddingTransparent: ko.observable(ted.params.padding_color == 'transparent'),
-    imageUrl: ko.observable(ted.params.imageUrl || ''),
-    imageUrlDisable: function() {
+    };
+    this.imagePaddingTransparent = ko.observable(ted.params.padding_color == 'transparent');
+    this.imageUrl = ko.observable(ted.params.imageUrl || '');
+    this.imageUrlDisable = function() {
         var elements = tedFrame.form()
         .find('#image-title, #image-alt, #types-modal-css-class, #types-modal-style, #types-modal-output, #types-modal-showname, #image-alignment, #image-onload');
         if (this.imageUrl()) {
@@ -47,12 +49,12 @@ var tedForm = {
             elements.not('.js-raw-disabled').removeAttr('disabled');
         }
         return true;
-    },
-    output: ko.observable(true),
-    radio_mode: ko.observable(ted.params.mode || 'db'),
-    radioPostType: ko.observable(ted.params.related_post || 'post'),
-    raw: ko.observable(),
-    rawDisableAll: function(data, event) {
+    };
+    this.output = ko.observable(true);
+    this.radio_mode = ko.observable(ted.params.mode || 'db');
+    this.radioPostType = ko.observable(ted.params.related_post || 'post');
+    this.raw = ko.observable();
+    this.rawDisableAll = function(data, event) {
         if (this.raw()) {
             // Disable enabled inputs and mark them
             tedFrame.form().find('div.js-raw-disable :enabled')
@@ -64,20 +66,35 @@ var tedForm = {
             .removeClass('js-raw-disabled');
         }
         return true;
-    },
-    relatedPost: ko.observable(ted.params.post_id || 'current'),
-    selectPostType: ko.observableArray([ted.params.related_post || 'post']),
-    separator: ko.observable(ted.params.separator || ', '),
-    showMenuStyling: function() {
+    };
+    this.relatedPost = ko.observable(ted.params.post_id || 'current');
+    this.selectPostType = ko.observableArray([ted.params.related_post || 'post']);
+    this.separator = ko.observable(ted.params.separator || ', ');
+    this.showMenuStyling = ko.computed(function() {
         return ted.fieldType != 'date' || (ted.fieldType == 'date' && ted.params.style == 'calendar');
-    },
-    specificPostID: ko.observable(ted.params.specific_post_id || ''),
-    supports: function(feature) {
+    });
+    this.specificPostID = ko.observable(ted.params.specific_post_id || '');
+    this.supports = function(feature) {
         return jQuery.inArray(feature, ted.supports) != -1;
-    },
-    url_target: ko.observable(ted.params.target || '_self')
+    };
+    this.url_target = ko.observable(ted.params.target || '_self');
+    this.submitDisabled = ko.computed(function() {
+        var notUsed = this.radioPostType();
+        return ! (
+            (
+                'related' !== this.relatedPost()
+                && 'intermediate' !== this.relatedPost()
+            )
+            || (
+                (
+                	'related' === this.relatedPost()
+                	|| 'intermediate' === this.relatedPost()
+                )
+                && jQuery('input[name=post_id]:checked').parent().next().find('input[name=' + this.relatedPost() + '_post]:checked').length > 0
+            )
+        );
+    }, this);
 };
-
 /*
  * Editor modal window control.
  */
@@ -87,8 +104,8 @@ var tedFrame = (function(window, $){
     var modalMenu = modal.find('.types-media-menu');
     var modalMenuItems;
     var modalContent = modal.find('.types-media-frame-content');
+    var modalToolbar = modal.find('.types-media-frame-toolbar-inner');
     var modalContentTabs;
-    var modalInsertButton = modal.find('.media-button-insert');
     var modalForm;
     var tabIndex = 0;
 
@@ -115,7 +132,7 @@ var tedFrame = (function(window, $){
         });
 
         // Bind submit
-        modalInsertButton.click(function(){
+        modalToolbar.on('click', '.media-button-insert:not(.disabled)', function(){
             $('#types-editor-modal-form').trigger('submit');
             return false;
         });
@@ -125,7 +142,7 @@ var tedFrame = (function(window, $){
 
         // Bind click to the Colorbox close button
         jQuery('.js-close-types-popup').on('click',function(){
-			if (ted.callback == 'views_wizard') {
+    	if (ted.callback == 'views_wizard') {
                 window.parent.typesWPViews.wizardCancel();
                 return false;
             }
@@ -166,10 +183,10 @@ var tedFrame = (function(window, $){
             window.parent.typesWPViews.wizardSendShortcode( shortcode );
             return true;
         }
-		if ( 
-			ted.callback == 'admin_bar' 
-			|| ted.callback == 'input_append'
-		) {
+    if (
+    	ted.callback == 'admin_bar'
+    	|| ted.callback == 'input_append'
+    ) {
             window.parent.typesWPViews.interceptCreateShortcode( shortcode );
             return true;
         }
@@ -180,7 +197,7 @@ var tedFrame = (function(window, $){
             window.parent.wpcfFieldsEditorCallback_redirect = null;
         } else {
             // Use default handler
-            
+
             window.parent.icl_editor.insert(shortcode);
         }
         window.parent.jQuery.colorbox.close();
@@ -244,7 +261,7 @@ ko.bindingHandlers.tedSupports = {
     }
 };
 
-ko.applyBindings(tedForm);
+ko.applyBindings(new tedForm());
 jQuery(function(){
     tedFrame.init();
     parent.jQuery.colorbox.resize({

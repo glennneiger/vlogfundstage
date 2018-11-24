@@ -18,14 +18,14 @@ return array(
 					'description' => array(
 						array(
 							'type' => 'paragraph',
-							'content' => __( 'To create a form for front-end content submission and editing, you need to have CRED plugin installed.
-                    CRED is part of the complete Toolset package for adding and displaying custom content.', 'wpcf' )
+							'content' => __( 'To create forms, you need to activate Toolset Forms plugin.', 'wpcf' )
 						),
 						array(
-							'type' => 'link',
+							'type'   => 'link',
+							'class'  => 'button-primary types-button',
 							'external' => true,
-							'label' => __( 'Learn how CRED forms work', 'wpcf' ),
-							'target'  => Types_Helper_Url::get_url( 'how-cred-work', 'popup' )
+							'label'  => __('Download Toolset Forms from your Toolset account', 'wpcf' ),
+							'target' => Types_Helper_Url::get_url( 'toolset-account-downloads', 'popup' ),
 						),
 						/*
 						array(

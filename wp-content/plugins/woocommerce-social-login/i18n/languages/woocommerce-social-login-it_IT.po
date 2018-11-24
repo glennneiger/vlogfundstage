@@ -3,15 +3,15 @@ msgstr ""
 "Project-Id-Version: WooCommerce Social Login 1.5.0\n"
 "Report-Msgid-Bugs-To: https://woocommerce.com/my-account/marketplace-ticket-"
 "form/\n"
-"POT-Creation-Date: 2014-08-23 20:36:33+00:00\n"
-"PO-Revision-Date: 2017-05-17 18:10+0800\n"
+"POT-Creation-Date: 2018-06-05 04:24:43+00:00\n"
+"PO-Revision-Date: 2018-07-17 11:13+0800\n"
 "Last-Translator: Illimar Tambek\n"
 "Language-Team: \n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"X-Generator: Poedit 2.0.8\n"
 "X-Poedit-Basepath: ../..\n"
 "X-Poedit-Sourcecharset: UTF-8\n"
 "X-Poedit-Keywordslist: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
@@ -99,7 +99,7 @@ msgstr "Avviso Cassa"
 
 #: includes/admin/class-wc-social-login-settings.php:91
 msgid "Product Reviews Pro Login"
-msgstr ""
+msgstr "Product Reviews Pro Login"
 
 #: includes/admin/class-wc-social-login-settings.php:102
 msgid "Display Social Login buttons on:"
@@ -123,44 +123,42 @@ msgstr ""
 "successivi."
 
 #: includes/admin/class-wc-social-login-settings.php:123
-#, fuzzy
 msgid "Checkout Social Login Display Text"
-msgstr "Testo Social Login "
+msgstr "Testo Social Login Cassa"
 
 #: includes/admin/class-wc-social-login-settings.php:124
-#, fuzzy
 msgid ""
 "This option controls the text on the checkout page for the frontend section "
 "where the login providers are shown."
 msgstr ""
-"﻿Questa opzione controlla il testo per la sezione frontend in cui vengono "
-"mostrati i social network."
+"Questa opzione controlla il testo nella pagina della cassa dove vengono "
+"mostrati i login tramite social network."
 
 #: includes/admin/class-wc-social-login-settings.php:126
-#: woocommerce-social-login.php:854
+#: woocommerce-social-login.php:965
 msgid "For faster checkout, login or register using your social account."
 msgstr ""
 "﻿Per acquisti più veloci, effettua il login o registrati utilizzando un tuo "
 "profilo social."
 
 #: includes/admin/class-wc-social-login-settings.php:132
-#, fuzzy
 msgid "Non-Checkout Social Login Display Text"
-msgstr "Testo Social Login "
+msgstr "Testo Social Login Non-cassa "
 
 #: includes/admin/class-wc-social-login-settings.php:133
-#, fuzzy
 msgid ""
 "This option controls the text on the non-checkout pages where the login "
 "provider buttons are shown."
 msgstr ""
-"﻿Questa opzione controlla il testo per la sezione frontend in cui vengono "
-"mostrati i social network."
+"Questa opzione controlla il testo nelle pagine esclusa la cassa dove vengono "
+"mostrati i login tramite social network."
 
 #: includes/admin/class-wc-social-login-settings.php:135
-#: woocommerce-social-login.php:855 woocommerce-social-login.php:978
+#: woocommerce-social-login.php:966 woocommerce-social-login.php:1089
 msgid "Use a social account for faster login or easy registration."
 msgstr ""
+"Usa un account di social network per un login immediato o una registrazione "
+"rapida."
 
 #: includes/admin/class-wc-social-login-settings.php:141
 msgid "Force SSL for all providers"
@@ -240,12 +238,12 @@ msgstr "﻿account collegati"
 msgid "Provider Authentication error"
 msgstr "﻿Errore di autenticazione social network"
 
-#: includes/class-wc-social-login-hybridauth.php:268
+#: includes/class-wc-social-login-hybridauth.php:282
 msgid "Please enter your email address to complete your registration"
 msgstr "﻿Inserisci il tuo indirizzo email per completare la registrazione"
 
 #. translators: %s - a URL
-#: includes/class-wc-social-login-hybridauth.php:271
+#: includes/class-wc-social-login-hybridauth.php:285
 msgid ""
 "Please enter your email address to complete your registration and continue "
 "to %s"
@@ -253,15 +251,15 @@ msgstr ""
 "Per favore inserisci il tuo indirizzo email per completare la registrazione "
 "e continua per %s"
 
-#: includes/class-wc-social-login-hybridauth.php:332
+#: includes/class-wc-social-login-hybridauth.php:346
 msgid "No provider class found for %s"
 msgstr "Nessun classe di provider trovata per %s"
 
-#: includes/class-wc-social-login-hybridauth.php:341
+#: includes/class-wc-social-login-hybridauth.php:355
 msgid "%s returned an invalid user identifier."
 msgstr "%s ha risposto con un identificativo utente non valido."
 
-#: includes/class-wc-social-login-hybridauth.php:393
+#: includes/class-wc-social-login-hybridauth.php:407
 msgid ""
 "Oops, it looks like you may already have an account&hellip; please log in to "
 "link your profile."
@@ -269,11 +267,15 @@ msgstr ""
 "Oops, sembra che tu abbia già un profilo&hellip; per favore esegui l'accesso "
 "per collegare il tuo profilo."
 
-#: includes/class-wc-social-login-hybridauth.php:511
+#: includes/class-wc-social-login-hybridauth.php:527
+msgid "User"
+msgstr "Utente"
+
+#: includes/class-wc-social-login-hybridauth.php:545
 msgid "ERROR"
 msgstr "Errore"
 
-#: includes/class-wc-social-login-hybridauth.php:511
+#: includes/class-wc-social-login-hybridauth.php:545
 msgid ""
 "Couldn&#8217;t register you&hellip; please contact us if you continue to "
 "have problems."
@@ -293,6 +295,16 @@ msgstr ""
 #: includes/frontend/class-wc-social-login-frontend.php:295
 msgid "Click here to login"
 msgstr "﻿Clicca qui per accedere"
+
+#: includes/integrations/class-wc-social-login-integrations-memberships.php:119
+msgid "Social Login Buttons"
+msgstr "Bottoni Social Login"
+
+#: includes/integrations/class-wc-social-login-integrations-memberships.php:120
+msgid "Add Social Login buttons to restriction messages for logged out users"
+msgstr ""
+"Aggiungi bottoni Social Login ai messaggi di accesso ristretto per utenti "
+"non registrati"
 
 #: includes/providers/class-wc-social-login-provider-amazon.php:44
 msgid "Amazon"
@@ -423,42 +435,65 @@ msgstr "﻿Facebook"
 #. translators: Placeholders: %1$s - opening HTML <a> tag, %2$s - closing HTML
 #. </a> tag
 #: includes/providers/class-wc-social-login-provider-facebook.php:49
-#: includes/providers/class-wc-social-login-provider-facebook.php:64
+#: includes/providers/class-wc-social-login-provider-facebook.php:65
 msgid "Need help setting up and configuring Facebook? %1$sRead the docs%2$s"
 msgstr ""
 "Hai bisogno di aiuto per installare e configurare Facebook? %1$sLeggi la "
 "documentazione%2$s"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:108
+#. translators: Placeholder: %s - a url
+#: includes/providers/class-wc-social-login-provider-facebook.php:68
+msgid "The redirect URI is %s"
+msgstr "L'indirizzo URI di reindirizzamento è %s"
+
+#: includes/providers/class-wc-social-login-provider-facebook.php:114
 msgid "App ID"
 msgstr "App ID"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:109
+#: includes/providers/class-wc-social-login-provider-facebook.php:115
 msgid "App Secret"
 msgstr "App Secret"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:121
+#: includes/providers/class-wc-social-login-provider-facebook.php:118
+msgid "Redirect URI"
+msgstr "URI di Reindirizzamento"
+
+#. translators: Placeholders: %1$s - <strong> tag, %2$s - </strong> tag
+#: includes/providers/class-wc-social-login-provider-facebook.php:123
+msgid ""
+"I certify that I have added this site to my app's list of %1$sValid OAuth "
+"redirect URIs%2$s"
+msgstr ""
+"Certifico che ho aggiunto questo sito alla lista degli %1$sIndirizzi di "
+"Reindirizzamento OAuth Validi%2$s della mia app."
+
+#. translators: Placeholders: %s - OAuth redirect URI, wrapped in <code> tags
+#: includes/providers/class-wc-social-login-provider-facebook.php:128
+msgid "Your redirect URI is %s"
+msgstr "Il tuo indirizzo di reindirizzamento URI è %s"
+
+#: includes/providers/class-wc-social-login-provider-facebook.php:143
 msgid "Log in with Facebook"
 msgstr "﻿Accedi con Facebook"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:133
+#: includes/providers/class-wc-social-login-provider-facebook.php:155
 msgid "Link your account to Facebook"
 msgstr "﻿Collega il tuo profilo Facebook"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:145
+#: includes/providers/class-wc-social-login-provider-facebook.php:180
 msgid "Your Facebook account is now linked to your account."
 msgstr "﻿Il tuo profilo Facebook è ora collegato al tuo profilo utente."
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:146
+#: includes/providers/class-wc-social-login-provider-facebook.php:181
 msgid "Facebook was successfully unlinked from your account."
 msgstr ""
 "Il profilo Facebook è stato scollegato con successo dal tuo profilo utente."
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:147
+#: includes/providers/class-wc-social-login-provider-facebook.php:182
 msgid "This Facebook account is already linked to another user account."
 msgstr "﻿Questo profilo Facebook è già collegato a un altro profilo utente."
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:148
+#: includes/providers/class-wc-social-login-provider-facebook.php:183
 msgid ""
 "A user account using the same email address as this Facebook account already "
 "exists."
@@ -916,16 +951,30 @@ msgstr "﻿È possibile collegare il tuo account ai seguenti operatori:"
 
 #. translators: Placeholders: %1$s - opening HTML <a> tag, %2$s - closing HTML
 #. </a> tag
-#: woocommerce-social-login.php:572
-#, fuzzy
+#: woocommerce-social-login.php:591
 msgid ""
 "Thanks for installing Social Login! Before you get started, please take a "
 "moment to %1$sread through the documentation%2$s."
 msgstr ""
-"﻿Grazie per l&#39;installazione del plugin Social Login! Prima di iniziare, "
-"si prega di prendere un momento per %sLeggere la documentazione%s."
+"﻿Grazie per aver installato Social Login! Prima di iniziare, per favore "
+"%1$sleggi la documentazione del plugin%2$s."
 
-#: woocommerce-social-login.php:629
+#. translators: Placeholders: %1$s - <a> tag, %2$s - </a> tag, %3$s - <a> tag,
+#. %4$s - </a> tag
+#: woocommerce-social-login.php:609
+msgid ""
+"WooCommerce Social Login: Facebook now requires your site's full OAuth "
+"Redirect URI to be configured for your app. Please head over to the "
+"%1$sFacebook settings%2$s to get your Redirect URI, and read more about "
+"%3$sconfiguring your app &raquo;%4$s"
+msgstr ""
+"WooCommerce Social Login: Facebook ora richiede che l'OAuth URI di "
+"reindirizzamento del tuo sito sia configurata per la tua app. Per favore, "
+"dirigiti nelle %1$simpostazioni di Facebook%2$s per ottenere la tua URI di "
+"Reindirizzamento, e leggi la documentazione per %3$sconfigurare la tua app"
+"%4%s"
+
+#: woocommerce-social-login.php:667
 msgid ""
 "Oops, looks like iThemes Security is set to Filter Long URLs. This is likely "
 "to cause a conflict with Social Login -- please disable that setting for "
@@ -936,7 +985,7 @@ msgstr ""
 "per favore disabilita questa impostazione per un funzionamento ottimale."
 
 #. translators: %1$s, %3$s - opening <a> tag, %2$s, %4$s - closing </a> tag
-#: woocommerce-social-login.php:641
+#: woocommerce-social-login.php:679
 msgid ""
 "Please update callback URLs for each Social Login provider, then switch "
 "callback URLs to the Default format in the %1$sSocial Login settings%2$s. "
@@ -947,10 +996,29 @@ msgstr ""
 "predefinito nelle %1$simpostazioni di Social Login%2$s. Puoi ottenere "
 "maggiori informazioni %3$sleggendo la documentazione%4$s."
 
+#. translators: Placeholders: %1$s - WooCommerce Social Login plugin name, %2$s
+#. - opening <a> HTML link tag, %3$s - closing </a> HTML link tag, %4$s cookie
+#. name wrapped in <code> HTML tags
+#: woocommerce-social-login.php:690
+msgid ""
+"If you are experiencing issues with customers linking a social account using "
+"%1$s, please %2$sfollow the guidelines here%3$s, as your host should fix "
+"your site's caching rules to exclude %4$s cookies from caching. If you're "
+"not seeing any issues with %1$s, please disregard this notice."
+msgstr ""
+"Se stai riscontrando problemi con clienti che cercano di collegare un "
+"account social utilizzando %1$s, per favore %2$ssegui le linee guida "
+"illustrate qui%3$s, dal momento che il tuo host dovrebbe correggere alcune "
+"regole di caching del tuo sito per escludere i cookie %4$s dalla cache. Se, "
+"invece, non vi sono problemi con %1$s, per favore ignora questa notifica."
+
+#: woocommerce-social-login.php:787
+msgid "Removed customer Social Login data"
+msgstr "Dati di social login del cliente rimossi"
+
 #. Plugin URI of the plugin/theme
-#, fuzzy
 msgid "http://www.woocommerce.com/products/woocommerce-social-login/"
-msgstr "http://www.woothemes.com/products/woocommerce-social-login/"
+msgstr "http://www.woocommerce.com/products/woocommerce-social-login/"
 
 #. Description of the plugin/theme
 msgid ""
@@ -965,9 +1033,8 @@ msgid "SkyVerge"
 msgstr "SkyVerge"
 
 #. Author URI of the plugin/theme
-#, fuzzy
 msgid "http://www.woocommerce.com"
-msgstr "http://www.woothemes.com"
+msgstr "http://www.woocommerce.com"
 
 #. translators: Client (app) ID for a Social Login provider, used for
 #. identifying and authenticating the app (in our case, the WooCommerce store).
@@ -982,7 +1049,7 @@ msgctxt "noun"
 msgid "Link Button Text"
 msgstr "Testo pulsante link"
 
-#: woocommerce-social-login.php:603
+#: woocommerce-social-login.php:641
 msgctxt "Requires SSL"
 msgid ""
 "WooCommerce Social Login: %s requires SSL for authentication, please force "

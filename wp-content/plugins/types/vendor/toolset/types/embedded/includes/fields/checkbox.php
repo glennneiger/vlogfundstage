@@ -88,6 +88,8 @@ function wpcf_fields_checkbox_meta_box_form($field, $field_object)
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_checkbox_editor_callback($field, $settings)
 {
@@ -121,6 +123,8 @@ function wpcf_fields_checkbox_editor_callback($field, $settings)
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_checkbox_editor_submit($data, $field, $context)
 {
@@ -364,7 +368,7 @@ function wpcf_fields_checkbox_save_check( $post_source )
         foreach ( $_POST['_wpcf_check_checkbox'] as $child_id => $slugs ) {
             foreach ( $slugs as $slug => $true ) {
 
-                $cf->set( $child_id, $cf->__get_slug_no_prefix( $slug ) );
+                $cf->set( $child_id, $cf->get_slug_no_prefix( $slug ) );
 
                 // First check main post
                 if ( $mode == 'save_main'
@@ -406,7 +410,7 @@ function wpcf_fields_checkbox_save_check( $post_source )
     // After collected - delete them
     foreach ( $meta_to_unset as $child_id => $slugs ) {
         foreach ( $slugs as $slug => $true ) {
-            $cf->set( $child_id, $cf->__get_slug_no_prefix( $slug ) );
+            $cf->set( $child_id, $cf->get_slug_no_prefix( $slug ) );
             if ( $cf->cf['data']['save_empty'] != 'no' ) {
                 update_post_meta( $child_id, $slug, 0 );
             } else {
@@ -418,7 +422,7 @@ function wpcf_fields_checkbox_save_check( $post_source )
 
 function wpcf_fields_checkbox_update_one($post_id, $slug, $array_to_check) {
 	$cf = new WPCF_Field();
-	$field_slug = $cf->__get_slug_no_prefix( $slug );
+	$field_slug = $cf->get_slug_no_prefix( $slug );
 
 	$cf->set( $post_id, $field_slug );
 

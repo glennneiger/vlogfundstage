@@ -22,14 +22,16 @@
  * @license     http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+defined( 'ABSPATH' ) or exit;
+
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Social Login Global Functions
  *
- * @version 1.1.0
+ * @version 2.6.0
  * @since 1.0.0
  */
-
-defined( 'ABSPATH' ) or exit;
 
 if ( ! function_exists( 'woocommerce_social_login_buttons' ) ) :
 

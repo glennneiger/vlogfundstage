@@ -1,6 +1,8 @@
 <?php
 /*
  * Image editor form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 
 if ( !defined( 'ABSPATH' ) ) {

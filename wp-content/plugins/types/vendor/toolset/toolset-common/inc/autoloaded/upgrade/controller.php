@@ -79,7 +79,6 @@ class Toolset_Upgrade_Controller {
 	 * @since m2m
 	 */
 	public function check_upgrade() {
-
 		$database_version = $this->get_database_version();
 		$library_version = $this->get_library_version();
 		$is_upgrade_needed = ( 0 !== $library_version && $database_version < $library_version );
@@ -217,9 +216,9 @@ class Toolset_Upgrade_Controller {
 		$notice = new Toolset_Admin_Notice_Error(
 			'toolset-database-upgrade-error',
 			'<p>'
-				. __( 'Oops! There\'s been a problem when upgrading Toolset data structures. Please make sure your current configuration allows WordPress to alter database tables.', 'wpcf' )
+				. __( 'Oops! There\'s been a problem when upgrading Toolset data structures. Please make sure your current configuration allows WordPress to alter database tables.', 'wpv-views' )
 				. sprintf(
-					__( 'If the problem persists, please don\'t hesitate to contact %sour support%s with this technical information:', 'wpcf' ),
+					__( 'If the problem persists, please don\'t hesitate to contact %sour support%s with this technical information:', 'wpv-views' ),
 					'<a href="https://toolset.com/forums/forum/professional-support/" target="_blank">',
 					' <i class="fa fa-external-link"></i></a>'
 				)

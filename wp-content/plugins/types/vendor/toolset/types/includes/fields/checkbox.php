@@ -21,7 +21,7 @@
  * In a theme use types_render_field("my-checkbox", $parameters)
  *
  * Link:
- * <a href="http://wp-types.com/documentation/functions/checkbox/">Types checkbox custom field</a>
+ * <a href="https://toolset.com/documentation/functions/checkbox/">Types checkbox custom field</a>
  * 
  */
 

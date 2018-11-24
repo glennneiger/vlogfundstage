@@ -24,7 +24,7 @@
 
 // load base class
 if ( ! class_exists( 'Hybrid_Providers_Amazon' ) ) {
-	require_once( Hybrid_Auth::$config['path_providers'] . 'Amazon.php' );
+	require_once( wc_social_login()->get_plugin_path() . '/vendor/hybridauth/hybridauth/additional-providers/hybridauth-amazon/Providers/Amazon.php' );
 }
 
 
@@ -33,7 +33,7 @@ if ( ! class_exists( 'Hybrid_Providers_Amazon' ) ) {
  *
  * @since 2.0.0
  */
-class SV_Hybrid_Providers_Amazon extends Hybrid_Providers_Amazon {
+class SV_Hybrid_Providers_Amazon extends \Hybrid_Providers_Amazon {
 
 
 	/**
@@ -47,7 +47,7 @@ class SV_Hybrid_Providers_Amazon extends Hybrid_Providers_Amazon {
 	public function initialize() {
 
 		if ( ! $this->config['keys']['id'] || ! $this->config['keys']['secret'] ) {
-			throw new Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
+			throw new \Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
 		}
 
 		// override requested scope
@@ -56,11 +56,11 @@ class SV_Hybrid_Providers_Amazon extends Hybrid_Providers_Amazon {
 		}
 
 		// include OAuth2 client
-		require_once( Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
+		require_once( \Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-wp-oauth2-client.php' );
 
 		// create a new OAuth2 client instance
-		$this->api = new WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
+		$this->api = new \WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
 
 		$this->api->api_base_url    = 'https://api.amazon.com';
 		$this->api->authorize_url   = 'https://www.amazon.com/ap/oa';

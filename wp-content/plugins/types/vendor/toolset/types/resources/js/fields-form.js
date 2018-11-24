@@ -1,7 +1,22 @@
 /**
+ * Static Data
+ */
+var fieldFormStaticData;
+
+/**
  * fields edit
  */
 jQuery(document).ready(function($){
+    var $modelData = jQuery( '#toolset_model_data' );
+    if ($modelData.length) {
+        fieldFormStaticData = jQuery.parseJSON(
+            WPV_Toolset.Utils.editor_decode64(
+                $modelData.html()
+            )
+        );
+    }
+
+    var assignedPostTypesCount;
 
     var wpcfBody = $( 'body' );
 
@@ -21,7 +36,7 @@ jQuery(document).ready(function($){
             }
         })
         .done(function( slugs ){
-            if( slugs.length ) {
+            if( slugs && slugs.length ) {
                 $.merge( allFieldSlugs, slugs );
             }
         });
@@ -33,7 +48,6 @@ jQuery(document).ready(function($){
     function update_fields() {
         var msgAll = $( '.wpcf-fields-group-conditions-description' ),
             msgCondNone = $( '.js-wpcf-fields-group-conditions-none' ),
-            msgCondSet = $( '.js-wpcf-fields-group-conditions-set' ),
             msgCondAll = $( '.js-wpcf-fields-group-conditions-condition' ),
 
             conditions = {
@@ -109,26 +123,41 @@ jQuery(document).ready(function($){
 
         // get all active conditions
         $.each( conditions, function( id, condition ) {
-            if( id == 'data-dependencies' ) {
+            if( id === 'data-dependencies' ) {
                 $( '.js-wpcf-filter-container .js-wpcf-condition-preview li' ).each( function() {
                     conditionsCount++;
                     conditions[id]['activeConditionsLabels'].push( '<br />' + $( this ).html() );
                 } );
             } else {
+                var currentConditionTypeCount = 0;
+                var assignedPostType = null;
                 var selector = 'input[id^=' + condition.inputsIDs + ']';
                 $( selector ).filter( function() {
-                    return this.value && this.value != '0';
+                    return this.value && this.value !== '0';
                 } ).each( function() {
                     conditionsCount++;
+                    currentConditionTypeCount++;
                     var label = $( this ).data( 'wpcf-label' );
+                    assignedPostType = $( this ).val();
                     conditions[id]['activeConditionsLabels'].push( label );
                 })
+            }
+
+            if( id === 'postTypes' ) {
+                assignedPostTypesCount = currentConditionTypeCount;
+
+                if( assignedPostTypesCount === 1 ) {
+                    $( '.types-repeatable-group' ).removeClass( 'types-repeatable-group-inactive js-wpcf-tooltip' );
+                    $( '.js-wpcf-fields-add-new-repeatable-group' ).removeClass( 'wpcf-fields-btn-inactive js-wpcf-tooltip' );
+                } else {
+                    $( '.js-wpcf-fields-add-new-repeatable-group' ).addClass( 'wpcf-fields-btn-inactive js-wpcf-tooltip' );
+                    $( '.types-repeatable-group' ).addClass( 'types-repeatable-group-inactive js-wpcf-tooltip' );
+                }
             }
         });
 
         // show box description depending of conditions count
         if( conditionsCount > 0 ) {
-            msgCondSet.show();
             $.each( conditions, function( id, condition ) {
                 if( condition['activeConditionsLabels'].length ) {
                     condition['description'].show().find( 'span' ).html( condition['activeConditionsLabels'].join( ', ' ) );
@@ -154,9 +183,16 @@ jQuery(document).ready(function($){
      */
     $(document).on('click', '.js-wpcf-field-remove', function() {
         if ( confirm($(this).data('message-confirm')) ) {
-            $(this).closest('.postbox').slideUp(function(){
+            if( $( this ).data( 'field-type' ) == 'post' ) {
+                // handle post reference field
+                Types.page.fieldGroupEdit.postReferenceFieldDelete( $( this ) );
+
+                return;
+            }
+
+            $(this).closest('.toolset-postbox').slideUp(function(){
                 $(this).remove();
-                if ( 1 > $('#post-body-content .js-wpcf-fields .postbox').length ) {
+                if ( 1 > $('#post-body-content .js-wpcf-fields .toolset-postbox').length ) {
                     $( '.js-wpcf-fields-add-new-last, .js-wpcf-second-submit-container' ).addClass( 'hidden' );
                 }
             });
@@ -180,6 +216,7 @@ jQuery(document).ready(function($){
      */
     $( document ).on( 'click', '.js-wpcf-filter-container .js-wpcf-filter-button-edit', function() {
         var thiz = $(this);
+
         // show a spinner or something via css
         var dialog = $('<div style="display:none;height:450px;" class="wpcf-filter-contant"><span class="spinner"></span>'+thiz.data('wpcf-message-loading')+'</div>').appendTo('body');
         // open the dialog
@@ -289,6 +326,13 @@ jQuery(document).ready(function($){
             current_page = 'wpcf-edit';
         }
 
+        var assignedPostTypes = [];
+        $( 'input[id^="wpcf-form-groups-support-post-type"]' ).filter( function() {
+            return this.value && this.value !== '0';
+        } ).each( function() {
+            assignedPostTypes.push( $( this ).val() );
+        });
+
         dialog.load(
             ajaxurl,
             {
@@ -296,6 +340,8 @@ jQuery(document).ready(function($){
                 action: 'wpcf_ajax_filter',
                 _wpnonce: thiz.data('wpcf-nonce'),
                 id: thiz.data('wpcf-id'),
+                rfg_prf_count: $( '.types-repeatable-group, .js-wpcf-post-reference-field' ).length,
+                assigned_post_types: assignedPostTypes,
                 type: thiz.data('wpcf-type'),
                 page: current_page,
                 current: $current,
@@ -317,7 +363,6 @@ jQuery(document).ready(function($){
                     $(tab).fadeIn();
                 });
 
-                wpcfAddPostboxToggles();
                 $(dialog).on('click', 'a[data-wpcf-icon]', function() {
                     var $icon = $(this).data('wpcf-icon');
                     $('#wpcf-types-icon').val($icon);
@@ -445,7 +490,7 @@ jQuery(document).ready(function($){
                 $current.push($(this).val());
             }
         });
-        $('#post-body-content .postbox .js-wpcf-slugize').each(function(){
+        $('#post-body-content .toolset-postbox .js-wpcf-slugize').each(function(){
             if ( $(this).val() ) {
                 $current.push($(this).val());
             }
@@ -457,16 +502,23 @@ jQuery(document).ready(function($){
             : 'top';
 
         function add_field_to_fields_list( html ) {
-
             var newField;
 
-            if( position == 'top' ) {
-                $( '#post-body-content .js-wpcf-fields' ).prepend( html );
-                newField = $( '#post-body-content .js-wpcf-fields .postbox' ).first();
+            if( $thiz.data( 'add-field-to' ) ) {
+                var container = $( '#' + $thiz.data( 'add-field-to' ) );
+                container.append( html );
+                newField = container.find( '.toolset-postbox' ).last();
+            } else if( position == 'top' ) {
+                $( '#post-body-content .js-wpcf-fields' ).append( html );
+                newField = $( '#post-body-content .js-wpcf-fields .toolset-postbox' ).last();
             } else {
                 $( '#post-body-content .js-wpcf-fields .js-wpcf-fields-add-new-last' ).before( html );
-                newField = $( '#post-body-content .js-wpcf-fields .postbox' ).last();
+                newField = $( '#post-body-content .js-wpcf-fields .toolset-postbox' ).last();
             }
+
+            // Disable make it Repeatable Field option.
+            wpcfDisableRepeatableFieldOption( newField );
+            wpcfDisablePostTypeFromPRF( newField );
 
             $( 'html, body' ).animate( {
                 scrollTop: newField.offset().top - 50
@@ -475,7 +527,7 @@ jQuery(document).ready(function($){
             dialog.dialog( 'close' );
 
             wpcfBindAutoCreateSlugs();
-            wpcfAddPostboxToggles();
+            wpcfFieldsSortable();
 
             newField.typesFieldOptionsSortable();
             newField.typesMarkExistingField();
@@ -492,14 +544,39 @@ jQuery(document).ready(function($){
             ajaxurl,
             {
                 action: 'wpcf_edit_field_choose',
-                _wpnonce: $thiz.data('wpcf-nonce'),
-                id: $thiz.data('wpcf-id'),
+                _wpnonce: $( '.js-wpcf-fields-add-new[data-wpcf-nonce]' ).data( 'wpcf-nonce' ),
+                id: $( '.js-wpcf-fields-add-new[data-wpcf-id][id]' ).data( 'wpcf-id' ),
                 type: fieldKind,
                 current: $current
             },
             function (responseText, textStatus, XMLHttpRequest) {
                 var $fields = '';
                 var $dialog =  $(this).closest('.ui-dialog-content')
+
+                if( assignedPostTypesCount != 1 ) {
+                    // disable post reference field if there is more than one post type assigned to the field group
+                    var btnPostReferenceField = $( 'button[data-wpcf-field-type="post"]' );
+
+                    if (btnPostReferenceField.length) {
+                        if (typeof fieldFormStaticData !== 'undefined') {
+                            btnPostReferenceField.attr( 'data-tooltip',   fieldFormStaticData['strings']['postReferenceFieldOnlyAllowedWithOneAssignedPostType'] );
+                            btnPostReferenceField.addClass( 'js-wpcf-tooltip wpcf-form-button-disabled' );
+                        }
+                        btnPostReferenceField.removeClass( 'js-wpcf-field-button-insert' );
+                  	}
+                }
+
+                if( $thiz.data( 'add-field-to' ) ) {
+                    // disable post reference field for "add new field" of a repeatable field group
+                    var btnPostReferenceField = $( 'button[data-wpcf-field-type="post"]' );
+
+                    if (btnPostReferenceField.length) {
+                        btnPostReferenceField.attr( 'data-tooltip', fieldFormStaticData['strings']['postReferenceNotAllowedInRFG'] );
+                        btnPostReferenceField.addClass( 'js-wpcf-tooltip wpcf-form-button-disabled' );
+                        btnPostReferenceField.removeClass( 'js-wpcf-field-button-insert' );
+                    }
+                }
+
                 /**
                  * choose new field
                  */
@@ -548,6 +625,20 @@ jQuery(document).ready(function($){
                             $dialog.html($fields);
                             return false;
                         });
+
+                        if( assignedPostTypesCount != 1 ) {
+                            // disable post reference field if there is more than one post type assigned to the field group
+                            var btnPostReferenceField = $( 'button[data-wpcf-field-type="post"]' );
+
+                            if (btnPostReferenceField.length) {
+                                if (typeof fieldFormStaticData !== 'undefined') {
+                                    btnPostReferenceField.attr( 'data-tooltip',   fieldFormStaticData['strings']['postReferenceFieldOnlyAllowedWithOneAssignedPostType'] );
+                                    btnPostReferenceField.addClass( 'js-wpcf-tooltip wpcf-form-button-disabled' );
+                                }
+                                btnPostReferenceField.removeClass( 'js-wpcf-field-button-use-existed' );
+                            }
+                        }
+
                         /**
                          * filter
                          */
@@ -607,12 +698,19 @@ jQuery(document).ready(function($){
             val = val.replace(/'/, '&#39;');
             val = val.replace(/"/, '&quot;');
         }
-        $(this).parents('.postbox').find('.wpcf-legend-update').html(val);
+        $(this).parents('.toolset-postbox').first().find('.wpcf-legend-update').first().html(val);
     });
 
     // Check radio and select if same values
     // Check checkbox has a value to store
-    $('.wpcf-fields-form').submit(function(){
+    $('.wpcf-fields-form').submit(function(e){
+        if( assignedPostTypesCount !== 1 && $( '.types-repeatable-group' ).length ) {
+            // abort submit if a RFG is included and we have more than one post type assigned
+            e.preventDefault();
+            Types.page.fieldGroupEdit.dialogSavingGroupImpossible();
+            return;
+        }
+
         wpcfLoadingButton();
         var passed = true;
         var checkedArr = new Array();
@@ -624,13 +722,6 @@ jQuery(document).ready(function($){
                 var currentValue = $(this).val();
                 if (currentValue != ''
                     && $.inArray(currentValue, checkedArr[parentID]) > -1) {
-
-                    var fieldContainer = $(this).parents( '.postbox' );
-
-                    // open fields container if closed
-                    if( fieldContainer.hasClass( 'closed' ) ) {
-                        fieldContainer.find( '.hndle' ).trigger( 'click.postboxes' );
-                    }
 
                     passed = false;
 
@@ -667,6 +758,7 @@ jQuery(document).ready(function($){
         checkedArr = new Array();
         $('.wpcf-forms-field-name').each(function(index){
             var currentValue = $(this).val().toLowerCase();
+
             if (currentValue != ''
                 && $.inArray(currentValue, checkedArr) > -1) {
                 passed = false;
@@ -680,7 +772,7 @@ jQuery(document).ready(function($){
                     };
 
                     // scroll to last expanded postbox with this issue
-                    if( $( this ).closest( '.postbox' ).find('.handlediv' ).attr('aria-expanded') == 'true' ) {
+                    if( $( this ).closest( '.toolset-postbox' ).find('.handlediv' ).attr('aria-expanded') == 'true' ) {
                         $( this ).parents( 'fieldset' ).children('.fieldset-wrapper').slideDown();
                         $( this ).first().focus();
                     }
@@ -730,7 +822,7 @@ jQuery(document).ready(function($){
                    };
 
                    // scroll to last expanded postbox with this issue
-                   if( $( this ).closest( '.postbox' ).find('.handlediv' ).attr('aria-expanded') == 'true' ) {
+                   if( $( this ).closest( '.toolset-postbox' ).find('.handlediv' ).attr('aria-expanded') == 'true' ) {
                        $( this ).parents( 'fieldset' ).children('.fieldset-wrapper').slideDown();
                        $( this ).first().focus();
                    }
@@ -752,9 +844,14 @@ jQuery(document).ready(function($){
             }
         });
 
+        // repeatable field groups check
+        if( 'undefined' !== typeof Types && ! Types.page.fieldGroupEdit.validateRepeatableGroupInputs() ) {
+            passed = false;
+        }
+
         if (passed == false) {
             // Bind message fade out
-            wpcfBody.on( 'keyup', '.wpcf-forms-field-slug', function(){
+            wpcfBody.on( 'keyup', '.wpcf-forms-field-slug, .js-types-validate-required', function(){
                 $(this).removeClass('wpcf-slug-checked-error').prev('.wpcf-form-error-unique-value').fadeOut(function(){
                     $(this).remove();
                 });
@@ -768,8 +865,122 @@ jQuery(document).ready(function($){
          */
         $( document ).trigger( 'js-wpcf-event-types-show-modal' );
     } );
+
+
+    var $intermediary_modal = jQuery('#toolset-intermediary-dialog');
+
+    if ( $intermediary_modal.length === 1 ) {
+        jQuery('.wpcf-form-submit').attr('disabled', 'disabled');
+        $intermediary_modal.dialog({
+            closeOnEscape: false,
+            modal: true,
+            width: 450,
+            open: function(event, ui) {
+                wpcfIntermediaryPostCreation();
+                $intermediary_modal.next('.ui-dialog-buttonpane').hide();
+            },
+            buttons: [
+                {
+                    text: $intermediary_modal.data('close'),
+                    class: "button-primary",
+                    click: function() {
+                        $intermediary_modal.remove();
+                    }
+                }
+            ]
+        });
+    }
+
+    // Disable existing Repeatable Field options.
+    jQuery( '.js-wpcf-fields .toolset-postbox' ).each( function() {
+        wpcfDisableRepeatableFieldOption( jQuery( this ) );
+    } );
+
+
+    /**
+     * Shows WP pointers
+     *
+     * @since 3.0
+     */
+    jQuery( document ).on( 'click', '.js-show-tooltip', function() {
+        var $this = jQuery(this);
+
+        // default options
+        var defaults = {
+            edge: "left", // on which edge of the element tooltips should be shown: ( right, top, left, bottom )
+            align: "middle", // how the pointer should be aligned on this edge, relative to the target (top, bottom, left, right, middle).
+            offset: "15 0 " // pointer offset - relative to the edge
+        };
+
+        // custom options passed in HTML "data-" attributes
+        var custom = {
+            edge: $this.data('edge'),
+            align: $this.data('align'),
+            offset: $this.data('offset')
+        };
+
+        jQuery('.wp-toolset-pointer').hide();
+        var content = '<p>' + $this.data('content') + '</p>';
+        if ($this.data('header')) {
+            content = '<h3>' + $this.data('header') + '</h3>' + content;
+        }
+
+        var extraClass = $this.hasClass('types-pointer-tooltip') ? ' types-pointer-tooltip' : '';
+
+        $this.pointer({
+            pointerClass: 'wp-toolset-pointer wp-toolset-types-pointer' + extraClass,
+            content: content,
+            position: jQuery.extend(defaults, custom) // merge defaults and custom attributes
+        }).pointer('open');
+    } );
+
+
 });
 
+/**
+ * Disables the field option for converting a field into a Repeatable Field
+ *
+ * @param {Object} $fieldContainer
+ * @since 3.0
+ */
+var wpcfDisableRepeatableFieldOption = function( $fieldContainer ) {
+    var insideRFG = $fieldContainer.parents( '.types-repeatable-group:first' ).length > 0;
+    var $repetitiveOptions = $fieldContainer.find( 'input:radio[name*="[repetitive]"]' );
+    if ( insideRFG ) {
+        $repetitiveOptions.last().attr( 'checked', 'checked' );
+        $repetitiveOptions.attr( 'disabled', 'disabled' );
+    } else {
+        $repetitiveOptions.removeAttr( 'disabled', 'disabled' );
+    }
+    $fieldContainer.find( '.js-show-tooltip' ).toggleClass( 'hidden' );
+}
+
+
+/**
+ * Disables selected post type in PRF
+ *
+ * @param {Object} $container jQuery container element.
+ */
+var wpcfDisablePostTypeFromPRF = function( $container ) {
+    var supportedPostTypes = [];
+    jQuery('[name^="wpcf[group][supports]"][value!=""]').each( function() {
+        supportedPostTypes.push( jQuery(this).val() );
+    } );
+    if ( supportedPostTypes.length > 0 ) {
+        $container.find('[id^=post-select]:not(.js-wpcf-fields-type) option').each( function() {
+            var $this = jQuery(this);
+            if ( supportedPostTypes.includes( $this.val() ) ) {
+                $this.attr( 'disabled', 'disabled' );
+                if ( $this.attr( 'selected' ) === 'selected' ) {
+                    $this.removeAttr( 'selected' );
+                    $this.parent().children()[0].setAttribute( 'selected', 'selected' );
+                }
+            } else {
+                $this.removeAttr( 'disabled' );
+            }
+        } );
+    }
+};
 /**
  * on form submit fail
  */
@@ -784,7 +995,7 @@ function wpcf_fields_form_submit_failed() {
 function wpcf_highlight_first_error() {
     var $ = jQuery,
         firstError = $( '.wpcf-form-error' ).first(),
-        postBox = firstError.closest( '.postbox' );
+        postBox = firstError.closest( '.toolset-postbox' );
 
 
     if( postBox.hasClass( 'closed' ) ) {
@@ -792,7 +1003,9 @@ function wpcf_highlight_first_error() {
         postBox.find( '.handlediv' ).attr( 'aria-expanded', 'true' );
     }
 
-    firstError.next( 'input' ).focus();
+    // Open collapsed divs
+    firstError.parents('.toolset-collapsible-closed').find('.toolset-collapsible-handle').click();
+    firstError.next( 'input, select' ).focus();
 }
 
 /**
@@ -909,10 +1122,161 @@ function wpcf_setup_conditions()
     });
 }
 
-function wpcfAddPostboxToggles()
-{
-    jQuery('.postbox .hndle, .postbox .handlediv').unbind('click.postboxes');
-    postboxes.add_postbox_toggles();
+/**
+ * @deprecated 2.3 (No longer required)
+ */
+function wpcfAddPostboxToggles() { return; }
+
+/**
+ * Make fields and repeatable groups sortable
+ *
+ * @since 2.3
+ */
+var wpcfFieldsSortableRFGWasMoved = 0;
+var wpcfFieldsSortableRFGLevelBeforeMove = null;
+var wpcfFieldsSortableRFGParentBeforeMove = null;
+
+function wpcfFieldsSortable() {
+    Toolset.Gui.AbstractPage.call( this );
+
+    var self = this;
+    var draggedObject;
+
+    jQuery('.js-types-fields-sortable').sortable(
+        {
+            handle: '.js-toolset-sortable-handle',
+            opacity: 0.7,
+            connectWith: '.js-types-fields-sortable',
+            start: function( e, gui ) {
+                if( gui.item.find( '.types-repeatable-group-fields' ).length ) {
+                    // rfg - let's store the pre-move level
+                    wpcfFieldsSortableRFGLevelBeforeMove = gui.item.parents( '.types-repeatable-group-fields' ).length;
+
+                    if( wpcfFieldsSortableRFGLevelBeforeMove > 0 ) {
+                        wpcfFieldsSortableRFGParentBeforeMove = gui.item.parents( 'div[data-repeatable-group-id]' ).first().data( 'repeatable-group-id' );
+                    }
+                }
+            },
+            stop: function( e, gui ) {
+                // don't allow post reference field nested in rfg
+                if( gui.item.find('.js-wpcf-post-reference-field').length           // post reference field
+                    && gui.item.parents( '.types-repeatable-group-fields' ).length  // dropped into a rfg
+                ) {
+                    alert( fieldFormStaticData['strings']['postReferenceNotAllowedInRFG'] );
+                    jQuery( this ).sortable( 'cancel' );
+                }
+                wpcfDisableRepeatableFieldOption( jQuery( gui.item ) );
+            },
+            update: function( e, gui ) {
+                if( ! gui.item.find('.types-repeatable-group-fields' ).length ) {
+                    // no repeatable group moved
+                    return;
+                }
+
+                if( this !== gui.item.parent()[0] ) {
+                    // update is fired twice, for the target and the source, we only need the event for the target
+                    // anyway we need to keep the source stored to be able to 'cancel' the sort on the target event
+                    draggedObject = jQuery( this );
+
+                    return;
+                }
+
+                var newLevelOfRFG = gui.item.parents( '.types-repeatable-group-fields' ).length;
+
+                if( newLevelOfRFG == wpcfFieldsSortableRFGLevelBeforeMove ) {
+                    // the level of the RFG did not changed
+                    var newParentOfRFG = jQuery( this ).parents( 'div[data-repeatable-group-id]' ).first().data( 'repeatable-group-id' );
+
+                    if( newParentOfRFG == wpcfFieldsSortableRFGParentBeforeMove ) {
+                        // the parent did not changed and the user sorted on the same level - all good
+                        return;
+                    }
+                }
+
+                // at this point we know that the level of RFG has changed OR the parent has changed
+                var staticData = jQuery( '#toolset_model_data' ).length
+                    ? jQuery.parseJSON(WPV_Toolset.Utils.editor_decode64(jQuery( '#toolset_model_data' ).html()))
+                    : false;
+
+                var ajaxNonce = staticData[ 'ajaxInfo' ][ 'fieldGroupEditAction' ][ 'nonce' ],
+                    ajaxName = staticData[ 'ajaxInfo' ][ 'fieldGroupEditAction' ][ 'name' ];
+
+                jQuery.ajax( {
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: ajaxName,
+                        wpnonce: ajaxNonce,
+                        field_group_action: 'get_rfg_has_items',
+                        repeatable_group_id: gui.item.data( 'repeatable-group-id' ),
+                    },
+                    dataType: 'json',
+                    success: function( response ) {
+                        if( response.data.error ) {
+                            // shouldn't happen
+                            alert( response.data.error );
+                            return;
+                        }
+
+                        if( response.data.rfgHasItems == 1 ) {
+                            var dialog = self.createDialog(
+                                'types-dialog-move-repeatable-field-group-to-another-parent',
+                                staticData[ 'strings' ][ 'moveRepeatableGroup' ],
+                                {},
+                                [
+                                    {
+                                        text: staticData[ 'strings' ][ 'button' ][ 'move' ],
+                                        click: function() {
+                                            // move RFG and delete all items
+                                            wpcfFieldsSortableRFGWasMoved = 1;
+
+                                            // delete all items
+                                            jQuery.ajax( {
+                                                url: ajaxurl,
+                                                type: 'POST',
+                                                data: {
+                                                    action: ajaxName,
+                                                    wpnonce: ajaxNonce,
+                                                    field_group_action: 'get_rfg_delete_items',
+                                                    repeatable_group_id: gui.item.data( 'repeatable-group-id' ),
+                                                },
+                                                dataType: 'json',
+                                                success: function( response ) {
+
+                                                },
+                                                error: function( response ) {
+                                                    console.log( response );
+                                                }
+                                            } );
+
+                                            // close dialog
+                                            jQuery( dialog.$el ).ddldialog( 'close' );
+                                        },
+                                        'class': 'button-primary types-delete-button'
+                                    },
+                                    {
+                                        text: staticData[ 'strings' ][ 'button' ][ 'cancel' ],
+                                        click: function() {
+                                            // abort sort
+                                            draggedObject.sortable( "cancel" );
+                                            jQuery( dialog.$el ).ddldialog( 'close' );
+                                        },
+                                        'class': 'wpcf-ui-dialog-cancel'
+                                    }
+                                ]
+                            );
+                        } else {
+                            wpcfFieldsSortableRFGWasMoved = 1;
+                        }
+                    },
+
+                    error: function( response ) {
+                        console.log( response );
+                    }
+                } );
+            }
+        }
+    );
 }
 
 /**
@@ -1100,4 +1464,86 @@ function wpcfAddPostboxToggles()
             }
         );
     });
+
+    $( document ).on( 'ready', function() {
+        wpcfFieldsSortable();
+
+        /* Post Reference Field
+         * On post type change we need to check if the selected post type is valid to be used.
+         */
+
+        // holds "before change" value of all post reference fields
+        var PRFSelectBeforeChangeValue = {};
+
+        // get the init value of all prf fields
+        $( '[data-prf-proof-selected-type]' ).each( function() {
+            PRFSelectBeforeChangeValue[ $( this ).attr('id') ] = $( this ).val();
+        });
+
+        // event onchange, proof the select post type
+        $( 'body' ).on( 'change', '[data-prf-proof-selected-type]', function() {
+            if( ! $( this ).attr('id') in PRFSelectBeforeChangeValue ) {
+                // new field, the first selected value is 0 ( "Select a post type..." )
+                PRFSelectBeforeChangeValue[ $( this ).attr('id') ] = 0;
+            }
+
+            if( $( this ).find( ':selected' ).data( 'prf-no-valid-type' ) ) {
+                // this post type is not valid, revert selection
+                $( this ).val( PRFSelectBeforeChangeValue[ $( this ).attr('id') ] );
+
+                // notice to the user
+                Types.page.fieldGroupEdit.postReferenceFieldTypeWrongTranslationMode();
+            } else {
+                // valid, store new value as "beforeChange" value
+                PRFSelectBeforeChangeValue[ $( this ).attr('id') ] = $( this ).val();
+            }
+        });
+    } );
+
+    $( document ).on( 'ready', function() {
+        // use $_GET['field_group_action'] to set "toolset_field_group_on_load_action"
+        // currently there is just one method "add_field", which will automatically open the add field dialog on page load
+        if( typeof toolset_field_group_on_load_action !== 'undefined' ) {
+            if( toolset_field_group_on_load_action === 'add_field') {
+                $( '.js-wpcf-fields-add-new' ).click();
+            }
+        }
+    });
 } )( jQuery );
+
+/**
+ * Batch process for creating association intermediary posts
+ *
+ * @since 2.3
+ */
+function wpcfIntermediaryPostCreation() {
+    var $modal = jQuery('#toolset-intermediary-dialog');
+    jQuery.ajax({
+        url: ajaxurl,
+        method: "POST",
+        data: {
+            action: 'types_field_group_edit_action',
+            field_group_action: 'create_intermediary_posts',
+            wpnonce: $modal.data('wpnonce'),
+            group_id: jQuery( 'input[name="wpcf[group][id]"]' ).val(),
+        }
+    }).done(function(data) {
+        if ( data.success ) {
+            var remaining = data.data.remaining_elements;
+            var total = $modal.data('count');
+            if ( remaining < total && remaining > 0 ) {
+                var percent = parseInt( ( total - remaining ) * 100 / total );
+                $modal.find('#intermediary-progress-bar span').css({width: percent + '%'});
+                wpcfIntermediaryPostCreation();
+                return;
+            }
+        }
+        jQuery('#intermediary-progress-bar').fadeOut(function() {
+            jQuery('#toolset-intermediary-dialog-confirmation-content').fadeIn();
+            $modal.next('.ui-dialog-buttonpane').show()
+        });
+
+        jQuery('.wpcf-form-submit').removeAttr('disabled');
+    });
+
+}

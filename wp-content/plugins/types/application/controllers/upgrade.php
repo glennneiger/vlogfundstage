@@ -210,10 +210,10 @@ class Types_Upgrade {
 
 		// Run all the routines necessary
 		foreach( $upgrade_routines as $routine ) {
-			$upgrade_version = (int) wpcf_getarr( $routine, 'version' );
+			$upgrade_version = (int) toolset_getarr( $routine, 'version' );
 			
 			if( $from_version < $upgrade_version && $upgrade_version <= $target_version ) {
-				$callback = wpcf_getarr( $routine, 'callback' );
+				$callback = toolset_getarr( $routine, 'callback' );
 				if( is_callable( $callback ) ) {
 					call_user_func( $callback );
 				}

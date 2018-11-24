@@ -6,8 +6,10 @@
  * Keeping this separate from Types_Assets also for performance reasons (this is not needed at all times).
  * 
  * @since 2.0
+ * @refactoring because inheriting from Toolset_Assets_Manager causes double asset registration. We should _use_
+ * that class, not extend it.
  */
-final class Types_Asset_Manager extends Toolset_Assets_Manager {
+class Types_Asset_Manager extends Toolset_Assets_Manager {
 
 	// Script handles
 	//
@@ -15,15 +17,19 @@ final class Types_Asset_Manager extends Toolset_Assets_Manager {
 
 	const SCRIPT_ADJUST_MENU_LINK = 'types-adjust-menu-link';
 	const SCRIPT_SLUG_CONFLICT_CHECKER = 'types-slug-conflict-checker';
+	const SCRIPT_POINTER = 'types-pointer';
 
 	const SCRIPT_PAGE_EDIT_POST_TYPE = 'types-page-edit-post-type';
 	const SCRIPT_PAGE_EDIT_TAXONOMY = 'types-page-edit-taxonomy';
+
+	const SCRIPT_M2M_ACTIVATION_DIALOG = 'types-dialog-m2m-activation';
 
 	// Registered in legacy Types
 
 	const SCRIPT_JQUERY_UI_VALIDATION = 'wpcf-form-validation';
 	const SCRIPT_ADDITIONAL_VALIDATION_RULES = 'wpcf-form-validation-additional';
 
+	const STYLE_BASIC_CSS = 'wpcf-css-embedded';
 
 
 	private static $types_instance;
@@ -41,12 +47,19 @@ final class Types_Asset_Manager extends Toolset_Assets_Manager {
 	}
 	
 	
-	protected function __initialize_styles() {
-		return parent::__initialize_styles();
+	protected function initialize_styles() {
+
+		$this->register_style(
+			self::STYLE_BASIC_CSS,
+			WPCF_EMBEDDED_RES_RELPATH . '/css/basic.css',
+			array(),
+			TYPES_VERSION
+		);
+
 	}
 
 
-	protected function __initialize_scripts() {
+	protected function initialize_scripts() {
 
 		$this->register_script(
 			self::SCRIPT_ADJUST_MENU_LINK,
@@ -60,6 +73,12 @@ final class Types_Asset_Manager extends Toolset_Assets_Manager {
 			TYPES_RELPATH . '/public/js/slug_conflict_checker.js',
 			array( 'jquery', 'underscore' ),
 			TYPES_VERSION
+		);
+
+		$this->register_script(
+			self::SCRIPT_POINTER,
+			TYPES_RELPATH . '/public/js/pointer.js',
+			array( 'jquery', 'wp-pointer' )
 		);
 
 		$this->register_script(
@@ -92,7 +111,13 @@ final class Types_Asset_Manager extends Toolset_Assets_Manager {
 		);
 
 
-		return parent::__initialize_scripts();
+		$this->register_script(
+			self::SCRIPT_M2M_ACTIVATION_DIALOG,
+			TYPES_RELPATH . '/public/page/extension/m2m-migration-dialog.js',
+			array( 'jquery', 'underscore', Toolset_Assets_Manager::SCRIPT_HEADJS, self::SCRIPT_KNOCKOUT, self::SCRIPT_UTILS )
+		);
+
+		return parent::initialize_scripts();
 	}
 
 

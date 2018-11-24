@@ -18,23 +18,15 @@ return array(
 					'description' => array(
 						array(
 							'type' => 'paragraph',
-							'content' => __( 'To create a View for this content type, you need to have Views plugin installed. Views is part of the
-                    complete Toolset package for adding and displaying custom content.', 'wpcf' )
+							'content' => __( 'To design views, you need to activate Toolset Views plugin.', 'wpcf' )
 						),
 						array(
-							'type' => 'link',
+							'type'   => 'link',
+							'class'  => 'button-primary types-button',
 							'external' => true,
-							'label' => __( 'Learn how Views work', 'wpcf' ),
-							'target'  => Types_Helper_Url::get_url( 'how-views-work', 'popup' )
+							'label'  => __('Download Toolset Views from your Toolset account', 'wpcf' ),
+							'target' => Types_Helper_Url::get_url( 'toolset-account-downloads', 'popup' ),
 						),
-						/*
-						array(
-							'type' => 'link',
-							'external' => true,
-							'label' => __( 'Free Toolset Trial', 'wpcf' ),
-							'target'  => Types_Helper_Url::get_url( 'free-trial', 'popup' )
-						)
-						*/
 					)
 				)
 			)

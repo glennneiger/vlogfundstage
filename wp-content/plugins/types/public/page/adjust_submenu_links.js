@@ -46,7 +46,7 @@ var Types = Types || {};
          * Add menu parameters to the selected a tag.
          * 
          * @param {{key:string,value:string}|[{key:string,value:string}]} paramsToAdd
-         * @param {string|undefined} selector
+         * @param {string} [selector]
          * @since 2.0
          */
         self.addMenuParams = function(paramsToAdd, selector) {

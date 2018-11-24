@@ -5,7 +5,7 @@ Plugin URI: http://wordpress.org/extend/plugins/types/
 Description: Toolset Types defines custom content in WordPress. Easily create custom post types, fields and taxonomy and connect everything together.
 Author: OnTheGoSystems
 Author URI: http://www.onthegosystems.com
-Version: 2.3.4
+Version: 3.1.2
 License: GPLv2 or later
 
 Types is free software: you can redistribute it and/or modify
@@ -22,14 +22,16 @@ You should have received a copy of the GNU General Public License
 along with Types. If not, see http://www.gnu.org/licenses/gpl-2.0.html.
 */
 
+
+
 // abort if called directly
 if ( ! function_exists( 'add_action' ) ) {
 	die( 'Types is a WordPress plugin and can not be called directly.' );
 }
 
 // version
-if ( ! defined( 'TYPES_VERSION' ) ) {
-	define( 'TYPES_VERSION', '2.3.4' );
+if( ! defined( 'TYPES_VERSION' ) ) {
+	define( 'TYPES_VERSION', '3.1.2' );
 }
 
 // backward compatibility
@@ -41,7 +43,7 @@ if ( ! defined( 'WPCF_VERSION' ) ) {
 if ( ! defined( 'TYPES_RELEASE_NOTES' ) ) {
 	define(
 		'TYPES_RELEASE_NOTES',
-		'https://wp-types.com/version/types-' . str_replace( '.', '-', TYPES_VERSION )
+		'https://toolset.com/version/types-' . str_replace( '.', '-', TYPES_VERSION )
 		. '/?utm_source=typesplugin&utm_campaign=types&utm_medium=release-notes-admin-notice&utm_term=Types%20' . TYPES_VERSION . '%20release%20notes'
 	);
 }
@@ -63,17 +65,27 @@ if ( ! defined( 'TYPES_DATA' ) ) {
 	define( 'TYPES_DATA', dirname( __FILE__ ) . '/application/data' );
 }
 
+if ( ! defined( 'TYPES_TEMPLATES' ) ) {
+	define( 'TYPES_TEMPLATES', dirname( __FILE__ ) . '/application/views' );
+}
+
 /*
  * Bootstrap Types
  */
 require_once( dirname( __FILE__ ) . '/application/bootstrap.php' );
 
+/*
+ * Compatibilities Switches
+ */
+add_action( 'plugins_loaded', function() {
+	if( ! defined( 'TOOLSET_TYPES_YOAST' ) ) {
+		// Yoast Compatibility
+		define( 'TOOLSET_TYPES_YOAST', defined( 'WPSEO_VERSION' ) );
+	}
+} );
 
 //
 // Activation and deactivation hooks must be defined in the main file.
 //
 register_deactivation_hook( __FILE__, 'wpcf_deactivation_hook' );
 register_activation_hook( __FILE__, 'wpcf_activation_hook' );
-
-// adds "Leave feedback" link on plugins list page
-add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'types_plugin_action_links' );

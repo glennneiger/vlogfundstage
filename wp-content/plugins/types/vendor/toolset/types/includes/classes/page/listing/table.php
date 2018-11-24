@@ -1129,7 +1129,7 @@ class WPCF_Page_Listing_Table {
 			</tr>
 			</thead>
 
-			<tbody id="the-list"<?php
+			<tbody <?php
 			if ( $singular ) {
 				echo " data-wp-lists='list:$singular'";
 			} ?>>

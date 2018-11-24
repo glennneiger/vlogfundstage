@@ -24,6 +24,13 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
+/**
+ * Memberships integration handler.
+ *
+ * @since 2.5.0
+ */
 class WC_Social_Login_Integrations_Memberships {
 
 
@@ -78,7 +85,7 @@ class WC_Social_Login_Integrations_Memberships {
 		// only output buttons for logged out users and if the admin opted in
 		if ( ! is_user_logged_in() && $this->showing_social_login_buttons() ) {
 
-			$restriction_message_ids = WC_Memberships_User_Messages::get_default_messages( false );
+			$restriction_message_ids = \WC_Memberships_User_Messages::get_default_messages( false );
 
 			foreach ( $restriction_message_ids as $restriction_message_id ) {
 
@@ -142,7 +149,7 @@ class WC_Social_Login_Integrations_Memberships {
 	 * @param array $args additional arguments used by the restriction message
 	 * @return string HTML updated message
 	 */
-	public function add_social_login_buttons( $message, $args ) {
+	public function add_social_login_buttons( $message, $args = array() ) {
 
 		add_filter( 'pre_option_wc_social_login_text_non_checkout', '__return_empty_string' );
 

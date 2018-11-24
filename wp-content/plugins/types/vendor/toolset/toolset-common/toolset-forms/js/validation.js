@@ -302,10 +302,6 @@ var wptValidation = (function ($) {
         if (typeof jQuery('.wpt-suggest-taxonomy-term') && jQuery('.wpt-suggest-taxonomy-term').length) {
             jQuery('.wpt-suggest-taxonomy-term').hide();
         }
-
-        if (typeof credFrontEndViewModel !== 'undefined') {
-            credFrontEndViewModel.reloadTinyMCE();
-        }
     });
 
     function isIgnored($el) {

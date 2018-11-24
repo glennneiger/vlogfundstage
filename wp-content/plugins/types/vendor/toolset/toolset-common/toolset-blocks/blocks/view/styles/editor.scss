@@ -6,6 +6,8 @@
 
 .wp-block-toolset-view {
   .wp-block-toolset-view-placeholder {
+    min-width: 180px;
+
     span {
       display: inline-block;
       line-height: initial;
@@ -18,6 +20,8 @@
 }
 
 .wp-block-toolset-view-preview {
+  min-height: 188px;
+
   .wpv-view-info-warning {
     padding: 10px;
     color: #8a6d3b;
@@ -183,12 +187,77 @@
       width: 6.38298%;
     }
   }
+
+  .block-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.5);
+
+    .logo::before {
+      font-family: 'onthegosystems-icons', sans-serif !important;
+      content: "\f11e";
+      font-size: 36px;
+    }
+
+    &-content {
+      display: none;
+      position: sticky;
+      position: -webkit-sticky;
+      top: 50px;
+      width: 75%;
+      margin: 3px auto;
+      text-align: center;
+      padding: 15px;
+      border: 1px solid #f05a28;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .button {
+      display: inline-block;
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 26px;
+      height: 28px;
+      margin: 0;
+      padding: 0 10px 1px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      border-radius: 3px;
+      white-space: nowrap;
+      box-sizing: border-box;
+      background: #f05a28;
+      border: 1px solid #ef6223;
+      color: #fff !important;
+    }
+  }
+
+  &:hover {
+    .block-overlay {
+      background: rgba(246, 201, 86, 0.7);
+
+      &-content {
+        display: block;
+      }
+    }
+  }
+}
+
+.toolset-gutenberg-block-image.toolset-view-gutenberg-block {
+  text-indent: 0;
 }
 
 .toolset-gutenberg-block-image.toolset-view-gutenberg-block::before {
   font-family: 'onthegosystems-icons', sans-serif !important;
   content: "\f11e";
-  font-size: 20px;
+  font-size: 23px;
+}
+
+.editor-inserter-with-shortcuts .toolset-gutenberg-block-image.toolset-view-gutenberg-block::before {
+  line-height: 19px;
 }
 
 .toolset-gutenberg-block-placeholder.toolset-view-gutenberg-block::before {
@@ -210,5 +279,9 @@
 
   .components-panel__row label {
     max-width: 100%;
+  }
+
+  .another-page-select {
+    width: 100%;
   }
 }

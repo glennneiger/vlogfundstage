@@ -21,7 +21,18 @@
  * @copyright   Copyright (c) 2014-2018, SkyVerge, Inc.
  * @license     http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
-class WC_Report_Social_Login extends WC_Admin_Report {
+
+defined( 'ABSPATH' ) or exit;
+
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
+/**
+ * Social Login report handler.
+ *
+ * @since 1.0.0
+ */
+class WC_Report_Social_Login extends \WC_Admin_Report {
+
 
 	/**
 	 * Output the report
@@ -63,4 +74,6 @@ class WC_Report_Social_Login extends WC_Admin_Report {
 
 		return $social_registration;
 	}
+
+
 }

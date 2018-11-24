@@ -459,7 +459,7 @@ class Types_Fields_Conditional extends Types_Admin_Page
 
 	        // See the comment below
 	        $conditions['custom'] = $this->transform_operators_to_text_equivalents(
-		        wpcf_getarr( $conditions, 'custom' )
+		        toolset_getarr( $conditions, 'custom' )
 	        );
 
             $sanitized_conditions = sanitize_text_field_recursively( $conditions );
@@ -504,7 +504,7 @@ class Types_Fields_Conditional extends Types_Admin_Page
 	        // Note that this method has side-effects and limitations, see transform_operators_to_text_equivalents()
 	        // for details.
 	        $conditions['custom'] = $this->transform_operators_to_text_equivalents(
-		        wpcf_getarr( $conditions, 'custom' )
+		        toolset_getarr( $conditions, 'custom' )
 	        );
 
 	        $sanitized_conditions = sanitize_text_field_recursively( $conditions );
@@ -793,7 +793,7 @@ class Types_Fields_Conditional extends Types_Admin_Page
 
 			foreach ( $tokens as $token ) {
 				if ( $token->isCompOp ) {
-					$token->val = wpcf_getarr( $token_value_replacements, $token->val, $token->val );
+					$token->val = toolset_getarr( $token_value_replacements, $token->val, $token->val );
 				}
 				if ( $token->isCompOp || $token->isArithmeticOp || $token->isLogicOp ) {
 					$result .= ' ' . $token->val . ' ';

@@ -60,6 +60,8 @@ function wpcf_fields_email_view( $params ) {
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_email_editor_callback( $field, $settings ) {
     return array(
@@ -77,6 +79,8 @@ function wpcf_fields_email_editor_callback( $field, $settings ) {
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_email_editor_submit( $data, $field, $context ) {
     $add = '';

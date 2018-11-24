@@ -14,12 +14,14 @@
 class Toolset_Association_Query_Condition_Element_Status extends Toolset_Association_Query_Condition {
 
 	const STATUS_AVAILABLE = 'is_available';
+
 	const STATUS_PUBLIC = 'is_public';
+
 	const STATUS_ANY = 'any';
 
 
-	/** @var string */
-	private $status;
+	/** @var string|string[] */
+	private $statuses;
 
 
 	/** @var IToolset_Relationship_Role */
@@ -37,25 +39,24 @@ class Toolset_Association_Query_Condition_Element_Status extends Toolset_Associa
 	/**
 	 * Toolset_Association_Query_Condition_Element_Status constructor.
 	 *
-	 * @param string $status
+	 * @param string|string[] $statuses One or more status values.
 	 * @param IToolset_Relationship_Role $for_role
 	 * @param Toolset_Association_Query_Table_Join_Manager $join_manager
 	 * @param Toolset_Association_Query_Element_Selector_Provider $element_selector_provider
+	 *
 	 * @throws InvalidArgumentException
 	 */
 	public function __construct(
-		$status,
+		$statuses,
 		IToolset_Relationship_Role $for_role,
 		Toolset_Association_Query_Table_Join_Manager $join_manager,
 		Toolset_Association_Query_Element_Selector_Provider $element_selector_provider
 	) {
-		if(
-			! is_string( $status ) || empty( $status )
-		) {
+		if ( ( ! is_string( $statuses ) && ! is_array( $statuses ) ) || empty( $statuses ) ) {
 			throw new InvalidArgumentException();
 		}
 
-		$this->status = $status;
+		$this->statuses = $statuses;
 		$this->for_role = $for_role;
 		$this->join_manager = $join_manager;
 		$this->element_selector_provider = $element_selector_provider;
@@ -80,29 +81,37 @@ class Toolset_Association_Query_Condition_Element_Status extends Toolset_Associa
 	 */
 	private function get_where_clause_for_posts() {
 
-		$accepted_statuses = array();
+		if( is_array( $this->statuses ) ) {
+			$accepted_statuses = $this->statuses;
+		} else {
+			$single_status = $this->statuses;
 
-		switch( $this->status ) {
-			case self::STATUS_PUBLIC:
-				$accepted_statuses[] = 'publish';
-				break;
-			case self::STATUS_AVAILABLE:
-				$accepted_statuses[] = 'publish';
-				$accepted_statuses[] = 'draft';
-				// FIXME make the logic complete (involving WP_Query business logic and Access)
-				if( current_user_can( 'read_private_posts' ) ) {
-					$accepted_statuses[] = 'private';
-				}
-				break;
-			case self::STATUS_ANY:
-				// Match anything, don't bother with adding a query.
-				return ' 1 = 1 ';
-			default:
-				// Use the status value directly.
-				$accepted_statuses[] = $this->status;
+			switch ( $single_status ) {
+				case self::STATUS_PUBLIC:
+					$accepted_statuses = array( 'publish' );
+					break;
+				case self::STATUS_AVAILABLE:
+					$accepted_statuses = array(
+						'publish',
+						'draft',
+						'pending'
+					);
+					// FIXME make the logic complete (involving WP_Query business logic and Access)
+					if ( current_user_can( 'read_private_posts' ) ) {
+						$accepted_statuses[] = 'private';
+					}
+					break;
+				case self::STATUS_ANY:
+					// Match anything, don't bother with adding a query.
+					return ' 1 = 1 ';
+				default:
+					// Single status string. If this is a wrong input, we'll return zero results anyway.
+					$accepted_statuses = array( $single_status );
+					break;
+			}
 		}
 
-		if( empty( $accepted_statuses ) ) {
+		if ( empty( $accepted_statuses ) ) {
 			// For some reason, we don't allow any post status. Match nothing.
 			return ' 1 = 0 ';
 		}

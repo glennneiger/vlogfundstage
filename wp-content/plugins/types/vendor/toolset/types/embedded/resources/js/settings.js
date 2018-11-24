@@ -1,5 +1,10 @@
 var ToolsetTypes = ToolsetTypes || {};
 
+/**
+ * @param $
+ * @constructor
+ * @deprecated This file is DEPRECATED in favor of public/js/settings.js.
+ */
 ToolsetTypes.SettingsScreen = function( $ ) {
 	
 	var self = this;
@@ -233,3 +238,5 @@ ToolsetTypes.SettingsScreen = function( $ ) {
 jQuery( document ).ready( function( $ ) {
     ToolsetTypes.settings_screen = new ToolsetTypes.SettingsScreen( $ );
 });
+
+

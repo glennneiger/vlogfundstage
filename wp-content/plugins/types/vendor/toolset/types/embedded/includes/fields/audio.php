@@ -87,6 +87,8 @@ function wpcf_fields_audio_view( $params )
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_audio_editor_callback( $field, $data, $meta_type, $post ) {
     return array(
@@ -104,6 +106,8 @@ function wpcf_fields_audio_editor_callback( $field, $data, $meta_type, $post ) {
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_audio_editor_submit( $data, $field, $context ) {
     $add = '';

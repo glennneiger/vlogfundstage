@@ -12,7 +12,6 @@ import Inspector from './inspector/inspector';
 import ViewSelect from './inspector/view-select';
 import ViewPreview from './view-preview';
 import classnames from 'classnames';
-import './styles/style.scss';
 import './styles/editor.scss';
 
 /**
@@ -34,7 +33,7 @@ const {
 	RawHTML,
 } = wp.element;
 
-const name = 'toolset/view';
+const name = window.toolset_view_block_strings.block_name;
 
 const settings = {
 	title: __( 'View' ),
@@ -46,65 +45,6 @@ const settings = {
 		__( 'View' ),
 		__( 'Shortcode' ),
 	],
-
-	attributes: {
-		view: {
-			type: 'string',
-			default: '',
-		},
-		hasCustomSearch: {
-			type: 'boolean',
-			default: false,
-		},
-		hasSubmit: {
-			type: 'boolean',
-			default: false,
-		},
-		hasExtraAttributes: {
-			type: 'array',
-			default: [],
-		},
-		formDisplay: {
-			type: 'string',
-			default: 'full',
-		},
-		formOnlyDisplay: {
-			type: 'string',
-			default: 'samePage',
-		},
-		otherPageID: {
-			type: 'string',
-			default: '',
-		},
-		limit: {
-			type: 'string',
-			default: '-1',
-		},
-		offset: {
-			type: 'string',
-			default: '0',
-		},
-		orderby: {
-			type: 'string',
-			default: '',
-		},
-		order: {
-			type: 'string',
-			default: '',
-		},
-		secondaryOrderby: {
-			type: 'string',
-			default: '',
-		},
-		secondaryOrder: {
-			type: 'string',
-			default: '',
-		},
-		queryFilters: {
-			type: 'object',
-			default: {},
-		},
-	},
 
 	edit: props => {
 		const onChangeLimit = ( value ) => {
@@ -146,8 +86,8 @@ const settings = {
 			props.setAttributes( { formOnlyDisplay: value } );
 		};
 
-		const onChangeOtherPageID = value => {
-			props.setAttributes( { otherPageID: value } );
+		const onChangeotherPage = value => {
+			props.setAttributes( { otherPage: value } );
 		};
 
 		const onChangeQueryFilters = ( value, filterType ) => {
@@ -191,7 +131,7 @@ const settings = {
 							hasExtraAttributes: props.attributes.hasExtraAttributes,
 							formDisplay: props.attributes.formDisplay,
 							formOnlyDisplay: props.attributes.formOnlyDisplay,
-							otherPageID: props.attributes.otherPageID,
+							otherPage: props.attributes.otherPage,
 							limit: props.attributes.limit,
 							offset: props.attributes.offset,
 							orderby: props.attributes.orderby,
@@ -210,7 +150,7 @@ const settings = {
 					onChangeOrder={ onChangeOrder }
 					onChangeSecondaryOrderby={ onChangeSecondaryOrderby }
 					onChangeSecondaryOrder={ onChangeSecondaryOrder }
-					onChangeOtherPageID={ onChangeOtherPageID }
+					onChangeotherPage={ onChangeotherPage }
 					onChangeQueryFilters={ onChangeQueryFilters }
 				/>
 			),
@@ -234,7 +174,7 @@ const settings = {
 								view: props.attributes.view,
 							}
 						}
-						className={ classnames( 'blocks-select-control__input' ) }
+						className={ classnames( 'components-select-control__input' ) }
 						onChangeView={ onChangeView }
 					/>
 				</Placeholder> :
@@ -317,9 +257,9 @@ const settings = {
 			} else if (
 				'otherPage' === props.attributes.formOnlyDisplay &&
 				props.attributes.hasSubmit &&
-				'' !== props.attributes.otherPageID
+				'' !== props.attributes.otherPage.value
 			) {
-				target = ' target_id="' + props.attributes.otherPageID + '"';
+				target = ' target_id="' + props.attributes.otherPage.value + '"';
 			}
 		}
 

@@ -410,7 +410,7 @@ class WPCF_Relationship_Child_Form
                     /*
                      * Set field
                      */
-                    $field_key = $this->cf->__get_slug_no_prefix( $field_key );
+                    $field_key = $this->cf->get_slug_no_prefix( $field_key );
                     $this->cf->set( $this->child, $field_key );
                     $row[] = $this->field_form();
                     $this->_field_triggers();
@@ -656,7 +656,7 @@ class WPCF_Relationship_Child_Form
          *
          * Filter form
          */
-        $_filtered_form = $this->__filter_meta_form( $form );
+        $_filtered_form = $this->filter_meta_form( $form );
 
         return wpcf_form_simple( apply_filters( 'wpcf_relationship_child_meta_form',
                                 $_filtered_form, $this->cf ) );
@@ -671,7 +671,7 @@ class WPCF_Relationship_Child_Form
      * @param string $form
      * @return string
      */
-    function __filter_meta_form( $form = array() ) {
+    function filter_meta_form( $form = array() ) {
         foreach ( $form as $k => &$e ) {
             /*
              *

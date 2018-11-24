@@ -24,7 +24,7 @@
 
 // load base class
 if ( ! class_exists( 'Hybrid_Providers_Twitter' ) ) {
-	require_once( Hybrid_Auth::$config['path_providers'] . 'Twitter.php' );
+	require_once( \Hybrid_Auth::$config['path_providers'] . 'Twitter.php' );
 }
 
 
@@ -33,7 +33,7 @@ if ( ! class_exists( 'Hybrid_Providers_Twitter' ) ) {
  *
  * @since 2.0.0
  */
-class SV_Hybrid_Providers_Twitter extends Hybrid_Providers_Twitter {
+class SV_Hybrid_Providers_Twitter extends \Hybrid_Providers_Twitter {
 
 
 	/**
@@ -47,7 +47,7 @@ class SV_Hybrid_Providers_Twitter extends Hybrid_Providers_Twitter {
 	public function initialize() {
 
 		if ( ! $this->config['keys']['key'] || ! $this->config['keys']['secret'] ) {
-			throw new Exception( "Your application key and secret are required in order to connect to {$this->providerId}.", 4 );
+			throw new \Exception( "Your application key and secret are required in order to connect to {$this->providerId}.", 4 );
 		}
 
 		// override requested scope
@@ -57,25 +57,25 @@ class SV_Hybrid_Providers_Twitter extends Hybrid_Providers_Twitter {
 
 		// include OAuth1 client
 		if ( ! class_exists( 'OAuthConsumer' ) ) {
-			require_once( Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth.php' );
+			require_once( \Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth.php' );
 		}
 
-		require_once( Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth1Client.php' );
+		require_once( \Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth1Client.php' );
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-wp-oauth1-client.php' );
 
 		// setup access_token if any stored
 		if ( $this->token( 'access_token' ) ) {
-			$this->api = new WP_OAuth1_Client( $this->config['keys']['key'], $this->config['keys']['secret'], $this->token( 'access_token' ), $this->token( 'access_token_secret' ) );
+			$this->api = new \WP_OAuth1_Client( $this->config['keys']['key'], $this->config['keys']['secret'], $this->token( 'access_token' ), $this->token( 'access_token_secret' ) );
 		}
 
 		// setup request_token if any stored, in order to exchange with an access token
 		elseif ( $this->token( 'request_token' ) ) {
-			$this->api = new WP_OAuth1_Client( $this->config['keys']['key'], $this->config['keys']['secret'], $this->token( 'request_token' ), $this->token( 'request_token_secret' ) );
+			$this->api = new \WP_OAuth1_Client( $this->config['keys']['key'], $this->config['keys']['secret'], $this->token( 'request_token' ), $this->token( 'request_token_secret' ) );
 		}
 
 		// instanciate OAuth client with client credentials
 		else {
-			$this->api = new WP_OAuth1_Client( $this->config['keys']['key'], $this->config['keys']['secret'] );
+			$this->api = new \WP_OAuth1_Client( $this->config['keys']['key'], $this->config['keys']['secret'] );
 		}
 
 		$this->api->api_base_url      = 'https://api.twitter.com/1.1/';

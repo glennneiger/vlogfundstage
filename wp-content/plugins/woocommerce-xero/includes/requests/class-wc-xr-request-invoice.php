@@ -21,6 +21,7 @@ class WC_XR_Request_Invoice extends WC_XR_Request {
 
 		// Set the XML
 		$this->set_body( '<Invoices>' . $invoice->to_xml() .'</Invoices>' );
+		$this->set_method( 'POST' );
 
 	}
 

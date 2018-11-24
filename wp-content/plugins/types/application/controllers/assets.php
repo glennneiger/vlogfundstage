@@ -13,7 +13,9 @@
 final class Types_Assets {
 	
 	// Constants with image paths relative to public/images.
-	const IMG_AJAX_LOADER_OVERLAY = '/ajax-loader-overlay.gif';
+
+	// Moved to TCL:
+	//const IMG_AJAX_LOADER_OVERLAY = '/ajax-loader-overlay.gif';
 
 
 	private static $instance;

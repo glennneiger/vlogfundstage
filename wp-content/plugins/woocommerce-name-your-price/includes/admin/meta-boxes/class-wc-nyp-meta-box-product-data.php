@@ -36,6 +36,9 @@ class WC_NYP_Meta_Box_Product_Data {
 		// Variable Product.
 		add_action( 'woocommerce_variation_options', array( __CLASS__, 'product_variations_options' ), 10, 3 );
 		add_action( 'woocommerce_product_after_variable_attributes', array( __CLASS__, 'add_to_variations_metabox'), 10, 3 );
+		add_action( 'woocommerce_name_your_price_options_variation_pricing', array( __CLASS__, 'add_suggested_price_inputs' ), 20, 3 );
+		add_action( 'woocommerce_name_your_price_options_variation_pricing', array( __CLASS__, 'add_minimum_price_inputs' ), 30, 3 );
+		add_action( 'woocommerce_name_your_price_options_variation_pricing', array( __CLASS__, 'add_maximum_price_inputs' ), 40, 3 );
 
 		// Save NYP variations.
 		add_action( 'woocommerce_save_product_variation', array( __CLASS__, 'save_product_variation' ), 30, 2 );
@@ -123,22 +126,25 @@ class WC_NYP_Meta_Box_Product_Data {
 	 *
 	 * @param  object WC_Product $product_object
 	 * @param  bool $show_billing_period_options
+	 * @param  mixed int|false $loop - for use in variations
 	 * @return print HTML
 	 * @since  2.8.0
 	 */
-	public static function add_suggested_price_inputs( $product_object, $show_billing_period_options ){
+	public static function add_suggested_price_inputs( $product_object, $show_billing_period_options, $loop = false ){
 
 		// Suggested Price.
 		woocommerce_wp_text_input( array(
-			'id' => '_suggested_price',
+			'id' => is_int( $loop ) ? "variation_suggested_price[$loop]" : "_suggested_price",
 			'class' => 'wc_input_price short',
+			'wrapper_class' => is_int( $loop ) ? 'form-row form-row-first' : '',
 			'label' => __( 'Suggested Price', 'wc_name_your_price') . ' ('.get_woocommerce_currency_symbol().')' ,
 			'desc_tip' => 'true',
 			'description' => __( 'Price to pre-fill for customers.  Leave blank to not suggest a price.', 'wc_name_your_price' ),
-			'data_type' => 'price'
+			'data_type' => 'price',
+			'value' => $product_object->get_meta( '_suggested_price', true )
 		) );
 
-		if( class_exists( 'WC_Subscriptions' ) && $show_billing_period_options ) {
+		if( class_exists( 'WC_Subscriptions' ) && $show_billing_period_options && $loop === false ) {
 
 			// Suggested Billing Period.
 			woocommerce_wp_select( array(
@@ -157,22 +163,25 @@ class WC_NYP_Meta_Box_Product_Data {
 	 *
 	 * @param  object WC_Product $product_object
 	 * @param  bool $show_billing_period_options
+	 * @param  mixed int|false $loop - for use in variations
 	 * @return print HTML
 	 * @since  2.8.0
 	 */
-	public static function add_minimum_price_inputs( $product_object, $show_billing_period_options ){
+	public static function add_minimum_price_inputs( $product_object, $show_billing_period_options = false, $loop = false ){
 
 		// Minimum Price.
 		woocommerce_wp_text_input( array(
-			'id' => '_min_price',
+			'id' => is_int( $loop ) ? "variation_min_price[$loop]" : "_min_price",
 			'class' => 'wc_input_price short',
+			'wrapper_class' => is_int( $loop ) ? 'form-row form-row-last' : '',
 			'label' => __( 'Minimum Price', 'wc_name_your_price') . ' (' . get_woocommerce_currency_symbol() . ')',
 			'desc_tip' => 'true',
 			'description' =>  __( 'Lowest acceptable price for product. Leave blank to not enforce a minimum. Must be less than or equal to the set suggested price.', 'wc_name_your_price' ),
-			'data_type' => 'price'
+			'data_type' => 'price',
+			'value' => $product_object->get_meta( '_min_price', true )
 		) );
 
-		if( class_exists( 'WC_Subscriptions' ) && $show_billing_period_options ) {
+		if( class_exists( 'WC_Subscriptions' ) && $show_billing_period_options && $loop === false ) {
 			// Minimum Billing Period.
 			woocommerce_wp_select( array(
 				'id'          => '_minimum_billing_period',
@@ -185,10 +194,13 @@ class WC_NYP_Meta_Box_Product_Data {
 
 		// Option to hide minimum price.
 		woocommerce_wp_checkbox( array(
-			'id' => '_hide_nyp_minimum',
+			'id' => is_int( $loop ) ? "variation_hide_nyp_minimum[$loop]" : "_hide_nyp_minimum",
 			'label' => __( 'Hide the minimum price', 'wc_name_your_price' ),
-			'description' => __( 'Option to not show the minimum price on the front end.', 'wc_name_your_price' ) ) 
-		);
+			'wrapper_class' => is_int( $loop ) ? 'form-row form-row-first' : '',
+			'description' => __( 'Option to not show the minimum price on the front end.', 'wc_name_your_price' ),
+			'value' => $product_object->get_meta( '_hide_nyp_minimum', true ),
+			'desc_tip'    => true, 
+		) );
 
 	}
 
@@ -197,19 +209,22 @@ class WC_NYP_Meta_Box_Product_Data {
 	 *
 	 * @param  object WC_Product $product_object
 	 * @param  bool $show_billing_period_options
+	 * @param  mixed int|false $loop - for use in variations
 	 * @return print HTML
 	 * @since  2.8.0
 	 */
-	public static function add_maximum_price_inputs( $product_object, $show_billing_period_options ){
+	public static function add_maximum_price_inputs( $product_object, $show_billing_period_options = false, $loop = false ){
 
 		// Maximum Price.
 		woocommerce_wp_text_input( array(
-			'id' => '_maximum_price',
+			'id' => is_int( $loop ) ? "variation_maximum_price[$loop]" : "_maximum_price",
 			'class' => 'wc_input_price short',
+			'wrapper_class' => is_int( $loop ) ? 'form-row form-row-first' : '',
 			'label' => __( 'Maximum Price', 'wc_name_your_price') . ' (' . get_woocommerce_currency_symbol() . ')',
 			'desc_tip' => 'true',
 			'description' =>  __( 'Highest acceptable price for product. Leave blank to not enforce a maximum.', 'wc_name_your_price' ),
-			'data_type' => 'price'
+			'data_type' => 'price',
+			'value' => $product_object->get_meta( '_maximum_price', true )
 		) );
 
 	}
@@ -335,26 +350,19 @@ class WC_NYP_Meta_Box_Product_Data {
 	 */
 	public static function add_to_variations_metabox( $loop, $variation_data, $variation ){
 
-		$variation_object = wc_get_product( $variation->ID );
-
-		$suggested = $variation_object->get_meta( '_suggested_price', 'edit' );
-		$min = $variation_object->get_meta( '_min_price', 'edit' );
-		?>
+		$variation_object = wc_get_product( $variation->ID ); ?>
 
 		<div class="variable_nyp_pricing">
-			<p class="form-row form-row-first">
-				<label><?php echo __( 'Suggested Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
-				<input type="text" size="5" class="wc_price_input" name="variation_suggested_price[<?php echo $loop; ?>]" value="<?php echo esc_attr( $suggested ); ?>" />
-			</p>
-			<p class="form-row form-row-last">
-				<label><?php echo __( 'Minimum Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
-				<input type="text" size="5" class="wc_price_input" name="variation_min_price[<?php echo $loop; ?>]" value="<?php echo esc_attr( $min ); ?>" />
-			</p>
+
+			<?php do_action( 'woocommerce_name_your_price_options_variation_pricing', $variation_object, false, $loop ); ?>
+
 		</div>
 
 		<?php 
 
 	}
+
+
 
 	/**
 	 * Save extra meta info for variable products
@@ -367,7 +375,7 @@ class WC_NYP_Meta_Box_Product_Data {
 	public static function save_product_variation( $variation_id, $i ){
 
 		$variation = wc_get_product( $variation_id );
-		$variation_suggested_price = $variation_min_price = '';
+		$variation_suggested_price = $variation_min_price = $variation_max_price = '';
 
 		// Set NYP status.
 		$variation_is_nyp = isset( $_POST['variation_is_nyp'][$i] ) ? 'yes' : 'no';
@@ -395,6 +403,16 @@ class WC_NYP_Meta_Box_Product_Data {
 					$variation->update_meta_data( '_subscription_price', $new_price );
 				}
 			} 
+		}
+
+		// Hide or obscure minimum price.
+		$variation_hide_nyp_minimum = isset( $_POST['variation_hide_nyp_minimum'][$i] ) ? 'yes' : 'no';
+		$variation->update_meta_data( '_hide_nyp_minimum', $variation_hide_nyp_minimum );
+
+		// Maximum price.
+		if ( isset( $_POST['variation_maximum_price'][$i] ) ) {
+			$variation_max_price = ( trim( $_POST['variation_maximum_price'][$i] ) === '' ) ? '' : wc_format_decimal( $_POST['variation_maximum_price'][$i] );
+			$variation->update_meta_data( '_maximum_price', $variation_max_price );
 		}
 
 		// Show error if minimum price is higher than the suggested price.
@@ -426,6 +444,10 @@ class WC_NYP_Meta_Box_Product_Data {
 			<option value="variation_min_price"><?php _e( 'Set minimum prices', 'wc_name_your_price' ); ?></option>
 			<option value="variation_min_price_increase"><?php _e( 'Increase minimum prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
 			<option value="variation_min_price_decrease"><?php _e( 'Decrease minimum prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
+			<option value="variation_toggle_hide_min_price"><?php _e( 'Toggle &quot;hide minimum price&quot;', 'wc_name_your_price' ); ?></option>
+			<option value="variation_maximum_price"><?php _e( 'Set maximum prices', 'wc_name_your_price' ); ?></option>
+			<option value="variation_maximum_price_increase"><?php _e( 'Increase maximum prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
+			<option value="variation_maximum_price_decrease"><?php _e( 'Decrease maximum prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
 		</optgroup>
 		
 		<?php
@@ -548,6 +570,7 @@ class WC_NYP_Meta_Box_Product_Data {
 					}
 				}
 
+			break;
 			case 'variation_min_price_decrease':
 
 				$meta_key = str_replace( array('variation', '_decrease' ), '', $bulk_action );
@@ -568,6 +591,67 @@ class WC_NYP_Meta_Box_Product_Data {
 						$variation->set_regular_price( $new_price );
 						$variation->set_sale_price( '' );
 						$variation->save();
+					}
+				}
+			break;
+			case 'variation_toggle_hide_min_price':
+				foreach ( $variation_ids as $variation_id ) {
+					$variation = wc_get_product( $variation_id );
+					$_hide_nyp_minimum = $variation->get_meta( '_hide_nyp_minimum' );
+					// Check for definitive 'yes' as new variations will have null values for _hide_nyp_minimum meta key.
+					$is_hide_nyp_minimum = 'yes' === $_hide_nyp_minimum ? 'no' : 'yes';
+					$variation->update_meta_data( '_hide_nyp_minimum', wc_clean( $is_hide_nyp_minimum ) );
+					$variation->save_meta_data();
+				}
+			break;
+			case 'variation_maximum_price':
+
+				$meta_key = str_replace( 'variation', '', $bulk_action );
+				$new_price = trim( $data['value'] ) === '' ? '' : wc_format_decimal( $data['value'] );
+				foreach ( $variation_ids as $variation_id ) {
+					$variation = wc_get_product( $variation_id );
+					if( WC_Name_Your_Price_Helpers::is_nyp( $variation ) ) {
+						$variation->update_meta_data( $meta_key, wc_format_decimal( $new_price ) );
+						$variation->save_meta_data();
+					}
+				}
+
+			break;
+			case 'variation_maximum_price_increase':
+				$meta_key = str_replace( array('variation', '_increase' ), '', $bulk_action );
+				$percentage = isset( $data['percentage'] ) && $data['percentage'] == 'yes' ? true : false;
+
+				foreach ( $variation_ids as $variation_id ) {
+					$variation = wc_get_product( $variation_id );
+					if( WC_Name_Your_Price_Helpers::is_nyp( $variation ) ) {
+						$price = $variation->get_meta( $meta_key );
+						if( $percentage ){
+							$new_price = $price * ( 1 + $data['value'] / 100 );
+						} else {
+							$new_price = $price + $data['value'];
+						}
+						$variation->update_meta_data( $meta_key, wc_format_decimal( $new_price ) );
+						$variation->save_meta_data();
+					}
+				}
+
+			break;
+			case 'variation_maximum_price_decrease':
+
+				$meta_key = str_replace( array('variation', '_decrease' ), '', $bulk_action );
+				$percentage = isset( $data['percentage'] ) && $data['percentage'] == 'yes' ? true : false;
+
+				foreach ( $variation_ids as $variation_id ) {
+					$variation = wc_get_product( $variation_id );
+					if( WC_Name_Your_Price_Helpers::is_nyp( $variation ) ) {
+						$price = $variation->get_meta( $meta_key );
+						if( $percentage ){
+							$new_price = $price * ( 1 - $data['value'] / 100 );
+						} else {
+							$new_price = $price - $data['value'];
+						}
+						$variation->update_meta_data( $meta_key, wc_format_decimal( $new_price ) );
+						$variation->save_meta_data();
 					}
 				}
 

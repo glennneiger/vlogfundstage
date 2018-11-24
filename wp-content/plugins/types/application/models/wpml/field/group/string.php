@@ -10,7 +10,7 @@ abstract class Types_Wpml_Field_Group_String implements Types_Wpml_Interface {
 	const TRANSLATE_FILTER = 'wpml_translate_single_string';
 
 	/**
-	 * @var Types_Field_Group
+	 * @var Toolset_Field_Group
 	 */
 	protected $group;
 
@@ -25,7 +25,7 @@ abstract class Types_Wpml_Field_Group_String implements Types_Wpml_Interface {
 	/**
 	 * Types_Wpml_Field_Group_String constructor.
 	 *
-	 * @param Types_Field_Group $group
+	 * @param Toolset_Field_Group $group
 	 */
 	public function __construct( $group ) {
 		$this->group = $group;

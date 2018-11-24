@@ -33,6 +33,8 @@ class Toolset_User_Editors_Editor_Avada
 
 		add_action( 'toolset_update_fusion_builder_post_meta', array( $this, 'update_fusion_builder_post_meta' ), 10, 2 );
 
+		add_filter( 'the_content', array( $this, 'maybe_re_calculate_fusion_builder_columns' ), 2 );
+
 		if (
 			isset( $this->medium )
 			&& $this->medium->get_id()
@@ -92,4 +94,51 @@ class Toolset_User_Editors_Editor_Avada
 		return $allowed_types;
 	}
 
+	/**
+	 * When the widths and the margins of the Fusion Builder columns are calculated, this happens too early. For the case
+	 * of a post/page that has a Content Template assigned, at that moment the Content Template content hasn't replace the
+	 * content of the "the_content" yet. Thus on a later time, when the Content Template content has replaced the content
+	 * of the page, we need to re-calculate the Fusion Builder columns.
+	 *
+	 * @param  string $content The content of the page coming from "the_content" hook.
+	 *
+	 * @return string The content with the re-calculated Fusion Builder Columns.
+	 *
+	 * @since 3.0.7
+	 */
+	public function maybe_re_calculate_fusion_builder_columns( $content ) {
+		$post_id = get_the_ID();
+
+		if (
+			class_exists( 'FusionBuilder' ) &&
+			is_callable( array( 'FusionBuilder', 'get_instance' ) ) &&
+			is_callable( array( 'FusionBuilder', 'fusion_calculate_columns' ) ) &&
+			$this->is_post_using_fusion_built_ct( $post_id )
+		) {
+			$content = FusionBuilder::get_instance()->fusion_calculate_columns( $content );
+		}
+
+		return $content;
+	}
+
+	/**
+	 * Returns true if the post/page with ID equals to $post_id is built using Fusion Builder.
+	 *
+	 * @param int   $post_id The ID of the post to check for Fusion Builder built Content Template.
+	 *
+	 * @return bool True if the post to check has a Content Template assigned that is built using Fusion Builder.
+	 *
+	 * @since 3.0.7
+	 */
+	public function is_post_using_fusion_built_ct( $post_id ) {
+		$ct_id = get_post_meta( $post_id, '_views_template', true );
+		if (
+			$ct_id &&
+			self::FUSION_BUILDER_OPTION_VALUE === get_post_meta( $ct_id, self::FUSION_BUILDER_OPTION_NAME, true )
+		) {
+			return true;
+		}
+
+		return false;
+	}
 }

@@ -3,14 +3,14 @@
  * Plugin Name: WooCommerce Name Your Price
  * Plugin URI: http://www.woocommerce.com/products/name-your-price/
  * Description: WooCommerce Name Your Price allows customers to set their own price for products or donations.
- * Version: 2.8.1
+ * Version: 2.9.3
  * Author: Kathy Darling
  * Author URI: http://kathyisawesome.com
  * Woo: 18738:31b4e11696cd99a3c0572975a84f1c08
  * Requires at least: 4.4.0
- * Tested up to: 4.9.2
+ * Tested up to: 4.9.5
  * WC requires at least: 3.0.0    
- * WC tested up to: 3.3.0   
+ * WC tested up to: 3.5.0   
  *
  * Text Domain: wc_name_your_price
  * Domain Path: /languages/
@@ -50,7 +50,7 @@ class WC_Name_Your_Price {
 	 * @var plugin version
 	 * @since 2.0
 	 */
-	public $version = '2.8.1';   
+	public $version = '2.9.3';   
 
 	/**
 	 * @var required WooCommerce version
@@ -109,7 +109,7 @@ class WC_Name_Your_Price {
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 
 		// Include required files
-		add_action( 'plugins_loaded', array( $this, 'includes' ) );
+		$this->includes();
 
 		// Settings Link for Plugin page
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_link' ), 10, 2 );
@@ -199,7 +199,9 @@ class WC_Name_Your_Price {
 	 * @since  2.1
 	 */
 	public function admin_notice() {
-	    echo '<div class="error"><p>' . sprintf( __( 'WooCommerce Name Your Price requires at least WooCommerce %s in order to function. Please upgrade WooCommerce.', 'wc_name_your_price' ), $this->required_woo ) . '</p></div>';
+		if( current_user_can( 'activate_plugins' ) ) {
+	    	echo '<div class="error"><p>' . sprintf( __( 'WooCommerce Name Your Price requires at least WooCommerce %s in order to function. Please activate or upgrade WooCommerce.', 'wc_name_your_price' ), $this->required_woo ) . '</p></div>';
+	    }
 	}
 
 
@@ -273,4 +275,4 @@ function WC_Name_Your_Price() {
 }
 
 // Launch the whole plugin.
-add_action( 'woocommerce_loaded', 'WC_Name_Your_Price' );
+add_action( 'plugins_loaded', 'WC_Name_Your_Price' );

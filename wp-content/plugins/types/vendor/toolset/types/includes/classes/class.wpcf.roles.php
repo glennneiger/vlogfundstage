@@ -177,7 +177,7 @@ class WPCF_Roles
 	 * @since 2.1
 	 */
 	public function clean_the_mess_in_nonadmin_user_caps( $user ) {
-		
+
 		if( ! $user instanceof WP_User ) {
 			$user = new WP_User( $user );
 			if( ! $user->exists() ) {
@@ -372,7 +372,7 @@ class WPCF_Roles
 
 	public static function user_can_edit_term_field_group_by_id( $id )
 	{
-		$item = self::get_entry($id, Types_Field_Group_Term::POST_TYPE );
+		$item = self::get_entry($id, Toolset_Field_Group_Term::POST_TYPE );
 		return self::user_can_edit('term-field', $item);
 	}
 

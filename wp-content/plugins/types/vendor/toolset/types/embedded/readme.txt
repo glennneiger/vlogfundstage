@@ -1,6 +1,6 @@
 === Toolset Types Embedded ===
 Contributors: AmirHelzer, brucepearson, christianglingener, jadpm, zaantar
-Donate link: http://wp-types.com
+Donate link: https://toolset.com
 Tags: CMS, custom field, custom fields, custom post type, custom post types, field, fields post, post type, post types, taxonomies, taxonomy, toolset
 Text Domain: wpcf
 Domain Path: /locale

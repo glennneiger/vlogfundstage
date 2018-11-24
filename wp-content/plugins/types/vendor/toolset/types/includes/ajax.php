@@ -315,7 +315,7 @@ function wpcf_ajax( $fallthrough )
 
 	    case 'deactivate_term_group':
 		    require_once WPCF_INC_ABSPATH . '/fields.php';
-		    $success = wpcf_admin_fields_deactivate_group(intval($_GET['group_id']), Types_Field_Group_Term::POST_TYPE);
+		    $success = wpcf_admin_fields_deactivate_group(intval($_GET['group_id']), Toolset_Field_Group_Term::POST_TYPE);
 		    if ($success) {
 			    echo json_encode(
 				    array(
@@ -331,7 +331,7 @@ function wpcf_ajax( $fallthrough )
 
 	    case 'activate_term_group':
 		    require_once WPCF_INC_ABSPATH . '/fields.php';
-		    $success = wpcf_admin_fields_activate_group(intval($_GET['group_id']), Types_Field_Group_Term::POST_TYPE);
+		    $success = wpcf_admin_fields_activate_group(intval($_GET['group_id']), Toolset_Field_Group_Term::POST_TYPE);
 		    if ($success) {
 			    echo json_encode(
 				    array(
@@ -349,7 +349,7 @@ function wpcf_ajax( $fallthrough )
 		    require_once WPCF_INC_ABSPATH . '/fields.php';
 
             $redirect = wpcf_ajax_group_delete_redirect();
-		    wpcf_admin_fields_delete_group(intval($_GET['group_id']), Types_Field_Group_Term::POST_TYPE);
+		    wpcf_admin_fields_delete_group(intval($_GET['group_id']), Toolset_Field_Group_Term::POST_TYPE);
 
             echo json_encode( $redirect );
 

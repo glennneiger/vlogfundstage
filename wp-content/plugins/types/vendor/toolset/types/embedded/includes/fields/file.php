@@ -172,6 +172,8 @@ function wpcf_fields_file_view( $params ) {
  *
  * @global object $wpdb
  *
+ * @since m2m Probably DEPRECATED
+ *
  */
 function wpcf_fields_file_editor_callback( $field, $data, $meta_type, $post ) {
 
@@ -216,6 +218,8 @@ function wpcf_fields_file_editor_callback( $field, $data, $meta_type, $post ) {
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_file_editor_submit( $data, $field, $context ) {
     $add = '';

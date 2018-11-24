@@ -99,7 +99,7 @@ class Types_Image_View
             return $cached;
         }
         return self::$__cache->setCache( func_get_args(),
-                        self::__resizeImg( $img, $args ) );
+                        self::resizeImg( $img, $args ) );
     }
 
     /**
@@ -121,7 +121,7 @@ class Types_Image_View
      * @param type $args
      * @return type
      */
-    private static function __resizeImg( $img, $args = array() ) {
+    private static function resizeImg( $img, $args = array() ) {
         if ( is_wp_error( $check = self::$__utils->checkEditRequirements( $img ) ) ) {
             return $check;
         }
@@ -455,7 +455,7 @@ class Types_Image_Utils
             $url = self::normalizeAttachmentUrl( $img );
         } else {
             WPCF_Loader::loadClass( 'path' );
-            $url = WPCF_Path::getFileUrl( $img, false ) . '/' . basename( $img );
+            $url = WPCF_Path::getFileUrl( $img, false, false ) . '/' . basename( $img );
         }
         $data = array(
             'width' => $width,
@@ -600,49 +600,62 @@ class Types_Image_Utils
         return $file;
     }
 
-    /**
-     * Get absolute path from URL.
-     * 
-     * @param type $imgUrl
-     */
-    public static function getAbsPath( $imgUrl ) {
-        $upload_dir = wp_upload_dir();
-        $parsed = parse_url( $imgUrl );
-        $parsed_wp = parse_url( get_site_url() );
-        if ( $upload_dir ) {
-            $upload_dir_parsed = parse_url( $upload_dir['baseurl'] );
-            // This works for regular installation and main blog on multisite
-            if ( (!is_multisite() || is_main_site()) && strpos( $parsed['path'],
-                            $upload_dir_parsed['path'] ) === 0 ) {
-                if ( !empty( $parsed_wp['path'] ) ) {
-                    $abspath = dirname( str_replace( $parsed_wp['path'] . '/',
-                                    ABSPATH, $parsed['path'] ) );
-                } else {
-                    $abspath = ABSPATH . dirname( $parsed['path'] );
-                }
-                $abspath .= DIRECTORY_SEPARATOR . basename( $imgUrl );
-                // Check Multisite
-            } else if ( is_multisite() && !is_main_site() ) {
-                $multisite_parsed = explode( '/files/', $parsed['path'] );
-                if ( isset( $multisite_parsed[1] ) ) {
-                    $abspath = $upload_dir['basedir'] . DIRECTORY_SEPARATOR . dirname( $multisite_parsed[1] ) . DIRECTORY_SEPARATOR . basename( $imgUrl );
-                }
-            }
-        }
+	/**
+	 * Get absolute path from URL.
+	 *
+	 * @param type $imgUrl
+	 *
+	 * @return string
+	 */
+	public static function getAbsPath( $imgUrl ) {
+		$upload_dir = wp_upload_dir();
+		$img_url_parts = parse_url( $imgUrl );
 
-        // Manual upload
-        if ( empty( $abspath ) ) {
-            if ( !empty( $parsed_wp['path'] ) ) {
-                $abspath = dirname( str_replace( $parsed_wp['path'] . '/',
-                                ABSPATH, $parsed['path'] ) );
-            } else {
-                $abspath = ABSPATH . dirname( $parsed['path'] );
-            }
-            $abspath .= DIRECTORY_SEPARATOR . basename( $imgUrl );
-        }
+		if ( $upload_dir
+		     && isset( $upload_dir['baseurl'] ) && ! empty( $upload_dir['baseurl'] )
+		     && isset( $upload_dir['basedir'] ) && ! empty( $upload_dir['basedir'] )
+		) {
+			$upload_dir_url_parts = parse_url( $upload_dir['baseurl'] );
 
-        return $abspath;
-    }
+			// Singlesite or Main site of Multisite
+			if (
+				( !is_multisite() || is_main_site() )
+				&& strpos( $img_url_parts['path'], $upload_dir_url_parts['path'] ) === 0
+			) {
+				// get dirname of relative image path -> '/wp-content/uploads/2018/07'
+				$image_relative_dir = dirname( $img_url_parts['path'] );
+
+				// substract the base dir of the $image_relative_dir -> '/2018/07'
+				$image_relative_dir_without_base = substr( $image_relative_dir, strlen( $upload_dir_url_parts['path'] ) );
+
+				// create the absolute path -> '/var/www/example.com/wp-content/uploads/2018/07/image-100x100.png'
+				$image_absolute_path = $upload_dir['basedir']
+				                       . $image_relative_dir_without_base
+				                       . DIRECTORY_SEPARATOR
+				                       . basename( $imgUrl );
+				// Check Multisite
+			} else if ( is_multisite() && !is_main_site() ) {
+				$multisite_parsed = explode( '/files/', $img_url_parts['path'] );
+				if ( isset( $multisite_parsed[1] ) ) {
+					$image_absolute_path = $upload_dir['basedir'] . DIRECTORY_SEPARATOR . dirname( $multisite_parsed[1] ) . DIRECTORY_SEPARATOR . basename( $imgUrl );
+				}
+			}
+		}
+
+		// Manual upload
+		$parsed_wp = parse_url( get_site_url() );
+		if ( empty( $image_absolute_path ) ) {
+			if ( !empty( $parsed_wp['path'] ) ) {
+				$image_absolute_path = dirname( str_replace( $parsed_wp['path'] . '/',
+					ABSPATH, $img_url_parts['path'] ) );
+			} else {
+				$image_absolute_path = ABSPATH . dirname( $img_url_parts['path'] );
+			}
+			$image_absolute_path .= DIRECTORY_SEPARATOR . basename( $imgUrl );
+		}
+
+		return $image_absolute_path;
+	}
 
     /**
      * Checks if file is in upload path.
@@ -761,7 +774,7 @@ class Types_Cache
      * @param type $key
      * @return type
      */
-    private function __getCacheKey( $key ) {
+    private function getCacheKey( $key ) {
         return md5( maybe_serialize( $key ) );
     }
 
@@ -771,7 +784,7 @@ class Types_Cache
      * @param type $key
      */
     public function getCache( $key ) {
-        $cache_key = $this->__getCacheKey( $key );
+        $cache_key = $this->getCacheKey( $key );
         return isset( $this->__cache[$cache_key] ) ? $this->__cache[$cache_key] : false;
     }
 
@@ -782,7 +795,7 @@ class Types_Cache
      * @param type $data
      */
     public function setCache( $key, $data ) {
-        $this->__cache[$this->__getCacheKey( $key )] = $data;
+        $this->__cache[$this->getCacheKey( $key )] = $data;
         return $data;
     }
 

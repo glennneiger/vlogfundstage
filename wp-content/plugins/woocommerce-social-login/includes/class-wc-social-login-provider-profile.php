@@ -24,6 +24,8 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Provider Profile class
  *
@@ -44,14 +46,14 @@ class WC_Social_Login_Provider_Profile {
 
 
 	/**
-	 * Setup profile
+	 * Sets up a profile.
 	 *
 	 * In 2.0.0 added the provider_id as the first param.
 	 *
 	 * @since 1.0.0
+	 *
 	 * @param string $provider_id provider id
 	 * @param array $profile user profile data
-	 * @return \WC_Social_Login_Provider_Profile
 	 */
 	public function __construct( $provider_id, $profile ) {
 
@@ -338,74 +340,6 @@ class WC_Social_Login_Provider_Profile {
 			update_user_meta( $user_id, '_wc_social_login_' . $this->get_provider_id() . '_profile_image', esc_url( $image ) );
 			update_user_meta( $user_id, '_wc_social_login_profile_image', esc_url( $image ) );
 		}
-	}
-
-
-	/**
-	 * Get social profile identifier
-	 *
-	 * @deprecated since 2.0.0
-	 *
-	 * @since 1.0.0
-	 * @return string|null
-	 */
-	public function get_uid() {
-
-		/* @deprecated since 2.0.0 */
-		_deprecated_function( 'WC_Social_Login_Provider_Profile::get_uid', '2.0.0', 'WC_Social_Login_Provider_Profile::get_identifier' );
-
-		return $this->get_identifier();
-	}
-
-
-	/**
-	 * Get user's nickname from social profile
-	 *
-	 * @deprecated since 2.0.0
-	 *
-	 * @since 1.0.0
-	 * @return string|null
-	 */
-	public function get_nickname() {
-
-		/* @deprecated since 2.0.0 */
-		_deprecated_function( 'WC_Social_Login_Provider_Profile::get_nickname', '2.0.0', 'WC_Social_Login_Provider_Profile::get_username' );
-
-		return $this->get_username();
-	}
-
-
-	/**
-	 * Get user's location (city) from social profile
-	 *
-	 * @deprecated since 2.0.0
-	 *
-	 * @since 1.0.0
-	 * @return string|null
-	 */
-	public function get_location() {
-
-		/* @deprecated since 2.0.0 */
-		_deprecated_function( 'WC_Social_Login_Provider_Profile::get_location', '2.0.0', 'WC_Social_Login_Provider_Profile::get_city' );
-
-		return $this->get_city();
-	}
-
-
-	/**
-	 * Get user's name from social profile
-	 *
-	 * @deprecated since 2.0.0
-	 *
-	 * @since 1.0.0
-	 * @return string|null
-	 */
-	public function get_name() {
-
-		/* @deprecated since 2.0.0 */
-		_deprecated_function( 'WC_Social_Login_Provider_Profile::get_name', '2.0.0', 'WC_Social_Login_Provider_Profile::get_display_name' );
-
-		return $this->get_display_name();
 	}
 
 

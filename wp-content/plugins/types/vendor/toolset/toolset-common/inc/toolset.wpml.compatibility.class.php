@@ -536,7 +536,7 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 				if ( in_array( $content_slug, $types, true ) && defined( 'WPML_CONTENT_TYPE_TRANSLATE' ) && $mode == WPML_CONTENT_TYPE_TRANSLATE ) {
 					$disabled_state_for_mode['state'] = true;
 					// translators: Relationship name.
-					$disabled_state_for_mode['reason_message'] = sprintf( __( 'You cannot set this translation mode because the post type is involved in the relationship "%s".', 'wpcf' ), $relationship->get_display_name() ) . ' <a href="https://toolset.com/documentation/translating-sites-built-with-toolset/translating-related-content/" target="_blank">' . __( 'Learn more' , 'wpcf' ) . '</a>.';
+					$disabled_state_for_mode['reason_message'] = sprintf( __( 'You cannot set this translation mode because the post type is involved in the relationship "%s".', 'wpv-views' ), $relationship->get_display_name() ) . ' <a href="https://toolset.com/documentation/translating-sites-built-with-toolset/translating-related-content/" target="_blank">' . __( 'Learn more' , 'wpv-views' ) . '</a>.';
 					return $disabled_state_for_mode;
 				}
 			}
@@ -594,6 +594,36 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 			}
 
 			return $url;
+		}
+
+
+		/**
+		 * Register a string for translation
+		 *
+		 * @param string $value Value.
+		 * @param string $name Name.
+		 * @param array $package Package.
+		 * @param string $title Title.
+		 * @param string $type Type.
+		 * @see wpml_register_string
+		 * @link https://wpml.org/documentation/support/string-package-translation/#recommended-workflow-for-registering-your-strings
+		 */
+		public function register_string( $value, $name, $package, $title, $type = 'LINE' ) {
+			do_action( 'wpml_register_string', $value, $name, $package, $title, $type );
+		}
+
+
+		/**
+		 * Translate a string
+		 *
+		 * @param string $value Value.
+		 * @param string $name Name.
+		 * @param array $package Package.
+		 * @see wpml_register_string
+		 * @link https://wpml.org/documentation/support/string-package-translation/#recommended-workflow-for-registering-your-strings
+		 */
+		public function translate_string( $value, $name, $package ) {
+			return apply_filters( 'wpml_translate_string', $value, $name, $package );
 		}
 	}
 }

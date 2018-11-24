@@ -234,7 +234,7 @@ class Toolset_Relationship_Controller {
 		 *
 		 * @since 2.5.6
 		 */
-		add_action( 'wpcf_post_type_renamed', array( $this, 'on_types_cpt_rename_slug' ), 10, 2 );
+		$this->add_action_to_wpcf_post_type_renamed();
 
 		/**
 		 * toolset_report_m2m_integrity_issue
@@ -255,6 +255,25 @@ class Toolset_Relationship_Controller {
 		 * @since 2.5.10
 		 */
 		add_action( 'toolset_cron_cleanup_dangling_intermediary_posts', array( $this, 'cleanup_dangling_intermediary_posts' ) );
+	}
+
+	/**
+	 * On change of cpt slug.
+	 * Method to prevent any misconfiguration/duplicated actions by callers.
+	 *
+	 * @since 3.0.7 (only the function to add the action, the action itself is added since 2.5.6)
+	 */
+	public function add_action_to_wpcf_post_type_renamed() {
+		add_action( 'wpcf_post_type_renamed', array( $this, 'on_types_cpt_rename_slug' ), 10, 2 );
+	}
+
+	/**
+	 * Counter part of add_action_to_wpcf_post_type_renamed()
+	 *
+	 * @since 3.0.7
+	 */
+	public function remove_action_of_wpcf_post_type_renamed() {
+		remove_action( 'wpcf_post_type_renamed', array( $this, 'on_types_cpt_rename_slug' ), 10 );
 	}
 
 
@@ -375,7 +394,12 @@ class Toolset_Relationship_Controller {
 		if( $enable_m2m ) {
 			$this->force_autoloader_initialization();
 			$migration = new Toolset_Relationship_Migration_Controller();
-			$migration->do_native_dbdelta();
+			$enabling_result = $migration->do_native_dbdelta();
+
+			if( ! $enabling_result->is_complete_success() ) {
+				// Something went wrong, we will not try again, the user has to try manually (and probably investigate the issue).
+				$enable_m2m = false;
+			}
 		}
 
 		if( $store_m2m_state ) {

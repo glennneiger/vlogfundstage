@@ -203,13 +203,15 @@ function types_get_fields_by_group( $group, $only_active = 'only_active' ){
 
 /**
  * Gets posts that belongs to current post.
+ *
+ * NOTE: this function is still used by the refactored m2m ready function "types_child_posts"
  * 
  * @global type $post
  * @param type $post_type
  * @param type $args
  * @return type 
  */
-function types_child_posts( $post_type, $args = array() ) {
+function legacy_types_child_posts( $post_type, $args = array() ) {
 
     static $cache = array();
     

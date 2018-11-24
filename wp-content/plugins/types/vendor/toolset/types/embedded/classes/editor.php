@@ -12,13 +12,15 @@
  * @version 0.1
  * @category Field
  * @author srdjan <srdjan@icanlocalize.com>
+ *
+ * @since m2m Probably DEPRECATED
  */
 class WPCF_Editor
 {
 
     /**
      * Settings.
-     * @var type 
+     * @var type
      */
     private $_settings = array();
 
@@ -87,7 +89,7 @@ class WPCF_Editor
      * @param string $shortcode
      */
     function frame( $field, $meta_type = 'postmeta', $post_id = -1,
-            $shortcode = null, $callback = false, $views_meta = false ) {
+            $shortcode = null, $callback = false, $views_meta = false, $post_type = false ) {
 
         global $wp_version, $wpcf;
 
@@ -190,10 +192,24 @@ class WPCF_Editor
             $this->_data['supports'][] = 'post_id';
         }
 
-        // Get parents
-        if ( !empty( $this->_post->ID ) ) {
-            $this->_data['parents'] = WPCF_Relationship::get_parents( $this->_post );
-        }
+		$is_m2m_activated = apply_filters( 'toolset_is_m2m_enabled', false );
+
+		// Get parents.
+		if ( ! $is_m2m_activated ) {
+			if ( ! empty( $this->_post->ID ) ) {
+				$this->_data['parents'] = WPCF_Relationship::get_parents( $this->_post );
+			}
+		} else {
+			// When in a new content post is null.
+			if ( ! $this->_post ) {
+				$this->_post = new StdClass();
+				$this->_post->post_type = $post_type;
+			}
+			// Get related.
+			$this->_data['related'] = WPCF_Relationship::get_related( $this->_post, $field );
+			// Get intermediate.
+			$this->_data['intermediate'] = WPCF_Relationship::get_intermediate( $this->_post, $field );
+		}
 
         // Set icons
         $icons = array(
@@ -235,7 +251,7 @@ class WPCF_Editor
         /**
          * Show or hide separator.
          *
-         * Filter allow to hide separator choosing tab when we do not need 
+         * Filter allow to hide separator choosing tab when we do not need
          * this tab in Types shortcode GUI
          *
          * @since 1.9.0
@@ -345,7 +361,9 @@ class WPCF_Editor
             }
 
             wpcf_admin_ajax_footer();
-            die();
+						if ( ! defined( 'TOOLSET_TESTS_SITE_URL' ) ) { // Unit tests.
+            	die();
+						}
         }
     }
 
@@ -389,14 +407,21 @@ class WPCF_Editor
                     $shortcode );
         }
         if ( isset( $data['post_id'] ) && $data['post_id'] != 'current' ) {
-            $post_id = 'id=';
-            if ( $data['post_id'] == 'post_id' ) {
+            $post_id = 'item=';
+            switch ( $data['post_id'] ) {
+              case 'post_id':
                 $post_id .= '"' . preg_replace( '/[^\d]+/', '', $data['specific_post_id'] ) . '"';
-            } else if ( $data['post_id'] == 'parent' ) {
+                break;
+              case 'parent':
                 $post_id .= '"$parent"';
-            } else if ( $data['post_id'] == 'related' ) {
-                $post_id .= '"$' . esc_attr(trim( strval( $data['related_post'] ) )) . '"';
-            } else {
+                break;
+              case 'related':
+                $post_id .= '"' . esc_attr( trim( strval( $data['related_post'] ) ) ) . '"';
+                break;
+              case 'intermediate':
+                $post_id .= '"' . esc_attr( trim( strval( $data['intermediate_post'] ) ) ) . '"';
+                break;
+              default:
                 $post_id .= '"' . preg_replace( '/[^\d]+/', '', $data['post_id'] ) . '"';
             }
             $shortcode = preg_replace( '/\[types([^\]]*)/', '$0 ' . $post_id,
@@ -416,7 +441,7 @@ class WPCF_Editor
 
     /**
      * Checks if feature is supported.
-     * 
+     *
      * @param type $feature
      * @return type
      */
@@ -426,7 +451,7 @@ class WPCF_Editor
 
     /**
      * Converts shortcode string to array of parameters.
-     * 
+     *
      * @param type $shortcode
      */
     function shortcodeToParameters( $shortcode ) {
@@ -541,7 +566,7 @@ class WPCF_Editor
 
     /**
      * Sanitize value before writing to JS.
-     * 
+     *
      * @param type $value
      * @return type
      */

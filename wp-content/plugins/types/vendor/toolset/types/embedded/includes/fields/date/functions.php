@@ -122,7 +122,7 @@ function wpcf_fields_date_conditional_value_filter( $value, $field, $operation,
 
     global $wpcf;
 
-    $field = wpcf_admin_fields_get_field( $wpcf->field->__get_slug_no_prefix( $field ) );
+    $field = wpcf_admin_fields_get_field( $wpcf->field->get_slug_no_prefix( $field ) );
     if ( !empty( $field ) && isset( $field['type'] ) && $field['type'] == 'date' && isset($value['datepicker']) ) {
         $value['timestamp'] = wpcf_fields_date_convert_datepicker_to_timestamp( $value['datepicker'] );
         $value = wpcf_fields_date_calculate_time( $value );
@@ -143,7 +143,7 @@ function wpcf_fields_date_conditional_condition_filter( $value, $field,
         $operation, $field_compared, $post ) {
     global $wpcf;
 
-    $field = wpcf_admin_fields_get_field( $wpcf->field->__get_slug_no_prefix( $field ) );
+    $field = wpcf_admin_fields_get_field( $wpcf->field->get_slug_no_prefix( $field ) );
     if ( !empty( $field ) && isset( $field['type'] ) && $field['type'] == 'date' ) {
         $_value = wpcf_fields_date_convert_datepicker_to_timestamp( $value );
         if ( $_value ) {
@@ -182,7 +182,7 @@ function wpcf_fields_date_custom_conditional_statement_filter( $null,
 
     global $wpcf;
 
-    $field = wpcf_admin_fields_get_field( $wpcf->field->__get_slug_no_prefix( $meta_key ) );
+    $field = wpcf_admin_fields_get_field( $wpcf->field->get_slug_no_prefix( $meta_key ) );
 
     if ( !empty( $null ) && !empty( $field ) && isset( $field['type'] ) && $field['type'] == 'date' ) {
         if ( is_array( $null ) && !isset( $null['datepicker'] ) ) {
@@ -454,7 +454,7 @@ function wpcf_fields_date_datepicker_is_valid( $datepicker ) {
  * @param type $value
  * @param type $field
  */
-function __wpcf_fields_date_check_leftover( $value, $field, $use_cache = true ) {
+function wpcf_fields_date_check_leftover( $value, $field, $use_cache = true ) {
     
     if ( empty( $value )) {
         return $value;

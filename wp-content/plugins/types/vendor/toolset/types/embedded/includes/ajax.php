@@ -20,7 +20,7 @@ function wpcf_ajax_embedded() {
 
         if (
             !isset( $_REQUEST['_wpnonce'] )
-            || !wp_verify_nonce( $_REQUEST['_wpnonce'], $_REQUEST['wpcf_action'] ) 
+            || !wp_verify_nonce( $_REQUEST['_wpnonce'], $_REQUEST['wpcf_action'] )
         ) {
             die( 'Verification failed (2)' );
         }
@@ -39,8 +39,9 @@ function wpcf_ajax_embedded() {
             wpcf_fields_skype_meta_box_ajax();
             break;
 
+		/*
         case 'editor_callback':
-
+			// @since m2m Probably DEPRECATED
             if( ! current_user_can( 'edit_posts' ) ) {
                 die( 'Authentication failed' );
             }
@@ -55,7 +56,7 @@ function wpcf_ajax_embedded() {
                 wp_enqueue_script( 'suggest' );
                 $field = types_get_field( $field_id, 'usermeta' );
                 $meta_type = 'usermeta';
-            } 
+            }
             elseif ( isset( $_GET['field_type'] ) && $_GET['field_type'] == 'views-usermeta' ){
                 $field = types_get_field( $field_id, 'usermeta' );
                 $meta_type = 'usermeta';
@@ -66,7 +67,7 @@ function wpcf_ajax_embedded() {
                 wp_enqueue_script( 'suggest' );
                 $field = types_get_field( $field_id, 'termmeta' );
                 $meta_type = 'termmeta';
-            } 
+            }
             elseif ( isset( $_GET['field_type'] ) && $_GET['field_type'] == 'views-termmeta' ){
                 $field = types_get_field( $field_id, 'termmeta' );
                 $meta_type = 'termmeta';
@@ -79,15 +80,17 @@ function wpcf_ajax_embedded() {
             $parent_post_id = isset( $_GET['post_id'] ) ? intval( $_GET['post_id'] ) : null;
             $shortcode = isset( $_GET['shortcode'] ) ? urldecode( $_GET['shortcode'] ) : null;
             $callback = isset( $_GET['callback'] ) ? sanitize_text_field( $_GET['callback'] ) : false;
+            $post_type = isset( $_GET['post_type'] ) ? sanitize_text_field( $_GET['post_type'] ) : false;
             if ( !empty( $field ) ) {
                 // Editor
                 WPCF_Loader::loadClass( 'editor' );
                 $editor = new WPCF_Editor();
                 $editor->frame( $field, $meta_type, $parent_post_id, $shortcode,
-                        $callback, $views_meta );
+                        $callback, $views_meta, $post_type );
             }
 
             break;
+		*/
 
         case 'dismiss_message':
             if( ! is_user_logged_in() ) {
@@ -105,15 +108,15 @@ function wpcf_ajax_embedded() {
             global $current_user;
             $output = '<tr>' . __( 'Passed wrong parameters', 'wpcf' ) . '</tr>';
 			$id = 0;
-			
+
 			$target_post_type = isset( $_GET['post_type_child'] ) ? sanitize_text_field( $_GET['post_type_child'] ) : '';
-			
+
 			$has_permissions  = current_user_can( 'publish_posts' );
 			$has_permissions = apply_filters('toolset_access_api_get_post_type_permissions', $has_permissions, $target_post_type, 'publish');
-						
+
 			if ( ! $has_permissions ) {
 				$output = '<tr><td>' . __( 'You do not have rights to create new items', 'wpcf' ) . '</td></tr>';
-			} else if ( 
+			} else if (
 				//current_user_can( 'edit_posts' )
                 /*&&*/ isset( $_GET['post_id'] )
                 && isset( $_GET['post_type_child'] )
@@ -130,7 +133,7 @@ function wpcf_ajax_embedded() {
                     $data = $relationships[$parent_post_type][$post_type];
                     /*
                      * Since Types 1.1.5
-                     * 
+                     *
                      * We save new post
                      * CHECKPOINT
                      */
@@ -365,7 +368,7 @@ function wpcf_ajax_embedded() {
                 global $wpcf;
                 $wpcf->usermeta_repeater->set( $user_id, $field );
                 /*
-                 * 
+                 *
                  * Force empty values!
                  */
                 $wpcf->usermeta_repeater->cf['value'] = null;
@@ -397,8 +400,8 @@ function wpcf_ajax_embedded() {
 
                 if ( !empty( $field ) && !empty( $user_id ) && !empty( $meta_id ) ) {
                     /*
-                     * 
-                     * 
+                     *
+                     *
                      * Changed.
                      * Since Types 1.2
                      */
@@ -442,7 +445,7 @@ function wpcf_ajax_embedded() {
                 global $wpcf;
                 $wpcf->repeater->set( $parent_post, $field );
                 /*
-                 * 
+                 *
                  * Force empty values!
                  */
                 $wpcf->repeater->cf['value'] = null;
@@ -469,8 +472,8 @@ function wpcf_ajax_embedded() {
                 $meta_id = intval( $_POST['meta_id'] );
                 if ( !empty( $field ) && !empty( $parent_post->ID ) && !empty( $meta_id ) ) {
                     /*
-                     * 
-                     * 
+                     *
+                     *
                      * Changed.
                      * Since Types 1.2
                      */

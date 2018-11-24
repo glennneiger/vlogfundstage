@@ -47,6 +47,11 @@ class WC_XR_Line_Item {
 	private $tax_rate = array();
 
 	/**
+	 * @var bool
+	 */
+	private $is_digital_good = false;
+
+	/**
 	 * @var float
 	 */
 	private $discount_rate = 0;
@@ -175,6 +180,13 @@ class WC_XR_Line_Item {
 	 */
 	public function set_tax_rate( $tax_rate ) {
 		$this->tax_rate = $tax_rate;
+	}
+
+	/**
+	 * @param bool $is_digital_good
+	 */
+	public function set_is_digital_good( $is_digital_good ) {
+		$this->is_digital_good = $is_digital_good;
 	}
 
 	/**
@@ -354,7 +366,10 @@ class WC_XR_Line_Item {
 		$base_country = WC()->countries->get_base_country();
 
 		$tax_exempt_type = 'NONE';
-		if ( 'AU' === $base_country ) {
+
+		if ( 'GB' === $base_country && $this->is_digital_good ) {
+			$tax_exempt_type = 'ECZROUTPUTSERVICES';
+		} elseif ( 'AU' === $base_country ) {
 			$tax_exempt_type = 'EXEMPTOUTPUT';
 			if ( $is_shipping_line_item ) {
 				$treat_shipping_as = $this->settings->get_option( 'treat_shipping_as' );

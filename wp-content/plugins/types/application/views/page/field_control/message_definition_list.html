@@ -1,7 +1,7 @@
 <%- message %>
 <ol>
     <%
-        _.each(fieldDefinitions, function(fieldDefinition) {
+        _.each(items, function(fieldDefinition) {
             print('<li>' + fieldDefinition.displayName() + '</li>');
         });
     %>

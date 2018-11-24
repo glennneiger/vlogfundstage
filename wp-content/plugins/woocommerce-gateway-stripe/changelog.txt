@@ -1,5 +1,70 @@
 *** Changelog ***
 
+= 4.1.13 - 2018-11-20 =
+* Update - WP 5.0 compatibility.
+
+= 4.1.12 - 2018-10-19 =
+* Fix - Typo on notice banner.
+* Fix - On auth/capture scenario, error can occur when completing the order in backend.
+
+= 4.1.11 - 2018-10-17 =
+* Fix - Explicitly set 3DS source id to prevent 3DS source not charging when not required.
+* Fix - Prevent Stripe JS failed live/test check from throwing JS error.
+* Fix - Find order by source ID if charge ID is not found when cancelled webhook is triggered.
+* Fix - Partial refund on Stripe captured charge erroneously refunding total amount.
+* Fix - Capture charge on previously authorized charge, not showing Stripe fees.
+* Fix - Check if payment icons are set before trying to use them.
+* Fix - Can't use method in write context errors.
+* Deprecate - Soft deprecated function is_pre_30 with is_wc_lt function.
+* Add - Ability to update all active subscription's payment method when adding a payment.
+* Add - Hook to show update all active subscription's payment method checkbox `wc_stripe_display_update_subs_payment_method_card_checkbox`.
+* Add - CSS minification.
+* Update - WC 3.5 compatibility.
+* Update - Stripe API version to 2018-09-24.
+
+= 4.1.10 - 2018-09-17 =
+* Fix - When 3DS card redirect status is "not_required", charge the 3DS source.
+* Fix - Payment Request not validating quantity before payment sheet shows.
+* Fix - Test mode info not showing when description field is left blank.
+* Add - Filter for Payment Request localized parameters `wc_stripe_payment_request_params`.
+* Update - Stripe API version to 2018-09-06.
+
+= 4.1.9 - 2018-08-27 =
+* Fix - Don't display admin notices to user that cannot manage woocommerce.
+* Fix - Fatal error when clicking on order link that doesn't exist.
+* Fix - When capturing a charge from authorize, Stripe fees not displaying.
+* Fix - Undefined property error on card type in rare cases.
+* Tweak - Update SEPA IBAN to use new elements implementation.
+* Add - Filter for Payment Request Button locale `wc_stripe_payment_request_button_locale`.
+
+= 4.1.8 - 2018-07-19 =
+* Fix - 3DS payment sometimes will create additional transaction in Stripe.
+* Fix - WC 2.6 with SEPA saved payment causing error on checkout.
+* Update - EPS logo.
+
+= 4.1.7 - 2018-06-06 =
+* Fix - Asynchronous payment methods such as SEPA, did not show order Stripe fees/net after payment succeed.
+* Fix - Missing semicolon on a CSS style value which causes display issues in some browsers.
+
+= 4.1.6 - 2018-05-31 =
+* Fix - Radio buttons on checkout on some themes are not aligned properly.
+* Fix - False negative on SSL warning notice in admin.
+
+= 4.1.5 - 2018-05-28 =
+* Tweak - Refactor initialization of plugin.
+* Tweak - Webhook failed handler now handles all payment methods.
+* Tweak - Make sure 3DS object is in pending status before redirecting.
+* Tweak - CSS styling.
+* Add - Username to the description field of the Stripe customer when created.
+* Add - GDPR retention setting and logic.
+* Fix - Payment request payments were redirected to Pay Order when it should be Order Received.
+* Update - Stripe API version to 2018-05-21.
+
+= 4.1.4 - 2018-05-22 =
+* Tweak - Improve performance when getting source id and charge id from database.
+* Add - GDPR privacy support.
+* Update - WC 3.4 compatibility.
+
 = 4.1.3 - 2018-05-07 =
 * Add - Hook to manipulate payment request shipping posted values `wc_stripe_payment_request_shipping_posted_values`.
 * Add - Accessibility attribute for credit card label.

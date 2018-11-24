@@ -592,7 +592,7 @@ function wpcf_fields_get_field_form_data( $type, $form_data = array() ) {
 	        // We need to set the "repetitive" setting to a string '0' or '1', not numbers, because it will be used
 	        // again later in this method (which I'm not going to refactor now) and because the form renderer
 	        // is oversensitive.
-	        $is_repetitive_as_string = ( 1 == wpcf_getnest( $form_data, array( 'data', 'repetitive' ), '0' ) ) ? '1' : '0';
+	        $is_repetitive_as_string = ( 1 == toolset_getnest( $form_data, array( 'data', 'repetitive' ), '0' ) ) ? '1' : '0';
 	        if( !array_key_exists( 'data', $form_data ) || !is_array( $form_data['data'] ) ) {
 		        $form_data['data'] = array();
 	        }

@@ -263,7 +263,7 @@ function wpcf_fields_date_value_get_filter( $value, $field, $return = 'array',
      * Fix for leftover
      */
     if ( $context != 'check_leftover' ) {
-        $value = __wpcf_fields_date_check_leftover( $value, $field );
+        $value = wpcf_fields_date_check_leftover( $value, $field );
     }
 
     // Check if cached
@@ -300,7 +300,7 @@ function wpcf_fields_date_value_get_filter( $value, $field, $return = 'array',
             array_key_exists('datepicker', $value)
             && !array_key_exists('timestamp', $value)
             //Fix date pre-1970 issue
-            //https://wp-types.com/forums/topic/pre-1971-dates-throw-error/#post-288989
+            //https://toolset.com/forums/topic/pre-1971-dates-throw-error/#post-288989
             //https://icanlocalize.basecamphq.com/projects/7393061-toolset/todo_items/194818870/comments
             && (
                 preg_match( '/^\d+$/', $value['datepicker'] )
@@ -391,6 +391,8 @@ function wpcf_fields_date_view( $params ) {
 
 /**
  * TinyMCE editor form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_date_editor_callback( $field, $settings ) {
 
@@ -465,6 +467,8 @@ function wpcf_fields_date_editor_callback( $field, $settings ) {
  * Inserts shortcode in editor.
  * 
  * @return type 
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_date_editor_submit( $data, $field, $context ) {
 

@@ -259,7 +259,7 @@ final class WPCF_Path
         return $url;
     }
 
-    public static function getFileUrl( $__FILE__ = null, $use_baseurl = true )
+    public static function getFileUrl( $__FILE__ = null, $use_baseurl = true, $add_port_to_host_url = true )
     {
         self::fixServerVars();
 
@@ -275,7 +275,7 @@ final class WPCF_Path
 
         $docroot = self::getDocRoot( $manual );
 
-        $baseurl = $use_baseurl ? self::getBaseUrl() : self::getHostUrl();
+        $baseurl = $use_baseurl ? self::getBaseUrl() : self::getHostUrl( $add_port_to_host_url );
 
         if ( 0 === strpos( $__FILE__, $docroot ) ) {
             return self::_join_paths( $baseurl, self::str_after( $__FILE__, $docroot ) );

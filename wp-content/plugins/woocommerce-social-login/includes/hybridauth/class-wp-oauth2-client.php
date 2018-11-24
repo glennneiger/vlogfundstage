@@ -31,7 +31,7 @@
  *
  * @since 2.0.0
  */
-class WP_OAuth2_Client extends OAuth2Client {
+class WP_OAuth2_Client extends \OAuth2Client {
 
 
 	/** @var array API request headers **/
@@ -44,7 +44,7 @@ class WP_OAuth2_Client extends OAuth2Client {
 	 * @since 2.0.0
 	 * @param string $code
 	 * @return mixed
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function authenticate( $code ) {
 
@@ -129,8 +129,8 @@ class WP_OAuth2_Client extends OAuth2Client {
 	 */
 	private function request( $url, $params = false, $type = 'GET' ) {
 
-		Hybrid_Logger::info( "Enter WP_OAuth2_Client::request( $url )" );
-		Hybrid_Logger::debug( "WP_OAuth2_Client::request(). dump request params: ", serialize( $params ) );
+		\Hybrid_Logger::info( "Enter WP_OAuth2_Client::request( $url )" );
+		\Hybrid_Logger::debug( "WP_OAuth2_Client::request(). dump request params: ", serialize( $params ) );
 
 		$wp_http_args = array(
 			'method'      => $type,
@@ -152,7 +152,7 @@ class WP_OAuth2_Client extends OAuth2Client {
 
 		if ( is_wp_error( $result ) ) {
 
-			Hybrid_Logger::error( "WP_OAuth2_Client::request(). request failed: ", $result->get_error_message() );
+			\Hybrid_Logger::error( "WP_OAuth2_Client::request(). request failed: ", $result->get_error_message() );
 
 			// network timeout, etc
 			$content = 'error=' . $result->get_error_message();
@@ -165,7 +165,7 @@ class WP_OAuth2_Client extends OAuth2Client {
 
 		$this->http_code = $result['response']['code'];
 
-		Hybrid_Logger::debug( "WP_OAuth2_Client::request(). dump request result: ", serialize( $result ) );
+		\Hybrid_Logger::debug( "WP_OAuth2_Client::request(). dump request result: ", serialize( $result ) );
 
 		return $content;
 	}

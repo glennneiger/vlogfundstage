@@ -15,6 +15,30 @@ class Toolset_Output_Template_Repository extends Toolset_Output_Template_Reposit
 
 	const FAUX_TEMPLATE = 'faux_template.twig';
 	const MAINTENANCE_FILE = 'maintenance.twig';
+	const SETTINGS_SECTION_CODE_SNIPPETS = 'admin/settings_section/code_snippets/settings_tab.twig';
+	const SETTINGS_SECTION_CODE_SNIPPETS_LEFT = 'admin/settings_section/code_snippets/settings_tab_left.twig';
+	const SETTINGS_SECTION_CODE_SNIPPETS_ADD_NEW_DIALOG = 'admin/settings_section/code_snippets/add_new_dialog.twig';
+	const SETTINGS_SECTION_CODE_SNIPPETS_DELETE_DIALOG = 'admin/settings_section/code_snippets/delete_dialog.twig';
+
+	// Toolset_Shortcode_Generator templates
+
+	const SHORTCODE_GUI_DIALOG = 'shortcodes_gui/dialog.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_GROUP_WRAPPER = 'shortcodes_gui/wrapper_attribute_group.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_WRAPPER = 'shortcodes_gui/wrapper_attribute.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_INFORMATION = 'shortcodes_gui/attribute_information.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_TEXT = 'shortcodes_gui/attribute_text.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_TEXTAREA = 'shortcodes_gui/attribute_textarea.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_RADIO = 'shortcodes_gui/attribute_radio.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_SELECT = 'shortcodes_gui/attribute_select.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_SELECT2 = 'shortcodes_gui/attribute_select2.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_AJAXSELECT2 = 'shortcodes_gui/attribute_ajaxselect2.phtml';
+	const SHORTCODE_GUI_CONTENT = 'shortcodes_gui/content.phtml';
+
+	//Toolset Page Builder Modules Templates.
+	const PAGE_BUILDER_MODULES_OVERLAY = '/admin/page-builder-modules/module-overlay.phtml';
+	const PAGE_BUILDER_MODULES_ELEMENTOR_NOTHING_SELECTED = '/admin/page-builder-modules/elementor/widgets/nothing-selected.phtml';
+	const PAGE_BUILDER_MODULES_ELEMENTOR_UPGRADE_TO_PRO_FOR_SELECT2 = '/admin/page-builder-modules/elementor/widgets/upgrade-to-pro-for-select2.phtml';
+	const PAGE_BUILDER_MODULES_ELEMENTOR_USE_VIEW_ELEMENTOR_WIDGET_INSTEAD = 'admin/page-builder-modules/elementor/widgets/use-view-elementor-widget-instead.phtml';
 
 
 	/**
@@ -45,6 +69,8 @@ class Toolset_Output_Template_Repository extends Toolset_Output_Template_Reposit
 	) {
 		parent::__construct( $template_factory_di, $constants_di );
 
+		$templates_base_path = $this->get_templates_dir_base_path();
+
 		$this->templates = array(
 			self::FAUX_TEMPLATE => array(
 				'base_path' => null,
@@ -52,7 +78,62 @@ class Toolset_Output_Template_Repository extends Toolset_Output_Template_Reposit
 			),
 			self::MAINTENANCE_FILE => array(
 				'base_path' => $this->get_templates_dir_base_path()
-			)
+			),
+			self::SHORTCODE_GUI_DIALOG => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_GROUP_WRAPPER => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_WRAPPER => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_INFORMATION => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_TEXT => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_TEXTAREA => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_RADIO => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_SELECT => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_SELECT2 => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_ATTRIBUTE_AJAXSELECT2 => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::SHORTCODE_GUI_CONTENT => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
+			self::PAGE_BUILDER_MODULES_ELEMENTOR_NOTHING_SELECTED => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			self::PAGE_BUILDER_MODULES_OVERLAY => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			self::PAGE_BUILDER_MODULES_ELEMENTOR_UPGRADE_TO_PRO_FOR_SELECT2 => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			
+			self::PAGE_BUILDER_MODULES_ELEMENTOR_USE_VIEW_ELEMENTOR_WIDGET_INSTEAD => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			
+			self::SETTINGS_SECTION_CODE_SNIPPETS => array( 'base_path' => $templates_base_path ),
+			self::SETTINGS_SECTION_CODE_SNIPPETS_LEFT => array( 'base_path' => $templates_base_path ),
+			self::SETTINGS_SECTION_CODE_SNIPPETS_ADD_NEW_DIALOG => array( 'base_path' => $templates_base_path ),
+			self::SETTINGS_SECTION_CODE_SNIPPETS_DELETE_DIALOG => array( 'base_path' => $templates_base_path ),
 		);
 	}
 

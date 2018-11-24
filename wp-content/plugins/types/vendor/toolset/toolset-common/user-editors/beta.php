@@ -29,6 +29,7 @@ $available_editors = array(
 	),
 	'Toolset_User_Editors_Editor_Avada' => array(
 		'backend' => 'Toolset_User_Editors_Editor_Screen_Avada_Backend',
+		'frontend' => 'Toolset_User_Editors_Editor_Screen_Avada_Frontend',
 	),
 	'Toolset_User_Editors_Editor_Divi' => array(
 		'backend' => 'Toolset_User_Editors_Editor_Screen_Divi_Backend',

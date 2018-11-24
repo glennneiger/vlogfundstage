@@ -81,6 +81,21 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
             ),
         );
 
+
+        if( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+	        $post_type_slug = toolset_getget( Types_Page_Extension_Edit_Post_Type::POST_TYPE_PARAMETER );
+	        $post_type = Toolset_Post_Type_Repository::get_instance()->get( $post_type_slug );
+	        if ( $post_type && $post_type->can_be_used_in_relationship()->is_success() ) {
+		        $post_type_editor = Types_Page_Extension_Edit_Post_Type::get_instance();
+		        $this->boxes['relationships'] = array(
+			        'callback' => array( $post_type_editor, 'metabox_relationships' ),
+			        'title' => __( 'Post Relationships', 'wpcf' ),
+			        'default' => 'normal',
+			        'priority' => 'low',
+		        );
+	        }
+        }
+
         $this->boxes = apply_filters('wpcf_meta_box_order_defaults', $this->boxes, $this->post_type);
 
         $this->boxes = apply_filters('wpcf_meta_box_post_type', $this->boxes);
@@ -109,13 +124,13 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
     {
         $this->save();
 
-	    // Flush rewrite rules if we're asked to do so.
-	    //
-	    // This must be done after all post types and taxonomies are registered, and they can be registered properly
-	    // only on 'init'. So after making changes, we need to reload the page and THEN flush.
-	    if( '1' == wpcf_getget( 'flush', '0' ) ) {
-		    flush_rewrite_rules();
-	    }
+      // Flush rewrite rules if we're asked to do so.
+      //
+      // This must be done after all post types and taxonomies are registered, and they can be registered properly
+      // only on 'init'. So after making changes, we need to reload the page and THEN flush.
+      if( '1' == toolset_getget( 'flush', '0' ) ) {
+        flush_rewrite_rules();
+      }
 
 
         global $wpcf;
@@ -153,7 +168,7 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
         /**
          * fix taxonomies assigment for builitin post types
          */
-        if ( $this->ct['_builtin']) {
+        if ( $this->ct['_builtin'] ) {
             $taxonomies = get_taxonomies( '', 'objects' );
             foreach( $taxonomies as $slug => $tax ) {
                 foreach( $tax->object_type as $post_slug ) {
@@ -174,13 +189,13 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
                 '_builtin' => true,
             );
 
-	        $form['slug_conflict_check_nonce'] = array(
-		        '#type' => 'hidden',
-		        '#value' => wp_create_nonce( Types_Ajax::CALLBACK_CHECK_SLUG_CONFLICTS ),
-		        '#name' => 'types_check_slug_conflicts_nonce',
-		        '_builtin' => true,
-	        );
-	        
+          $form['slug_conflict_check_nonce'] = array(
+            '#type' => 'hidden',
+            '#value' => wp_create_nonce( Types_Ajax::CALLBACK_CHECK_SLUG_CONFLICTS ),
+            '#name' => 'types_check_slug_conflicts_nonce',
+            '_builtin' => true,
+          );
+
             /**
              * update Taxonomy too
              */
@@ -322,10 +337,10 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
         );
 
         // disable for inbuilt
-        if ( $this->ct['_builtin'] ) {
+        if ( $this->ct['_builtin'] || $this->current_post_type_has_special_purpose() ) {
             $form['slug']['#disable'] = 1;
             $form['slug']['#pattern'] = '<tr><td><LABEL></td><td><ERROR><BEFORE><ELEMENT><DESCRIPTION><AFTER></td></tr>';
-            $form['slug']['#description'] = __('This option is not available for built-in post types.', 'wpcf');
+            $form['slug']['#description'] = $this->get_disabled_field_explanation();
         }
 
         $form['description'] = array(
@@ -985,35 +1000,43 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
      * @since unknown
      */
     public function box_taxonomies() {
-	    $form = array();
-	    $taxonomies = Types_Utils::get_editable_taxonomies();
-	    $options = array();
 
-	    foreach( $taxonomies as $taxonomy_slug => $taxonomy ) {
+      if( $this->current_post_type_has_special_purpose() ) {
+        $this->print_notice(
+          __( 'Taxonomies are not allowed for this special-purpose post type.', 'wpcf' )
+        );
+        return;
+      }
 
-		    $options[ $taxonomy_slug ] = array(
-			    '#name' => 'ct[taxonomies][' . $taxonomy_slug . ']',
-			    '#title' => $taxonomy->labels->name,
-			    '#default_value' => ( ! empty( $this->ct['taxonomies'][ $taxonomy_slug ] ) ),
-			    '#inline' => true,
-			    '#before' => '<li>',
-			    '#after' => '</li>',
-		    );
-		    $options[ $taxonomy_slug ]['_builtin'] = $taxonomy->_builtin;
+      $form = array();
+      $taxonomies = Types_Utils::get_editable_taxonomies();
+      $options = array();
 
-	    }
+      foreach( $taxonomies as $taxonomy_slug => $taxonomy ) {
 
-	    $form['taxonomies'] = array(
-		    '#type' => 'checkboxes',
-		    '#options' => $options,
-		    '#name' => 'ct[taxonomies]',
-		    '#inline' => true,
-		    '#before' => '<ul class="wpcf-list">',
-		    '#after' => '</ul>',
-		    '_builtin' => true,
-	    );
-	    $form = wpcf_form( __FUNCTION__, $form );
-	    echo $form->renderForm();
+        $options[ $taxonomy_slug ] = array(
+          '#name' => 'ct[taxonomies][' . $taxonomy_slug . ']',
+          '#title' => $taxonomy->labels->name,
+          '#default_value' => ( ! empty( $this->ct['taxonomies'][ $taxonomy_slug ] ) ),
+          '#inline' => true,
+          '#before' => '<li>',
+          '#after' => '</li>',
+        );
+        $options[ $taxonomy_slug ]['_builtin'] = $taxonomy->_builtin;
+
+      }
+
+      $form['taxonomies'] = array(
+        '#type' => 'checkboxes',
+        '#options' => $options,
+        '#name' => 'ct[taxonomies]',
+        '#inline' => true,
+        '#before' => '<ul class="wpcf-list">',
+        '#after' => '</ul>',
+        '_builtin' => true,
+      );
+      $form = wpcf_form( __FUNCTION__, $form );
+      echo $form->renderForm();
     }
 
 
@@ -1026,6 +1049,11 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
         }
         $data = $_POST['ct'];
         $update = false;
+
+        $post_type_editor = Types_Page_Extension_Edit_Post_Type::get_instance();
+        $slug = ! empty( $data['slug'] ) ? $data['slug'] : toolset_getget( 'wpcf-post-type' );
+        $show_relationships = isset( $data['show_relationship'] ) ? $data['show_relationship'] : array();
+        $post_type_editor->show_relationships_in_post( $slug, array_keys( $show_relationships ) );
 
         // Sanitize data
         $data['labels']['name'] = isset( $data['labels']['name'] )
@@ -1084,7 +1112,7 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
         }
 
         $data['slug'] = $post_type;
-	    $post_type_option = new Types_Utils_Post_Type_Option();
+      $post_type_option = new Types_Utils_Post_Type_Option();
         $custom_types = $post_type_option->get_post_types();
         $protected_data_check = array();
 
@@ -1296,6 +1324,11 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
             $protected_data_check[$data['slug']] = array();
         }
 
+      // Always reserve m2m flags
+      $post_type_helper = new Types_Post_Type_Helper( $data['slug'] );
+      $data[ Toolset_Post_Type_From_Types::DEF_IS_REPEATING_FIELD_GROUP ] = $post_type_helper->is_repeating_field_group();
+      $data[ Toolset_Post_Type_From_Types::DEF_IS_INTERMEDIARY_POST_TYPE ] = $post_type_helper->is_intermediary();
+
         // Merging protected data
         $custom_types[$post_type] = array_merge( $protected_data_check, $data );
 
@@ -1316,7 +1349,7 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
             'updated notice notice-success is-dismissible'
         );
 
-	    flush_rewrite_rules();
+      flush_rewrite_rules();
 
         if ( !$data['_builtin'] ) {
             do_action( 'wpcf_custom_types_save', $data );
@@ -1330,8 +1363,8 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
                         'page' => 'wpcf-edit-type',
                         $this->get_id => $post_type,
                         'wpcf-message' => 'view',
-	                    // Flush rewrite rules after reload
-	                    'flush' => '1'
+                      // Flush rewrite rules after reload
+                      'flush' => '1'
                     ),
                     admin_url( 'admin.php' )
                 )
@@ -1792,8 +1825,8 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
             'email' => __('email', 'wpcf'),
             'excerpt-view' => __('excerpt view', 'wpcf'),
 
-	        // because https://core.trac.wordpress.org/ticket/30832
-	        // but we don't have to offer it at all, actually it looks deprecated
+          // because https://core.trac.wordpress.org/ticket/30832
+          // but we don't have to offer it at all, actually it looks deprecated
             // 'exerpt-view' => __('excerpt view', 'wpcf'),
 
             'external' => __('external', 'wpcf'),
@@ -1964,7 +1997,7 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
         // get current post type
         require_once WPCF_INC_ABSPATH.'/classes/class.types.admin.post-type.php';
         $wpcf_post_type = new Types_Admin_Post_Type();
-		$get_post_type_slug_from_request = sanitize_text_field( $_GET['wpcf-post-type'] );
+    $get_post_type_slug_from_request = sanitize_text_field( $_GET['wpcf-post-type'] );
         $custom_post_type = $wpcf_post_type->get_post_type($get_post_type_slug_from_request);
         if ( isset($custom_post_type['slug']) ) {
             return $custom_post_type['slug'];
@@ -1972,17 +2005,17 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
         return '';
     }
 
-	/**
-	 * Render content of the WPML post type translation box.
-	 *
-	 * The box contains information about translatability of the post type, or a notice if the post type
-	 * wasn't saved yet.
-	 *
-	 * Relies on wpml_custom_post_translation_options() which uses the wpcf-edit-type GET parameter to determine
-	 * the post type slug.
-	 *
-	 * @since unknown
-	 */
+  /**
+   * Render content of the WPML post type translation box.
+   *
+   * The box contains information about translatability of the post type, or a notice if the post type
+   * wasn't saved yet.
+   *
+   * Relies on wpml_custom_post_translation_options() which uses the wpcf-edit-type GET parameter to determine
+   * the post type slug.
+   *
+   * @since unknown
+   */
     public function wpml_box()
     {
         if ( !function_exists('wpml_custom_post_translation_options') ) {
@@ -1990,20 +2023,42 @@ class Types_Admin_Edit_Post_Type extends Types_Admin_Page
             return;
         }
 
-	    $post_type_slug = $this->get_post_type_slug_from_request();
+      $post_type_slug = $this->get_post_type_slug_from_request();
 
-	    $is_add_new_page = empty( $post_type_slug );
+      $is_add_new_page = empty( $post_type_slug );
 
-	    if( $is_add_new_page ) {
+      if( $is_add_new_page ) {
 
-		    printf(
-			    '<div class="notice notice-success below-h2"><p>%s</p></div>',
-			    __( 'You will be able to make this post type translatable once it is saved.', 'wpcf' )
-		    );
+        printf(
+          '<div class="notice notice-warning below-h2"><p>%s</p></div>',
+          __( 'You will be able to make this post type translatable once it is saved.', 'wpcf' )
+        );
 
-	    } else {
-		    echo wpml_custom_post_translation_options();
-	    }
+      } else {
+        echo wpml_custom_post_translation_options();
+      }
     }
-}
 
+  private function current_post_type_has_special_purpose() {
+    $post_type_helper = new Types_Post_Type_Helper( $this->ct['slug'] );
+    return $post_type_helper->has_special_purpose();
+    }
+
+
+  private function get_disabled_field_explanation() {
+    if( $this->ct['_builtin'] ) {
+      return __('This option is not available for built-in post types.', 'wpcf');
+    }
+
+    $post_type_helper = new Types_Post_Type_Helper( $this->ct['slug'] );
+
+    if( $post_type_helper->is_intermediary() ) {
+      return __( 'This option is not available for intermediary post types.', 'wpcf' );
+    } elseif( $post_type_helper->is_repeating_field_group() ) {
+      return __( 'This option is not available for post types used in repeating field groups.', 'wpcf');
+    }
+
+    return '';
+  }
+
+}

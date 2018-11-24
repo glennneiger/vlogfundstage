@@ -24,12 +24,14 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Twitter social login provider class
  *
  * @since 1.0.0
  */
-class WC_Social_Login_Provider_Twitter extends WC_Social_Login_Provider {
+class WC_Social_Login_Provider_Twitter extends \WC_Social_Login_Provider {
 
 
 	/**
@@ -60,18 +62,25 @@ class WC_Social_Login_Provider_Twitter extends WC_Social_Login_Provider {
 	 * like displaying a callback URL
 	 *
 	 * @since 1.0.0
-	 * @see WC_Social_Login_Provider::get_description()
+	 * @see \WC_Social_Login_Provider::get_description()
 	 * @return string strategy class
 	 */
 	public function get_description() {
 
 		/* translators: Placeholders: %1$s - <a> tag, %2$s - </a> tag */
-		$description = sprintf( __( 'Need help setting up and configuring Twitter? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="http://docs.woocommerce.com/document/woocommerce-social-login-create-social-apps#twitter">', '</a>');
+		$description = sprintf( __( 'Need help setting up and configuring Twitter? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="' . $this->get_documentation_url() . '">', '</a>' );
 
 		$callback_url_format = get_option( 'wc_social_login_callback_url_format' );
 
-		/* translators: Placeholder: %s - a url */
-		$description .= '<br/><br/>' . sprintf( __( 'The callback URL is %s', 'woocommerce-social-login' ), '<code>' . $this->get_callback_url() . '</code>' );
+		// note that the base URL with trailing slash should be set instead of the full callback URL
+		// Twitter no longer allows query params in callback URLs. We still send the full callback
+		// with ?wc-api=auth&done=twitter during login, but Twitter doesn't seem to mind those extra
+		// params when checking the URL.
+		$description .= '<br/><br/>' . sprintf(
+			/* translators: Placeholder: %s - a url */
+			__( 'The callback URL is %s', 'woocommerce-social-login' ),
+			'<code>' . esc_url( remove_query_arg( array( 'wc-api', 'done' ), $this->get_callback_url() ) ) . '</code>'
+		);
 
 		if ( 'legacy' === $callback_url_format ) {
 
@@ -86,28 +95,33 @@ class WC_Social_Login_Provider_Twitter extends WC_Social_Login_Provider {
 
 
 	/**
-	 * Return the providers HybridAuth config
+	 * Returns the providers HybridAuth config.
+	 *
+	 * @see http://hybridauth.sourceforge.net/userguide/Configuration.html
 	 *
 	 * @since 2.0.0
+	 *
 	 * @return array
 	 */
 	public function get_hybridauth_config() {
 
 		/**
-		 * Filter provider's HybridAuth configuration.
+		 * Filters Twitter HybridAuth configuration.
 		 *
 		 * @since 1.0.0
-		 * @param array $config See http://hybridauth.sourceforge.net/userguide/Configuration.html
+		 *
+		 * @param array $config
 		 */
 		return apply_filters( 'wc_social_login_' . $this->get_id() . '_hybridauth_config', array(
-			'enabled' => true,
-			'keys'    => array(
+			'enabled'      => true,
+			'keys'         => array(
 				'key'    => $this->get_client_id(),
 				'secret' => $this->get_client_secret(),
 			),
-			'wrapper' => array(
-				'path'  => wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-sv-hybrid-providers-twitter.php',
-				'class' => 'SV_Hybrid_Providers_Twitter',
+			'includeEmail' => 'yes' === $this->get_option( 'include_email', false ),
+			'wrapper'      => array(
+				'path'   => wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-sv-hybrid-providers-twitter.php',
+				'class'  => 'SV_Hybrid_Providers_Twitter',
 			),
 		) );
 	}
@@ -118,7 +132,7 @@ class WC_Social_Login_Provider_Twitter extends WC_Social_Login_Provider {
 	 * so it matches Twitter's UI
 	 *
 	 * @since 1.0.0
-	 * @see WC_Social_Login_Provider::init_form_fields()
+	 * @see \WC_Social_Login_Provider::init_form_fields()
 	 */
 	public function init_form_fields() {
 
@@ -126,6 +140,16 @@ class WC_Social_Login_Provider_Twitter extends WC_Social_Login_Provider {
 
 		$this->form_fields['id']['title']     = __( 'Consumer Key', 'woocommerce-social-login' );
 		$this->form_fields['secret']['title'] = __( 'Consumer Secret', 'woocommerce-social-login' );
+
+		$this->form_fields = Framework\SV_WC_Helper::array_insert_after( $this->form_fields, 'secret', array(
+			'include_email' => array(
+				'title'       => __( 'Request email address', 'woocommerce-social-login' ),
+				'type'        => 'checkbox',
+				'label'       => __( 'Users can register with their email address used in their Twitter account.', 'woocommerce-social-login' ),
+				'description' => __( 'To use this feature, you must have enabled the corresponding additional permission on Twitter. If changing settings of an existing app, you may need to regenerate the consumer key and secret.', 'woocommerce-social-login' ),
+				'default'     => 'no',
+			),
+		) );
 	}
 
 
@@ -133,7 +157,7 @@ class WC_Social_Login_Provider_Twitter extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.0.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_login_button_text() {
@@ -145,7 +169,7 @@ class WC_Social_Login_Provider_Twitter extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.0.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_link_button_text() {

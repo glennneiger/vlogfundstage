@@ -275,19 +275,30 @@ if ( ! class_exists( 'Toolset_Utils', false ) ) {
 				return null;
 			}
 
-			// Now we're going to quickly search the DB for any attachment GUID with a partial path match.
-			// Example: /uploads/2013/05/test-image.jpg
 			global $wpdb;
 
+			// Check for the guid with the exact url
+            // (will match in most cases and is way faster than partial match search)
 			$query = $wpdb->prepare(
-				"SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND guid LIKE %s",
+				"SELECT ID FROM $wpdb->posts WHERE guid = %s LIMIT 1",
+                $url
+			);
+
+			if( $attachment_id = $wpdb->get_var( $query ) ) {
+                // attachment id found
+			    return (int) $attachment_id;
+            }
+
+			// No match for the full $url. Checking for any attachment GUID with a partial path match.
+			// Example: /uploads/2013/05/test-image.jpg
+			$query = $wpdb->prepare(
+				"SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND guid LIKE %s LIMIT 1",
 				'%' . $attachment_path
 			);
 
-			$attachment = $wpdb->get_col( $query );
-
-			if ( is_array( $attachment ) && ! empty( $attachment ) ) {
-				return (int) array_shift( $attachment );
+			if( $attachment_id = $wpdb->get_var( $query ) ) {
+				// attachment id found
+				return (int) $attachment_id;
 			}
 
 			return null;
@@ -376,6 +387,19 @@ if ( ! class_exists( 'Toolset_Utils', false ) ) {
 			}
 
 			return $result;
+		}
+
+
+		/**
+		 * Trim whitespace from the beginning and end of the string and reduce all internal
+		 * whitespace characters to a single space.
+		 *
+		 * @param $string
+		 * @return string
+		 * @since 3.0.3
+		 */
+		public static function trim_deep( $string ) {
+			return trim( preg_replace( '/\s+/', ' ', $string ) );
 		}
 	}
 
@@ -708,7 +732,7 @@ if ( ! function_exists( 'toolset_getarr' ) ) {
 	 * Checks if the key is set in the source array. If not, default value is returned. Optionally validates against array
 	 * of allowed values and returns default value if the validation fails.
 	 *
-	 * @param array $source The source array.
+	 * @param array|ArrayAccess $source The source array.
 	 * @param string $key The key to be retrieved from the source array.
 	 * @param mixed $default Default value to be returned if key is not set or the value is invalid. Optional.
 	 *     Default is empty string.

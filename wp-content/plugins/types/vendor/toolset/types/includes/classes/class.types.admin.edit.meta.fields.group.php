@@ -21,6 +21,12 @@ require_once WPCF_INC_ABSPATH.'/classes/class.types.admin.edit.fields.php';
  */
 class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
 {
+    private $valid_meta_boxes_regexps = array(
+        '/^wpcf.*/',
+        '/^Types.*/',
+        '/add_meta_boxes$/',
+    );
+
 
     public function __construct()
     {
@@ -56,12 +62,7 @@ class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
                 'title' => __('Save', 'wpcf'),
                 'default' => 'side',
                 'priority' => 'high',
-            ),
-            'types_where' => array(
-                'callback' => array($this, 'box_where'),
-                'title' => __('Where to display this group', 'wpcf'),
-                'default' => 'side',
-            ),
+            )
         );
 
         /** Admin styles **/
@@ -180,9 +181,23 @@ class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
             '#value' => $this->update['id'],
         );
 
+	    $field_settings_collapsed_class = $this->update['id'] !== 0 // means not a new field group
+		    ? ' toolset-collapsible-closed'
+		    : '';
+
+	    $form['field-group-settings-box-open'] = array(
+		    '#type' => 'markup',
+		    '#markup' => sprintf(
+			    '<div class="toolset-field-group-settings toolset-postbox%s"><div data-toolset-collapsible=".toolset-postbox" class="toolset-collapsible-handle" title="%s"><br></div><h3 data-toolset-collapsible=".toolset-postbox" class="toolset-postbox-title">%s</h3><div class="toolset-collapsible-inside">',
+			    $field_settings_collapsed_class,
+			    esc_attr__('Click to toggle', 'wpcf'),
+			    __( 'Settings for the fields group', 'wpcf' )
+		    )
+	    );
+
         $form['table-1-open'] = array(
             '#type' => 'markup',
-            '#markup' => '<table id="wpcf-types-form-name-table" class="wpcf-types-form-table widefat js-wpcf-slugize-container"><thead><tr><th colspan="2">' . __( 'Name and description', 'wpcf' ) . '</th></tr></thead><tbody>',
+            '#markup' => '<table id="wpcf-types-form-name-table" class="wpcf-types-form-table widefat js-wpcf-slugize-container"><tbody>',
         );
         $table_row = '<tr><td><LABEL></td><td><ERROR><BEFORE><ELEMENT><AFTER></td></tr>';
         $form['title'] = array(
@@ -225,10 +240,25 @@ class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
             '#inline' => true,
         );
 
+	    $form['table-2-open'] = array(
+		    '#type'   => 'markup',
+		    '#markup' => '<tr><td>' . __( 'Show for', 'wpcf' ) . '</td>',
+	    );
+
+	    $form['table-2-content'] = array(
+		    '#type'   => 'markup',
+		    '#markup' => '<td>'.$this->box_where().'</td></tr>',
+	    );
+
         $form['table-1-close'] = array(
             '#type' => 'markup',
             '#markup' => '</tbody></table>',
         );
+
+	    $form['field-group-settings-box-close'] = array(
+		    '#type' => 'markup',
+		    '#markup' => '</div></div>',
+	    );
 
         /**
          * fields
@@ -296,7 +326,7 @@ class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
         }
 
         if (empty($users_currently_supported)) {
-            $users_currently_supported[] = __('Displayed for all users roles', 'wpcf');
+            $users_currently_supported[] = __('All user roles', 'wpcf');
         }
 
         /*
@@ -314,7 +344,7 @@ class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
          * Since Types 1.1.4
          */
         $form_users = _wpcf_filter_wrap('custom_post_types',
-            __('Show For:', 'wpcf'),
+            '',
             implode(', ', $users_currently_supported),
             __('Displayed for all users roles', 'wpcf'), $temp);
 
@@ -325,14 +355,13 @@ class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
         if (function_exists('wpcf_access_register_caps')){
             $access_notification = '<div class="message custom wpcf-notif"><span class="wpcf-notif-congrats">'
                 . __('This groups visibility is also controlled by the Access plugin.', 'wpcf')  .'</span></div>';
+
+	        $form['supports-table-open'] = array(
+		        '#type' => 'markup',
+		        '#markup' => $access_notification,
+	        );
         }
-        $form['supports-table-open'] = array(
-            '#type' => 'markup',
-            '#markup' => sprintf(
-                '<p class="description">%s</p>',
-                __('Each usermeta group can display different fields for user roles.', 'wpcf')
-            ).$access_notification,
-        );
+
         /*
          * Join filter forms
          */
@@ -352,7 +381,7 @@ class Types_Admin_Edit_Meta_Fields_Group extends Types_Admin_Edit_Fields
          * render form
          */
         $form = wpcf_form(__FUNCTION__, $form);
-        echo $form->renderForm();
+        return $form->renderForm();
     }
 
     public function types_styling_editor() {
@@ -649,5 +678,28 @@ var wpcfDefaultCss = ' .  json_encode( base64_encode($admin_styles_value) ) . ';
         }
         $post_types = ',' . implode(',', (array) $post_types) . ',';
         update_post_meta($group_id, '_wp_types_group_showfor', $post_types);
+    }
+
+
+    /**
+     * Filter metaboxes
+     *
+     * It takes the list of metaboxes and use only the permitted ones.
+     *
+     * @since 3.0
+     */
+    public function filter_meta_boxes() {
+        global $wp_filter;
+        foreach ( $wp_filter['add_meta_boxes']->callbacks as $priority => $callbacks ) {
+            foreach ( $callbacks as $callback => $function ) {
+                $valid = false;
+                foreach ( $this->valid_meta_boxes_regexps as $regexp ) {
+                    $valid |= preg_match( $regexp, $callback );
+                }
+                if ( ! $valid ) {
+                    unset( $wp_filter['add_meta_boxes']->callbacks[ $priority ][ $callback ] );
+                }
+            }
+        }
     }
 }

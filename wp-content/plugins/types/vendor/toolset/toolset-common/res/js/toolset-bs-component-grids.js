@@ -11,15 +11,15 @@ var ToolsetCommon = ToolsetCommon || {};
 
 ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 
-    var self = this;
+	var self = this;
 	
 	/**
-     * Init the Bootstrap grid dialog.
+	 * Init the Bootstrap grid dialog.
 	 *
 	 * @return selc;
-     *
-     * @since 2.3.3
-     */
+	 *
+	 * @since 2.3.3
+	 */
 	
 	self.initDialogs = function() {
 		
@@ -30,155 +30,155 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 		self.bootstrapGridDialog = $( "#js-toolset-bootstrap-grid-dialog-container" )
 			.html( Toolset_CssComponent_Grids.dialog.content )
 			.dialog({
-                autoOpen: false,
-                modal: true,
-                title: Toolset_CssComponent_Grids.dialog.title,
-                minWidth: 550,
-                draggable: false,
-                resizable: false,
-                position: {
-                    my: "center top+50",
-                    at: "center top",
-                    of: window,
-                    collision: "none"
-                },
-                show: {
-                    effect: "blind",
-                    duration: 800
-                },
-                create: function( event, ui ) {
-                    
-                },
-                open: function( event, ui ) {
-                    $( 'body' ).addClass( 'modal-open' );
+				autoOpen: false,
+				modal: true,
+				title: Toolset_CssComponent_Grids.dialog.title,
+				minWidth: 550,
+				draggable: false,
+				resizable: false,
+				position: {
+					my: "center top+50",
+					at: "center top",
+					of: window,
+					collision: "none"
+				},
+				show: {
+					effect: "blind",
+					duration: 800
+				},
+				create: function( event, ui ) {
+					
+				},
+				open: function( event, ui ) {
+					$( 'body' ).addClass( 'modal-open' );
 					self.restoreBootstrapGridDialogOptions();
-                },
-                close: function( event, ui ) {
-                    $( 'body' ).removeClass( 'modal-open' );
-                },
-                buttons: [
-                    {
-                        class: 'button-secondary toolset-shortcode-gui-dialog-button-close',
-                        text: Toolset_CssComponent_Grids.dialog.cancel,
-                        click: function () {
-                            $( this ).dialog( "close" );
-                        }
-                    },
-                    {
-                        class: 'toolset-shortcode-gui-dialog-button-align-right button-primary',
-                        text: Toolset_CssComponent_Grids.dialog.insert,
-                        click: function () {
-                            self.insertBootstrapGrid();
-                        }
-                    }
-                ]
-            });
+				},
+				close: function( event, ui ) {
+					$( 'body' ).removeClass( 'modal-open' );
+				},
+				buttons: [
+					{
+						class: 'button-secondary toolset-shortcode-gui-dialog-button-close',
+						text: Toolset_CssComponent_Grids.dialog.cancel,
+						click: function () {
+							$( this ).dialog( "close" );
+						}
+					},
+					{
+						class: 'toolset-shortcode-gui-dialog-button-align-right button-primary',
+						text: Toolset_CssComponent_Grids.dialog.insert,
+						click: function () {
+							self.insertBootstrapGrid();
+						}
+					}
+				]
+			});
 		
 		return self;
 		
 	};
 
-    /**
-     * Open the Bootstrap grid dialog.
-     *
-     * @since 2.3.3
-     */
+	/**
+	 * Open the Bootstrap grid dialog.
+	 *
+	 * @since 2.3.3
+	 */
 
-    $( document ).on( 'click', '.js-toolset-bootstrap-grid-in-toolbar', function( e ) {
-        e.preventDefault();
-        window.wpcfActiveEditor = $( this ).data( 'editor' );
-        self.bootstrapGridDialog.dialog( 'open' );
-    });
+	$( document ).on( 'click', '.js-toolset-bootstrap-grid-in-toolbar', function( e ) {
+		e.preventDefault();
+		window.wpcfActiveEditor = $( this ).data( 'editor' );
+		self.bootstrapGridDialog.dialog( 'open' );
+	});
 
-    /**
-     * Insert the bootstrap grid into the relevant editor.
-     *
-     * @since 2.3.3
+	/**
+	 * Insert the bootstrap grid into the relevant editor.
+	 *
+	 * @since 2.3.3
 	 *
 	 * @todo Check how to integrate the highlighting in the icl_insert mechanism
-     */
+	 */
 
-    self.insertBootstrapGrid = function() {
-        var $grid = self.getBootstrapGrid();
+	self.insertBootstrapGrid = function() {
+		var $grid = self.getBootstrapGrid();
 		self.bootstrapGridDialog.dialog( 'close' );
 		window.icl_editor.insert( $grid );
-    };
+	};
 
-    /**
-     * Restore the bootstrap grid dialog to defaults on close.
-     *
-     * @since 2.3.3
-     */
+	/**
+	 * Restore the bootstrap grid dialog to defaults on close.
+	 *
+	 * @since 2.3.3
+	 */
 
-    self.restoreBootstrapGridDialogOptions = function() {
-        var $defaultGridType = $( document ).find( 'ul.js-toolset-bootstrap-grid-type figure' ).first(),
-            $defaultRadio = $defaultGridType.closest( 'li' ).find( 'input[name="grid_type"]' );
+	self.restoreBootstrapGridDialogOptions = function() {
+		var $defaultGridType = $( document ).find( 'ul.js-toolset-bootstrap-grid-type figure' ).first(),
+			$defaultRadio = $defaultGridType.closest( 'li' ).find( 'input[name="grid_type"]' );
 
-        $( document )
+		$( document )
 			.find( 'ul.js-toolset-bootstrap-grid-type figure' )
 				.each( function () {
 					$( this ).removeClass( 'selected' );
 				});
 
-        $defaultGridType.addClass( 'selected' );
-        $defaultRadio.trigger( 'click' );
-    };
+		$defaultGridType.addClass( 'selected' );
+		$defaultRadio.trigger( 'click' );
+	};
 
-    /**
-     * Get the bootstrap grid given the dialog settings.
+	/**
+	 * Get the bootstrap grid given the dialog settings.
 	 *
 	 * @return string Grid HTML structure.
-     *
-     * @since 2.3.2
-     */
+	 *
+	 * @since 2.3.2
+	 */
 
-    self.getBootstrapGrid = function() {
-        var output = '';
+	self.getBootstrapGrid = function() {
+		var output = '';
 		
-        output += '<div class="row">\n';
+		output += '<div class="row">\n';
 
-        switch( $( 'input[name="grid_type"]:checked' ).val() ) {
-            case 'two-even':
-                output += '\t<div class="col-sm-6">Cell 1</div>\n';
-                output += '\t<div class="col-sm-6">Cell 2</div>\n';
-                break;
-            case 'two-uneven':
-                output += '\t<div class="col-sm-8">Cell 1</div>\n';
-                output += '\t<div class="col-sm-4">Cell 2</div>\n';
-                break;
-            case 'three-even':
-                output += '\t<div class="col-sm-4">Cell 1</div>\n';
-                output += '\t<div class="col-sm-4">Cell 2</div>\n';
-                output += '\t<div class="col-sm-4">Cell 3</div>\n';
-                break;
-            case 'three-uneven':
-                output += '\t<div class="col-sm-3">Cell 1</div>\n';
-                output += '\t<div class="col-sm-6">Cell 2</div>\n';
-                output += '\t<div class="col-sm-3">Cell 3</div>\n';
-                break;
-            case 'four-even':
-                output += '\t<div class="col-sm-3">Cell 1</div>\n';
-                output += '\t<div class="col-sm-3">Cell 2</div>\n';
-                output += '\t<div class="col-sm-3">Cell 3</div>\n';
-                output += '\t<div class="col-sm-3">Cell 4</div>\n';
-                break;
-            case 'six-even':
-                output += '\t<div class="col-sm-2">Cell 1</div>\n';
-                output += '\t<div class="col-sm-2">Cell 2</div>\n';
-                output += '\t<div class="col-sm-2">Cell 3</div>\n';
-                output += '\t<div class="col-sm-2">Cell 4</div>\n';
-                output += '\t<div class="col-sm-2">Cell 5</div>\n';
-                output += '\t<div class="col-sm-2">Cell 6</div>\n';
-                break;
-            default:
-                output += '\t<div class="col-sm-6">Cell 1</div>\n';
-                output += '\t<div class="col-sm-6">Cell 2</div>\n';
-        }
+		switch( $( 'input[name="grid_type"]:checked' ).val() ) {
+			case 'two-even':
+				output += '\t<div class="col-sm-6">Cell 1</div>\n';
+				output += '\t<div class="col-sm-6">Cell 2</div>\n';
+				break;
+			case 'two-uneven':
+				output += '\t<div class="col-sm-8">Cell 1</div>\n';
+				output += '\t<div class="col-sm-4">Cell 2</div>\n';
+				break;
+			case 'three-even':
+				output += '\t<div class="col-sm-4">Cell 1</div>\n';
+				output += '\t<div class="col-sm-4">Cell 2</div>\n';
+				output += '\t<div class="col-sm-4">Cell 3</div>\n';
+				break;
+			case 'three-uneven':
+				output += '\t<div class="col-sm-3">Cell 1</div>\n';
+				output += '\t<div class="col-sm-6">Cell 2</div>\n';
+				output += '\t<div class="col-sm-3">Cell 3</div>\n';
+				break;
+			case 'four-even':
+				output += '\t<div class="col-sm-3">Cell 1</div>\n';
+				output += '\t<div class="col-sm-3">Cell 2</div>\n';
+				output += '\t<div class="col-sm-3">Cell 3</div>\n';
+				output += '\t<div class="col-sm-3">Cell 4</div>\n';
+				break;
+			case 'six-even':
+				output += '\t<div class="col-sm-2">Cell 1</div>\n';
+				output += '\t<div class="col-sm-2">Cell 2</div>\n';
+				output += '\t<div class="col-sm-2">Cell 3</div>\n';
+				output += '\t<div class="col-sm-2">Cell 4</div>\n';
+				output += '\t<div class="col-sm-2">Cell 5</div>\n';
+				output += '\t<div class="col-sm-2">Cell 6</div>\n';
+				break;
+			default:
+				output += '\t<div class="col-sm-6">Cell 1</div>\n';
+				output += '\t<div class="col-sm-6">Cell 2</div>\n';
+		}
 
-        output += '</div>';
+		output += '</div>';
 
-        return output;
-    };
+		return output;
+	};
 	
 	/**
 	 * Manage the Bootstrap dialog options interaction.
@@ -186,19 +186,19 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 	 * @since 2.3.3
 	 */
 
-    $( document ).on( 'click', '.js-toolset-bootstrap-grid-type figure', function( e ) {
-        var $figure = $( this ),
-            $radio = $figure.closest( 'li' ).find( 'input[name="grid_type"]' );
+	$( document ).on( 'click', '.js-toolset-bootstrap-grid-type figure', function( e ) {
+		var $figure = $( this ),
+			$radio = $figure.closest( 'li' ).find( 'input[name="grid_type"]' );
 
-        $( document )
+		$( document )
 			.find( 'ul.js-toolset-bootstrap-grid-type figure' )
 				.each( function () {
 					$( this ).removeClass( 'selected' );
 				});
 
-        $figure.addClass( 'selected' );
-        $radio.trigger( 'click' );
-    });
+		$figure.addClass( 'selected' );
+		$radio.trigger( 'click' );
+	});
 	
 	/** 
 	 * Add the Bootstrap grid button to selected editors.
@@ -207,6 +207,8 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 	 * @return self;
 	 *
 	 * @since 2.3.3
+	 * @since 3.1.0 Avoid guessing the associated toolbar by setting a classname js-toolset-editor-toolbar
+	 *        and a data-target attribute with the ID of the editor.
 	 */
 	
 	self.maybe_add_editor_button = function( editorId ) {
@@ -216,11 +218,18 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 				if ( toolbarList.find( '.js-toolset-bootstrap-grid-in-toolbar' ).length === 0 ) {
 					toolbarList.append( toolbarButton );
 				}
-			};
+			},
+			toolbarListCandidate = $( '.js-toolset-editor-toolbar[data-target="' + editorId + '"]' );
+		
+		if ( toolbarListCandidate.length > 0 ) {
+			var toolbarButton = $( button );
+			appendGridButtonIfMissing( toolbarListCandidate, toolbarButton );
+			return;
+		}
 		
 		switch ( editorId ) {
 			case 'wpv_filter_meta_html_content':
-                // Views Filter Editor
+				// Views Filter Editor
 				var toolbarButton = $( '<li>' + button + '</li>' ),
 					toolbarList = editor
 						.closest( '.js-code-editor' )
@@ -245,7 +254,8 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 				appendGridButtonIfMissing( toolbarList, toolbarButton );
 				break;
 			case 'cred_association_form_content':
-				// CRED association forms editor
+				// Forms association forms editor
+				// To remove once Forms 2.1 has been released
 				var toolbarButton = $( button ),
 					toolbarList = editor
 						.closest( '#association_form_content' )
@@ -253,7 +263,8 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 				appendGridButtonIfMissing( toolbarList, toolbarButton );
 				break;
 			case 'content':
-				// CRED main editors
+				// Forms main editors
+				// To remove once Forms 2.1 has been released
 				if (
 					$( 'body' ).hasClass( 'post-type-cred-form' ) 
 					|| $( 'body' ).hasClass( 'post-type-cred-user-form' ) 
@@ -262,7 +273,9 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 						toolbarList = editor
 							.closest( '.wp-editor-wrap' )
 								.find( '.wp-media-buttons' );
-					appendGridButtonIfMissing( toolbarList, toolbarButton );
+					if ( toolbarList.length > 0 ) {
+						appendGridButtonIfMissing( toolbarList, toolbarButton );
+					}
 				}
 				break;
 			default:
@@ -292,16 +305,16 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 	self.initHooks = function() {
 		
 		Toolset.hooks.addAction( 'toolset_text_editor_CodeMirror_init', function( editorId ) {
-            if ( editorId ) { 
-                self.maybe_add_editor_button( editorId );
-            }
-        });
-        
-        Toolset.hooks.addAction( 'toolset_text_editor_CodeMirror_init_only_buttons', function( editorId ) {
-            if ( editorId ) { 
-                self.maybe_add_editor_button( editorId );
-            }
-        });
+			if ( editorId ) { 
+				self.maybe_add_editor_button( editorId );
+			}
+		});
+		
+		Toolset.hooks.addAction( 'toolset_text_editor_CodeMirror_init_only_buttons', function( editorId ) {
+			if ( editorId ) { 
+				self.maybe_add_editor_button( editorId );
+			}
+		});
 		
 		return self;
 	};
@@ -322,5 +335,5 @@ ToolsetCommon.BootstrapCssComponentsGrids = function( $ ) {
 };
 
 jQuery( document ).ready( function( $ ) {
-    new ToolsetCommon.BootstrapCssComponentsGrids( $ );
+	new ToolsetCommon.BootstrapCssComponentsGrids( $ );
 });

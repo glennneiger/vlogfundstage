@@ -26,7 +26,7 @@ function wpcf_post_relationship_init() {
 
 function wpcf_post_relationship_add_metabox($meta_boxes, $type )
 {
-    if ( 'post_type' == $type ) {
+    if ( 'post_type' == $type && false === apply_filters( 'toolset_is_m2m_enabled', false ) ) {
         $meta_boxes['relationship'] = array(
             'callback' => 'wpcf_admin_metabox_relationship',
             'title' => __('Post Relationships (Parent / Child)', 'wpcf'),

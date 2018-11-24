@@ -10,8 +10,13 @@
  */
 final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
+	private $valid_meta_boxes_regexps = array(
+			'/^wpcf.*/',
+			'/^Types.*/',
+			'/add_meta_boxes$/',
+	);
 
-	/** @var null|Types_Field_Group_Term Currently edited field group. */
+	/** @var null|Toolset_Field_Group_Term Currently edited field group. */
 	private $field_group = null;
 
 
@@ -19,7 +24,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 		parent::__construct();
 
 		$this->get_id = 'group_id';
-		$this->type = WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION;
+		$this->type = Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION;
 
 		add_action('wp_ajax_wpcf_ajax_filter', array($this, 'ajax_filter_dialog'));
 	}
@@ -27,7 +32,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
 	public function init_admin()
 	{
-		$this->post_type = Types_Field_Group_Term::POST_TYPE;
+		$this->post_type = Toolset_Field_Group_Term::POST_TYPE;
 
 		$this->init_hooks();
 
@@ -52,6 +57,12 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 		// This should have been defined as a dependency somewhere.
 		wp_enqueue_script( 'jquery-ui-dialog' );
 		wp_enqueue_style('wp-jquery-ui-dialog');
+
+		// Toolset GUI Base dependencies
+		Toolset_Common_Bootstrap::get_instance()->register_gui_base();
+		Toolset_Gui_Base::get_instance()->init();
+		wp_enqueue_style( Toolset_Gui_Base::STYLE_GUI_BASE );
+		wp_enqueue_script( Toolset_Gui_Base::SCRIPT_GUI_JQUERY_COLLAPSIBLE );
 	}
 
 
@@ -64,7 +75,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 	public function get_page_purpose() {
 
 		$role_type = 'term-field';
-		$group_id = (int) wpcf_getget( 'group_id' );
+		$group_id = (int) toolset_getget( 'group_id' );
 		$is_group_specified = ( 0 !=  $group_id );
 
 		if( $is_group_specified ) {
@@ -102,8 +113,8 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 	private function get_field_group_id() {
 		if( null != $this->field_group ) {
 			return $this->field_group->get_id();
-		} elseif( wpcf_getpost( 'action' ) == 'wpcf_ajax_filter' ) {
-			return (int) wpcf_getpost( 'id' );
+		} elseif( toolset_getpost( 'action' ) == 'wpcf_ajax_filter' ) {
+			return (int) toolset_getpost( 'id' );
 		} elseif( isset( $_REQUEST[ $this->get_id ] ) ) {
 			return (int) $_REQUEST[ $this->get_id ];
 		} else {
@@ -113,7 +124,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
 
 	private function load_field_group( $field_group_id ) {
-		return Types_Field_Group_Term_Factory::load( $field_group_id );
+		return Toolset_Field_Group_Term_Factory::load( $field_group_id );
 	}
 
 
@@ -141,12 +152,12 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
 		$this->current_user_can_edit = WPCF_Roles::user_can_create('term-field');
 
-		$field_group_id = (int) wpcf_getarr( $_REQUEST, $this->get_id, 0 );
+		$field_group_id = (int) toolset_getarr( $_REQUEST, $this->get_id, 0 );
 
 		// If it's update, get data
 		if ( 0 != $field_group_id ) {
 
-			$this->update = wpcf_admin_fields_get_group( $field_group_id, Types_Field_Group_Term::POST_TYPE );
+			$this->update = wpcf_admin_fields_get_group( $field_group_id, Toolset_Field_Group_Term::POST_TYPE );
 
 			if ( null == $this->get_field_group() ) {
 
@@ -158,8 +169,8 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
 				$this->update['fields'] = wpcf_admin_fields_get_fields_by_group(
 					$field_group_id, 'slug', false, true, false,
-					Types_Field_Group_Term::POST_TYPE,
-					WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
+					Toolset_Field_Group_Term::POST_TYPE,
+					Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
 				);
 			}
 		}
@@ -204,9 +215,23 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 			'#value' => $this->update['id'],
 		);
 
+		$field_settings_collapsed_class = $this->update['id'] !== 0 // means not a new field group
+			? ' toolset-collapsible-closed'
+			: '';
+
+		$form['field-group-settings-box-open'] = array(
+			'#type' => 'markup',
+			'#markup' => sprintf(
+				'<div class="toolset-field-group-settings toolset-postbox%s"><div data-toolset-collapsible=".toolset-postbox" class="toolset-collapsible-handle" title="%s"><br></div><h3 data-toolset-collapsible=".toolset-postbox" class="toolset-postbox-title">%s</h3><div class="toolset-collapsible-inside">',
+				$field_settings_collapsed_class,
+				esc_attr__('Click to toggle', 'wpcf'),
+				__( 'Settings for the fields group', 'wpcf' )
+			)
+		);
+
 		$form['table-1-open'] = array(
 			'#type' => 'markup',
-			'#markup' => '<table id="wpcf-types-form-name-table" class="wpcf-types-form-table widefat js-wpcf-slugize-container"><thead><tr><th colspan="2">' . __( 'Name and description', 'wpcf' ) . '</th></tr></thead><tbody>',
+			'#markup' => '<table id="wpcf-types-form-name-table" class="wpcf-types-form-table widefat js-wpcf-slugize-container"><tbody>',
 		);
 		$table_row = '<tr><td><LABEL></td><td><ERROR><BEFORE><ELEMENT><AFTER></td></tr>';
 		$form['title'] = array(
@@ -249,28 +274,28 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 			'#inline' => true,
 		);
 
-		$form['table-1-close'] = array(
-			'#type' => 'markup',
-			'#markup' => '</tbody></table>',
-		);
-
 		/**
 		 * Where to include these field group
 		 */
 
 		$form['table-2-open'] = array(
 			'#type'   => 'markup',
-			'#markup' => '<table class="wpcf-types-form-table wpcf-where-to-include widefat"><thead><tr><th colspan="2">' . __( 'Where to include this Field Group', 'wpcf' ) . '</th></tr></thead><tbody>',
+			'#markup' => '<tr><td>' . __( 'Appears on', 'wpcf' ) . '</td>',
 		);
 
 		$form['table-2-content'] = array(
 			'#type'   => 'markup',
-			'#markup' => '<tr><td>'.$this->box_where().'</td></tr>',
+			'#markup' => '<td>'.$this->box_where().'</td></tr>',
 		);
 
-		$form['table-2-close'] = array(
+		$form['table-1-close'] = array(
 			'#type'   => 'markup',
 			'#markup' => '</tbody></table>',
+		);
+
+		$form['field-group-settings-box-close'] = array(
+			'#type' => 'markup',
+			'#markup' => '</div></div>',
 		);
 
 		$form += $this->fields();
@@ -295,7 +320,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 	private function get_relevant_taxonomy_slugs() {
 		$taxonomy_slugs = apply_filters( 'wpcf_group_form_filter_taxonomy_slugs', get_taxonomies() );
 		return array_diff(
-			array_unique( wpcf_ensarr( $taxonomy_slugs ) ),
+			array_unique( toolset_ensarr( $taxonomy_slugs ) ),
 			array( 'nav_menu', 'link_category', 'post_format' )
 		);
 	}
@@ -374,7 +399,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 			'#type'   => 'markup',
 			'#markup' => sprintf(
 				'<p class="wpcf-fields-group-conditions-description js-wpcf-fields-group-conditions-condition js-wpcf-fields-group-conditions-taxonomies">%s <span></span></p>',
-				__( 'This Term Field Group is used with the following Taxonomies:', 'wpcf' )
+				__( 'Taxonomies:', 'wpcf' )
 			),
 		);
 
@@ -405,7 +430,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 		if( $type && isset( $_REQUEST['all_fields'] ) && is_array( $_REQUEST['all_fields'] ) ) {
 			switch( $type ) {
 				case 'taxonomies-for-termmeta':
-					$selected_taxonomies = wpcf_ensarr( wpcf_getnest( $_REQUEST, array( 'all_fields', 'wpcf', 'group', 'taxonomies' ) ) );
+					$selected_taxonomies = toolset_ensarr( toolset_getnest( $_REQUEST, array( 'all_fields', 'wpcf', 'group', 'taxonomies' ) ) );
 					if( in_array( $value, array_keys( $selected_taxonomies ) ) && true == $selected_taxonomies[ $value ] ) {
 						return true;
 					}
@@ -428,7 +453,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
 
 	protected function is_there_something_to_save() {
-		$wpcf_data = wpcf_getpost( 'wpcf', null );
+		$wpcf_data = toolset_getpost( 'wpcf', null );
 		return ( null != $wpcf_data );
 	}
 
@@ -442,23 +467,23 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 			return;
 		}
 
-		$wpcf_data = wpcf_getpost( 'wpcf', null );
+		$wpcf_data = toolset_getpost( 'wpcf', null );
 
 		// check incoming $_POST data
-		$group_id = wpcf_getnest( $_POST, array( 'wpcf', 'group', 'id' ), null );
+		$group_id = toolset_getnest( $_POST, array( 'wpcf', 'group', 'id' ), null );
 		if ( null === $group_id ) { // probably can be 0, which is valid
 			$this->verification_failed_and_die( 1 );
 		}
 
 		// nonce verification
 		$nonce_name = $this->get_nonce_action( $group_id );
-		$nonce = wpcf_getpost( 'wpcf_save_group_nonce' );
+		$nonce = toolset_getpost( 'wpcf_save_group_nonce' );
 		if ( ! wp_verify_nonce( $nonce, $nonce_name ) ) {
 			$this->verification_failed_and_die( 2 );
 		}
 
 		// save group data to the database (sanitizing there)
-		$group_id = wpcf_admin_fields_save_group( wpcf_getarr( $wpcf_data, 'group', array() ), Types_Field_Group_Term::POST_TYPE, 'term' );
+		$group_id = wpcf_admin_fields_save_group( toolset_getarr( $wpcf_data, 'group', array() ), Toolset_Field_Group_Term::POST_TYPE, 'term' );
 		$field_group = $this->load_field_group( $group_id );
 
 		if ( null == $field_group ) {
@@ -469,10 +494,10 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 		$_REQUEST[ $this->get_id ] = $group_id;
 
 		// save taxonomies; sanitized on a lower level before saving to the database
-		$taxonomies_post = wpcf_getnest( $wpcf_data, array( 'group', 'taxonomies' ), array() );
+		$taxonomies_post = toolset_getnest( $wpcf_data, array( 'group', 'taxonomies' ), array() );
 		$field_group->update_associated_taxonomies( $taxonomies_post );
 
-		$this->save_filter_fields($group_id, wpcf_getarr( $wpcf_data, 'fields', array() ));
+		$this->save_filter_fields($group_id, toolset_getarr( $wpcf_data, 'fields', array() ));
 
 		do_action( 'types_fields_group_saved', $group_id );
 		do_action( 'types_fields_group_term_saved', $group_id );
@@ -514,8 +539,8 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 				if ( wpcf_types_cf_under_control(
 					'check_exists',
 					sanitize_title( $field['name'] ),
-					Types_Field_Group_Term::POST_TYPE,
-					WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
+					Toolset_Field_Group_Term::POST_TYPE,
+					Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
 				) ) {
 					$this->triggerError();
 					wpcf_admin_message( sprintf( __( 'Field with name "%s" already exists', 'wpcf' ), $field['name'] ), 'error' );
@@ -526,8 +551,8 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 					&& wpcf_types_cf_under_control(
 						'check_exists',
 						sanitize_title( $field['slug'] ),
-						Types_Field_Group_Term::POST_TYPE,
-						WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
+						Toolset_Field_Group_Term::POST_TYPE,
+						Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
 					)
 				) {
 					$this->triggerError();
@@ -541,8 +566,8 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 			// Field ID and slug are same thing
 			$field_slug = wpcf_admin_fields_save_field(
 				$field,
-				Types_Field_Group_Term::POST_TYPE,
-				WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
+				Toolset_Field_Group_Term::POST_TYPE,
+				Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
 			);
 
 
@@ -562,7 +587,7 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 			if ( defined('ICL_SITEPRESS_VERSION') && version_compare ( ICL_SITEPRESS_VERSION, '3.2', '<' ) ) {
 				if ( function_exists( 'wpml_cf_translation_preferences_store' ) ) {
 					$real_custom_field_name = wpcf_types_get_meta_prefix(
-						wpcf_admin_fields_get_field( $field_slug, false, false, false, WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION )
+						wpcf_admin_fields_get_field( $field_slug, false, false, false, Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION )
 					) . $field_slug;
 					wpml_cf_translation_preferences_store( $field_key, $real_custom_field_name );
 				}
@@ -571,8 +596,8 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
 		wpcf_admin_fields_save_group_fields(
 			$group_id, $fields, false,
-			Types_Field_Group_Term::POST_TYPE,
-			WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
+			Toolset_Field_Group_Term::POST_TYPE,
+			Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION
 		);
 	}
 
@@ -653,4 +678,25 @@ final class WPCF_Page_Edit_Termmeta_Form extends Types_Admin_Edit_Fields {
 
 	}
 
+	/**
+	 * Filter metaboxes
+	 *
+	 * It takes the list of metaboxes and use only the permitted ones.
+	 *
+	 * @since 3.0
+	 */
+	public function filter_meta_boxes() {
+		global $wp_filter;
+		foreach ( $wp_filter['add_meta_boxes']->callbacks as $priority => $callbacks ) {
+			foreach ( $callbacks as $callback => $function ) {
+				$valid = false;
+				foreach ( $this->valid_meta_boxes_regexps as $regexp ) {
+					$valid |= preg_match( $regexp, $callback );
+				}
+				if ( ! $valid ) {
+					unset( $wp_filter['add_meta_boxes']->callbacks[ $priority ][ $callback ] );
+				}
+			}
+		}
+	}
 }

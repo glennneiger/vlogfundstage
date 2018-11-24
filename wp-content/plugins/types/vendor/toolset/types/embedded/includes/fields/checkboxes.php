@@ -65,6 +65,8 @@ function wpcf_fields_checkboxes_meta_box_form( $field, $field_object ) {
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_checkboxes_editor_callback( $field, $settings ) {
     $data = array();
@@ -95,6 +97,8 @@ function wpcf_fields_checkboxes_editor_callback( $field, $settings ) {
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_checkboxes_editor_submit( $data, $field, $context ) {
     $add = '';
@@ -365,7 +369,7 @@ function wpcf_fields_checkboxes_wpv_conditional_trigger( $post ) {
 function wpcf_fields_checkboxes_conditional_filter_post_meta( $null, $object_id,
         $meta_key, $single ) {
     global $wpcf;
-    $field = wpcf_admin_fields_get_field( $wpcf->field->__get_slug_no_prefix( $meta_key ) );
+    $field = wpcf_admin_fields_get_field( $wpcf->field->get_slug_no_prefix( $meta_key ) );
     if ( !empty( $field ) && $field['type'] == 'checkboxes' ) {
         $_meta = maybe_unserialize( wpcf_get_post_meta( $object_id, $meta_key,
                         $single ) );

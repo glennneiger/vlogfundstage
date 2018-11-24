@@ -649,7 +649,10 @@ if( typeof typesStatusBasicJsScript === 'undefined' ) {
             }
         }
 
-        var url = ajaxurl + '?action=wpcf_ajax&wpcf_action=editor_callback&_typesnonce=' + types.wpnonce + '&field_id=' + fieldID + '&field_type=' + metaType + '&post_id=' + postID;
+        // Needed for getting related and intermediary relationships when a new post/custom post is created
+        var postType = jQuery('#post_type').val();
+
+        var url = ajaxurl + '?action=wpcf_ajax&wpcf_action=editor_callback&_typesnonce=' + types.wpnonce + '&field_id=' + fieldID + '&field_type=' + metaType + '&post_id=' + postID + '&post_type=' + postType;
         // Check if shortcode passed
         if( typeof arguments[ 3 ] === 'string' ) {
             // urlencode() PHP
@@ -1028,4 +1031,29 @@ if( typeof typesStatusBasicJsScript === 'undefined' ) {
 
     })( jQuery );
 
+    // WYSIWYG Fix for Gutenberg
+    (function( $ ){
+        $( document ).ready( function() {
+            if( typeof window.wp.blocks == 'undefined' ) {
+                // gutenberg not active
+                return;
+            }
+
+            if( typeof window.tinyMCE == 'undefined' ) {
+                // no tinyMCE (the future is now)
+                return;
+            }
+
+            window.tinyMCE.on( 'AddEditor' , function( event ) {
+                var editor = event.editor;
+
+                if( editor.id.startsWith( 'wpcf-' ) ) {
+                    editor.on( 'change', function() {
+                        // trigger editor save() which moves the tinyMCE content to the forms textarea
+                        editor.save();
+                    } );
+                };
+            } );
+        } );
+    } )( jQuery );
 }

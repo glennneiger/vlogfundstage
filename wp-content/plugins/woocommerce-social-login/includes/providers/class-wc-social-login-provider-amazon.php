@@ -24,12 +24,14 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Amazon social login provider class
  *
  * @since 1.0.0
  */
-class WC_Social_Login_Provider_Amazon extends WC_Social_Login_Provider {
+class WC_Social_Login_Provider_Amazon extends \WC_Social_Login_Provider {
 
 
 	/**
@@ -65,7 +67,7 @@ class WC_Social_Login_Provider_Amazon extends WC_Social_Login_Provider {
 	public function get_description() {
 
 		/* translators: Placeholders: %1$s - <a> tag, %2$s - </a> tag */
-		$description = sprintf( __( 'Need help setting up and configuring Amazon? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="http://docs.woocommerce.com/document/woocommerce-social-login-create-social-apps#amazon">', '</a>');
+		$description = sprintf( __( 'Need help setting up and configuring Amazon? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="' . $this->get_documentation_url() . '">', '</a>' );
 
 		$callback_url_format = get_option( 'wc_social_login_callback_url_format' );
 

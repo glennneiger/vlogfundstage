@@ -81,6 +81,8 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 
 		$results = new Toolset_Result_Set();
 
+		$results->add( $this->maybe_fix_missing_relationships_table() );
+
 		$results->add( $this->create_post_type_set_table() );
 		$results->add( $this->transform_post_type_sets() );
 		$results->add( $this->change_relationship_type_column_datatypes() );
@@ -377,5 +379,37 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 		);
 
 		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
+	}
+
+
+	/**
+	 * @param string $table_name
+	 *
+	 * @return bool
+	 */
+	private function table_exists( $table_name ) {
+		$query = $this->wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name );
+		return ( $this->wpdb->get_var( $query ) == $table_name );
+	}
+
+
+	/**
+	 * This aims to fix the issue clients were facing after automatic m2m activation
+	 * where we failed to create the toolset_relationships table.
+	 *
+	 * Those clients will get stuck at this upgrade mechanism failing and retrying endlessly.
+	 *
+	 * @link https://onthegosystems.myjetbrains.com/youtrack/issue/types-1636
+	 * @return Toolset_Result|Toolset_Result[]
+	 * @since 3.0.2
+	 */
+	private function maybe_fix_missing_relationships_table() {
+		if( $this->table_exists( $this->get_relationships_table_name() ) ) {
+			return new Toolset_Result( true );
+		}
+
+		do_action( 'toolset_do_m2m_full_init' );
+		$database_operations = Toolset_Relationship_Database_Operations::get_instance();
+		return $database_operations->do_native_dbdelta()->get_results_flat();
 	}
 }

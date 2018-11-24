@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Renders any linked social profiles on my account page.
  *

@@ -100,7 +100,7 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
 	    //
 	    // This must be done after all post types and taxonomies are registered, and they can be registered properly
 	    // only on 'init'. So after making changes, we need to reload the page and THEN flush.
-	    if( '1' == wpcf_getget( 'flush', '0' ) ) {
+	    if( '1' == toolset_getget( 'flush', '0' ) ) {
 		    flush_rewrite_rules();
 	    }
 
@@ -721,6 +721,12 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
             if ( in_array( $post_type_slug, $wpcf->excluded_post_types ) || !$post_type->show_ui ) {
                 continue;
             }
+
+            $post_type_helper = new Types_Post_Type_Helper( $post_type_slug );
+            if( $post_type_helper->has_special_purpose() ) {
+            	continue;
+            }
+
             $options[$post_type_slug] = array(
                 '#name' => 'ct[supports][' . $post_type_slug . ']',
                 '#title' => $post_type->labels->name,

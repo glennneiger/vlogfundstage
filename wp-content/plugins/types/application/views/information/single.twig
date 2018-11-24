@@ -10,7 +10,7 @@
         {% for message in information.get_messages() %}
             {%  for description in message.description %}
                 {%  if description.type %}
-                    {% include 'information/description/' ~ description.type ~ '.twig' %}
+                    {% include '@types/information/description/' ~ description.type ~ '.twig' %}
                 {% endif %}
             {% endfor %}
         {% endfor %}

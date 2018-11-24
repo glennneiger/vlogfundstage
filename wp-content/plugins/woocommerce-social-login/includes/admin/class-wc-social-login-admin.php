@@ -24,6 +24,8 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Admin class
  *
@@ -55,6 +57,9 @@ class WC_Social_Login_Admin {
 		// add social profiles column to the Users admin table
 		add_filter( 'manage_users_columns',       array( $this, 'add_user_columns' ), 11 );
 		add_filter( 'manage_users_custom_column', array( $this, 'user_column_values' ), 11, 3 );
+
+		// adds providers information to system status report in admin
+		add_action( 'woocommerce_system_status_report', array( $this, 'add_providers_system_status_report' ) );
 	}
 
 
@@ -103,7 +108,8 @@ class WC_Social_Login_Admin {
 
 		include_once( wc_social_login()->get_plugin_path() . '/includes/admin/class-wc-social-login-report.php' );
 
-		$report = new WC_Report_Social_Login();
+		$report = new \WC_Report_Social_Login();
+
 		$report->output_report();
 	}
 
@@ -116,18 +122,18 @@ class WC_Social_Login_Admin {
 	 */
 	public function load_styles_scripts( $hook_suffix ) {
 
-		$is_settings_page = SV_WC_Plugin_Compatibility::normalize_wc_screen_id( 'wc-settings' ) === $hook_suffix && isset( $_GET['tab'] )    && 'social_login' === $_GET['tab'];
-		$is_report_page   = SV_WC_Plugin_Compatibility::normalize_wc_screen_id( 'wc-reports' )  === $hook_suffix && isset( $_GET['report'] ) && 'social_login' === $_GET['report'];
+		$is_settings_page = Framework\SV_WC_Plugin_Compatibility::normalize_wc_screen_id( 'wc-settings' ) === $hook_suffix && isset( $_GET['tab'] )    && 'social_login' === $_GET['tab'];
+		$is_report_page   = Framework\SV_WC_Plugin_Compatibility::normalize_wc_screen_id( 'wc-reports' )  === $hook_suffix && isset( $_GET['report'] ) && 'social_login' === $_GET['report'];
 		$is_users_page    = in_array( $hook_suffix, array( 'users.php', 'profile.php', 'user-edit.php' ) );
 
 		// load admin css only on woocommerce settings or admin report screen
 		if ( $is_settings_page || $is_report_page ) {
 
 			// admin CSS
-			wp_enqueue_style( 'wc-social-login-admin', wc_social_login()->get_plugin_url() . '/assets/css/admin/wc-social-login-admin.min.css', array( 'woocommerce_admin_styles' ), WC_Social_Login::VERSION );
+			wp_enqueue_style( 'wc-social-login-admin', wc_social_login()->get_plugin_url() . '/assets/css/admin/wc-social-login-admin.min.css', array( 'woocommerce_admin_styles' ), \WC_Social_Login::VERSION );
 
 			// admin JS
-			wp_enqueue_script( 'wc-social-login-admin', wc_social_login()->get_plugin_url() . '/assets/js/admin/wc-social-login-admin.min.js', array( 'jquery', 'jquery-ui-sortable', 'woocommerce_admin' ), WC_Social_Login::VERSION );
+			wp_enqueue_script( 'wc-social-login-admin', wc_social_login()->get_plugin_url() . '/assets/js/admin/wc-social-login-admin.min.js', array( 'jquery', 'jquery-ui-sortable', 'woocommerce_admin' ), \WC_Social_Login::VERSION );
 		}
 
 		// WC admin.css is not enqueued on the User screens so we want to enqueue
@@ -135,7 +141,7 @@ class WC_Social_Login_Admin {
 		if (  $is_users_page ) {
 
 			// admin CSS
-			wp_enqueue_style( 'wc-social-login-admin', wc_social_login()->get_plugin_url() . '/assets/css/admin/wc-social-login-admin.min.css', array(), WC_Social_Login::VERSION );
+			wp_enqueue_style( 'wc-social-login-admin', wc_social_login()->get_plugin_url() . '/assets/css/admin/wc-social-login-admin.min.css', array(), \WC_Social_Login::VERSION );
 
 			// customize button colors for Users listing table and profiles
 			wp_add_inline_style( 'wc-social-login-admin', wc_social_login()->get_button_colors_css() );
@@ -213,7 +219,7 @@ class WC_Social_Login_Admin {
 	 * @return array $columns columns array with 'Social Profiles'
 	 */
 	public function add_user_columns( $columns ) {
-		return SV_WC_Helper::array_insert_after( $columns, 'email', array( 'wc_social_login_profiles' => __( 'Social Profiles', 'woocommerce-social-login' ) ) );
+		return Framework\SV_WC_Helper::array_insert_after( $columns, 'email', array( 'wc_social_login_profiles' => __( 'Social Profiles', 'woocommerce-social-login' ) ) );
 	}
 
 	/**
@@ -241,4 +247,49 @@ class WC_Social_Login_Admin {
 	}
 
 
-} // end \WC_Social_Login_Admin class
+	/**
+	 * Adds tabular data to the system status report page with providers information.
+	 *
+	 * @internal
+	 *
+	 * @since 2.6.0
+	 */
+	public function add_providers_system_status_report() {
+
+		?>
+		<table
+			id="wc-social-login-providers"
+			class="wc_status_table widefat"
+			cellspacing="0">
+			<thead>
+				<tr>
+					<th colspan="3" data-export-label="Social Login">
+						<h2><?php esc_html_e( 'Social Login Providers', 'woocommerce-social-login' ); ?> <?php echo wc_help_tip( __( 'This sections shows information about social login providers.', 'woocommerce-social-login' ) ); ?></h2>
+					</th>
+				</tr>
+			</thead>
+			<?php foreach ( wc_social_login()->get_providers() as $provider ) : ?>
+
+				<tbody>
+					<tr>
+						<td data-export-label="<?php echo esc_attr( ucfirst( $provider->get_id() ) ); ?>"><?php echo esc_html( $provider->get_title() ); ?>:</td>
+						<td class="help">&nbsp;</td>
+						<td>
+							<?php if ( $provider->is_available() ): ?>
+								<mark class="yes"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Available', 'woocommerce-social-login' ); ?></mark>
+							<?php elseif ( $provider->is_enabled() && ! $provider->is_configured() ) : ?>
+								<mark class="error"><span class="dashicons dashicons-no"></span> <?php esc_html_e( 'Not configured', 'woocommerce-social-login' ); ?></mark>
+							<?php else : ?>
+								<mark class="no"><span class="dashicons dashicons-minus"></span> <?php esc_html_e( 'Disabled', 'woocommerce-social-login' ); ?></mark>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</tbody>
+
+			<?php endforeach; ?>
+		</table>
+		<?php
+	}
+
+
+}

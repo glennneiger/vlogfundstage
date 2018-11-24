@@ -24,7 +24,7 @@
 
 // load base class
 if ( ! class_exists( 'Hybrid_Providers_Google' ) ) {
-	require_once( Hybrid_Auth::$config['path_providers'] . 'Google.php' );
+	require_once( \Hybrid_Auth::$config['path_providers'] . 'Google.php' );
 }
 
 
@@ -33,7 +33,7 @@ if ( ! class_exists( 'Hybrid_Providers_Google' ) ) {
  *
  * @since 2.0.0
  */
-class SV_Hybrid_Providers_Google extends Hybrid_Providers_Google {
+class SV_Hybrid_Providers_Google extends \Hybrid_Providers_Google {
 
 
 	/**
@@ -47,7 +47,7 @@ class SV_Hybrid_Providers_Google extends Hybrid_Providers_Google {
 	public function initialize() {
 
 		if ( ! $this->config['keys']['id'] || ! $this->config['keys']['secret'] ) {
-			throw new Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
+			throw new \Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
 		}
 
 		// override requested scope
@@ -62,11 +62,11 @@ class SV_Hybrid_Providers_Google extends Hybrid_Providers_Google {
 		}
 
 		// include OAuth2 client
-		require_once( Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
+		require_once( \Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-wp-oauth2-client.php' );
 
 		// create a new OAuth2 client instance
-		$this->api = new WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
+		$this->api = new \WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
 
 		$this->api->authorize_url   = 'https://accounts.google.com/o/oauth2/auth';
 		$this->api->token_url       = 'https://accounts.google.com/o/oauth2/token';
@@ -102,7 +102,7 @@ class SV_Hybrid_Providers_Google extends Hybrid_Providers_Google {
 		$response = $this->api->api( 'https://www.googleapis.com/oauth2/v1/userinfo' );
 
 		if ( ! isset( $response->id ) || isset( $response->error ) ) {
-			throw new Exception( "User profile request failed! {$this->providerId} returned an invalid response:" . Hybrid_Logger::dumpData( $response ), 6 );
+			throw new \Exception( "User profile request failed! {$this->providerId} returned an invalid response:" . \Hybrid_Logger::dumpData( $response ), 6 );
 		}
 
 		$this->user->profile->identifier    = $response->id;

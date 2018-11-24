@@ -24,6 +24,8 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * HybridAuth class
  *
@@ -40,9 +42,10 @@ class WC_Social_Login_HybridAuth {
 
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 *
 	 * @since 2.0.0
+	 *
 	 * @param string $base_auth_path base authentication path
 	 */
 	public function __construct( $base_auth_path ) {
@@ -124,7 +127,7 @@ class WC_Social_Login_HybridAuth {
 			// ask for the user's profile from the provider
 			$ha_profile = $ha_provider->getUserProfile();
 
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 
 			// see https://github.com/skyverge/wc-plugins/issues/1950
 			if ( ! empty( $hybridauth ) && is_callable( array( $hybridauth, 'logoutAllProviders' ) ) ) {
@@ -152,14 +155,14 @@ class WC_Social_Login_HybridAuth {
 			}
 		}
 
-		$profile = new WC_Social_Login_Provider_Profile( $provider_id, $profile_data );
+		$profile = new \WC_Social_Login_Provider_Profile( $provider_id, $profile_data );
 
 		// process user profile and log in
 		try {
 
 			$user_id = $this->process_profile( $profile, $provider_id );
 
-		} catch ( SV_WC_Plugin_Exception $e ) {
+		} catch ( Framework\SV_WC_Plugin_Exception $e ) {
 
 			wc_add_notice( $e->getMessage(), 'error' );
 
@@ -188,7 +191,7 @@ class WC_Social_Login_HybridAuth {
 			$hybridauth = $this->load_hybridauth();
 			$hybridauth->logoutAllProviders();
 
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 
 			// log the exception, since we cannot extract anything meaningful from the message
 			// (it's basically a serialized object concatenated with a string)
@@ -207,7 +210,7 @@ class WC_Social_Login_HybridAuth {
 	private function load_hybridauth() {
 
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-hybrid-storage.php' );
-		require_once( wc_social_login()->get_plugin_path() . '/lib/hybridauth/hybridauth/Hybrid/Auth.php' );
+		require_once( wc_social_login()->get_plugin_path() . '/vendor/hybridauth/hybridauth/hybridauth/Hybrid/Auth.php' );
 
 		return new Hybrid_Auth( $this->config );
 	}
@@ -222,22 +225,25 @@ class WC_Social_Login_HybridAuth {
 	public function process_endpoint( $request = null ) {
 
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-hybrid-storage.php' );
-		require_once( wc_social_login()->get_plugin_path() . '/lib/hybridauth/hybridauth/Hybrid/Auth.php' );
-		require_once( wc_social_login()->get_plugin_path() . '/lib/hybridauth/hybridauth/Hybrid/Endpoint.php' );
+		require_once( wc_social_login()->get_plugin_path() . '/vendor/hybridauth/hybridauth/hybridauth/Hybrid/Auth.php' );
+		require_once( wc_social_login()->get_plugin_path() . '/vendor/hybridauth/hybridauth/hybridauth/Hybrid/Endpoint.php' );
 
 		try {
 
 			Hybrid_Endpoint::process( $request );
 
-		} catch ( Hybrid_Exception $e ) {
+		} catch ( \Hybrid_Exception $e ) {
 
 			$error_code    = 1;
 			$error_message = $e->getMessage();
 
 			// if we hit a probable caching issue, we warn the admin as well
-			if ( SV_WC_Helper::str_starts_with( $error_message, 'Endpoint: Error while trying to init Hybrid_Auth: You cannot access this page directly' ) ) {
+			if ( Framework\SV_WC_Helper::str_starts_with( $error_message, 'Endpoint: Error while trying to init Hybrid_Auth: You cannot access this page directly' ) ) {
 
-				$error_message .= sprintf( ' There might be an issue with the host or a WordPress plugin caching the authentication endpoint, please check documentation: %s', esc_url( wc_social_login()->get_documentation_url() . '#caching-issue' ) );
+				$error_message .= sprintf( ' There might be an issue with the host or a WordPress plugin caching the authentication endpoint, please check documentation: %1$s. If you are not seeing any issues with %2$s, please disregard this message.',
+					esc_url( wc_social_login()->get_documentation_url() . '#caching-issue' ),
+					wc_social_login()->get_plugin_name()
+				);
 
 				set_transient( '_wc_social_login_hybridauth_caching_issue', $error_code, WEEK_IN_SECONDS );
 			}
@@ -271,7 +277,7 @@ class WC_Social_Login_HybridAuth {
 		// if the provider did not provide an email and user does not have an email, display a notice and
 		// redirect to my account page, unless user was on checkout page where they are asked for an email
 		// address anyway. User will be redirected to original return url after entering their email address.
-		if ( isset( $user->user_email ) && '' === $user->user_email && ! SV_WC_Helper::str_starts_with( $return_url, wc_get_checkout_url() ) ) {
+		if ( isset( $user->user_email ) && '' === $user->user_email && ! Framework\SV_WC_Helper::str_starts_with( $return_url, wc_get_checkout_url() ) ) {
 
 			WC()->session->set( 'wc_social_login_missing_email', true );
 
@@ -331,7 +337,7 @@ class WC_Social_Login_HybridAuth {
 	 * @since 1.0.0
 	 * @param WC_Social_Login_Provider_profile $profile
 	 * @return int the user ID
-	 * @throws SV_WC_Plugin_Exception
+	 * @throws Framework\SV_WC_Plugin_Exception
 	 */
 	private function process_profile( $profile ) {
 		global $wpdb;
@@ -340,7 +346,7 @@ class WC_Social_Login_HybridAuth {
 
 		// this should never happen, but let's make sure we handle this anyway
 		if ( ! $provider ) {
-			throw new SV_WC_Plugin_Exception( sprintf( __( 'No provider class found for %s', 'woocommerce-social-login' ), $profile->get_provider_id() ) );
+			throw new Framework\SV_WC_Plugin_Exception( sprintf( __( 'No provider class found for %s', 'woocommerce-social-login' ), $profile->get_provider_id() ) );
 		}
 
 		$user         = null;
@@ -349,7 +355,7 @@ class WC_Social_Login_HybridAuth {
 
 		// ensure that providers can't return a blank identifier
 		if ( ! $profile->get_identifier() ) {
-			throw new SV_WC_Plugin_Exception( sprintf( __( '%s returned an invalid user identifier.', 'woocommerce-social-login' ), $profile->get_provider_id() ) );
+			throw new Framework\SV_WC_Plugin_Exception( sprintf( __( '%s returned an invalid user identifier.', 'woocommerce-social-login' ), $profile->get_provider_id() ) );
 		}
 
 		// look up if the user already exists on WP
@@ -386,9 +392,9 @@ class WC_Social_Login_HybridAuth {
 			if ( $user && get_current_user_id() !== $user->ID ) {
 
 				if ( 'identifier' === $found_via ) {
-					throw new SV_WC_Plugin_Exception( $provider->get_notice_text( 'account_already_linked' ) );
+					throw new Framework\SV_WC_Plugin_Exception( $provider->get_notice_text( 'account_already_linked' ) );
 				} else {
-					throw new SV_WC_Plugin_Exception( $provider->get_notice_text( 'account_already_exists' ) );
+					throw new Framework\SV_WC_Plugin_Exception( $provider->get_notice_text( 'account_already_exists' ) );
 				}
 			}
 
@@ -401,7 +407,7 @@ class WC_Social_Login_HybridAuth {
 
 		// check if a user is found via email and not in one of the allowed roles
 		if ( ! is_user_logged_in() && $user && 'email' === $found_via && ! in_array( $user->roles[0], apply_filters( 'wc_social_login_find_by_email_allowed_user_roles', array( 'subscriber', 'customer' ) ) ) ) {
-			throw new SV_WC_Plugin_Exception( __( 'Oops, it looks like you may already have an account&hellip; please log in to link your profile.', 'woocommerce-social-login' ) );
+			throw new Framework\SV_WC_Plugin_Exception( __( 'Oops, it looks like you may already have an account&hellip; please log in to link your profile.', 'woocommerce-social-login' ) );
 		}
 
 		// if no user was found, create one
@@ -480,9 +486,9 @@ class WC_Social_Login_HybridAuth {
 	 * visibility from public to private
 	 *
 	 * @since 1.0.0
-	 * @param WC_Social_Login_Provider_profile $profile user profile object
+	 * @param \WC_Social_Login_Provider_profile $profile user profile object
 	 * @return int|WP_Error The newly created user's ID or a WP_Error object if the user could not be created.
-	 * @throws SV_WC_Plugin_Exception
+	 * @throws Framework\SV_WC_Plugin_Exception
 	 */
 	private function create_new_customer( $profile ) {
 
@@ -491,7 +497,7 @@ class WC_Social_Login_HybridAuth {
 		 *
 		 * @since 1.0.0
 		 * @param array $userdata
-		 * @param WC_Social_Login_Provider_Profile $profile
+		 * @param \WC_Social_Login_Provider_Profile $profile
 		 */
 		$userdata = apply_filters( 'wc_social_login_' . $profile->get_provider_id() . '_new_user_data', array(
 			'role'       => 'customer',
@@ -507,19 +513,39 @@ class WC_Social_Login_HybridAuth {
 			$userdata['user_login'] = sanitize_key( $userdata['first_name'] . $userdata['last_name'] );
 		}
 
+		// mimics behavior of wp_insert_user() which would strip encoded characters and could prompt empty_user_login error
+		$username = sanitize_user( $userdata['user_login'], true );
+
+		// if the username is empty, try to build one from other profile properties
+		if ( '' === $username ) {
+
+			// try to make a username from user first and last name
+			if ( '' !== $userdata['first_name'] || '' !== $userdata['last_name'] ) {
+				$name     = is_rtl() ? implode( '_', array_filter( array( $userdata['last_name'], $userdata['first_name'] ) ) ) : implode( '_', array_filter( array( $userdata['first_name'], $userdata['last_name'] ) ) );
+				$username = sanitize_user( strtolower( $name ), true );
+			}
+
+			// if that didn't work, replace the empty username with a unique user_* ID (tries to use a localized name for user first)
+			if ( '' === $username ) {
+				$user     = sanitize_user( strtolower( __( 'User', 'woocommerce-social-login' ) ), true );
+				$username = uniqid( empty( $user ) ? 'user_' : "{$user}_", false );
+			}
+
+			$userdata['user_login'] = $username;
+		}
+
 		// ensure username is unique
-		$append     = 1;
-		$o_username = $userdata['user_login'];
+		$append = 1;
 
 		while ( username_exists( $userdata['user_login'] ) ) {
-			$userdata['user_login'] = $o_username . $append;
+			$userdata['user_login'] = $username . $append;
 			$append ++;
 		}
 
 		$customer_id = wp_insert_user( $userdata );
 
 		if ( is_wp_error( $customer_id ) ) {
-			throw new SV_WC_Plugin_Exception( '<strong>' . __( 'ERROR', 'woocommerce-social-login' ) . '</strong>: ' . __( 'Couldn&#8217;t register you&hellip; please contact us if you continue to have problems.', 'woocommerce-social-login' ) );
+			throw new Framework\SV_WC_Plugin_Exception( '<strong>' . __( 'ERROR', 'woocommerce-social-login' ) . '</strong>: ' . __( 'Couldn&#8217;t register you&hellip; please contact us if you continue to have problems.', 'woocommerce-social-login' ) );
 		}
 
 		// trigger New Account email

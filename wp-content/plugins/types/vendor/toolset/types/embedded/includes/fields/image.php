@@ -57,6 +57,8 @@ function wpcf_fields_image_valid_extension()
  * @param $post
  *
  * @return array
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_image_editor_callback(
 	$field, $data, /** @noinspection PhpUnusedParameterInspection */ $context, $post
@@ -169,6 +171,8 @@ function wpcf_fields_image_editor_callback(
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_image_editor_submit( $data, $field, $context ) {
 
@@ -297,7 +301,7 @@ function wpcf_fields_image_view( $params ) {
     }
 
     // Compatibility with old parameters
-    $old_param = isset( $params['proportional'] ) && $params['proportional'] == 'true' ? 'proportional' : 'crop';
+    $old_param = isset( $params['proportional'] ) && $params['proportional'] ? 'proportional' : 'crop';
     $resize = isset( $params['resize'] ) ? $params['resize'] : $old_param;
 
     // Pre-configured size (use WP function) IF NOT CROPPED
@@ -307,8 +311,8 @@ function wpcf_fields_image_view( $params ) {
         if( $image_data['is_attachment'] === true ) {
 	        $image_data['is_attachment'] = wpcf_image_is_attachment( $image_data['fullrelpath'] );
         }
-	    
-        if ( isset( $params['url'] ) && $params['url'] == 'true' ) {
+
+        if ( isset( $params['url'] ) && $params['url'] ) {
             $image_url = wp_get_attachment_image_src( $image_data['is_attachment'], $params['size'] );
             if ( !empty( $image_url[0] ) ) {
                 $output = $image_url[0];
@@ -799,8 +803,8 @@ function wpcf_fields_image_get_remote( $url ) {
             return new WP_Error( 'wpcf_image_cache_file_error',
                 sprintf(
                     __( 'Remote server returned error response %1$d %2$s', 'wpcf' ),
-                    esc_html( $resp['response'] ),
-                    get_status_header_desc( $resp['response'] ) 
+                    esc_html( $resp['response']['message'] ),
+                    get_status_header_desc( $resp['response'] )
                 )
             );
         }
@@ -1090,7 +1094,7 @@ function wpcf_image_add_to_library( $post, $abspath ){
 
 /**
  * Class WPCF_Guid_Id
- * 
+ *
  * @since 2.2.12 Temporary solution to speed up image fields
  */
 class WPCF_Guid_Id {
@@ -1349,9 +1353,9 @@ WPCF_Guid_Id::get_instance();
 /**
  * Checks if image is attachment.
  *
- * @global object $wpdb
- * @param type $guid
- * @return type
+ * @param $guid
+ * @return null|string
+ * @deprecated Use Toolset_Utils::get_attachment_id_by_url() instead.
  */
 function wpcf_image_is_attachment( $guid ) {
 	$wpcf_guid_id = WPCF_Guid_Id::get_instance();

@@ -224,15 +224,14 @@ return array(
 					'description' => array(
 						array(
 							'type' => 'paragraph',
-							'content' => __( 'Toolset plugins let you design templates for single items (%POST-LABEL-SINGULAR% pages),
-                    with all the fields that you need to display.', 'wpcf' )
+							'content' => __( 'To design templates, you need to activate Toolset Views plugin.', 'wpcf' )
 						),
 						array(
 							'type'   => 'link',
 							'class'  => 'button-primary types-button',
 							'external' => true,
-							'label'  => __( 'Learn about creating templates with Toolset', 'wpcf' ),
-							'target' => Types_Helper_Url::get_url( 'creating-templates-with-toolset', 'popup' ),
+							'label'  => __('Download Toolset Views from your Toolset account', 'wpcf' ),
+							'target' => Types_Helper_Url::get_url( 'toolset-account-downloads', 'popup' ),
 						),
 					)
 				)

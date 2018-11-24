@@ -158,8 +158,10 @@ class Toolset_Assets_Manager {
 	const SCRIPT_CODEMIRROR = 'toolset-codemirror-script';
 	const SCRIPT_CODEMIRROR_CSS = 'toolset-meta-html-codemirror-css-script';
 	const SCRIPT_CODEMIRROR_XML = 'toolset-meta-html-codemirror-xml-script';
+	const SCRIPT_CODEMIRROR_PHP = 'toolset-meta-html-codemirror-php-script';
 	const SCRIPT_CODEMIRROR_HTMLMIXED = 'toolset-meta-html-codemirror-htmlmixed-script';
 	const SCRIPT_CODEMIRROR_JS = 'toolset-meta-html-codemirror-js-script';
+	const SCRIPT_CODEMIRROR_C_LIKE = 'toolset-meta-html-codemirror-c-like';
 	const SCRIPT_CODEMIRROR_OVERLAY = 'toolset-meta-html-codemirror-overlay-script';
 	const SCRIPT_CODEMIRROR_UTILS_SEARCH = 'toolset-meta-html-codemirror-utils-search';
 	const SCRIPT_CODEMIRROR_UTILS_SEARCH_CURSOR = 'toolset-meta-html-codemirror-utils-search-cursor';
@@ -726,6 +728,29 @@ class Toolset_Assets_Manager {
 			array( self::SCRIPT_CODEMIRROR_OVERLAY ),
 			"5.5.0"
 		);
+
+		$this->register_script(
+			self::SCRIPT_CODEMIRROR_C_LIKE,
+			$this->assets_url . '/visual-editor/res/js/codemirror/mode/clike/clike.js',
+			array( self::SCRIPT_CODEMIRROR_OVERLAY ),
+			"5.5.0"
+		);
+
+		$this->register_script(
+			self::SCRIPT_CODEMIRROR_PHP,
+			$this->assets_url . '/visual-editor/res/js/codemirror/mode/php/php.js',
+			array(
+				self::SCRIPT_CODEMIRROR_OVERLAY,
+				self::SCRIPT_CODEMIRROR_XML,
+				self::SCRIPT_CODEMIRROR_JS,
+				self::SCRIPT_CODEMIRROR_CSS,
+				self::SCRIPT_CODEMIRROR_HTMLMIXED,
+				self::SCRIPT_CODEMIRROR_C_LIKE,
+			),
+			"5.5.0"
+		);
+
+
 
 		$this->register_script(
 			self::SCRIPT_CODEMIRROR_CSS,

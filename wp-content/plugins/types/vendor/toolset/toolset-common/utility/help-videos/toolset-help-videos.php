@@ -11,7 +11,9 @@ if( ! class_exists( 'Toolset_HelpVideo', false ) ) {
         private $width = 820;
         private $height = 506;
         private $title = 'Tutorial Video';
+        private $renderer = 'video';
         private $append_to = '';
+        private $track = '';
         private static $instances = array();
         protected static $current = null;
         const KEY = 'toolset_help_video';
@@ -132,7 +134,9 @@ if( ! class_exists( 'Toolset_HelpVideo', false ) ) {
                 'width' => $this->width,
                 'height' => $this->height,
                 'title' => $this->title,
-                'append_to' => $this->append_to
+                'append_to' => $this->append_to,
+	            'renderer' => $this->renderer,
+	            'track' => $this->track
             );
 
             return self::$instances;
@@ -237,6 +241,4 @@ if( ! class_exists( 'Toolset_HelpVideo', false ) ) {
     }
 
     add_action( 'admin_menu', array( 'Toolset_VideoDetachedPage', 'getInstance' ), 99 );
-    
-
 }

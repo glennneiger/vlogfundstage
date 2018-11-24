@@ -31,7 +31,7 @@ Types.page.fieldControl.viewmodels.DeleteDialogViewModel = function(subject, clo
                 : Types.page.fieldControl.strings.misc['deleteFields']
         );
 
-        var dialog = Types.page.fieldControl.dialogHandler.create(
+        var dialog = Types.page.fieldControl.main.createDialog(
             'types-delete-field-dialog',
             title,
             {},
@@ -42,7 +42,7 @@ Types.page.fieldControl.viewmodels.DeleteDialogViewModel = function(subject, clo
                         cleanup(dialog);
                         closeCallback(true);
                     },
-                    'class': 'button-primary types-delete-button'
+                    'class': 'button toolset-danger-button'
                 },
                 {
                     text: Types.page.fieldControl.strings.button['cancel'],
@@ -50,7 +50,7 @@ Types.page.fieldControl.viewmodels.DeleteDialogViewModel = function(subject, clo
                         cleanup(dialog);
                         closeCallback(false);
                     },
-                    'class': 'wpcf-ui-dialog-cancel'
+                    'class': 'button wpcf-ui-dialog-cancel'
                 }
             ]
         );

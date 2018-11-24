@@ -27,12 +27,7 @@
  * Now that we have a unique version for all plugins
  * we define the version here
  */
-
-// Note: Since the 2.8 branch is meant just for the support of the legacy Types 2.3.* branch,
-// we're relaxing the rule and incrementing the loader number just by one.
-//
-// This may keep going on for some time and we don't want to run out of numbers for point releases.
-$toolset_common_version = 280001;
+$toolset_common_version = 323000;
 
 
 /* ---------------------------------------------------------------------- *\

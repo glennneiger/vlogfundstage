@@ -230,7 +230,7 @@ function wpcf_admin_help($page, $contextual_help = '')
 		case 'wpcf-edit-type':
         case 'edit_type':
             $help .= ''
-               .__('Use this page to create a WordPress post type. If you’d like to learn more about Post Types you can read our detailed guide: <a href="https://wp-types.com/user-guides/create-a-custom-post-type/" target="_blank">https://wp-types.com/user-guides/create-a-custom-post-type/</a>', 'wpcf')
+               .__('Use this page to create a WordPress post type. If you’d like to learn more about Post Types you can read our detailed guide: <a href="https://toolset.com/user-guides/create-a-custom-post-type/" target="_blank">https://toolset.com/user-guides/create-a-custom-post-type/</a>', 'wpcf')
                .PHP_EOL
                .PHP_EOL
                .'<dt>'.__('Name and Description', 'wpcf').'</dt>'
@@ -255,7 +255,7 @@ function wpcf_admin_help($page, $contextual_help = '')
 		case 'wpcf-edit-tax':
         case 'edit_tax':
             $help .= ''
-                .__('You can use Taxonomies to categorize your content. Read more about what they are on our website: <a href="https://wp-types.com/user-guides/create-a-custom-post-type/" target="_blank">https://wp-types.com/user-guides/create-a-custom-post-type/ &raquo;</a> or you can read our guide about how to set them up: <a href="http://wp-types.com/user-guides/create-custom-taxonomies/" target="_blank">http://wp-types.com/user-guides/create-custom-taxonomies/</a>', 'wpcf')
+                .__('You can use Taxonomies to categorize your content. Read more about what they are on our website: <a href="https://toolset.com/user-guides/create-a-custom-post-type/" target="_blank">https://toolset.com/user-guides/create-a-custom-post-type/ &raquo;</a> or you can read our guide about how to set them up: <a href="https://toolset.com/user-guides/create-custom-taxonomies/" target="_blank">https://toolset.com/user-guides/create-custom-taxonomies/</a>', 'wpcf')
                 .'<dl>'
                 .'<dt>'.__('Name and Description', 'wpcf') .'</dt>'
                 .'<dd>'.__('Add a singular and plural name for your Taxonomy. You should also add a slug. This will be created from the Taxonomy name if none is added.', 'wpcf').'</dd>'
@@ -326,19 +326,19 @@ function wpcf_admin_help($page, $contextual_help = '')
 
 	// to keep already translated strings
 	$help = str_replace(
-		'href="https://wp-types.com/user-guides/create-a-custom-post-type/"',
+		'href="https://toolset.com/user-guides/create-a-custom-post-type/"',
 		'href="' . Types_Helper_Url::get_url( 'custom-post-types', true ) . '"', $help
 	);
 	$help = str_replace(
-		'href="http://wp-types.com/user-guides/create-a-custom-post-type/"',
+		'href="https://toolset.com/user-guides/create-a-custom-post-type/"',
 		'href="' . Types_Helper_Url::get_url( 'custom-post-types', true ) . '"', $help 
 	);
 	$help = str_replace( 
-		'href="http://wp-types.com/user-guides/create-custom-taxonomies/"', 
+		'href="https://toolset.com/user-guides/create-custom-taxonomies/"', 
 		'href="' . Types_Helper_Url::get_url( 'custom-taxonomy', true ) . '"', $help 
 	);
 	$help = str_replace( 
-		'href="http://wp-types.com/user-guides/using-custom-fields/"', 
+		'href="https://toolset.com/user-guides/using-custom-fields/"', 
 		'href="' . Types_Helper_Url::get_url( 'using-post-fields', true, 'post-fields' ) . '"', $help 
 	);
 	

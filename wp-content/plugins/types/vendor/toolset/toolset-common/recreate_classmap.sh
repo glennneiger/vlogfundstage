@@ -48,6 +48,7 @@ php "$GENERATOR" --library ./toolset-blocks --output ./autoload_classmap.php --a
 php "$GENERATOR" --library ./user-editors --output ./autoload_classmap.php --append
 php "$GENERATOR" --library ./expression-parser --output ./autoload_classmap.php --append
 php "$GENERATOR" --library ./lib/whip/src --output ./autoload_classmap.php --append
+php "$GENERATOR" --library ./lib/auryn/lib --output ./autoload_classmap.php --append
 sort_classmap ./autoload_classmap.php
 echo
 

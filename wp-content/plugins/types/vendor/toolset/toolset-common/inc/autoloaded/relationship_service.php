@@ -366,14 +366,14 @@ class Toolset_Relationship_Service {
 	 *
 	 * @return IToolset_Association[]
 	 */
-	private function find_associations_by_child_id( $child_id ) {
+	private function find_associations_by_child_id( $child_id, $limit = 2000 ) {
 		$query = new Toolset_Association_Query_V2();
 		
 		$query->add( $query->child_id( $child_id, Toolset_Element_Domain::POSTS ) );
 		
 		$results = $query
 			->return_association_instances()
-			->limit( PHP_INT_MAX )
+			->limit( $limit ?: PHP_INT_MAX )
 			->get_results();
 		
 		if ( ! $results || empty( $results ) ) {
@@ -391,12 +391,12 @@ class Toolset_Relationship_Service {
 	 *
 	 * @return Toolset_Element[]
 	 */
-	public function find_parents_by_child_id_and_parent_slug( $child_id, $parent_slug ) {
+	public function find_parents_by_child_id_and_parent_slug( $child_id, $parent_slug, $limit = 2000 ) {
 		if( ! $this->is_m2m_enabled() ) {
 			return array();
 		}
 
-		$associations = $this->find_associations_by_child_id( $child_id );
+		$associations = $this->find_associations_by_child_id( $child_id, $limit );
 		$associations_matched = array();
 
 		foreach( $associations as $association ) {
@@ -411,6 +411,60 @@ class Toolset_Relationship_Service {
 			if( $parent_underlying_obj->post_type == $parent_slug ) {
 				$associations_matched[] = $parent;
 			}
+		}
+
+		return $associations_matched;
+	}
+
+	/**
+	 * Function to find parents (Toolset_Element[]) by child id and parent slug, knowing they relate on a legacy relationship.
+	 *
+	 * @param $child_id
+	 * @param $parent_slug
+	 *
+	 * @return Toolset_Element[]
+	 */
+	public function find_legacy_parents_by_child_id_and_parent_slug( $child_id, $parent_slug ) {
+		if( ! $this->is_m2m_enabled() ) {
+			return array();
+		}
+		
+		$child_type = get_post_type( $child_id );
+		
+		$relationship_query = new Toolset_Relationship_Query_V2();
+		$conditions = array();
+		$conditions[] = $relationship_query->has_domain_and_type( $parent_slug, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Parent() );
+		$conditions[] = $relationship_query->has_domain_and_type( $child_type, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() );
+		$definitions = $relationship_query->add( 
+			$relationship_query->do_and( 
+				$relationship_query->is_legacy( true),
+				$relationship_query->do_and( $conditions ) 
+			)
+		)->get_results();
+		
+		if ( empty( $definitions ) ) {
+			return array();
+		}
+		$relationship = reset( $definitions );
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->relationship( $relationship ) );
+		$query->add( $query->child_id( $child_id, Toolset_Element_Domain::POSTS ) );
+		
+		$associations = $query
+			->return_association_instances()
+			->limit( 2 )
+			->get_results();
+		
+		if ( ! $associations || empty( $associations ) ) {
+			return array();
+		}
+
+		$associations_matched = array();
+
+		foreach( $associations as $association ) {
+			$associations_matched[] = $association->get_element( Toolset_Relationship_Role::PARENT );
 		}
 
 		return $associations_matched;

@@ -53,6 +53,8 @@ if ( defined( 'WPCF_RUNNING_EMBEDDED' ) ) {
     return;
 }
 
+
+
 /*
  * Add bootstraping code only after theme is set.
  * This way embedded code theme is triggered.

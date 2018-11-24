@@ -6,7 +6,7 @@
 
 /*
  * Child tables on post edit screen handling.
- * 
+ *
  * @type tChildTable._L10.Anonym$0
  */
 var tChildTable = (function($) {
@@ -1006,7 +1006,7 @@ jQuery(document).ready(function($) {
         });
     });
     /*
-     * 
+     *
      * Init
      */
     wpcfRelationshipInit('', 'init');
@@ -1069,7 +1069,7 @@ function wpcfBindSelect2For( element ) {
 	var $ = jQuery,
 		options = element.find( 'option' ),
 		element_s2_instance;
-	
+
 	if ( options.length < 16 ) {
 		element_s2_instance = element.toolset_select2({
 			allowClear: true,

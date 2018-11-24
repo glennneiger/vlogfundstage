@@ -9,6 +9,8 @@ final class Types_Page_Extension_Edit_Post_Fields {
 
 	private static $instance;
 
+	private $group_id;
+
 	public static function get_instance() {
 		if( null == self::$instance ) {
 			self::$instance = new self();
@@ -17,20 +19,32 @@ final class Types_Page_Extension_Edit_Post_Fields {
 	}
 
 	private function __construct() {
-		if( ! isset( $_GET['group_id'] ) )
-			return;
 		
-		$group_id = (int) $_GET['group_id'];
 
-		$post_types = get_post_meta( $group_id, '_wp_types_group_post_types', 'string' );
-		$post_types = explode( ',', $post_types );
-		$post_types = array_values( array_filter( $post_types ) );
+		$this->group_id = (int) toolset_getget( 'group_id' );
 
-		if( count( $post_types ) != 1 || $post_types[0] == 'all' )
+		$field_group_factory = Toolset_Field_Group_Post_Factory::get_instance();
+		$group = $field_group_factory->load( $this->group_id );
+
+		if( null === $group ) {
 			return;
+		}
 
-		Types_Helper_Placeholder::set_post_type( $post_types[0] );
-		Types_Helper_Condition::set_post_type( $post_types[0] );
+		if ( $group->has_special_purpose() ) {
+			// don't show as group is assigned to intermediary post type or a RFG
+			return;
+		}
+
+		// Here, empty array means either "all post types" for generic-purpose field groups
+		// or "nothing" for special-purpose field group.
+		$assigned_post_types = $group->get_assigned_to_types();
+		if( count( $assigned_post_types ) !== 1 ) {
+			// don't show as group is assigned to more than one post type
+			return;
+		}
+
+		Types_Helper_Placeholder::set_post_type( $assigned_post_types[0] );
+		Types_Helper_Condition::set_post_type( $assigned_post_types[0] );
 
 		$this->prepare();
 	}
@@ -44,19 +58,5 @@ final class Types_Page_Extension_Edit_Post_Fields {
 
 		// set analytics medium
 		Types_Helper_Url::set_medium( 'field_group_editor' );
-
-		// add informations
-		$this->prepare_informations();
-
-	}
-
-	private function prepare_informations() {
-		$setting = new Types_Setting_Preset_Information_Table();
-
-		if( ! $setting->get_value( 'show-on-field-group' ) )
-			return false;
-
-		$information = new Types_Information_Controller;
-		$information->prepare();
 	}
 }

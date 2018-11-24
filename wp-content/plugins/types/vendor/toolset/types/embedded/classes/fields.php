@@ -8,29 +8,25 @@ require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields.php';
 
 /**
  * Fields class.
- * 
- * @since Types 1.2
- * @package Types
- * @subpackage Classes
- * @version 0.1
- * @category core
- * @author srdjan <srdjan@icanlocalize.com>
+ *
+ * @since 1.2
+ * @deprecated Use the Field API from Toolset Common.
  */
 class WPCF_Fields
 {
 
     /**
      * Holds all available field types and their config data.
-     * 
-     * @var type 
      */
     static $fieldTypesData = null;
+
 
     /**
      * Returns array of available (registered) field types
      * and paths to config files.
-     * 
+     *
      * @return array
+     * @deprecated Any changes made here need to be reflected in Toolset_Field_Type_Definition_Legacy_Loader() as well
      */
     public static function getFieldsTypes() {
         $fields = array(
@@ -56,13 +52,16 @@ class WPCF_Fields
             'video' => WPCF_EMBEDDED_INC_ABSPATH . '/fields/video.php',
             'wysiwyg' => WPCF_EMBEDDED_INC_ABSPATH . '/fields/wysiwyg.php',
         );
+        if ( ! in_array( toolset_getpost( 'type' ), array( 'wpcf-usermeta', 'wpcf-termmeta' ) ) ) {
+            $fields['post'] = WPCF_EMBEDDED_INC_ABSPATH . '/fields/post.php';
+        }
         return apply_filters( 'types_register_fields', $fields );
     }
 
     /**
      * Returns array of available (registered) field types
      * and their config data.
-     * 
+     *
      * @return type
      */
     public static function getFieldsTypesData() {
@@ -87,7 +86,7 @@ class WPCF_Fields
 
     /**
      * Get field type data.
-     * 
+     *
      * @param type $type
      * @return type
      */
@@ -98,7 +97,7 @@ class WPCF_Fields
 
     /**
      * Returns data for certain field type.
-     * 
+     *
      * @param string $path
      * @return array
      */
@@ -117,15 +116,15 @@ class WPCF_Fields
 
     /**
      * Get fields.
-     * 
+     *
      * Parameters for
      * wpcf_admin_fields_get_fields()
-     * 
+     *
      * $only_active = false
      * $disabled_by_type = false
      * $strictly_active = false
-     * 
-     * @return \stdClass 
+     *
+     * @return \stdClass
      */
     public static function getFields( $args = array(), $toolset = 'types' ) {
         $active = isset( $args['active'] ) ? (bool) $args['active'] : true;
@@ -134,7 +133,7 @@ class WPCF_Fields
 
     /**
      * Checks if field is under control.
-     * 
+     *
      * @param type $field_key
      * @return type
      */

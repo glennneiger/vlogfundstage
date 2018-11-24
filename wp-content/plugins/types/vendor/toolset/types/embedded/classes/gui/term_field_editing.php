@@ -65,7 +65,7 @@ final class WPCF_GUI_Term_Field_Editing {
 	 */
 	private function add_hooks() {
 
-		$factory = Types_Field_Group_Term_Factory::get_instance();
+		$factory = Toolset_Field_Group_Term_Factory::get_instance();
 		$groups_by_taxonomies = $factory->get_groups_by_taxonomies();
 
 		$is_toolset_forms_support_needed = false;
@@ -85,7 +85,7 @@ final class WPCF_GUI_Term_Field_Editing {
 
 		// Columns on the term listing
 		$main_controller = Types_Main::get_instance();
-		$is_term_listing_page = ( $main_controller->is_admin() && 'edit' != wpcf_getget( 'action' ) );
+		$is_term_listing_page = ( $main_controller->is_admin() && 'edit' != toolset_getget( 'action' ) );
 		
 		if( $is_term_listing_page ) {
 			$screen = get_current_screen();
@@ -101,7 +101,7 @@ final class WPCF_GUI_Term_Field_Editing {
 
 
 	public function on_term_add( $taxonomy_slug ) {
-		$factory = Types_Field_Group_Term_Factory::get_instance();
+		$factory = Toolset_Field_Group_Term_Factory::get_instance();
 		$groups = $factory->get_groups_by_taxonomy( $taxonomy_slug );
 
 		if( empty( $groups ) ) {
@@ -128,7 +128,7 @@ final class WPCF_GUI_Term_Field_Editing {
 	 * @param string $taxonomy_slug Taxonomy where the term belongs.
 	 */
 	public function on_term_edit( $term, $taxonomy_slug ) {
-		$factory = Types_Field_Group_Term_Factory::get_instance();
+		$factory = Toolset_Field_Group_Term_Factory::get_instance();
 		$groups = $factory->get_groups_by_taxonomy( $taxonomy_slug );
 
 		if( empty( $groups ) ) {
@@ -148,12 +148,12 @@ final class WPCF_GUI_Term_Field_Editing {
 		if( ! $term instanceof WP_Term ) {
 			return;
 		}
-		$factory = Types_Field_Group_Term_Factory::get_instance();
+		$factory = Toolset_Field_Group_Term_Factory::get_instance();
 		$groups = $factory->get_groups_by_taxonomy( $term->taxonomy );
 		if( empty( $groups ) ) {
 			return;
 		}
-		$field_definitions = Types_Field_Utils::get_field_definitions_from_groups( $groups );
+		$field_definitions = Toolset_Field_Utils::get_field_definitions_from_groups( $groups );
 
 		$update_errors = $this->update_term_fields( $term_id, $field_definitions );
 
@@ -178,8 +178,9 @@ final class WPCF_GUI_Term_Field_Editing {
 	 * Update fields for given term.
 	 *
 	 * @param int $term_id
-	 * @param WPCF_Field_Definition[] $field_definitions
-	 * @return WP_Error[]
+	 * @param Toolset_Field_Definition[] $field_definitions
+	 *
+*@return WP_Error[]
 	 */
 	private function update_term_fields( $term_id, $field_definitions ) {
 		$update_results = array();
@@ -215,14 +216,14 @@ final class WPCF_GUI_Term_Field_Editing {
 
 
 	/**
-	 * @param WPCF_Field_Definition $field_definition
+	 * @param Toolset_Field_Definition $field_definition
 	 * @param int $term_id
 	 *
 	 * @return WP_Error|WP_Error[]|true
 	 */
 	private function update_single_field( $field_definition, $term_id ) {
-		$field = new WPCF_Field_Instance_Term( $field_definition, $term_id );
-		$saver = new WPCF_Field_Data_Saver( $field, self::EDIT_FORM_ID );
+		$field = new Toolset_Field_Instance_Term( $field_definition, $term_id );
+		$saver = new Toolset_Field_Data_Saver( $field, self::EDIT_FORM_ID );
 
 		$validation_results = $saver->validate_field_data();
 
@@ -300,7 +301,7 @@ final class WPCF_GUI_Term_Field_Editing {
 	/**
 	 * Render table rows with individual field group.
 	 *
-	 * @param Types_Field_Group_Term $field_group
+	 * @param Toolset_Field_Group_Term $field_group
 	 * @param int|null $term_id ID of the term whose fields are being rendered.
 	 */
 	private function render_field_group_edit_page( $field_group, $term_id ) {
@@ -311,7 +312,7 @@ final class WPCF_GUI_Term_Field_Editing {
 			$field_group->get_display_name()
 		);
 
-		/** @var WPCF_Field_Definition_Term $field_definition */
+		/** @var Toolset_Field_Definition_Term $field_definition */
 		foreach( $field_definitions as $field_definition ) {
 			printf(
 				'<tr class="form-field"><th scope="row">%s</th><td>%s</td></tr>',
@@ -325,9 +326,10 @@ final class WPCF_GUI_Term_Field_Editing {
 	/**
 	 * Render table rows with individual field group.
 	 *
-	 * @param Types_Field_Group_Term $field_group
+	 * @param Toolset_Field_Group_Term $field_group
 	 * @param int|null $term_id ID of the term whose fields are being rendered.
-	 * @since 2.1
+	 *
+*@since 2.1
 	 */
 	private function render_field_group_add_page( $field_group, $term_id ) {
 		$field_definitions = $field_group->get_field_definitions();
@@ -337,7 +339,7 @@ final class WPCF_GUI_Term_Field_Editing {
 			$field_group->get_display_name()
 		);
 
-		/** @var WPCF_Field_Definition_Term $field_definition */
+		/** @var Toolset_Field_Definition_Term $field_definition */
 		foreach( $field_definitions as $field_definition ) {
 			printf(
 				'<div class="form-field wpcf-add-term-form-field">%s</div>',
@@ -350,7 +352,7 @@ final class WPCF_GUI_Term_Field_Editing {
 	/**
 	 * Get the toolset-forms markup for an individual field.
 	 *
-	 * @param WPCF_Field_Definition_Term $field_definition
+	 * @param Toolset_Field_Definition_Term $field_definition
 	 * @param string $form_id ID of the form for toolset-forms.
 	 * @param int|null $term_id ID of the term whose fields are being rendered.
 	 * @param bool $hide_field_title Determine if toolset-forms title above the field should be displayed.
@@ -360,12 +362,12 @@ final class WPCF_GUI_Term_Field_Editing {
 	private function get_toolset_forms_field( $field_definition, $form_id, $term_id, $hide_field_title ) {
 
 		if( null == $term_id ) {
-			$field = new WPCF_Field_Instance_Unsaved( $field_definition );
+			$field = new Toolset_Field_Instance_Unsaved( $field_definition );
 		} else {
-			$field = new WPCF_Field_Instance_Term( $field_definition, $term_id );
+			$field = new Toolset_Field_Instance_Term( $field_definition, $term_id );
 		}
 
-		$tf_renderer = new WPCF_Field_Renderer_Toolset_Forms( $field, $form_id );
+		$tf_renderer = new Toolset_Field_Renderer_Toolset_Forms( $field, $form_id );
 		$tf_renderer->setup( array( 'hide_field_title' => (bool) $hide_field_title ) );
 
 		return $tf_renderer->render( false );
@@ -390,8 +392,8 @@ final class WPCF_GUI_Term_Field_Editing {
 	 */
 	public function manage_term_listing_columns( $columns ) {
 
-		$factory = Types_Field_Group_Term_Factory::get_instance();
-		$taxonomy_slug = sanitize_text_field( wpcf_getget( 'taxonomy' ) );
+		$factory = Toolset_Field_Group_Term_Factory::get_instance();
+		$taxonomy_slug = sanitize_text_field( toolset_getget( 'taxonomy' ) );
 		$groups = $factory->get_groups_by_taxonomy( $taxonomy_slug );
 
 		$columns_to_insert = array();
@@ -436,8 +438,8 @@ final class WPCF_GUI_Term_Field_Editing {
 			try {
 
 				$field_slug = substr( $column_name, strlen( self::LISTING_COLUMN_PREFIX ) );
-				$field_definition = WPCF_Field_Definition_Factory_Term::get_instance()->load_field_definition( $field_slug );
-				$field = new WPCF_Field_Instance_Term( $field_definition, $term_id );
+				$field_definition = Toolset_Field_Definition_Factory_Term::get_instance()->load_field_definition( $field_slug );
+				$field = new Toolset_Field_Instance_Term( $field_definition, $term_id );
 
 				$renderer_args = array(
 					'maximum_item_count' => 5,
@@ -445,7 +447,7 @@ final class WPCF_GUI_Term_Field_Editing {
 					'maximum_total_length' => 100
 				);
 
-				$renderer = WPCF_Field_Renderer_Factory::get_instance()->create_preview_renderer( $field, $renderer_args );
+				$renderer = $field->get_renderer( Toolset_Field_Renderer_Purpose::PREVIEW, Toolset_Common_Bootstrap::MODE_ADMIN, $renderer_args ) ;
 
 				$value = $renderer->render();
 
@@ -638,7 +640,7 @@ final class WPCF_GUI_Term_Field_Editing {
 	 */
 	public function maybe_disable_column_autohiding( $taxonomy_slug, $hidden_columns, $screen_id ) {
 
-		$factory = Types_Field_Group_Term_Factory::get_instance();
+		$factory = Toolset_Field_Group_Term_Factory::get_instance();
 		$groups = $factory->get_groups_by_taxonomy( $taxonomy_slug );
 
 		if( empty( $groups ) || !is_array( $hidden_columns ) ) {

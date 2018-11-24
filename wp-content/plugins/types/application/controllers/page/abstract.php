@@ -26,6 +26,12 @@ abstract class Types_Page_Abstract {
 	 */
 	public function prepare() {
 
+		// We'll need the GUI base for Twig and other things.
+		$tcb = Toolset_Common_Bootstrap::get_instance();
+		$tcb->register_gui_base();
+
+		Toolset_Gui_Base::initialize();
+		
 		if ( $this->disable_heartbeat ) {
 			wp_deregister_script( 'heartbeat' );
 			wp_register_script( 'heartbeat', false );

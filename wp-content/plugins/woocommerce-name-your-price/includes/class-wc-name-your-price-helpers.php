@@ -315,7 +315,7 @@ class WC_Name_Your_Price_Helpers {
 
 		$factors = self::annual_price_factors();
 
-		if( isset( $factors[$period] ) ) {
+		if( isset( $factors[$period] ) && $price ) {
 			$price = $factors[$period] * self::standardize_number( $price );
 		}
 
@@ -366,7 +366,7 @@ class WC_Name_Your_Price_Helpers {
 		// Get the minimum price.
 		$minimum = self::get_minimum_price( $product ); 
 
-		if( $minimum > 0 ){
+		if( $minimum > 0 && ! self::is_minimum_hidden( $product ) ){
 
 			// Get the minimum: text option.
 			$minimum_text = stripslashes( get_option( 'woocommerce_nyp_minimum_text', __( 'Minimum Price:', 'wc_name_your_price' ) ) );
@@ -670,9 +670,11 @@ class WC_Name_Your_Price_Helpers {
 
 			$period_input = '<span class="nyp-billing-period"> ' . $period_input . '</span>';
 
+			$input .= apply_filters( 'wc_nyp_subscription_period_input', $period_input, $product, $prefix );
+
 		endif;
 
-    	return $input . $period_input;
+    	return $input;
 
 	}
 
@@ -778,8 +780,10 @@ class WC_Name_Your_Price_Helpers {
 
 		$attributes = array( 
 			'price' => $price,
+			'minimum-error' => self::error_message( 'minimum_js' ),
+			'hide-minimum' => self::is_minimum_hidden( $product ),
+			'hide-minimum-error' => self::error_message( 'hide_minimum_js' ),
 			'max-price' => self::get_maximum_price( $product ),
-			'minimum-error' => self::is_minimum_hidden( $product ) ? self::error_message( 'hide_minimum_js' ) : self::error_message( 'minimum_js' ),
 			'maximum-error' => self::error_message( 'maximum_js' ),
 		);
 	
@@ -829,7 +833,7 @@ class WC_Name_Your_Price_Helpers {
 				'minimum_js' => __( 'Please enter at least %%MINIMUM%%.', 'wc_name_your_price' ),
 				'hide_minimum_js' => __( 'Please enter a higher amount.', 'wc_name_your_price' ),
 				'maximum' => __( '&quot;%%TITLE%%&quot; could not be added to the cart. Please enter less than or equal to %MAXIMUM%%.', 'wc_name_your_price' ),
-				'maximum_js' => __( 'Please enter less thanor equal to %%MAXIMUM%%.', 'wc_name_your_price' )
+				'maximum_js' => __( 'Please enter less than or equal to %%MAXIMUM%%.', 'wc_name_your_price' )
 			) 
 		);
 
@@ -869,10 +873,11 @@ class WC_Name_Your_Price_Helpers {
 	 */
 	public static function get_subscription_period_strings( $number = 1, $period = '' ) {
 		if( function_exists( 'wcs_get_subscription_period_strings' ) ) {
-			return wcs_get_subscription_period_strings( $number, $period );
+			$strings = wcs_get_subscription_period_strings( $number, $period );
 		} else {
-			return WC_Subscriptions_Manager::get_subscription_period_strings( $number, $period );
+			$strings = WC_Subscriptions_Manager::get_subscription_period_strings( $number, $period );
 		}
+		return apply_filters( 'wc_nyp_subscription_strings', $strings, $number, $period );
 	}
 
 	/**

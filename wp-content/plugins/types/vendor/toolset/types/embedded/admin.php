@@ -68,12 +68,12 @@ function wpcf_embedded_admin_init_hook() {
     );
 
 	register_post_type(
-    TYPES_TERM_META_FIELD_GROUP_CPT_NAME,
-    array(
-    	'public' => false,
-    	'label' => 'Types Term Groups',
-    	'can_export' => false,
-    )
+		TYPES_TERM_META_FIELD_GROUP_CPT_NAME,
+		array(
+			'public' => false,
+			'label' => 'Types Term Groups',
+			'can_export' => false,
+		)
 	);
 
     add_filter( 'icl_custom_fields_to_be_copied',
@@ -98,10 +98,8 @@ function wpcf_embedded_admin_init_hook() {
  *
  * @param type $post_type
  * @param type $post
- *
- * @since 2.2.23 Some plugins calls `add_meta_boxes` incorrectly, to prevent fatal errors it's better to avoid them and not showing Types meta boxes
  */
-function wpcf_admin_add_meta_boxes( $post_type, $post = null ) {
+function wpcf_admin_add_meta_boxes( $post_type, $post ) {
     require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields.php';
     require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields-post.php';
 
@@ -115,6 +113,8 @@ function wpcf_admin_add_meta_boxes( $post_type, $post = null ) {
  *
  * @param type $post_ID
  * @param type $post
+ *
+ * @refactor see /youtrack/issue/types-1454#comment=102-254285
  */
 function wpcf_admin_save_post_hook( $post_ID, $post ) {
     require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields.php';
@@ -310,6 +310,10 @@ function wpcf_custom_fields_to_be_copied( $copied_fields, $original_post_id ) {
         foreach ( $groups as $group ) {
             if ( isset( $group['fields'] ) && is_array( $group['fields'] ) ) {
                 foreach ( $group['fields'] as $field ) {
+                    if( ! is_array( $field ) || ! isset( $field['slug'] ) ) {
+                        // repeatable field group
+                        continue;
+                    }
                     if ( $copied_field == wpcf_types_get_meta_prefix( $field ) . $field['slug'] ) {
                         unset( $copied_fields[$id] );
                     }
@@ -388,22 +392,13 @@ function wpcf_admin_message_sanitize( $message )
 function wpcf_admin_message( $message, $class = 'updated', $mode = 'action' )
 {
     if ( 'action' == $mode ) {
-        // 5.2 support for Types pre m2m.
-        // TODO: remove this after PHP5.2 support dropping.
-        if (version_compare(phpversion(), '5.3', '<')) {
-            add_action( 'admin_notices',
-                create_function( '$a=1, $class=\'' . $class . '\', $message=\''
-                    	. htmlentities( $message, ENT_QUOTES ) . '\'',
-                        	'$screen = get_current_screen(); if (!$screen->is_network) echo "<div class=\"message $class\"><p>" . wpcf_admin_message_sanitize ($message) . "</p></div>";' ) );
-        } else {
-            add_action( 'admin_notices', function() use ($class, $message) {
-                $message = htmlentities( $message, ENT_QUOTES );
-                $screen = get_current_screen();
-                if ( ! $screen->is_network ) {
-                    echo '<div class="message ' . $class . '"><p>' . wpcf_admin_message_sanitize ($message) . '</p></div>';
-                }
-            } );
-        }
+        add_action( 'admin_notices', function() use ($class, $message) {
+            $message = htmlentities( $message, ENT_QUOTES );
+            $screen = get_current_screen();
+            if ( ! $screen->is_network ) {
+                echo '<div class="message js-toolset-fadable ' . $class . '"><p>' . wpcf_admin_message_sanitize ($message) . '</p></div>';
+            }
+        } );
     } elseif ( 'echo' == $mode ) {
         printf(
             '<div class="message %s is-dismissible"><p>%s</p> <button type="button" class="notice-dismiss">
@@ -728,6 +723,7 @@ function wpcf_admin_get_edited_post() {
     } else {
         $post_id = 0;
     }
+
     if ( $post_id ) {
         if( $post = get_post( $post_id ) ) {
             return $post;

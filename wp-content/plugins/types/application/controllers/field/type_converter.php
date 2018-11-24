@@ -109,31 +109,32 @@ final class Types_Field_Type_Converter {
 
 
 	/**
-	 * @param Types_Field_Type_Definition $type
-	 * @return Types_Field_Type_Definition[]
+	 * @param Toolset_Field_Type_Definition $type
+	 * 
+*@return Toolset_Field_Type_Definition[]
 	 */
 	public function get_possible_conversions( $type ) {
 
-		if( ! $type instanceof Types_Field_Type_Definition ) {
+		if( ! $type instanceof Toolset_Field_Type_Definition ) {
 			throw new InvalidArgumentException( 'Not a field type definition' );
 		}
 		
 		$matrix = $this->get_conversion_matrix();
-		$allowed_slugs = wpcf_ensarr( wpcf_getarr( $matrix, $type->get_slug() ) );
-		$allowed_types = Types_Field_Type_Definition_Factory::get_instance()->load_multiple_definitions( $allowed_slugs );
+		$allowed_slugs = toolset_ensarr( toolset_getarr( $matrix, $type->get_slug() ) );
+		$allowed_types = Toolset_Field_Type_Definition_Factory::get_instance()->load_multiple_definitions( $allowed_slugs );
 		return $allowed_types;
 	}
 
 
 	/**
-	 * @param Types_Field_Type_Definition $from_type
-	 * @param Types_Field_Type_Definition $to_type
+	 * @param Toolset_Field_Type_Definition $from_type
+	 * @param Toolset_Field_Type_Definition $to_type
 	 *
 	 * @return bool
 	 */
 	public function is_conversion_possible( $from_type, $to_type ) {
 		
-		if( ! $from_type instanceof Types_Field_Type_Definition || ! $to_type instanceof Types_Field_Type_Definition ) {
+		if( ! $from_type instanceof Toolset_Field_Type_Definition || ! $to_type instanceof Toolset_Field_Type_Definition ) {
 			throw new InvalidArgumentException( 'Not a field type definition' );
 		}
 		
@@ -144,7 +145,7 @@ final class Types_Field_Type_Converter {
 
 
 	public function is_conversion_two_way( $type_1, $type_2 ) {
-		if( ! $type_1 instanceof Types_Field_Type_Definition || ! $type_2 instanceof Types_Field_Type_Definition ) {
+		if( ! $type_1 instanceof Toolset_Field_Type_Definition || ! $type_2 instanceof Toolset_Field_Type_Definition ) {
 			throw new InvalidArgumentException( 'Not a field type definition' );
 		}
 		
@@ -170,23 +171,23 @@ final class Types_Field_Type_Converter {
 	public function google_address_field_control_change_type_allowed_from( $targets, $origin ) {
 
 		$disallowed_targets = array(
-			Types_Field_Type_Definition_Factory::DATE,
-			Types_Field_Type_Definition_Factory::CHECKBOX,
-			Types_Field_Type_Definition_Factory::CHECKBOXES,
-			Types_Field_Type_Definition_Factory::RADIO,
-			Types_Field_Type_Definition_Factory::SELECT,
-			Types_Field_Type_Definition_Factory::SKYPE,
-			Types_Field_Type_Definition_Factory::WYSIWYG
+			Toolset_Field_Type_Definition_Factory::DATE,
+			Toolset_Field_Type_Definition_Factory::CHECKBOX,
+			Toolset_Field_Type_Definition_Factory::CHECKBOXES,
+			Toolset_Field_Type_Definition_Factory::RADIO,
+			Toolset_Field_Type_Definition_Factory::SELECT,
+			Toolset_Field_Type_Definition_Factory::SKYPE,
+			Toolset_Field_Type_Definition_Factory::WYSIWYG
 		);
 
-		if( Types_Field_Type_Definition_Factory::GOOGLE_ADDRESS == $origin ) {
+		if( Toolset_Field_Type_Definition_Factory::GOOGLE_ADDRESS == $origin ) {
 			// Here we're filtering possible conversions FROM google address field
 			$safe_targets = array_diff( $targets, $disallowed_targets );
 			$targets = $safe_targets;
 		} else if( in_array( $origin, $disallowed_targets ) ) {
 			// Here we're filtering possible conversions TO google address field from an undesired field type
-			if( in_array( Types_Field_Type_Definition_Factory::GOOGLE_ADDRESS, $targets ) ) {
-				$item_pos = array_search( Types_Field_Type_Definition_Factory::GOOGLE_ADDRESS, $targets );
+			if( in_array( Toolset_Field_Type_Definition_Factory::GOOGLE_ADDRESS, $targets ) ) {
+				$item_pos = array_search( Toolset_Field_Type_Definition_Factory::GOOGLE_ADDRESS, $targets );
 				unset( $targets[ $item_pos ] );
 			}
 		}

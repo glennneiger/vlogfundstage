@@ -14,7 +14,7 @@
         <div class="types-message-content types-table-cell">
             {% for description in description.dialog.description %}
                 {%  if description.type %}
-                    {% include 'information/description/' ~ description.type ~ '.twig' %}
+                    {% include '@types/information/description/' ~ description.type ~ '.twig' %}
                 {% endif %}
             {% endfor %}
         </div>

@@ -32,12 +32,12 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 		$search_string = isset( $_POST['s'] ) ? mb_strtolower( trim( $_POST['s'] ) ) : null;
 		
 		$query_args    = array(
-			'orderby' => sanitize_text_field( wpcf_getget( 'orderby', 'post_title' ) ),
-			'order' => sanitize_text_field( wpcf_getget( 'order', 'asc' ) ),
+			'orderby' => sanitize_text_field( toolset_getget( 'orderby', 'post_title' ) ),
+			'order' => sanitize_text_field( toolset_getget( 'order', 'asc' ) ),
 			'types_search' => $search_string
 		);
 
-		$groups = Types_Field_Group_Term_Factory::get_instance()->query_groups( $query_args );
+		$groups = Toolset_Field_Group_Term_Factory::get_instance()->query_groups( $query_args );
 
 		/**
 		 * REQUIRED for pagination. Let's figure out what page the user is currently
@@ -118,7 +118,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 
 
 	/**
-	 * @param $item Types_Field_Group_Term
+	 * @param $item Toolset_Field_Group_Term
 	 *
 	 * @return string
 	 */
@@ -128,7 +128,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 
 
 	/**
-	 * @param $item Types_Field_Group_Term
+	 * @param $item Toolset_Field_Group_Term
 	 *
 	 * @return string
 	 */
@@ -149,7 +149,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 
 
 	/**
-	 * @param $item Types_Field_Group_Term
+	 * @param $item Toolset_Field_Group_Term
 	 *
 	 * @return string
 	 */
@@ -159,7 +159,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 
 
 	/**
-	 * @param Types_Field_Group_Term $item
+	 * @param Toolset_Field_Group_Term $item
 	 * 
 *@return string
 	 */
@@ -228,7 +228,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 	/**
 	 * @see WP_List_Table::::single_row_columns()
 	 *
-	 * @param Types_Field_Group_Term $item A singular item
+	 * @param Toolset_Field_Group_Term $item A singular item
 	 * 
 *@return string
 	 */
@@ -270,12 +270,12 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 			return;
 		}
 
-		$nonce = wpcf_getpost( '_wpnonce', null );
+		$nonce = toolset_getpost( '_wpnonce', null );
 		if ( ! wp_verify_nonce( $nonce, WPCF_Page_Listing_Termmeta::BULK_ACTION_NONCE ) ) {
 			die( 'Security check' );
 		}
 
-		$selected_field_group_ids = wpcf_getpost( self::BULK_ACTION_FIELD_NAME, array() );
+		$selected_field_group_ids = toolset_getpost( self::BULK_ACTION_FIELD_NAME, array() );
 		if( empty( $selected_field_group_ids ) ) {
 			return;
 		}
@@ -292,7 +292,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 				case 'delete':
 					$wpdb->delete(
 						$wpdb->posts,
-						array( 'ID' => $field_group_id, 'post_type' => Types_Field_Group_Term::POST_TYPE ),
+						array( 'ID' => $field_group_id, 'post_type' => Toolset_Field_Group_Term::POST_TYPE ),
 						array( '%d', '%s' )
 					);
 					break;
@@ -300,7 +300,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 					$wpdb->update(
 						$wpdb->posts,
 						array( 'post_status' => 'draft' ),
-						array( 'ID' => $field_group_id, 'post_type' => Types_Field_Group_Term::POST_TYPE ),
+						array( 'ID' => $field_group_id, 'post_type' => Toolset_Field_Group_Term::POST_TYPE ),
 						array( '%s' ),
 						array( '%d', '%s' )
 					);
@@ -316,7 +316,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 					break;
 			}
 		}
-		wp_cache_delete( md5( 'group::_get_group' . Types_Field_Group_Term::POST_TYPE ), 'types_cache_groups' );
+		wp_cache_delete( md5( 'group::_get_group' . Toolset_Field_Group_Term::POST_TYPE ), 'types_cache_groups' );
 
 	}
 
@@ -327,7 +327,7 @@ class WPCF_Page_Listing_Termmeta_Table extends WPCF_Page_Listing_Table {
 	 * @since 3.1.0
 	 * @access public
 	 *
-	 * @param Types_Field_Group_Term $item The current item
+	 * @param Toolset_Field_Group_Term $item The current item
 	 */
 	public function single_row( $item ) {
 		static $row_class = '';

@@ -12,6 +12,7 @@ final class Types_Main {
 
 	private static $instance;
 
+
 	public static function get_instance() {
 		if( null == self::$instance ) {
 			self::$instance = new self();
@@ -23,14 +24,19 @@ final class Types_Main {
 		self::get_instance();
 	}
 
-	private function __clone() { }
 
 
 	private function __construct() {
-
 		add_action( 'after_setup_theme', array( $this, 'after_setup_theme' ), 10 );
 		add_action( 'init', array( $this, 'on_init' ) );
 
+		// attachment deletion
+		add_action( 'delete_attachment', function( $attachment_post_id ) {
+			if( class_exists( 'Types_Media_Service' ) ) {
+				$media_service = new Types_Media_Service();
+				$media_service->delete_resized_images_by_attachment_id( $attachment_post_id );
+			}
+		} );
 	}
 
 
@@ -53,6 +59,9 @@ final class Types_Main {
 			$this->mode = self::MODE_FRONTEND;
 			Types_Frontend::initialize();
 		}
+
+		$m2m = new Types_M2M();
+		$m2m->initialize();
 	}
 
 
@@ -116,13 +125,21 @@ final class Types_Main {
 	 * Early loading actions.
 	 *
 	 * @since 2.0
+	 * @since m2m Load the shortcodes generator
 	 */
 	public function after_setup_theme() {
+		
+
+		// Indicate that m2m can be activated with this plugin.
+		add_filter( 'toolset_is_m2m_ready', '__return_true' );
 
 		// Initialize the Toolset Common library
-		Toolset_Common_Bootstrap::get_instance();
+		$toolset_common_bootstrap = Toolset_Common_Bootstrap::get_instance();
 
 		$this->setup_autoloader();
+
+		// This will initialize the DIC if it hasn't been done yet
+		types_dic();
 
 		// If an AJAX callback handler needs other assets, it should initialize the asset manager by itself.
 		if( $this->get_plugin_mode() != self::MODE_AJAX ) {
@@ -135,6 +152,12 @@ final class Types_Main {
 		Types_Api::initialize();
 
 		Types_Interop_Mediator::initialize();
+		
+		// Load the shortcodes generator
+		$toolset_common_sections = array( 'toolset_shortcode_generator' );
+		$toolset_common_bootstrap->load_sections( $toolset_common_sections );
+		$types_shortcode_generator = new Types_Shortcode_Generator();
+		$types_shortcode_generator->initialize();
 	}
 
 
@@ -161,5 +184,4 @@ final class Types_Main {
 	public function require_legacy_functions() {
 		require_once WPCF_INC_ABSPATH . '/fields.php';
 	}
-
 }

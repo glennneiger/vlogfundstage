@@ -24,12 +24,14 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
- * Abstact social login provider class
+ * Abstract social login provider class.
  *
  * @since 1.0.0
  */
-abstract class WC_Social_Login_Provider extends WC_Settings_API {
+abstract class WC_Social_Login_Provider extends \WC_Settings_API {
 
 
 	/** @var string Provider title. Shown in admin */
@@ -58,6 +60,7 @@ abstract class WC_Social_Login_Provider extends WC_Settings_API {
 	 * Provider constructor.
 	 *
 	 * @since 1.0.0
+	 *
 	 * @param string $base_auth_path Base authentication path.
 	 */
 	public function __construct( $base_auth_path ) {
@@ -598,10 +601,10 @@ abstract class WC_Social_Login_Provider extends WC_Settings_API {
 		 *
 		 * @since 2.0.0
 		 *
-		 * @param bool $force_ssl whether SSL should be forced for this provider's callback
+		 * @param bool $force_ssl whether SSL should be forced for this provider's callback (default false)
 		 * @param \WC_Social_Login_Provider $provider provider instance
 		 */
-		$force_ssl = $this->requires_ssl() || 'yes' === get_option( 'wc_social_login_force_ssl_callback_url', 'no' ) || ( apply_filters( 'wc_social_login_force_ssl_callback', false, $this ) );
+		$force_ssl = $this->requires_ssl() || is_ssl() || 'yes' === get_option( 'wc_social_login_force_ssl_callback_url', 'no' ) || (bool) apply_filters( 'wc_social_login_force_ssl_callback', false, $this );
 
 		// TODO: remove legacy callback url format support when removing backwards compatibility
 		// with OpAuth-style callbacks {IT 2016-10-12}
@@ -623,9 +626,25 @@ abstract class WC_Social_Login_Provider extends WC_Settings_API {
 
 
 	/**
-	 * Return the providers HybridAuth config
+	 * Returns the documentation URL for the provider.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @return string URL
+	 */
+	public function get_documentation_url() {
+
+		return "https://docs.woocommerce.com/document/woocommerce-social-login-create-social-apps/#{$this->id}";
+	}
+
+
+	/**
+	 * Returns the providers HybridAuth config.
+	 *
+	 * @see http://hybridauth.sourceforge.net/userguide/Configuration.html
 	 *
 	 * @since 2.0.0
+	 *
 	 * @return array
 	 */
 	abstract public function get_hybridauth_config();

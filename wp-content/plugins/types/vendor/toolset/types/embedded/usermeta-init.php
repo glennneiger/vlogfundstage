@@ -43,6 +43,12 @@ function wpcf_admin_menu_edit_user_fields_hook() {
 	wp_enqueue_style( 'wpcf-usermeta',
 		WPCF_EMBEDDED_RES_RELPATH . '/css/usermeta.css' );
 
+	// Toolset GUI Base dependencies
+	Toolset_Common_Bootstrap::get_instance()->register_gui_base();
+	Toolset_Gui_Base::get_instance()->init();
+	wp_enqueue_style( Toolset_Gui_Base::STYLE_GUI_BASE );
+	wp_enqueue_script( Toolset_Gui_Base::SCRIPT_GUI_JQUERY_COLLAPSIBLE );
+
 	// MAIN
 	wp_enqueue_script( 'wpcf-fields-form',
 		WPCF_EMBEDDED_RES_RELPATH
@@ -170,82 +176,6 @@ add_action( 'edit_user_profile', 'wpcf_admin_user_profile_load_hook' );
 add_action( 'personal_options_update', 'wpcf_admin_user_profile_save_hook' );
 add_action( 'edit_user_profile_update', 'wpcf_admin_user_profile_save_hook' );
 
-
-
-/**
- * Add usermeta groups to post editor
- */
-add_filter( 'editor_addon_menus_types', 'wpcf_admin_post_add_usermeta_to_editor_js' );
-
-/*
-* #################################################
-* WHAT THE HELL IS THIS - START
-* #################################################
-*/
-add_action( 'load-post.php', '__wpcf_usermeta_test', PHP_INT_MAX );
-add_action( 'load-post-new.php', '__wpcf_usermeta_test', PHP_INT_MAX );
-
-function __wpcf_usermeta_test()
-{
-    require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields-post.php';
-    $field['id'] = md5( 'date' . time() );
-    $here = array(basename( $_SERVER['REQUEST_URI'] ), basename( $_SERVER['SCRIPT_FILENAME'] ));
-    global $post;
-    // Get post_type
-    if ( $post ) {
-        $post_type = get_post_type( $post );
-    } else if ( !empty( $_GET['post'] ) ) {
-        $post_type = get_post_type( sanitize_text_field( $_GET['post'] ) );
-    } else if ( !empty( $_GET['post_type'] ) ) {
-        $post_type = esc_html( sanitize_text_field( $_GET['post_type'] ) );
-    }
-    if ( ( $here[0] == ('index.php' || 'wp-admin')) && ( $here[1] != 'index.php') ) {
-
-        /** This action is documented in embedded/bootstrap.php */
-        $post_types_without_meta_boxes = apply_filters(
-            'toolset_filter_exclude_own_post_types',
-            array('view', 'view-template', 'cred-form', 'cred-user-form')
-        );
-
-        if (
-            isset( $post_type )
-            && in_array( $post_type, $post_types_without_meta_boxes )
-        ) {
-            return;
-        }
-        wpcf_admin_post_add_to_editor( $field );
-    }
-}
-
-if ( !isset( $_GET['post_type'] ) && isset( $_GET['post'] ) ) {
-    $post_type = get_post_type( sanitize_text_field( $_GET['post'] ) );
-} else if (
-    isset( $_GET['post_type'] )
-    && in_array( $_GET['post_type'], get_post_types( array('show_ui' => true) ) ) 
-) {
-    $post_type = sanitize_text_field( $_GET['post_type'] );
-}
-
-/*
- *
- * This is not needed for Views 1.3
- * Kept for compatibility with older versions
- */
-if ( isset( $post_type ) && in_array( $post_type,
-                array('view', 'view-template', 'cred-form', 'cred-user-form') ) ) {
-    add_filter( 'editor_addon_menus_wpv-views',
-            'wpcf_admin_post_add_usermeta_to_editor_js', 20 );
-    require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields-post.php';
-    add_action( 'admin_footer', 'wpcf_admin_post_js_validation' );
-    //wpcf_enqueue_scripts();
-}
-
-/*
-* #################################################
-* WHAT THE HELL IS THIS - END
-* #################################################
-*/
-
 /**
  * Get current logged user ID
  *
@@ -259,72 +189,6 @@ function wpcf_usermeta_get_user( $method = '' ){
     }
 
     return $user_id;
-}
-
-/**
- * Add User Fields to editor
- *
- * @author Gen gen.i@icanlocalize.com
- * @since Types 1.3
- */
-function wpcf_admin_post_add_usermeta_to_editor_js( $menu, $views_callback = false ){
-    global $wpcf;
-
-    $post = apply_filters( 'wpcf_filter_wpcf_admin_get_current_edited_post', null );
-    if ( ! $post ) {
-        $post = (object) array('ID' => -1);
-    }
-
-    $groups = wpcf_admin_fields_get_groups( TYPES_USER_META_FIELD_GROUP_CPT_NAME );
-    $user_id = wpcf_usermeta_get_user();
-    if ( !empty( $groups ) ) {
-        $item_styles = array();
-        foreach ( $groups as $group_id => $group ) {
-            if ( empty( $group['is_active'] ) ) {
-                continue;
-            }
-			$group_name = sprintf( __( '%s (Usermeta fields)', 'wpcf' ) , $group['name'] );
-            $fields = wpcf_admin_fields_get_fields_by_group( $group['id'],
-                    'slug', true, false, true, TYPES_USER_META_FIELD_GROUP_CPT_NAME,
-                    'wpcf-usermeta' );
-
-            if ( !empty( $fields ) ) {
-                foreach ( $fields as $field_id => $field ) {
-                    // Use field class
-                    $wpcf->usermeta_field->set( $user_id, $field );
-
-                    // Get field data
-                    $data = (array) $wpcf->usermeta_field->config;
-
-                    // Get inherited field
-                    if ( isset( $data['inherited_field_type'] ) ) {
-                        $inherited_field_data = wpcf_fields_type_action( $data['inherited_field_type'] );
-                    }
-
-                    $callback = 'wpcfFieldsEditorCallback(\'' . $field['id']
-                            . '\', \'usermeta\', ' . $post->ID . ')';
-
-                    // Added for Views:users filter Vicon popup
-                    if ( $views_callback ){
-                        $callback = 'wpcfFieldsEditorCallback(\'' . $field['id']
-                            . '\', \'views-usermeta\', ' . $post->ID . ')';
-                    }
-
-                    $menu[$group_name][stripslashes( $field['name'] )] = array(stripslashes(wp_kses_post($field['name'])), trim( wpcf_usermeta_get_shortcode( $field ),
-                                '[]' ), $group_name, $callback);
-                }
-                /*
-                 * Since Types 1.2
-                 * We use field class to enqueue JS and CSS
-                 */
-                $wpcf->usermeta_field->enqueue_script();
-                $wpcf->usermeta_field->enqueue_style();
-            }
-        }
-    }
-
-    return $menu;
-
 }
 
 /**

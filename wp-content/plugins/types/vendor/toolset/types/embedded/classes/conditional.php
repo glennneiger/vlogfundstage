@@ -118,7 +118,7 @@ class WPCF_Conditional extends WPCF_Field
             return !empty( $field['data']['conditional_display']['conditions'] );
         } else {
             $this->collect();
-            $field_id = $this->__get_slug_no_prefix( strval( $field ) );
+            $field_id = $this->get_slug_no_prefix( strval( $field ) );
             return isset( $this->collected[$field_id] );
         }
     }

@@ -284,8 +284,8 @@ class WPCF_Relationship
         ) {
             $_POST['wpcf'] = array();
             foreach( $_POST['wpcf_post_relationship'][$parent_id][$child_id] as $slug => $value ) {
-                $_POST['wpcf'][$cf->__get_slug_no_prefix( $slug )] = $value;
-                $_POST['wpcf'][$slug] = $value;
+                $_POST['wpcf'][$cf->get_slug_no_prefix( $slug )] = $value;
+                $_POST['wpcf'][$slug]                            = $value;
             }
         }
         unset($cf);
@@ -498,7 +498,7 @@ class WPCF_Relationship
         return isset( $_POST['wpcf_post_relationship'][$parent_id][$child_id][$_field_slug] ) ? $_POST['wpcf_post_relationship'][$parent_id][$child_id][$_field_slug] : null;
     }
 
-    /**
+		/**
      * Gets all parents per post type.
      *
      * @param type $child
@@ -527,6 +527,125 @@ class WPCF_Relationship
         }
         return $parents;
     }
+
+
+		/**
+		 * Gets all related post types.
+		 *
+		 * @param type $post
+		 * @param string $field To check if the related post types has this field.
+		 * @return type
+		 * @since m2m
+		 */
+		public static function get_related( $post, $field ) {
+			$related = array();
+			$custom_post_data = get_post_type_object( $post->post_type );
+			$items_related = wpcf_pr_admin_get_related( $post->post_type, $field );
+
+			if ( ! is_array( $items_related ) ) {
+				return array();
+			}
+
+			foreach ( $items_related as $cardinality_type => $groups ) {
+				foreach ( $groups as $post_type ) {
+					if ( 'post_types' !== $cardinality_type ) {
+						// Relatioship between post types
+						$relationship_type = '';
+						switch ( $cardinality_type ) {
+							case 'one-to-one':
+								$relationship_type = __( '(one-to-one)', 'wpcf' );
+								break;
+							case 'one-to-many':
+							case 'one-to-many-from-child':
+								$relationship_type = __( '(one-to-many)', 'wpcf' );
+								break;
+							case 'many-to-many':
+								$relationship_type = __( '(many-to-many)', 'wpcf' );
+								break;
+						}
+
+						// It will be enabled only if it is one-to-many or one-to-one
+						$enabled = true;
+						switch ( $cardinality_type ) {
+							case 'one-to-many':
+							case 'many-to-many':
+								$enabled = false;
+								break;
+						}
+
+						$post_type_data = get_post_type_object( $post_type->post_type );
+
+						// Help message in case it is not visible
+						$help = array();
+						switch ( $cardinality_type ) {
+							case 'one-to-many':
+								$help['header'] = __( 'One to many', 'wpcf' );
+								$link = 'https://toolset.com/documentation/user-guides/creating-post-type-relationships/';
+								$help['content'] = htmlentities( sprintf( __( 'You cannot select this because: <strong>%s</strong> can be associated with more than one <strong>%s</strong><br /><br /><a href="%s">Learn more</a>', 'wpcf' ), $custom_post_data->labels->singular_name, $post_type_data->label, $link ) );
+								break;
+							case 'many-to-many':
+								$help['header'] = __( 'Many to many', 'wpcf' );
+								$link = 'https://toolset.com/documentation/user-guides/many-to-many-post-relationship/';
+									$help['content'] = htmlentities( sprintf( __( 'You cannot select this because: <strong>%s</strong> can be associated with more than one <strong>%s</strong><br /><br /><a href="%s">Learn more</a>', 'wpcf' ), $custom_post_data->label, $post_type_data->label, $link ) );
+								break;
+						}
+
+						// It must have the field.
+						if ( $enabled && ! in_array( $post_type->post_type, $items_related['post_types'] ) ) {
+							$enabled = false;
+
+							$help['header'] = __( 'Field missing', 'wpcf' );
+							$help['content'] = htmlentities( sprintf( __( 'You cannot select this because: <strong>%s</strong> doesn\'t have a field <strong>%s</strong>', 'wpcf' ), $post_type_data->labels->singular_name, $field['name'] ) );
+						}
+
+						if ( ! isset( $related[ $post_type->post_type ] ) ) {
+							$related[ $post_type->post_type ] = array(
+								'name' 				 => $post_type_data->label,
+								'relationship' => $relationship_type,
+								'enabled'			 => $enabled,
+								'help'				 => $help,
+								'value'				 => $post_type->value,
+							);
+						}
+					}
+				}
+			}
+			return $related;
+		}
+
+
+		/**
+		 * Gets all intermediate post types.
+		 *
+		 * @since m2m
+		 * @param type $post
+		 * @param string $field To check if the parent intermediate post types has this field.
+		 * @return type
+		 */
+		public static function get_intermediate( $post, $field ) {
+			$related = array();
+			$related = wpcf_pr_admin_get_intermediate( $post->post_type, $field );
+			$definition_repository = Toolset_Relationship_Definition_Repository::get_instance();
+			if ( is_array( $related ) ) {
+				// Adding help, if needed.
+				foreach( $related as $i => $type ) {
+					$related[ $i ]['help'] = array();
+					if ( ! $type['enabled'] ) {
+						$definition_slug = preg_replace('#@([^\.]+)\..*#', '$1', $type['value']);
+						$definition = $definition_repository->get_definition( $definition_slug );
+						if ( $definition ) {
+							$intermediary_post_type = get_post_type_object( $definition->get_intermediary_post_type() );
+							if ( $intermediary_post_type ) {
+								$related[ $i ]['help']['header'] = __( 'Field missing', 'wpcf' );
+								$related[ $i ]['help']['content'] = htmlentities( sprintf( __( 'You cannot select this because: <strong>%s</strong> doesn\'t have a field <strong>%s</strong>', 'wpcf' ), $intermediary_post_type->labels->singular_name, $field['name'] ) );
+							}
+						}
+					}
+				}
+			}
+			return $related;
+		}
+
 
     /**
      * Gets post parent by post type.

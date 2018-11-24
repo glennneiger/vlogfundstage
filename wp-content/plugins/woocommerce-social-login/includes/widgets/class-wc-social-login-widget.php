@@ -24,11 +24,14 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
+ * Social Login widget.
  *
  * @since 1.0.0
  */
-class WC_Social_Login_Widget extends WP_Widget {
+class WC_Social_Login_Widget extends \WP_Widget {
 
 
 	/**

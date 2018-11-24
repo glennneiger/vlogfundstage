@@ -122,6 +122,15 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	private $wpml_service;
 
 
+	private $use_cache = true;
+
+
+	private $cache_object;
+
+
+	private $result_transformation_factory;
+
+
 	/**
 	 * Toolset_Association_Query_V2 constructor.
 	 *
@@ -135,6 +144,8 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @param Toolset_Association_Query_Orderby_Factory|null $orderby_factory_di
 	 * @param Toolset_Association_Query_Element_Selector_Provider|null $element_selector_provider_di
 	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
+	 * @param Toolset_Association_Query_Cache|null $cache_object_di
+	 * @param Toolset_Association_Query_Result_Transformation_Factory|null $result_transformation_factory_di
 	 */
 	public function __construct(
 		wpdb $wpdb_di = null,
@@ -146,7 +157,9 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 		Toolset_Association_Query_Table_Join_Manager $join_manager_di = null,
 		Toolset_Association_Query_Orderby_Factory $orderby_factory_di = null,
 		Toolset_Association_Query_Element_Selector_Provider $element_selector_provider_di = null,
-		Toolset_WPML_Compatibility $wpml_service_di = null
+		Toolset_WPML_Compatibility $wpml_service_di = null,
+		Toolset_Association_Query_Cache $cache_object_di = null,
+		Toolset_Association_Query_Result_Transformation_Factory $result_transformation_factory_di = null
 	) {
 		parent::__construct( $wpdb_di );
 		$this->unique_table_alias = $unique_table_alias_di ?: new Toolset_Relationship_Database_Unique_Table_Alias();
@@ -158,6 +171,8 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 		$this->element_selector_provider = $element_selector_provider_di ?: new Toolset_Association_Query_Element_Selector_Provider();
 		$this->_definition_repository = $definition_repository_di;
 		$this->wpml_service = $wpml_service_di ?: Toolset_WPML_Compatibility::get_instance();
+		$this->cache_object = $cache_object_di ?: Toolset_Association_Query_Cache::get_instance();
+		$this->result_transformation_factory = $result_transformation_factory_di ?: new Toolset_Association_Query_Result_Transformation_Factory();
 	}
 
 
@@ -293,6 +308,24 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 		);
 
 		$query = $this->build_sql_query();
+
+		$cache_key = '';
+		if( $this->use_cache ) {
+			$cached_result_exists = false;
+			$cache_key = $this->build_cache_key( $query );
+			$cached_result = $this->cache_object->get( $cache_key, $cached_result_exists );
+
+			if( $cached_result_exists ) {
+				$this->clear_restrictions();
+
+				if( $this->need_found_rows ) {
+					$this->found_rows = (int) count( $cached_result );
+				}
+
+				return $cached_result;
+			}
+		}
+
 		$rows = toolset_ensarr( $this->wpdb->get_results( $query ) );
 
 		if( $this->need_found_rows ) {
@@ -309,6 +342,10 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 		}
 
 		$this->clear_restrictions();
+
+		if( $this->use_cache ) {
+			$this->cache_object->push( $cache_key, $results );
+		}
 
 		return $results;
 	}
@@ -500,6 +537,38 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 
 
 	/**
+	 * Query by a set of element IDs in the selected role.
+	 *
+	 * @param int[] $element_ids
+	 * @param string $domain
+	 * @param IToolset_Relationship_Role $for_role
+	 * @param bool $query_original_element If true, the query will check the element ID in the original language
+	 *     as stored in the association table. Default is false.
+	 * @param bool $translate_provided_ids If true, this will try to translate the element ID (if
+	 *     applicable on the domain) and use the translated one in the final condition. Default is true.
+	 *
+	 * @return Toolset_Association_Query_Condition_Multiple_Elements
+	 * @since 3.0.3
+	 */
+	public function multiple_elements(
+		$element_ids,
+		$domain,
+		IToolset_Relationship_Role $for_role,
+		$query_original_element = false,
+		$translate_provided_ids = true
+	) {
+		return $this->condition_factory->multiple_elements(
+			$element_ids,
+			$domain,
+			$for_role,
+			$this->element_selector_provider,
+			$query_original_element,
+			$translate_provided_ids
+		);
+	}
+
+
+	/**
 	 * Query by an element in the selected role.
 	 *
 	 * @param IToolset_Element $element
@@ -618,17 +687,17 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	/**
 	 * Query by an element status.
 	 *
-	 * @param string $status 'any'|'is_available'|'is_public'. Meaning of these options
-	 *     is domain-dependant.
+	 * @param string|string[] $statuses 'any'|'is_available'|'is_public' or one or more specific status values in an array.
+	 *      Meaning of these options is domain-dependant.
 	 * @param IToolset_Relationship_Role $for_role
 	 *
 	 * @return IToolset_Association_Query_Condition
 	 */
-	public function element_status( $status, IToolset_Relationship_Role $for_role ) {
+	public function element_status( $statuses, IToolset_Relationship_Role $for_role ) {
 		$this->has_element_status_condition = true;
 
 		return $this->condition_factory->element_status(
-			$status, $for_role, $this->join_manager, $this->element_selector_provider
+			$statuses, $for_role, $this->join_manager, $this->element_selector_provider
 		);
 	}
 
@@ -730,7 +799,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 *
 	 * @param String $origin Origin.
 	 *
-	 * @return IToolset_Relationship_Query_Condition
+	 * @return IToolset_Association_Query_Condition
 	 */
 	public function has_origin( $origin ) {
 		return $this->condition_factory->has_origin( $origin, $this->join_manager );
@@ -740,7 +809,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	/**
 	 * Condition that the association has an intermediary id.
 	 *
-	 * @return IToolset_Relationship_Query_Condition
+	 * @return IToolset_Association_Query_Condition
 	 */
 	public function has_intermediary_id() {
 		return $this->condition_factory->has_intermediary_id();
@@ -823,7 +892,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_association_instances() {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Association_Instance();
+		$this->result_transformation = $this->result_transformation_factory->association_instance();
 		return $this;
 	}
 
@@ -834,7 +903,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_association_uids() {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Association_Uid();
+		$this->result_transformation = $this->result_transformation_factory->association_uids();
 		return $this;
 	}
 
@@ -846,7 +915,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_element_ids( IToolset_Relationship_Role $role ) {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Element_Id( $role );
+		$this->result_transformation = $this->result_transformation_factory->element_ids( $role );
 		return $this;
 	}
 
@@ -858,8 +927,23 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_element_instances( IToolset_Relationship_Role $role ) {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Element_Instance( $role );
+		$this->result_transformation = $this->result_transformation_factory->element_instances( $role );
 		return $this;
+	}
+
+
+	/**
+	 * Indicate that get_results() should return arrays with elements indexed by their role names.
+	 *
+	 * This needs further configuration, see Toolset_Association_Query_Result_Transformation_Element_Per_Role for
+	 * further details.
+	 *
+	 * @return Toolset_Association_Query_Result_Transformation_Element_Per_Role
+	 * @since 3.0.9
+	 */
+	public function return_per_role() {
+		$this->result_transformation = $this->result_transformation_factory->element_per_role( $this );
+		return $this->result_transformation;
 	}
 
 
@@ -1137,5 +1221,20 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 			->get_results();
 
 		return $this->get_found_rows();
+	}
+
+
+	public function use_cache( $use_cache = true ) {
+		$this->use_cache = (bool) $use_cache;
+		return $this;
+	}
+
+
+	public function build_cache_key( $query_string ) {
+		$normalized_query_string = Toolset_Utils::trim_deep( $query_string );
+		$transformation_class = get_class( $this->result_transformation );
+		$key_source = "$normalized_query_string|$transformation_class";
+
+		return md5( $key_source );
 	}
 }

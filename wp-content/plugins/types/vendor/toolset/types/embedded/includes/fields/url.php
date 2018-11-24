@@ -60,6 +60,8 @@ function wpcf_fields_url_view( $params ) {
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_url_editor_callback( $field, $settings ) {
     if ( empty( $settings['target'] ) ) {
@@ -92,6 +94,8 @@ function wpcf_fields_url_editor_callback( $field, $settings ) {
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_url_editor_submit( $data, $field, $context ) {
     $add = '';

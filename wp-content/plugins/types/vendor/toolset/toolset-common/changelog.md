@@ -1,7 +1,65 @@
 # Toolset Common Library
 
-## 2.8
-* Legacy branch of the library created to support Types 2.3. Contains all fixes up until 3.0.1.
+## 3.2.3
+* [types-1799] Fixed fatal error on saving post field groups, which are assigned to multiple post types
+
+## 3.2.2
+* [types-1788] Make sure that JS assets loaded from JS also include the version number in their URL, in order to prevent browser cache issues.
+
+## 3.2.1
+* Added a link to documentation for the code snippets.
+* Fixed a regression on the Toolset widgets for Elementor when used inside templates.
+
+## 3.2
+* Custom PHP code snippets for Toolset (toolsetcommon-419).
+* New class for toolset_get_related_post() and toolset_get_related_post() and usability improvements.
+* [types-1768] Improve the querying by post statuses in the public m2m API.
+* [types-1772] Fix a check for role name validity in Toolset_Relationship_Role.
+* [types-1778] When exporting field groups, also include the information about the group's purpose.
+
+## 3.1
+* [types-1514] Support for relationship transformations - generic batch process dialog and several smaller improvements.
+* [types-851] Extend the preview support for image fields in the Types Yoast integration.
+* [types-1734] Improve the RFG loading times on post edit screens.
+* Extend the Views Elementor widget.
+* Include a Forms Elementor widget.
+* Make sure that select fields can be disabled, and that hidden fields can be empty, in Toolset Forms.
+* Fixed some glitches on the shortcodes API when combiing single and double quotes for attribute values.
+* Fixed some compatibility issues with the Fusion Builder.
+* Fixed some compatibility issues with Beaver Builder.
+* Fixed an issue with Skype fields.
+
+## 3.0.7
+* [types-1600] Inconsistency between toolset_connect_posts and toolset_disconnect_posts functions
+* [types-1623] Secondary language child post is listed when secondary language parent post was connected previously to default language child post
+* [toolsetcommon-385] When saving a relationship, register strings for translation 
+
+## 3.0.6
+* [toolsetcommon-421] No longer show registration notice for Types + Views Lite
+* [types-1709] Select field display values not translated with WPML
+
+## 3.0.5
+* Include a first version for Toolset widgets in the Elementor page builder.
+* Embed Auryn, the dependency injection container, with a script to safely update and namespace it.
+* Update Codemirror to v5.39.0
+* Extend the Toolset shortcodes GUI API by supporting helper attributes.
+* Include an abstract class for privacy policy contents, to be extended by any Toolset plugin.
+
+## 3.0.4
+* Add the ability to query usermeta groups by the roles they are associated with.
+* Fix a problem with Divi Cuilder taking over a post that uses a Content Template dsigned with it.
+* Fix a problem with Visual Composer 5.5+ and its integration with Content Templates.
+* Fixed: Association_Query_V2::need_found_rows() does not work for cached results. (types-1676)
+* Fixed hardcoded table prefixes. (types-1674)
+* Fix some issues with checkboxes fields rendering.
+
+## 3.0.3
+* Introduce caching in associations queries.
+* Introduce a condition to query by multiple items as a given association role.
+* Improve the support for getting data from legacy parents using a shortcode attribute.
+
+## 3.0.2
+* Hotfix Types release.
 
 ## 3.0.1
 * Adjust the shortcodes GUI API so it generates attributes wrapped in single quotes.
@@ -16,6 +74,7 @@
 * API: two new public functions to create associations.
 * WPML: support defining associations between posts without enforcing a specific translation mode for them.
 * WPML: ensure that data from a post reference field can be rendered.
+* (types-1515) Introduce two new public API functions to create and delete associations.
 
 ## 2.7.1
 * Tag for Forms 2.0-RC3

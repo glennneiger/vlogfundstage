@@ -1,5 +1,25 @@
 *** Xero Integration ***
 
+2018-10-29 - version 1.7.15
+* Fix    - Use better precision for rounding calculation.
+* Update - Add invoice resend functionality.
+* Update - WC 3.5 compatibility.
+
+2018-08-27 - version 1.7.14
+* Fix - Payment ID not being saved in db.
+
+2018-07-31 - version 1.7.13
+* Fix - Improved key security.
+
+2018-05-29 - version 1.7.12
+* Fix - Check for digital goods in order context and not cart context.
+
+2018-05-22 - version 1.7.11
+* Fix    - Support for Zero Rated EC Services.
+* Update - WC 3.4 compatibility.
+* Update - Privacy policy notification.
+* Update - Export/erasure hooks added.
+
 2017-12-15 - version 1.7.10
 * Fix - Fixed fatal error is thrown when marking an order paid via COD as complete.
 * Update - WC tested up to version.

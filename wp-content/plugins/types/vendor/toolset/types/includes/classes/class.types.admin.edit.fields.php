@@ -26,26 +26,16 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
     protected $update = false;
     protected $type = 'wpcf-fields';
 
-    /**
-     * Summary.
-     *
-     * Description.
-     *
-     * @since x.x.x
-     * @access (for functions: only use if private)
-     *
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Description.
-     * @global type $varname Description.
-     *
-     * @param type $var Description.
-     * @param type $var Optional. Description.
-     * @return type Description.
-     */
+	/**
+	 * List of all assigned fields (slugs)
+	 *
+	 * @var string[]
+	 */
+    private $assigned_fields;
+
+
     public function __construct()
     {
-        parent::__construct();
         /**
          * set type
          */
@@ -85,29 +75,24 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
         return $form;
     }
 
-    /**
-     * Summary.
-     *
-     * Description.
-     *
-     * @since x.x.x
-     * @access (for functions: only use if private)
-     *
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Description.
-     * @global type $varname Description.
-     *
-     * @param type $var Description.
-     * @param type $var Optional. Description.
-     * @return type Description.
-     */
+
     public function box_submitdiv()
     {
-        $button_text = __( 'Save Field Group', 'wpcf' );
+        $button_text = $this->get_save_field_group_label();
         $form = $this->submitdiv($button_text, array(), 'custom-field');
         $form = wpcf_form(__FUNCTION__, $form);
         echo $form->renderForm();
+    }
+
+
+	/**
+	 * Determine the label of the Save button.
+	 *
+	 * @return string
+	 * @since m2m
+	 */
+	protected function get_save_field_group_label() {
+		return __( 'Save Field Group', 'wpcf' );
     }
 
 
@@ -150,7 +135,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
 
         // Sanitize
         $form_data = wpcf_sanitize_field( $form_data );
-        
+
         $required = (isset($form_data['data']['validate']['required']['active']) && $form_data['data']['validate']['required']['active'] === "1") ? __('- required','wpcf') : '';
         $form_data['id'] = $id;
 
@@ -182,12 +167,12 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
          */
         $closed_postboxes = $this->get_closed_postboxes();
         $clasess = array(
-            'postbox',
+            'toolset-postbox',
         );
 
         // close all elements except new added fields
         if( ! isset( $_REQUEST['type'] ) )
-            $clasess[] = 'closed';
+            $clasess[] = 'toolset-collapsible-closed';
 
         $box_id = sprintf('types-custom-field-%s', $id);
         /* Only close boxes which user closed manually
@@ -202,7 +187,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
         $form_field['box-open'] = array(
             '#type' => 'markup',
             '#markup' => sprintf(
-                '<div id="%s" class="%s"><div class="handlediv" title="%s"><br></div><h3 class="hndle ui-sortable-handle">%s%s</h3>',
+                '<div id="%s" class="%s"><div data-toolset-collapsible=".toolset-postbox" class="toolset-collapsible-handle" title="%s"><br></div><h3 data-toolset-collapsible=".toolset-postbox" class="toolset-postbox-title js-toolset-sortable-handle">%s%s</h3>',
                 esc_attr($box_id),
                 esc_attr(implode(' ', $clasess)),
                 esc_attr__('Click to toggle', 'wpcf'),
@@ -213,7 +198,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
 
         $form_field['table-open'] = array(
             '#type' => 'markup',
-            '#markup' => '<table class="widefat inside js-wpcf-slugize-container">',
+            '#markup' => '<table class="widefat toolset-collapsible-inside js-wpcf-slugize-container">',
         );
 
         // Force name and description
@@ -426,12 +411,14 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
 
 			// We need to set the "repetitive" setting to a string '0' or '1', not numbers, because it will be used
 	        // again later in this method (which I'm not going to refactor now) and because the form renderer
-	        // is oversensitive. 
-	        $is_repetitive_as_string = ( 1 == wpcf_getnest( $form_data, array( 'data', 'repetitive' ), '0' ) ) ? '1' : '0';
+	        // is oversensitive.
+	        $is_repetitive_as_string = ( 1 == toolset_getnest( $form_data, array( 'data', 'repetitive' ), '0' ) ) ? '1' : '0';
 	        if( !array_key_exists( 'data', $form_data ) || !is_array( $form_data['data'] ) ) {
 		        $form_data['data'] = array();
 	        }
 	        $form_data['data']['repetitive'] = $is_repetitive_as_string;
+
+            $tooltip = ' <i class="fa fa-question-circle icon-question-sign js-show-tooltip hidden" data-header="' . __( 'Options disabled', 'wpcf' ) .'" data-content="' . __( 'Repeatable fields are currently not supported inside RFG - the field can only have one value inside a RFG', 'wpcf' ) .'"></i>';
 
             $form_field['repetitive'] = array(
                 '#type' => 'radios',
@@ -439,7 +426,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
                 '#title' => __( 'Single or repeating field?', 'wpcf' ),
                 '#options' => array(
                     'repeat' => array(
-                        '#title' => __( 'Allow multiple-instances of this field', 'wpcf' ),
+                        '#title' => __( 'Allow multiple-instances of this field', 'wpcf' ) . $tooltip,
                         '#value' => '1',
                         '#attributes' => array('onclick' => 'jQuery(this).parent().parent().find(\'.wpcf-cd-warning\').hide(); jQuery(this).parent().find(\'.wpcf-cd-repetitive-warning\').show();'),
                         '#before' => '<li>',
@@ -447,7 +434,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
                         '#inline' => true,
                     ),
                     'norepeat' => array(
-                        '#title' => __( 'This field can have only one value', 'wpcf' ),
+                        '#title' => __( 'This field can have only one value', 'wpcf' ) . $tooltip,
                         '#value' => '0',
                         '#attributes' => array('onclick' => 'jQuery(this).parent().parent().find(\'.wpcf-cd-warning\').show(); jQuery(this).parent().find(\'.wpcf-cd-repetitive-warning\').hide();'),
                         '#before' => '<li>',
@@ -498,10 +485,20 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
         /**
          * add Remove button
          */
+        $data_field_type = isset( $form_data['type'] )
+	        ? esc_attr( $form_data['type'] )
+	        : ''; // new field
+
+        $data_field_slug = isset( $form_data['slug'] )
+	        ? esc_attr( $form_data['slug'] )
+	        : ''; // new field
+
         $form_field['remove-field'] = array(
             '#type' => 'markup',
             '#markup' => sprintf(
-                '<a href="#" class="js-wpcf-field-remove wpcf-field-remove" data-message-confirm="%s"><i class="fa fa-trash"></i> %s</a>',
+                '<a href="#" class="js-wpcf-field-remove wpcf-field-remove" data-field-type="%s" data-field-slug="%s" data-message-confirm="%s"><i class="fa fa-trash"></i> %s</a>',
+	            $data_field_type,
+	            $data_field_slug,
                 esc_attr__( 'Are you sure?', 'wpcf' ),
                 __('Remove field', 'wpcf')
             ),
@@ -558,8 +555,28 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
                 }
             }
 
-            if( $k == 'slug-pre-save' ) {
-                $form[$name]['#value'] = $form_data['slug'];
+            switch( $k ) {
+	            case 'slug-pre-save':
+		            $form[$name]['#value'] = $form_data['slug'];
+		            break;
+	            case 'post_reference_type_pre_save':
+	            	if( isset( $form_data['data'] ) && isset( $form_data['data']['post_reference_type'] ) ) {
+	            		// select saved data
+			            $form[$name]['#value'] = $form_data['data']['post_reference_type'];
+		            }
+		            break;
+	            case 'post_reference_type':
+		            if( isset( $form_data['data'] )
+		                && isset( $form_data['data']['post_reference_type'] )
+		                && isset( $form[ $name ]['#options'] )
+			            && isset( $form[ $name ]['#options'][0] )
+		                && isset( $form[ $name ]['#options'][0] )
+			            && $form[ $name ]['#options'][0]['#value'] == ''
+		            ) {
+			            // saved data available - remove placeholder field "Select post type..."
+			            unset( $form[ $name ]['#options'][0] );
+		            }
+		            break;
             }
         }
         /**
@@ -593,7 +610,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
 
     protected function button_add_new( $clasess = array() )
     {
-        $clasess[] = 'wpcf-fields-add-new';
+        $clasess[] = 'wpcf-fields-btn';
         $clasess[] = 'js-wpcf-fields-add-new';
         return array(
             'fields-button-add-'.rand() => array(
@@ -607,13 +624,56 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
                     'data-wpcf-nonce' => wp_create_nonce('wpcf-edit-'.$this->ct['id']),
 	                // This can be wpcf-postmeta, wpcf-usermeta or wpcf-termmeta.
                     'data-wpcf-type' => $this->type,
-	                'data-wpcf-page' => esc_attr( wpcf_getget( 'page' ) )
+	                'data-wpcf-page' => esc_attr( toolset_getget( 'page' ) )
                 ),
                 '_builtin' => true,
                 '#name' => 'fields-button-add',
             )
         );
     }
+
+	/**
+	 * Adds the button "Add New Repeatable Group" next to the "Add New Field" button
+	 *
+	 * @param array $clasess
+	 *
+	 * @return array
+	 */
+	protected function button_add_new_repeatable_group( $clasess = array() )
+	{
+		if ( false === apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			// m2m disabled, don't show the button to add a new field
+			return array();
+		}
+
+		$screen = get_current_screen();
+		if ( $screen->id != 'toolset_page_wpcf-edit' ) {
+			return array();
+		}
+
+		return array(
+			'fields-button-add-'.rand() => array(
+				'#type' => 'button',
+				'#value' => '<span class="dashicons dashicons-plus"></span> ' . __('Add New Repeatable Group', 'wpcf'),
+				'#attributes' => array(
+					'class' => 'wpcf-fields-btn js-wpcf-tooltip wpcf-fields-btn-inactive js-wpcf-fields-add-new-repeatable-group clearfix',
+					'data-wpcf-dialog-title' => esc_attr__('Add New Repeatable Group', 'wpcf'),
+					'data-wpcf-id' => esc_attr($this->ct['id']),
+					'data-wpcf-message-loading' => esc_attr__('Please Wait, Loading…', 'wpcf'),
+					'data-wpcf-nonce' => wp_create_nonce('wpcf-edit-'.$this->ct['id']),
+					// This can be wpcf-postmeta, wpcf-usermeta or wpcf-termmeta.
+					'data-wpcf-type' => $this->type,
+					'data-wpcf-page' => esc_attr( toolset_getget( 'page' ) ),
+					'data-bind' => 'click: addRepeatableGroup',
+					'data-tooltip' =>
+						__( 'Child groups are only available for field groups, which are assigned to a single post type.', 'wpcf' )
+				),
+				'_builtin' => true,
+				'#name' => 'fields-button-add-repeatable-group',
+
+			)
+		);
+	}
 
     /**
      * Summary.
@@ -636,6 +696,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
     {
         $form = array();
         $form += $this->button_add_new();
+        $form += $this->button_add_new_repeatable_group();
         return $form;
     }
 
@@ -901,82 +962,42 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
      */
     public function fields()
     {
-        $form = $this->fields_begin();
-        /**
-         * existing fields
-         */
+      $form = array();
 
-        $form['fields-open'] = array(
-            '#type' => 'markup',
-            '#markup' => '<div class="js-wpcf-fields wpcf-fields meta-box-sortables ui-sortable">',
-            '_builtin' => true,
-        );
+      $form['fields-open'] = array(
+        '#type' => 'markup',
+        '#markup' => '<div class="wpcf-fields js-wpcf-fields js-types-fields-draggable js-types-fields-sortable clearfix">',
+        '_builtin' => true,
+      );
 
-        // If it's this->update, display existing fields
-        $existing_fields = array();
-
-        if ( $this->update && isset( $this->update['fields'] ) ) {
-            foreach ( $this->update['fields'] as $slug => $field ) {
-                $field['submitted_key'] = $slug;
-                $field['group_id'] = $this->update['id'];
-                $form_field = $this->get_field_form_data( $field['type'], $field );
-                if ( is_array( $form_field ) ) {
-                    $form = $form + $form_field;
-                }
-                $existing_fields[] = $slug;
-                $show_under_title = false;
-            }
+      // fields
+      if ( $this->update && isset( $this->update['fields'] ) ) {
+        foreach ( $this->update['fields'] as $slug => $field ) {
+          $field['submitted_key'] = $slug;
+          $field['group_id'] = $this->update['id'];
+          $form_field = $this->get_field_form_data( $field['type'], $field );
+          if ( is_array( $form_field ) ) {
+            $form = $form + $form_field;
+          }
         }
+      }
 
-        $class_bottom_elements = empty( $existing_fields )
-            ? ' hidden'
-            : '';
+      $form['fields-close'] = array(
+          '#type' => 'markup',
+          '#markup' => '</div>',
+          '_builtin' => true,
+      );
 
-        $form += $this->button_add_new( array( 'js-wpcf-fields-add-new-last' . $class_bottom_elements ));
+      /**
+       * setup common setting for forms
+       */
+      $form = $this->common_form_setup($form);
 
-        /*
-         * Second Submit
-         */
-        // container open
-        $form['submit-bottom-container'] = array(
-            '#type' => 'markup',
-            '#markup' => '<div class="js-wpcf-second-submit-container wpcf-second-submit-container' . $class_bottom_elements.'">',
-            '_builtin' => true,
-        );
-
-        // submit button
-        $form['submit-bottom'] = array(
-            '#type' => 'submit',
-            '#value' => __('Save Field Group', 'wpcf'),
-            '#attributes' => array(
-                'class' => 'js-wpcf-second-submit button-primary wpcf-disabled-on-submit',
-            ),
-            '_builtin' => true,
-            '#name' => 'fields-button-add-second',
-        );
-
-        // container close
-        $form['submit-bottom-close'] = array(
-            '#type' => 'markup',
-            '#markup' => '</div>',
-            '_builtin' => true,
-        );
-
-        $form['fields-close'] = array(
-            '#type' => 'markup',
-            '#markup' => '</div>',
-            '_builtin' => true,
-        );
-
-
-        /**
-         * setup common setting for forms
-         */
-        $form = $this->common_form_setup($form);
-        /**
-         * return form array
-         */
-        return $form;
+      $form += $this->fields_begin();
+      /**
+       * return form array
+       */
+      return $form;
     }
 
     /**
@@ -1066,8 +1087,57 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
         if( count( $fields ) == count( $already_used_fields ) )
             return false;
 
-        // add this point we definitely have previously added fields which weren't used yet.
+	    // remove post reference fields from the list
+		$fields = $this->remove_post_reference_fields_from_fields_list( $fields );
+
+	    // abort if no fields left after removing post reference fields
+	    if( empty( $fields ) )
+		    return false;
+
+	    // add this point we definitely have previously added fields which weren't used yet.
         return true;
+    }
+
+    private function remove_post_reference_fields_from_fields_list( $fields ) {
+    	$assigned_fields = $this->get_assigned_fields();
+
+	    foreach( $fields as $key => $field ) {
+		    if( isset( $field['type'] ) && $field['type'] == 'post' ) {
+		    	// post reference field
+		        if( in_array( $key, $assigned_fields ) ) {
+		            // field is assigned to a group - remove from field list
+				    unset( $fields[$key] );
+			    }
+		    }
+	    }
+
+	    return $fields;
+    }
+
+	/**
+	 * Returns all assigned fields as an array of slugs
+	 *
+	 * @return string[]
+	 */
+    private function get_assigned_fields() {
+    	if( $this->assigned_fields === null ) {
+    		$this->assigned_fields = array();
+		    $groups                = wpcf_admin_fields_get_groups( TYPES_CUSTOM_FIELD_GROUP_CPT_NAME, false, true);
+		    foreach( $groups as $group ) {
+				if( ! isset( $group['fields'] ) || empty( $group['fields'] ) ) {
+					continue;
+				}
+
+				foreach( (array) $group['fields'] as $field_slug => $field ) {
+					if( ! is_array( $field ) || ! isset( $field['slug'] ) ) {
+						continue; // happens for repeatable field group
+					}
+					$this->assigned_fields[] = $field['slug'];
+				}
+		    }
+	    }
+
+	    return $this->assigned_fields;
     }
 
     /**
@@ -1101,6 +1171,7 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
             $this->verification_failed_and_die();
         }
         $fields = wpcf_admin_fields_get_fields( true, true, false, $this->type );
+	    $fields = $this->remove_post_reference_fields_from_fields_list( $fields );
         $fields_registered = wpcf_admin_fields_get_available_types();
         if ( !empty( $fields ) ) {
             $form = array();
@@ -1331,8 +1402,8 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
 		        $groups = wpcf_admin_fields_get_groups( TYPES_USER_META_FIELD_GROUP_CPT_NAME );
 		        $message = __( 'There is no User Field Group. Please define one first.', 'wpcf' );
 		        break;
-	        case WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION:
-		        $groups = wpcf_admin_fields_get_groups( Types_Field_Group_Term::POST_TYPE );
+	        case Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION:
+		        $groups = wpcf_admin_fields_get_groups( Toolset_Field_Group_Term::POST_TYPE );
 		        $message = __( 'There is no Term Field Group. Please define one first.', 'wpcf' );
 		        break;
         }
@@ -1492,4 +1563,3 @@ abstract class Types_Admin_Edit_Fields extends Types_Admin_Page
     }
 
 }
-

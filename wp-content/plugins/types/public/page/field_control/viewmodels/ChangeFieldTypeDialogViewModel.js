@@ -92,7 +92,7 @@ Types.page.fieldControl.viewmodels.ChangeFieldTypeDialogViewModel = function(fie
             ko.cleanNode(dialog.el.parentNode);
         };
 
-        var dialog = Types.page.fieldControl.dialogHandler.create(
+        var dialog = Types.page.fieldControl.main.createDialog(
             'types-change-field-type-dialog',
             Types.page.fieldControl.strings.misc['changeFieldType'] + ' ' + fieldDefinition.displayName(),
             {},

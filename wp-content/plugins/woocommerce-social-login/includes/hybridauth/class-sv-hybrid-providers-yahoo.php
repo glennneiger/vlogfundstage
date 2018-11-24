@@ -24,7 +24,7 @@
 
 // load base class
 if ( ! class_exists( 'Hybrid_Providers_Yahoo' ) ) {
-	require_once( Hybrid_Auth::$config['path_providers'] . 'Yahoo.php' );
+	require_once( \Hybrid_Auth::$config['path_providers'] . 'Yahoo.php' );
 }
 
 
@@ -33,7 +33,7 @@ if ( ! class_exists( 'Hybrid_Providers_Yahoo' ) ) {
  *
  * @since 2.0.0
  */
-class SV_Hybrid_Providers_Yahoo extends Hybrid_Providers_Yahoo {
+class SV_Hybrid_Providers_Yahoo extends \Hybrid_Providers_Yahoo {
 
 
 	/**
@@ -49,11 +49,11 @@ class SV_Hybrid_Providers_Yahoo extends Hybrid_Providers_Yahoo {
 		parent::initialize();
 
 		// include OAuth2 client
-		require_once( Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
+		require_once( \Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-wp-oauth2-client.php' );
 
 		// create a new OAuth2 client instance
-		$api = new WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
+		$api = new \WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
 
 		// list of api props to copy over from the original client
 		$props = array( 'access_token', 'refresh_token', 'access_token_expires_in', 'access_token_expires_at', 'curl_proxy', 'api_base_url', 'authorize_url', 'token_url', 'curl_header' );

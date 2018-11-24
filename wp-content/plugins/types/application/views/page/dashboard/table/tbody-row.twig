@@ -38,7 +38,7 @@
     </td>
     <td>
         {% for information in table.get_template() %}
-            {% include 'page/dashboard/table/tbody-cell.twig' %}
+            {% include '@types/page/dashboard/table/tbody-cell.twig' %}
         {% endfor %}
     </td>
     {% if post_type.get_name() == 'page' or post_type.get_name() == 'attachment'  %}
@@ -50,18 +50,18 @@
     {% elseif table.get_archive( 'show-also-for-builtin' ) %}
         <td>
             {% for information in table.get_archive( 'show-also-for-builtin' ) %}
-                {% include 'page/dashboard/table/tbody-cell.twig' %}
+                {% include '@types/page/dashboard/table/tbody-cell.twig' %}
             {% endfor %}
         </td>
     {% endif %}
     <td>
         {% for information in table.get_views() %}
-            {% include 'page/dashboard/table/tbody-cell.twig' %}
+            {% include '@types/page/dashboard/table/tbody-cell.twig' %}
         {% endfor %}
     </td>
     <td>
         {% for information in table.get_forms() %}
-            {% include 'page/dashboard/table/tbody-cell.twig' %}
+            {% include '@types/page/dashboard/table/tbody-cell.twig' %}
         {% endfor %}
     </td>
 </tr>

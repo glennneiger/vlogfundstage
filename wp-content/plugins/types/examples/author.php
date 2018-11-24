@@ -1,6 +1,6 @@
 <?php
 /**
- * This example file is a part of the Types plugin online documentation found at: https://wp-types.com/documentation/customizing-sites-using-php/
+ * This example file is a part of the Types plugin online documentation found at: https://toolset.com/documentation/customizing-sites-using-php/
  * It is based on the original Twenty Sixteen theme's archive.php file.
  * It features additional code to render custom user fields created with the Types plugin.
  *
@@ -68,9 +68,9 @@ get_header(); ?>
 
 			// Previous/next page navigation.
 			the_posts_pagination( array(
-				'prev_text'          => __( 'Previous page', 'twentysixteen' ),
-				'next_text'          => __( 'Next page', 'twentysixteen' ),
-				'before_page_number' => '<span class="meta-nav screen-reader-text">' . __( 'Page', 'twentysixteen' ) . ' </span>',
+				'prev_text'          => __( 'Previous page', 'wpcf' ),
+				'next_text'          => __( 'Next page', 'wpcf' ),
+				'before_page_number' => '<span class="meta-nav screen-reader-text">' . __( 'Page', 'wpcf' ) . ' </span>',
 			) );
 
 		// If no content, include the "No posts found" template.

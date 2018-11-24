@@ -67,7 +67,7 @@ function wpcf_admin_fields_list_metabox_to_custom_fields_control()
         '#type' => 'markup',
         '#markup' => sprintf(
             ' <a class="button" href="%s">%s</a></p>',
-	        Types_Page_Field_Control::get_page_url( Types_Field_Utils::DOMAIN_POSTS ),
+	        Types_Page_Field_Control::get_page_url( Toolset_Field_Utils::DOMAIN_POSTS ),
             __('Post Field Control', 'wpcf')
         ),
         '_builtin' => true,

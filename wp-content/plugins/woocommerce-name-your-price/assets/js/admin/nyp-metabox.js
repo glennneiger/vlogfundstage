@@ -202,13 +202,14 @@
 	*/
 
 	// WC 2.4+ variation bulk edit handling.
-	$( 'select.variation_actions' ).on( 'variation_suggested_price_ajax_data variation_suggested_price_increase_ajax_data variation_suggested_price_decrease_ajax_data variation_min_price_ajax_data variation_min_price_increase_ajax_data variation_min_price_decrease_ajax_data', function(event, data) {
+	$( 'select.variation_actions' ).on( 'variation_suggested_price_ajax_data variation_suggested_price_increase_ajax_data variation_suggested_price_decrease_ajax_data variation_min_price_ajax_data variation_min_price_increase_ajax_data variation_min_price_decrease_ajax_data variation_maximum_price_ajax_data variation_maximum_price_increase_ajax_data variation_maximum_price_decrease_ajax_data', function(event, data) {
 		
 		var variation_action = $(this).val();
 
 		switch( variation_action ) {
 			case 'variation_suggested_price':
 			case 'variation_min_price':
+			case 'variation_maximum_price':
 				value = window.prompt( woocommerce_nyp_metabox.enter_value );
 				// unformat
 				value = accounting.unformat( value, woocommerce_admin.mon_decimal_point );
@@ -217,6 +218,8 @@
 			case 'variation_suggested_price_decrease':
 			case 'variation_min_price_increase':
 			case 'variation_min_price_decrease':
+			case 'variation_maximum_price_increase':
+			case 'variation_maximum_price_decrease':
 				value = window.prompt( woocommerce_nyp_metabox.price_adjust );
 
 				// Is it a percentage change?

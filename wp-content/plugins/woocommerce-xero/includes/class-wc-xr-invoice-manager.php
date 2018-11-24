@@ -51,10 +51,7 @@ class WC_XR_Invoice_Manager {
 		// Get the order
 		$order = wc_get_order( $order_id );
 
-		// Don't resend the invoice if already created.
-		if ( version_compare( WC_VERSION, '3.0', '<' ) ? get_post_meta( $order_id, '_xero_invoice_id', true ) : $order->get_meta( '_xero_invoice_id', true ) ) {
-			return false;
-		}
+		$xero_invoice_id = version_compare( WC_VERSION, '3.0', '<' ) ? get_post_meta( $order_id, '_xero_invoice_id', true ) : $order->get_meta( '_xero_invoice_id', true );
 
 		try {
 			// Write exception message to log
@@ -64,7 +61,8 @@ class WC_XR_Invoice_Manager {
 			$invoice = $this->get_invoice_by_order( $order );
 
 			// Check if the order total is 0 and if we need to send 0 total invoices to Xero
-			if ( 0 == $invoice->get_total() && 'on' !== $this->settings->get_option( 'export_zero_amount' ) ) {
+			// If this is a reasend we want to send even the 0 valued invoice.
+			if ( 0 == $invoice->get_total() && 'on' !== $this->settings->get_option( 'export_zero_amount' ) && ! $xero_invoice_id ) {
 
 				$logger->write( 'INVOICE HAS TOTAL OF 0, NOT SENDING ORDER WITH ID ' . $order_id );
 
@@ -77,7 +75,11 @@ class WC_XR_Invoice_Manager {
 			$invoice_request = new WC_XR_Request_Invoice( $this->settings, $invoice );
 
 			// Logging
-			$logger->write( 'START XERO NEW INVOICE. order_id=' . $order_id );
+			if( $xero_invoice_id ) {
+				$logger->write( 'START INVOICE UPDATE. order_id=' . $order_id . ' xero_invoice_id=' . $xero_invoice_id );
+			} else {
+				$logger->write( 'START XERO NEW INVOICE. order_id=' . $order_id );
+			}
 
 			// Do the request
 			$invoice_request->do_request();
@@ -103,7 +105,11 @@ class WC_XR_Invoice_Manager {
 				$logger->write( 'XERO RESPONSE:' . "\n" . $invoice_request->get_response_body() );
 
 				// Add Order Note
-				$order->add_order_note( __( 'Xero Invoice created.  ', 'wc-xero' ) . ' Invoice ID: ' . (string) $xml_response->Invoices->Invoice[0]->InvoiceID );
+				if( $xero_invoice_id ) {
+					$order->add_order_note( __( 'Xero Invoice updated.  ', 'wc-xero' ) . ' Invoice ID: ' . (string) $xml_response->Invoices->Invoice[0]->InvoiceID );
+				} else {
+					$order->add_order_note( __( 'Xero Invoice created.  ', 'wc-xero' ) . ' Invoice ID: ' . (string) $xml_response->Invoices->Invoice[0]->InvoiceID );
+				}
 
 			} else { // XML reponse is not OK
 
@@ -129,8 +135,11 @@ class WC_XR_Invoice_Manager {
 
 			return false;
 		}
-
-		$logger->write( 'END XERO NEW INVOICE' );
+		if( $xero_invoice_id ) {
+			$logger->write( 'END XERO INVOICE UPDATE' );
+		} else {
+			$logger->write( 'END XERO NEW INVOICE' );
+		}
 
 		return true;
 	}

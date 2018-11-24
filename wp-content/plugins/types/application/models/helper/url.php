@@ -18,12 +18,13 @@ final class Types_Helper_Url {
 
 	private static $urls = array();
 
-	const WP_TYPES_DOMAIN = 'wp-types.com';
+	const WP_TYPES_DOMAIN = 'toolset.com';
 
 
 	// All values for utm_medium should be eventually defined here
 	const UTM_MEDIUM_HELP = 'help';
 	const UTM_MEDIUM_POSTEDIT = 'postedit';
+	const UTM_MEDIUM_SHORTCODES = 'shortcodes-gui';
 
 
 	/**
@@ -84,7 +85,7 @@ final class Types_Helper_Url {
 	}
 
 	/**
-	 * Determines whether an URL points to the wp-types.com domain.
+	 * Determines whether an URL points to the toolset.com domain.
 	 *
 	 * @param string $url
 	 * @return bool
@@ -92,7 +93,7 @@ final class Types_Helper_Url {
 	 */
 	private static function is_link_to_wptypes( $url ) {
 		$url_parts = parse_url( $url );
-		return ( wpcf_getarr( $url_parts, 'host') == self::WP_TYPES_DOMAIN );
+		return ( toolset_getarr( $url_parts, 'host') == self::WP_TYPES_DOMAIN );
 	}
 
 
@@ -106,7 +107,7 @@ final class Types_Helper_Url {
 	 *     - If a string is provided, it will be added as utm_content.
 	 * @param bool|string $utm_term utm_term argument or false if $key should be used instead.
 	 * @param bool|string $utm_medium utm_medium (to be set globally) or false to use a previously set value.
-	 * @param bool $add_site_url If this is true and the URL points to wp-types.com, an additional argument with current
+	 * @param bool $add_site_url If this is true and the URL points to toolset.com, an additional argument with current
 	 *    site's URL will be added.
 	 *
 	 * @return mixed|string The URL or an empty string if the key was invalid.

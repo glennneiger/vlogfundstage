@@ -24,12 +24,14 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Yahoo social login provider class
  *
  * @since 1.6.0
  */
-class WC_Social_Login_Provider_Yahoo extends WC_Social_Login_Provider {
+class WC_Social_Login_Provider_Yahoo extends \WC_Social_Login_Provider {
 
 
 	/**
@@ -54,12 +56,12 @@ class WC_Social_Login_Provider_Yahoo extends WC_Social_Login_Provider {
 	 * Get the description
 	 *
 	 * @since 1.6.0
-	 * @see WC_Social_Login_Provider::get_description()
+	 * @see \WC_Social_Login_Provider::get_description()
 	 * @return string
 	 */
 	public function get_description() {
 		/* translators: Placeholders: %1$s - opening HTML <a> tag, %2$s - closing HTML </a> tag */
-		return sprintf( __( 'Need help setting up and configuring Yahoo? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="http://docs.woocommerce.com/document/woocommerce-social-login-create-social-apps#yahoo">', '</a>' );
+		return sprintf( __( 'Need help setting up and configuring Yahoo? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="' . $this->get_documentation_url() . '">', '</a>' );
 	}
 
 
@@ -95,7 +97,7 @@ class WC_Social_Login_Provider_Yahoo extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.6.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_login_button_text() {
@@ -107,7 +109,7 @@ class WC_Social_Login_Provider_Yahoo extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.6.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_link_button_text() {

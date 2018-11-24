@@ -41,7 +41,7 @@ final class Types_Asset_Help_Tab_Loader {
 			return;
 		}
 
-		$current_page = sanitize_text_field( wpcf_getget( 'page', null ) );
+		$current_page = sanitize_text_field( toolset_getget( 'page', null ) );
 		if ( null == $current_page ) {
 			return;
 		}
@@ -52,9 +52,9 @@ final class Types_Asset_Help_Tab_Loader {
 		}
 
 		$args = array(
-			'title' => wpcf_getarr( $help_content, 'title' ),
+			'title' => toolset_getarr( $help_content, 'title' ),
 			'id' => 'wpcf',
-			'content' => wpcf_getarr( $help_content, 'content' ),
+			'content' => toolset_getarr( $help_content, 'content' ),
 			'callback' => false,
 		);
 
@@ -64,6 +64,45 @@ final class Types_Asset_Help_Tab_Loader {
 
 	}
 
+	/**
+	 * Add multiple help tabs to current screen.
+	 *
+	 * Used as a hook for 'contextual_help_hook' in the shared Toolset menu.
+	 *
+	 * @since 2.3
+	 */
+	public function add_multiple_help_tabs() {
+
+		$screen = get_current_screen();
+
+		if ( is_null( $screen ) ) {
+			return;
+		}
+
+		$current_page = sanitize_text_field( toolset_getget( 'page', null ) );
+		if ( null === $current_page ) {
+			return;
+		}
+
+		$help_contents = $this->get_multiple_help_contents( $current_page );
+		if ( null === $help_contents ) {
+			return;
+		}
+
+		foreach ( $help_contents as $help_content ) {
+			$args = array(
+				'title' => toolset_getarr( $help_content, 'title' ),
+				'id' => toolset_getarr( $help_content, 'id' ),
+				'content' => toolset_getarr( $help_content, 'content' ),
+				'callback' => false,
+			);
+
+			$screen->add_help_tab( $args );
+		}
+
+		$this->add_need_help_tab();
+
+	}
 
 	/**
 	 * Need Help section for a bit advertising.
@@ -99,9 +138,14 @@ final class Types_Asset_Help_Tab_Loader {
 	 */
 	private function get_help_config( $page_name ) {
 
-		switch( $page_name ) {
+		switch ( $page_name ) {
 			case Types_Admin_Menu::PAGE_NAME_FIELD_CONTROL:
-				return Types_Page_Field_Control::get_instance()->get_help_config();
+				$field_control_page_controller = Types_Page_Field_Control::get_instance();
+				return $field_control_page_controller->get_help_config();
+
+			case Types_Admin_Menu::PAGE_NAME_CUSTOM_FIELDS:
+				$custom_fileds_page_controller = Types_Page_Custom_Fields::get_existing_instance();
+				return $custom_fileds_page_controller->get_help_config();
 
 			default:
 				return null;
@@ -124,13 +168,40 @@ final class Types_Asset_Help_Tab_Loader {
 		}
 
 		$twig = $this->get_twig();
-		
+
 		return array(
-			'title' => wpcf_getarr( $config, 'title' ),
-			'content' => $twig->render( wpcf_getarr( $config, 'template' ), wpcf_getarr( $config, 'context' ) )
+			'title' => toolset_getarr( $config, 'title' ),
+			'content' => $twig->render( toolset_getarr( $config, 'template' ), toolset_getarr( $config, 'context' ) )
 		);
 	}
 
+
+	/**
+	 * Render multiple help tabs content from its configuration.
+	 *
+	 * Some pages, like Custom Fields, needs several tabs, one for section.
+	 *
+	 * @param string $page_name Name of current page.
+	 * @return array|null Null when no help tab should be displayed, or an multiple arrays with keys 'title' and 'content'.
+	 * @since 2.3
+	 */
+	private function get_multiple_help_contents( $page_name ) {
+		$configs = array();
+		$twig = $this->get_twig();
+
+		foreach ( $this->get_help_config( $page_name ) as $config ) {
+			if ( null === $config ) {
+				return null;
+			}
+
+			$configs[] = array(
+				'id' => toolset_getarr( $config, 'id' ),
+				'title' => toolset_getarr( $config, 'title' ),
+				'content' => $twig->render( toolset_getarr( $config, 'template' ), toolset_getarr( $config, 'context' ) ),
+			);
+		}
+		return $configs;
+	}
 
 	/** @var Twig_Environment|null */
 	private $twig = null;
@@ -142,11 +213,21 @@ final class Types_Asset_Help_Tab_Loader {
 	 * @since 2.0
 	 */
 	private function get_twig() {
+
 		if( null == $this->twig ) {
-			$loader = new Twig_Loader_Filesystem();
-			$loader->addPath( TYPES_ABSPATH . '/application/views/help', 'help' );
-			$this->twig = new Twig_Environment( $loader );
+
+			$tcb = Toolset_Common_Bootstrap::get_instance();
+			$tcb->register_gui_base();
+			Toolset_Gui_Base::initialize();
+			$gui_base = Toolset_Gui_Base::get_instance();
+
+			$this->twig = $gui_base->create_twig_environment(
+				array(
+					'help' => TYPES_ABSPATH . '/application/views/help'
+				)
+			);
 		}
+
 		return $this->twig;
 	}
 

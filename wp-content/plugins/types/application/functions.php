@@ -20,6 +20,7 @@ if( !function_exists( 'wpcf_getpost' ) ) {
 	 *
 	 * @return mixed
 	 * @since 1.9
+	 * @deprecated Use toolset_getpost() instead.
 	 */
 	function wpcf_getpost( $key, $default = '', $valid = null ) {
 		return wpcf_getarr( $_POST, $key, $default, $valid );
@@ -41,6 +42,7 @@ if( !function_exists( 'wpcf_getget' ) ) {
 	 *
 	 * @return mixed
 	 * @since 1.9
+	 * @deprecated Use toolset_getget() instead.
 	 */
 	function wpcf_getget( $key, $default = '', $valid = null ) {
 		return wpcf_getarr( $_GET, $key, $default, $valid );
@@ -66,6 +68,7 @@ if( !function_exists( 'wpcf_getarr' ) ) {
 	 * @return mixed The value of the given key or $default.
 	 *
 	 * @since 1.9
+	 * @deprecated Use toolset_getarr() instead.
 	 */
 	function wpcf_getarr( &$source, $key, $default = '', $valid = null ) {
 		if ( is_array( $source ) && array_key_exists( $key, $source ) ) {
@@ -95,6 +98,7 @@ if( !function_exists( 'wpcf_ensarr' ) ) {
 	 * @return array The original array or a default value if no array is provided.
 	 *
 	 * @since 1.9
+	 * @deprecated Use toolset_ensarr() instead.
 	 */
 	function wpcf_ensarr( $array, $default = array() ) {
 		return ( is_array( $array ) ? $array : $default );
@@ -112,6 +116,7 @@ if( !function_exists( 'wpcf_wraparr' ) ) {
 	 *
 	 * @return array
 	 * @since 1.9.1
+	 * @deprecated Use toolset_wraparr() instead.
 	 */
 	function wpcf_wraparr( $input ) {
 		return ( is_array( $input ) ? $input : array( $input ) );
@@ -137,6 +142,7 @@ if( !function_exists( 'wpcf_getnest' ) ) {
 	 * @return mixed|null Value in the nested structure defined by keys or default value.
 	 *
 	 * @since 1.9
+	 * @deprecated Use toolset_getnest() instead.
 	 */
 	function wpcf_getnest( &$source, $keys = array(), $default = null ) {
 
@@ -168,4 +174,23 @@ if( !function_exists( 'wpcf_getnest' ) ) {
 		return $default;
 	}
 
+}
+
+
+if( ! function_exists( 'types_dic' ) ) {
+
+	/**
+	 * Return the DIC.
+	 *
+	 * Will work only after the Toolset Common Autoloader is initialized.
+	 *
+	 * This is mainly for making IDE understand the returned type easily, rather than having to
+	 * tell it explicitly when using apply_filters.
+	 *
+	 * @return \OTGS\Toolset\Common\Auryn\Injector
+	 * @since 3.1
+	 */
+	function types_dic() {
+		return apply_filters( 'toolset_dic', null );
+	}
 }

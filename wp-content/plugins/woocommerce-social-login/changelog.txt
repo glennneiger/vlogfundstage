@@ -1,5 +1,30 @@
 *** WooCommerce Social Login Changelog ***
 
+2018.10.24 - version 2.6.1
+ * Dev - Add filter to toggle loading of frontend scripts in the footer instead of head of the document page
+ * Misc - Add support for WooCommerce 3.5
+
+2018.08.22 - version 2.6.0
+ * Tweak - Allow getting the user email address when signing up using a Twitter account (requires additional permissions)
+ * Tweak - Update the Twitter callback URL example for Twitter's new app requirements
+ * Misc - Drop support for PHP 5.2: PHP 5.3 is now the minimum supported version
+ * Misc - Upgrade HybridAuth authentication library to v2.11.0
+
+2018.07.18 - version 2.5.3
+ * Fix - Ensure users are able to log in via VK without errors
+ * Fix - Additional fix for users registering in with non-ASCII usernames
+ * Fix - Ensure callback/redirect URIs displayed in the admin in sites that use SSL are prepended with HTTPS rather than HTTP by default
+ * Localization - Added Japanese translation provided by Hiro.M
+ * Localization - Updated Italian translation
+
+2018.05.29 - version 2.5.2
+ * Fix - When a user tries to register a user name made of encoded characters only, to avoid WordPress stripping those and prompting an empty name error, set a numerical user name instead
+
+2018.05.23 - version 2.5.1
+ * Tweak - Erase Social Login linked accounts information when a user requests to erase their personal data
+ * Fix - Fix an error which occurs when used with WooCommerce Memberships
+ * Misc - Add support for WooCommerce 3.4
+
 2018.05.09 - version 2.5.0
  * Feature - Add support for WooCommerce Memberships to add Social Login buttons to restriction messages for logged out users
  * Misc - Warn admins if a caching issue may be affecting Social Login authentication making customers unable to link their accounts and log in

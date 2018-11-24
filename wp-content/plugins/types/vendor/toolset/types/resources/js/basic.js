@@ -21,7 +21,7 @@ jQuery(document).ready(function($){
      * http://www.mkyong.com/jquery/how-to-create-a-tooltips-with-jquery/
      */
     var changeTooltipPosition = function(event) {
-        var tooltipX = event.pageX - 8;
+        var tooltipX = event.pageX + 2;
         var tooltipY = event.pageY + 8;
         $('div.tooltip').css({top: tooltipY, left: tooltipX});
     };

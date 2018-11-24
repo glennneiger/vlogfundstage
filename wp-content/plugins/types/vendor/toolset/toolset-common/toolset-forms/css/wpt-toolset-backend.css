@@ -269,7 +269,7 @@ img.ui-datepicker-trigger {
 }
 
 /* File */
-.wpt-file-preview img
+.wpt-image .wpt-file-preview img
 {
     border: 1px solid #A0A0A0;
     height: 50px;

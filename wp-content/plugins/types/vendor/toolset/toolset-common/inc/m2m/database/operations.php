@@ -20,7 +20,7 @@ class Toolset_Relationship_Database_Operations {
 	 *
 	 * @since m2m
 	 */
-	const MAXIMUM_RELATIONSHIP_SLUG_LENGTH = 255;
+	const MAXIMUM_RELATIONSHIP_SLUG_LENGTH = 190;
 
 
 	/**
@@ -93,7 +93,7 @@ class Toolset_Relationship_Database_Operations {
 		if ( ! $relationship_definition instanceof Toolset_Relationship_Definition ) {
 			throw new InvalidArgumentException(
 				sprintf(
-					__( 'Relationship definition "%s" doesn\'t exist.', 'wpcf' ),
+					__( 'Relationship definition "%s" doesn\'t exist.', 'wpv-views' ),
 					is_string( $relationship_definition_source ) ? $relationship_definition_source : print_r( $relationship_definition_source, true )
 				)
 			);
@@ -156,14 +156,16 @@ class Toolset_Relationship_Database_Operations {
 	 * Practically that means creating the wp_toolset_associations table.
 	 *
 	 * @since m2m
-	 *
-	 * TODO is it possible to reliably detect dbDelta failure?
+	 * @return Toolset_Result_Set
 	 */
 	public function do_native_dbdelta() {
-		$this->create_associations_table();
-		$this->create_relationship_table();
-		$this->create_type_set_table();
-		return true;
+		$results = new Toolset_Result_Set();
+
+		$results->add( $this->create_associations_table() );
+		$results->add( $this->create_relationship_table() );
+		$results->add( $this->create_type_set_table() );
+
+		return $results;
 	}
 
 
@@ -207,13 +209,14 @@ class Toolset_Relationship_Database_Operations {
 	 * Note: It is assumed that the table doesn't exist.
 	 *
 	 * @since m2m
+	 * @return Toolset_Result
 	 */
 	private function create_associations_table() {
 
 		$association_table_name = $this->table_name->association_table();
 
 		if ( $this->table_exists( $association_table_name ) ) {
-			return;
+			return new Toolset_Result( true );
 		}
 
 		// Note that dbDelta is very sensitive about details, almost nothing here is arbitrary.
@@ -229,7 +232,42 @@ class Toolset_Relationship_Database_Operations {
 				KEY child_id (child_id, relationship_id)
 			) " . $this->get_charset_collate() . ";";
 
+		return $this->do_dbdelta_and_return( $query, $association_table_name );
+	}
+
+
+	/**
+	 * @param string $query
+	 * @param string $table_to_check
+	 *
+	 * @return Toolset_Result
+	 * @since 3.0.2
+	 */
+	private function do_dbdelta_and_return( $query, $table_to_check ) {
 		self::dbdelta( $query );
+		$wpdb_error = $this->wpdb->last_error;
+
+		if( ! $this->table_exists( $table_to_check ) ) {
+			return new Toolset_Result(
+				false,
+				sprintf(
+					__( 'Unable to create table %s due to a MySQL Error: %s', 'wpv-views' ),
+					$table_to_check,
+					$wpdb_error
+				)
+			);
+		} elseif( ! empty( $wpdb_error ) ) {
+			return new Toolset_Result(
+				false,
+				sprintf(
+					__( 'MySQL error when creating table %s: %s', 'wpv-views' ),
+					$table_to_check,
+					$wpdb_error
+				)
+			);
+		}
+
+		return new Toolset_Result( true );
 	}
 
 
@@ -239,13 +277,14 @@ class Toolset_Relationship_Database_Operations {
 	 * Note: It is assumed that the table doesn't exist.
 	 *
 	 * @since m2m
+	 * @return Toolset_Result
 	 */
 	private function create_relationship_table() {
 
 		$table_name = $this->table_name->relationship_table();
 
 		if ( $this->table_exists( $table_name ) ) {
-			return;
+			return new Toolset_Result( true );
 		}
 
 		// Note that dbDelta is very sensitive about details, almost nothing here is arbitrary.
@@ -285,15 +324,17 @@ class Toolset_Relationship_Database_Operations {
 			KEY child_type (child_domain, child_types)
 		) " . $this->get_charset_collate() . ";";
 
-		self::dbdelta( $query );
-
+		return $this->do_dbdelta_and_return( $query, $table_name );
 	}
 
 
+	/**
+	 * @return Toolset_Result
+	 */
 	private function create_type_set_table() {
 		$table_name = $this->table_name->type_set_table();
 		if ( $this->table_exists( $table_name ) ) {
-			return;
+			return new Toolset_Result( true );
 		}
 
 		// Note that dbDelta is very sensitive about details, almost nothing here is arbitrary.
@@ -306,7 +347,7 @@ class Toolset_Relationship_Database_Operations {
 			KEY type (type)
 		) " . $this->get_charset_collate() . ";";
 
-		self::dbdelta( $query );
+		return $this->do_dbdelta_and_return( $query, $table_name );
 	}
 
 
@@ -343,12 +384,12 @@ class Toolset_Relationship_Database_Operations {
 		$message = (
 		$is_success
 			? sprintf(
-			__( 'The association table has been updated with the new relationship slug "%s". %d rows have been updated.', 'wpcf' ),
+			__( 'The association table has been updated with the new relationship slug "%s". %d rows have been updated.', 'wpv-views' ),
 			$new_definition->get_slug(),
 			$rows_updated
 		)
 			: sprintf(
-			__( 'There has been an error when updating the association table with the new relationship slug: %s', 'wpcf' ),
+			__( 'There has been an error when updating the association table with the new relationship slug: %s', 'wpv-views' ),
 			$this->wpdb->last_error
 		)
 		);
@@ -377,12 +418,12 @@ class Toolset_Relationship_Database_Operations {
 		if( false === $result ) {
 			return new Toolset_Result_Updated(
 				false, 0,
-				sprintf( __( 'Database error when deleting associations: "%s"', 'wpcf' ), $this->wpdb->last_error )
+				sprintf( __( 'Database error when deleting associations: "%s"', 'wpv-views' ), $this->wpdb->last_error )
 			);
 		} else {
 			return new Toolset_Result_Updated(
 				true, $result,
-				sprintf( __( 'Deleted all associations for the relationship #%d', 'wpcf'), $relationship_row_id )
+				sprintf( __( 'Deleted all associations for the relationship #%d', 'wpv-views'), $relationship_row_id )
 			);
 		}
 	}
@@ -512,12 +553,12 @@ class Toolset_Relationship_Database_Operations {
 
 		$message = $is_success
 			? sprintf(
-				__( 'The type_sets table has been updated with the new type "%s". %d rows have been updated.', 'wpcf' ),
+				__( 'The type_sets table has been updated with the new type "%s". %d rows have been updated.', 'wpv-views' ),
 				$new_type,
 				$rows_updated
 			)
 			: sprintf(
-				__( 'There has been an error when updating the type_sets table with the new type "%s": %s', 'wpcf' ),
+				__( 'There has been an error when updating the type_sets table with the new type "%s": %s', 'wpv-views' ),
 				$new_type,
 				$this->wpdb->last_error
 			);
@@ -610,6 +651,6 @@ class Toolset_Relationship_Database_Operations {
 							WHERE relationship_id = %d
 							GROUP BY {$role_name}_id
 					) count", $relationship_id ) );
-		return $count;
+		return (int) $count;
 	}
 }

@@ -28,7 +28,7 @@
  *
  * @since 2.0.0
  */
-class SV_Hybrid_Providers_Facebook extends Hybrid_Provider_Model_OAuth2 {
+class SV_Hybrid_Providers_Facebook extends \Hybrid_Provider_Model_OAuth2 {
 
 
 	/**
@@ -42,7 +42,7 @@ class SV_Hybrid_Providers_Facebook extends Hybrid_Provider_Model_OAuth2 {
 	public function initialize() {
 
 		if ( ! $this->config['keys']['id'] || ! $this->config['keys']['secret'] ) {
-			throw new Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
+			throw new \Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
 		}
 
 		// override requested scope
@@ -51,11 +51,11 @@ class SV_Hybrid_Providers_Facebook extends Hybrid_Provider_Model_OAuth2 {
 		}
 
 		// include OAuth2 client
-		require_once( Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
+		require_once( \Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-wp-oauth2-client.php' );
 
 		// create a new OAuth2 client instance
-		$this->api = new WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
+		$this->api = new \WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
 
 		$this->api->api_base_url    = 'https://graph.facebook.com/v2.8/';
 		$this->api->authorize_url   = 'https://www.facebook.com/v2.8/dialog/oauth';
@@ -102,7 +102,7 @@ class SV_Hybrid_Providers_Facebook extends Hybrid_Provider_Model_OAuth2 {
 
 		// if the provider identifier is not received, we assume the auth has failed
 		if ( ! isset( $data->id ) ) {
-			throw new Exception( "User profile request failed! {$this->providerId} api returned an invalid response: " . Hybrid_Logger::dumpData( $data ), 6 );
+			throw new \Exception( "User profile request failed! {$this->providerId} api returned an invalid response: " . \Hybrid_Logger::dumpData( $data ), 6 );
 		}
 
 		# store the user profile.

@@ -67,7 +67,7 @@ function wpcf_admin_userprofile_init($user_id){
             // Process fields
 			if ( empty($profile_only_preview) ){
 
-				$group_wpml = new Types_Wpml_Field_Group( Types_Field_Group_User_Factory::load( $group['slug'] ) );
+				$group_wpml = new Types_Wpml_Field_Group( Toolset_Field_Group_User_Factory::load( $group['slug'] ) );
 
                 if ( defined( 'WPTOOLSET_FORMS_VERSION' ) ) {
                     $errors = get_user_meta( $user_id->ID, '__wpcf-invalid-fields',
@@ -200,7 +200,7 @@ function wpcf_usermeta_preview_profile( $user_id, $group, $echo = ''){
 	global $wpcf;
 	//print_r($group);exit;
 	$fields = $group['fields'];
-	$group_wpml = new Types_Wpml_Field_Group( Types_Field_Group_User_Factory::load( $group['slug'] ) );
+	$group_wpml = new Types_Wpml_Field_Group( Toolset_Field_Group_User_Factory::load( $group['slug'] ) );
 
 	$group_output = '<div class="wpcf-group-area wpcf-group-area-' . $group['slug'] . '">' . "\n\n";
 	$group_output .=  '<h3 class="wpcf-group-header-'. $group['slug'] .'">'. $group_wpml->translate_name() .'</h3>'. "\n\n";
@@ -415,7 +415,7 @@ function wpcf_admin_userprofilesave_init( $user_id ) {
 function wpcf_admin_render_fields( $group, $user_id, $echo = '') {
 
 	global $wpcf;
-	$group_wpml = new Types_Wpml_Field_Group( Types_Field_Group_User_Factory::load( $group['slug'] ) );
+	$group_wpml = new Types_Wpml_Field_Group( Toolset_Field_Group_User_Factory::load( $group['slug'] ) );
 
 	$output = '<div class="wpcf-group-area wpcf-group-area_' . $group['slug'] . '">' . "\n\n";
 	$output .= '<h3>'. $group_wpml->translate_name() .'</h3>' . "\n\n";

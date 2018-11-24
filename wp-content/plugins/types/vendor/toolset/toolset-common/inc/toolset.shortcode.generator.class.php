@@ -44,6 +44,8 @@ abstract class Toolset_Shortcode_Generator {
 		add_action( 'toolset_action_require_shortcodes_templates', array( $this, 'print_shortcodes_templates' ) );
 
 		add_filter( 'toolset_filter_shortcode_script_i18n', array( $this, 'extend_script_i18n' ) );
+
+		add_filter( 'toolset_editor_add_form_buttons', array( $this, 'can_add_editor_buttons' ) );
 	}
 
 	public function register_shortcodes_admin_bar_items() {
@@ -218,173 +220,55 @@ abstract class Toolset_Shortcode_Generator {
 			return;
 		}
 
-		?>
-		<script type="text/html" id="tmpl-toolset-shortcode-gui">
-			<input value="{{{data.shortcode}}}" class="toolset-shortcode-gui-shortcode-handle js-toolset-shortcode-gui-shortcode-handle" type="hidden" />
-			<# if ( _.has( data, 'parameters' ) ) {
-				_.each( data.parameters, function( parameterValue, parameterKey ) {
-					#>
-					<span class="toolset-shortcode-gui-attribute-wrapper js-toolset-shortcode-gui-attribute-wrapper js-toolset-shortcode-gui-attribute-wrapper-for-{{{parameterKey}}}" data-attribute="{{{parameterKey}}}" data-type="parameter">
-						<input type="hidden" name="{{{parameterKey}}}" value="{{{parameterValue}}}" disabled="disabled" />
-					</span>
-					<#
-				});
-			} #>
-			<div id="js-toolset-shortcode-gui-dialog-tabs" class="toolset-shortcode-gui-tabs js-toolset-shortcode-gui-tabs">
-			<# if ( _.size( data.attributes ) > 1 ) { #>
-				<ul class="js-toolset-shortcode-gui-tabs-list">
-					<# _.each( data.attributes, function( attributesGroup, groupKey ) { #>
-						<# if (
-							_.has( attributesGroup, 'fields' )
-							&& _.size( attributesGroup.fields ) > 0
-						) { #>
-						<li>
-							<a href="#{{{data.shortcode}}}-{{{groupKey}}}">{{{attributesGroup.header}}}</a>
-						</li>
-						<# } #>
-					<# }); #>
-				</ul>
-			<# } #>
-				<# _.each( data.attributes, function( attributesGroup, groupKey ) { #>
-					<# if (
-						_.has( attributesGroup, 'fields' )
-						&& _.size( attributesGroup.fields ) > 0
-					) { #>
-					<div id="{{{data.shortcode}}}-{{{groupKey}}}">
-						<h2>{{{attributesGroup.header}}}</h2>
-						<# _.each( attributesGroup.fields, function( attributeData, attributeKey ) {
-							if ( _.has( data.templates, 'attributeWrapper' ) ) {
-								attributeData = _.extend( { shortcode: data.shortcode, attribute: attributeKey, templates: data.templates }, attributeData );
-								if ( 'group' == attributeData.type ) {
-									print( data.templates.attributeGroupWrapper( attributeData ) );
-								} else {
-									print( data.templates.attributeWrapper( attributeData ) );
-								}
-							}
-						}); #>
-					</div>
-					<# } #>
-				<# }); #>
-			</div>
-			<div class="toolset-shortcode-gui-messages js-toolset-shortcode-gui-messages"></div>
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-wrapper">
-			<#
-				data = _.defaults( data, { defaultValue: '', required: false, hidden: false, placeholder: '' } );
-				data = _.defaults( data, { defaultForceValue: data.defaultValue } );
-			#>
-			<div class="toolset-shortcode-gui-attribute-wrapper js-toolset-shortcode-gui-attribute-wrapper js-toolset-shortcode-gui-attribute-wrapper-for-{{{data.attribute}}}" data-attribute="{{{data.attribute}}}" data-type="{{{data.type}}}" data-default="{{{data.defaultValue}}}"<# if ( data.hidden ) { #> style="display:none"<# } #>>
-				<# if ( _.has( data, 'label' ) ) { #>
-					<h3>{{{data.label}}}</h3>
-				<# } #>
-				<# if ( _.has( data, 'pseudolabel' ) ) { #>
-					<strong>{{{data.pseudolabel}}}</strong>
-				<# } #>
-				<# if (
-					_.has( data.templates, 'attributes' )
-					&& _.has( data.templates.attributes, data.type )
-				) {
-					print( data.templates.attributes[ data.type ]( data ) );
-				} #>
-				<# if ( _.has( data, 'description' ) ) { #>
-					<p class="description">{{{data.description}}}</p>
-				<# } #>
-			</div>
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-group-wrapper">
-			<div class="toolset-shortcode-gui-attribute-group js-toolset-shortcode-gui-attribute-group js-toolset-shortcode-gui-attribute-group-for-{{{data.attribute}}}" data-type="group" data-group="{{{data.attribute}}}"<# if ( data.hidden ) { #> style="display:none"<# } #>>
-				<# if ( _.has( data, 'label' ) ) { #>
-					<h3>{{{data.label}}}</h3>
-				<# } #>
-				<#
-				var columns = _.size( data.fields ),
-					columnsWidth = parseInt( 100 / columns );
-				#>
-				<ul class="toolset-shortcode-gui-dialog-item-group js-toolset-shortcode-gui-dialog-item-group">
-					<# _.each( data.fields, function( fieldData, fieldAttribute ) { #>
-						<li style="width:<# print( columnsWidth ); #>%;min-height:1px;float:left;">
-							<#
-							fieldData = _.defaults( fieldData, { shortcode: data.shortcode, templates: data.templates } );
-							fieldData = _.defaults( fieldData, { defaultValue: '', required: false, hidden: false, placeholder: '' } );
-							fieldData = _.defaults( fieldData, { defaultForceValue: fieldData.defaultValue } );
-							fieldData.attribute = fieldAttribute;
-							print( data.templates.attributeWrapper( fieldData ) );
-							#>
-						</li>
-					<# }); #>
-				</ul>
-				<# if ( _.has( data, 'description' ) ) { #>
-					<p class="description">{{{data.description}}}</p>
-				<# } #>
-			</div>
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-information">
-			<div id="{{{data.shortcode}}}-{{{data.attribute}}}" class="toolset-alert toolset-alert-info">
-				{{{data.content}}}
-			</div>
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-text">
-			<input id="{{{data.shortcode}}}-{{{data.attribute}}}" data-type="text" class="js-shortcode-gui-field large-text<# if ( data.required ) { #> js-toolset-shortcode-gui-required<# } #>" value="{{{data.defaultForceValue}}}" placeholder="{{{data.placeholder}}}" type="text">
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-radio">
-			<ul id="{{{data.shortcode}}}-{{{data.attribute}}}">
-				<# _.each( data.options, function( optionLabel, optionKey ) { #>
-					<li>
-						<label>
-							<input name="{{{data.shortcode}}}-{{{data.attribute}}}" value="{{{optionKey}}}" class="js-shortcode-gui-field" type="radio"<# if ( optionKey == data.defaultForceValue ) { #> checked="checked"<# } #>>
-							{{{optionLabel}}}
-						</label>
-					</li>
-				<# }); #>
-			</ul>
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-select">
-			<select id="{{{data.shortcode}}}-{{{data.attribute}}}" class="js-shortcode-gui-field<# if ( data.required ) { #> js-toolset-shortcode-gui-required<# } #>">
-				<# _.each( data.options, function( optionLabel, optionKey ) { #>
-					<option value="{{{optionKey}}}"<# if ( optionKey == data.defaultForceValue ) { #> selected="selected"<# } #>>
-						{{{optionLabel}}}
-					</option>
-				<# }); #>
-			</select>
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-select2">
-			<select id="{{{data.shortcode}}}-{{{data.attribute}}}" class="js-shortcode-gui-field js-toolset-shortcode-gui-field-select2<# if ( data.required ) { #> js-toolset-shortcode-gui-required<# } #>">
-				<#
-				if ( _.has( data, 'options' ) ) {
-					_.each( data.options, function( optionLabel, optionKey ) {
-					#>
-					<option value="{{{optionKey}}}"<# if ( optionKey == data.defaultForceValue ) { #> selected="selected"<# } #>>
-						{{{optionLabel}}}
-					</option>
-					<#
-					});
-				}
-				#>
-			</select>
-		</script>
-		<script type="text/html" id="tmpl-toolset-shortcode-attribute-ajaxSelect2">
-			<select
-				id="{{{data.shortcode}}}-{{{data.attribute}}}"
-				class="js-shortcode-gui-field js-toolset-shortcode-gui-field-ajax-select2<# if ( data.required ) { #> js-toolset-shortcode-gui-required<# } #>"
-				data-action="{{{data.action}}}"
-				data-nonce="{{{data.nonce}}}"
-				data-placeholder="{{{data.placeholder}}}"
-				>
-			</select>
-		</script>
+		$template_repository = Toolset_Output_Template_Repository::get_instance();
+		$renderer = Toolset_Renderer::get_instance();
 
-		<script type="text/html" id="tmpl-toolset-shortcode-content">
-			<#
-				data = _.defaults( data, { defaultValue: '', required: false, hidden: false, placeholder: '' } );
-				data = _.defaults( data, { defaultForceValue: data.defaultValue } );
-			#>
-			<div class="toolset-shortcode-gui-attribute-wrapper js-toolset-shortcode-gui-content-wrapper" <# if ( data.hidden ) { #> style="display:none"<# } #>>
-				<textarea id="toolset-shortcode-gui-content-{{{data.shortcode}}}" type="text" class="large-text js-toolset-shortcode-gui-content">{{{data.defaultValue}}}</textarea>
-				<# if ( _.has( data, 'description' ) ) { #>
-					<p class="description">{{{data.description}}}</p>
-				<# } #>
-			</div>
-		</script>
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_DIALOG ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_GROUP_WRAPPER ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_WRAPPER ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_INFORMATION ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_TEXT ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_TEXTAREA ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_RADIO ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_SELECT ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_SELECT2 ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_ATTRIBUTE_AJAXSELECT2 ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( Toolset_Output_Template_Repository::SHORTCODE_GUI_CONTENT ),
+			null
+		);
+
+		?>
 
 		<?php $toolset_ajax = Toolset_Ajax::get_instance(); ?>
 
@@ -646,9 +530,9 @@ abstract class Toolset_Shortcode_Generator {
 							isset( $_GET['page'] )
 							&& in_array( $_GET['page'], array( 'views-editor', 'view-archives-editor' ) )
 						) {
-							_e( 'The current post in the loop', 'wp-cred' );
+							_e( 'The current post in the loop', 'wpv-views' );
 						} else {
-							_e( 'The current post', 'wp-cred' );
+							_e( 'The current post', 'wpv-views' );
 						}
 						?>
 					</label>
@@ -656,7 +540,7 @@ abstract class Toolset_Shortcode_Generator {
 				<li class="js-toolset-shortcode-gui-item-selector-has-related">
 					<label>
 						<input type="radio" name="{{{data.shortcode}}}-select-target-post" class="toolset-shortcode-gui-item-selector js-toolset-shortcode-gui-item-selector" value="object_id" />
-						<?php _e( 'Another post', 'wp-cred' ); ?>
+						<?php _e( 'Another post', 'wpv-views' ); ?>
 						<div class="toolset-shortcode-gui-item-selector-is-related js-toolset-shortcode-gui-item-selector-is-related" style="display:none">
 							<select id="toolset-shortcode-gui-item-selector-post-id-object_id"
 								class="js-toolset-shortcode-gui-item-selector_object_id js-toolset-shortcode-gui-field-ajax-select2"
@@ -677,13 +561,13 @@ abstract class Toolset_Shortcode_Generator {
 				<li>
 					<label>
 						<input type="radio" name="{{{data.shortcode}}}-select-target-user" class="toolset-shortcode-gui-item-selector js-toolset-shortcode-gui-item-selector" value="current" checked="checked" />
-						<?php _e( 'The current logged in user', 'wp-cred' ); ?>
+						<?php _e( 'The current logged in user', 'wpv-views' ); ?>
 					</label>
 				</li>
 				<li class="js-toolset-shortcode-gui-item-selector-has-related">
 					<label>
 						<input type="radio" name="{{{data.shortcode}}}-select-target-user" class="toolset-shortcode-gui-item-selector js-toolset-shortcode-gui-item-selector" value="object_id" />
-						<?php _e( 'Another user', 'wp-cred' ); ?>
+						<?php _e( 'Another user', 'wpv-views' ); ?>
 						<div class="toolset-shortcode-gui-item-selector-is-related js-toolset-shortcode-gui-item-selector-is-related" style="display:none">
 							<select id="toolset-shortcode-gui-item-selector-user-id-object_id"
 								class="js-toolset-shortcode-gui-item-selector_object_id js-toolset-shortcode-gui-field-ajax-select2"
@@ -744,6 +628,26 @@ abstract class Toolset_Shortcode_Generator {
 		);
 
 		return $toolset_shortcode_i18n;
+	}
+
+	/**
+	 * Globally disable Toolset editor buttons on a given page.
+	 *
+	 * @param boolean $status
+	 * @return boolean
+	 * @since 3.0.x
+	 */
+	public function can_add_editor_buttons( $status ) {
+		// Elementor page builder editor includes those GET parameters
+		// and Toolset buttons do not work on its text widgets.
+		if ( 
+			'elementor' == toolset_getget( 'action' )
+			&& '' != toolset_getget( 'post' )
+		) {
+			return false;
+		}
+		
+		return $status;
 	}
 
 	/**

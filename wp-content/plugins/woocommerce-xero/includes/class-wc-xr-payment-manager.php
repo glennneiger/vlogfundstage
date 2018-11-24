@@ -37,6 +37,8 @@ class WC_XR_Payment_Manager {
 		// Check if we need to send payments when they're completed automatically.
 		if ( 'on' === $this->settings->get_option( 'send_payments' ) ) {
 			add_action( 'woocommerce_order_status_completed', array( $this, 'send_payment' ) );
+		} elseif ( 'payment_completion' === $this->settings->get_option( 'send_payments' ) ) {
+			add_action( 'woocommerce_payment_complete', array( $this, 'send_payment' ), 20 );
 		}
 
 		add_filter( 'woocommerce_xero_order_payment_date', array( $this, 'cod_payment_set_payment_date_as_current_date' ), 10, 2 );
@@ -91,6 +93,7 @@ class WC_XR_Payment_Manager {
 					update_post_meta( $order_id, '_xero_payment_id', $payment_id );
 				} else {
 					$order->update_meta_data( '_xero_payment_id', $payment_id );
+					$order->save_meta_data();
 				}
 
 				// Write logger.

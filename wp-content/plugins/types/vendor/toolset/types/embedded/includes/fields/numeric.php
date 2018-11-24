@@ -90,6 +90,8 @@ function wpcf_field_number_validation_fix(){
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_numeric_editor_callback( $field, $settings ) {
     return array(
@@ -107,6 +109,8 @@ function wpcf_fields_numeric_editor_callback( $field, $settings ) {
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_numeric_editor_submit( $data, $field, $context ) {
     $add = '';

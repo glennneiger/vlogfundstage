@@ -8,7 +8,7 @@
  *
  * @since 2.0
  */
-final class Toolset_Autoloader {
+final class Types_Autoloader {
 
 	private static $instance;
 

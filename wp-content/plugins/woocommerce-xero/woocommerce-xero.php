@@ -5,14 +5,14 @@
  * Description: Integrates <a href="https://woocommerce.com/" target="_blank" >WooCommerce</a> with the <a href="http://www.xero.com" target="_blank">Xero</a> accounting software.
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
- * Version: 1.7.10
+ * Version: 1.7.15
  * Text Domain: wc-xero
  * Domain Path: /languages/
  * Requires WooCommerce: 2.2
- * WC tested up to: 3.3
+ * WC tested up to: 3.5
  * WC requires at least: 2.6
  *
- * Copyright 2017 WooCommerce
+ * Copyright 2018 WooCommerce
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2, as
@@ -49,7 +49,7 @@ woothemes_queue_update( plugin_basename( __FILE__ ), 'f0dd29d338d3c67cf6cee88edd
  */
 class WC_Xero {
 
-	const VERSION = '1.7.10';
+	const VERSION = '1.7.15';
 
 	/**
 	 * The constructor.
@@ -88,6 +88,10 @@ class WC_Xero {
 		// Setup Payment hooks.
 		$payment_manager = new WC_XR_Payment_Manager( $settings );
 		$payment_manager->setup_hooks();
+
+		if ( class_exists( 'WC_Abstract_Privacy' ) ) {
+			new WC_XR_Privacy();
+		}
 
 		// If subscriptions is active.
 		if ( class_exists( 'WC_Subscriptions' ) ) {

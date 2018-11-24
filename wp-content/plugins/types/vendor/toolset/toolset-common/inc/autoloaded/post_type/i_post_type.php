@@ -127,6 +127,21 @@ interface IToolset_Post_Type {
 
 
 	/**
+	 * Check if the post type can be used in a many-to-many relationship as an intermediary post.
+	 *
+	 * @param bool $skip_check_for_existing_intermediary
+	 *
+	 * @param bool $skip_check_for_relationship_involvment
+	 *
+	 * @return Toolset_Result
+	 */
+	public function can_be_used_as_intermediary(
+		$skip_check_for_existing_intermediary = false,
+		$skip_check_for_relationship_involvment = false
+	);
+
+
+	/**
 	 * Check if the post type is already used in an existing relationship.
 	 *
 	 * Needs m2m.

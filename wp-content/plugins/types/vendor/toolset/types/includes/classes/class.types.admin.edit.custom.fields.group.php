@@ -2,55 +2,49 @@
 
 require_once WPCF_INC_ABSPATH . '/classes/class.types.admin.edit.fields.php';
 
-/**
- * Summary.
- *
- * Description.
- *
- * @since x.x.x
- * @access (for functions: only use if private)
- *
- * @see Function/method/class relied on
- * @link URL
- * @global type $varname Description.
- * @global type $varname Description.
- *
- * @param type $var Description.
- * @param type $var Optional. Description.
- *
- * @return type Description.
- */
 class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 
 	const PAGE_NAME = 'wpcf-edit';
 
-    public function __construct()
+	private $valid_meta_boxes_regexps = array(
+		'/^wpcf.*/',
+		'/^Types.*/',
+		'/add_meta_boxes$/',
+	);
+
+	private $service_field_group;
+
+	/** @var Types_Page_Field_Group_Post_Relationship_Helper */
+	private $relationship_helper;
+
+
+    public function __construct( $is_doing_ajax = false )
     {
         parent::__construct();
         $this->get_id = 'group_id';
+        require_once( TYPES_ABSPATH . '/application/models/field/group/service.php' );
+        require_once( TYPES_ABSPATH . '/application/models/field/group/repeatable/service.php' );
+        $this->service_field_group = new Types_Field_Group_Repeatable_Service();
         add_action('wp_ajax_wpcf_ajax_filter', array($this, 'ajax_filter_dialog'));
+
+        // This is necessary because there are some AJAX callbacks on this class (and superclasses),
+	    // and the handling of these callbacks is extremely terrible (vendor/toolset/types/admin.php:54).
+	    //
+	    // During the time of the AJAX request, there's no autoloader available, thus we cannot access this class.
+	    // Luckily, we also don't need it.
+	    if( ! $is_doing_ajax ) {
+		    $this->relationship_helper = new Types_Page_Field_Group_Post_Relationship_Helper();
+		    $this->relationship_helper->initialize();
+	    }
+
     }
 
-	/**
-	 * Summary.
-	 *
-	 * Description.
-	 *
-	 * @since x.x.x
-	 * @access (for functions: only use if private)
-	 *
-	 * @see Function/method/class relied on
-	 * @link URL
-	 * @global type $varname Description.
-	 * @global type $varname Description.
-	 *
-	 * @param type $var Description.
-	 * @param type $var Optional. Description.
-	 *
-	 * @return type Description.
-	 */
+
 	public function init_admin() {
 		$this->post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME;
+
+		$this->relationship_helper->handle_association_field_group_creation();
+
 		$this->init_hooks();
 		$this->boxes = array(
 			'submitdiv'   => array(
@@ -91,24 +85,34 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 		wpcf_admin_add_js_settings( 'wpcfFormAlertOnlyPreview', sprintf( "'%s'", __( 'Sorry, but this is only preview!', 'wpcf' ) ) );
 	}
 
+
 	/**
-	 * Summary.
+	 * @inheritdoc
 	 *
-	 * Description.
+	 * Allow overriding of the label when editing association fields.
 	 *
-	 * @since x.x.x
-	 * @access (for functions: only use if private)
-	 *
-	 * @see Function/method/class relied on
-	 * @link URL
-	 * @global type $varname Description.
-	 * @global type $varname Description.
-	 *
-	 * @param type $var Description.
-	 * @param type $var Optional. Description.
-	 *
-	 * @return type Description.
+	 * @return string
+	 * @since m2m
 	 */
+	protected function get_save_field_group_label() {
+		$default = parent::get_save_field_group_label();
+
+		return $this->relationship_helper->maybe_adjust_save_button( $default );
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * Allow hiding the Delete link when editing association fields.
+	 *
+	 * @return bool
+	 */
+	protected function is_delete_action_forbidden() {
+		return $this->relationship_helper->is_field_group_deletion_forbidden();
+	}
+
+
 	public function form() {
 		$this->save();
 
@@ -177,9 +181,23 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 			'#value' => $this->update['id'],
 		);
 
+		$field_settings_collapsed_class = $this->update['id'] !== 0 // means not a new field group
+			? ' toolset-collapsible-closed'
+			: '';
+
+		$form['field-group-settings-box-open'] = array(
+			'#type' => 'markup',
+			'#markup' => sprintf(
+				'<div class="toolset-field-group-settings toolset-postbox%s"><div data-toolset-collapsible=".toolset-postbox" class="toolset-collapsible-handle" title="%s"><br></div><h3 data-toolset-collapsible=".toolset-postbox" class="toolset-postbox-title">%s</h3><div class="toolset-collapsible-inside">',
+				$field_settings_collapsed_class,
+				esc_attr__('Click to toggle', 'wpcf'),
+				__( 'Settings for the fields group', 'wpcf' )
+			)
+		);
+
 		$form['table-1-open'] = array(
 			'#type'   => 'markup',
-			'#markup' => '<table id="wpcf-types-form-name-table" class="wpcf-types-form-table widefat js-wpcf-slugize-container"><thead><tr><th colspan="2">' . __( 'Name and description', 'wpcf' ) . '</th></tr></thead><tbody>',
+			'#markup' => '<table id="wpcf-types-form-name-table" class="wpcf-types-form-table widefat js-wpcf-slugize-container"><tbody>',
 		);
 		$table_row            = '<tr><td><LABEL></td><td><ERROR><BEFORE><ELEMENT><AFTER></td></tr>';
 		$form['title']        = array(
@@ -219,10 +237,7 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 			'#inline'     => true,
 		);
 
-		$form['table-1-close'] = array(
-			'#type'   => 'markup',
-			'#markup' => '</tbody></table>',
-		);
+
 
 		/**
 		 * Where to include these field group
@@ -230,18 +245,31 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 
 		$form['table-2-open'] = array(
 			'#type'   => 'markup',
-			'#markup' => '<table class="wpcf-types-form-table wpcf-where-to-include widefat"><thead><tr><th colspan="2">' . __( 'Where to include this Field Group', 'wpcf' ) . '</th></tr></thead><tbody>',
+			'#markup' => '<tr><td>' . __( 'Appears on', 'wpcf' ) . '</td>',
 		);
 
 		$form['table-2-content'] = array(
 			'#type'   => 'markup',
-			'#markup' => '<tr><td>'.$this->sidebar_group_conditions().'</td></tr>',
+			'#markup' => '<td>'.$this->sidebar_group_conditions().'</td></tr>',
 		);
 
-		$form['table-2-close'] = array(
+		$form['table-1-close'] = array(
 			'#type'   => 'markup',
 			'#markup' => '</tbody></table>',
 		);
+
+
+		$form['field-group-settings-box-close'] = array(
+			'#type' => 'markup',
+			'#markup' => '</div></div>',
+		);
+
+		if( isset( $_GET['field_group_action'] ) ) {
+			$form['field-group-action'] = array(
+				'#type'   => 'markup',
+				'#markup' => '<script type="text/javascript"> var toolset_field_group_on_load_action="'.sanitize_text_field( $_GET['field_group_action'] ).'"</script>',
+			);
+		}
 
 
 		/**
@@ -254,6 +282,25 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 			'#markup'  => '</div>',
 			'_builtin' => true,
 		);
+		$number_associations_without_intermediary = $this->relationship_helper->get_number_associations_without_intermediary_posts();
+		if ( $number_associations_without_intermediary ) {
+			$intermediary_action_name = Types_Ajax::get_instance()->get_action_js_name( Types_Ajax::CALLBACK_FIELD_GROUP_EDIT_ACTION );
+			$template_repository = Types_Output_Template_Repository::get_instance();
+			$renderer = Toolset_Renderer::get_instance();
+			$context = array(
+				'number_associations_without_intermediary' => $number_associations_without_intermediary,
+				'wpnonce' => wp_create_nonce( $intermediary_action_name ),
+			);
+			$markup = $renderer->render(
+				$template_repository->get( Types_Output_Template_Repository::FIELD_GROUP_EDIT_INTERMEDIARY_MODAL_TEMPLATE ),
+				$context,
+				false
+			);
+			$form['intermediary-dialog'] = array(
+				'#type'   => 'markup',
+				'#markup' => $markup,
+			);
+		}
 
 		/**
 		 * setup common setting for forms
@@ -268,6 +315,86 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 		}
 
 		return wpcf_admin_common_only_show( $form );
+	}
+
+	/**
+	 * Returns Enlimbo form array by given fields.
+	 *
+	 * @param $fields
+	 *
+	 * @return array
+	 *
+	 * @since 2.3
+	 */
+	private function fields_form( $fields ) {
+		$form = array();
+
+		foreach ( $fields as $slug => $field ) {
+			// check for repeatable field group
+			if( $repeatable_group = $this->service_field_group->get_object_from_prefixed_string( $field ) ) {
+				$repeatable_group_fields = wpcf_admin_fields_get_fields_by_group( $repeatable_group->get_id() );
+				$repeatable_form_fields = $this->fields_form( $repeatable_group_fields );
+
+				$repeatable_group_form = new Enlimbo_Forms_Wpcf();
+				$view  = $this->service_field_group->get_view_backend_creation( $repeatable_group, $repeatable_group_form->renderElements( $repeatable_form_fields ) );
+
+				$form['repeatable-group-' . $repeatable_group->get_id() ] = array(
+					'#type' => 'markup',
+					'#markup' => $view->render(),
+					'_builtin' => true,
+				);
+
+				continue;
+			}
+
+			$field['submitted_key'] = $slug;
+			$field['group_id'] = $this->update['id'];
+			$form_field = $this->get_field_form_data( $field['type'], $field );
+			if ( is_array( $form_field ) ) {
+				$form = $form + $form_field;
+			}
+		}
+
+		return $form;
+	}
+
+	/**
+	 * Fields rendering. Addition to parents::field is that this also handles repeatable groups.
+	 *
+	 * @return type
+	 */
+	public function fields()
+	{
+		$form = array();
+
+		$form['fields-open'] = array(
+			'#type' => 'markup',
+			'#markup' => '<div class="wpcf-fields js-wpcf-fields js-types-fields-draggable js-types-fields-sortable clearfix">',
+			'_builtin' => true,
+		);
+
+		// fields
+		if ( $this->update && isset( $this->update['fields'] ) ) {
+			$form = $form + $this->fields_form( $this->update['fields'] );
+		}
+
+		$form['fields-close'] = array(
+			'#type' => 'markup',
+			'#markup' => '</div>',
+			'_builtin' => true,
+		);
+
+		/**
+		 * setup common setting for forms
+		 */
+		$form = $this->common_form_setup($form);
+
+		$form += $this->fields_begin();
+
+		/**
+		 * return form array
+		 */
+		return $form;
 	}
 
 	/**
@@ -294,6 +421,12 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 		// if not saved yet, print message and abort
 		if( $this->update['id'] === 0 ) {
 			return $this->print_notice( __( 'Please save first, then you can select where to display this Field Group.', 'wpcf' ), 'no-wrap', false );
+		}
+
+		// For association fields, we don't allow assigning the field group to anything else.
+		$overridden_by_relationships = $this->relationship_helper->maybe_override_group_usage_pseudometabox();
+		if( false !== $overridden_by_relationships ) {
+			return $overridden_by_relationships;
 		}
 
 		// supported post types
@@ -508,12 +641,6 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 			'#markup' => sprintf( '<p class="wpcf-fields-group-conditions-description ' . 'js-wpcf-fields-group-conditions-none">%s</p>', __( 'By default <b>this group of fields</b> will appear when editing <b>all content.</b><br /><br />Select specific Post Types, Terms, Templates or set Data-dependent filters to limit the fields to specific locations and/or conditions in the WordPress admin.', 'wpcf' ) ),
 		);
 
-		// Description: conditions set
-		$form['supports-msg-conditions'] = array(
-			'#type'   => 'markup',
-			'#markup' => sprintf( '<p class="wpcf-fields-group-conditions-description ' . 'js-wpcf-fields-group-conditions-set">%s</p>', __( 'This Post Field Group is used with:', 'wpcf' ) ),
-		);
-
 		// Description: Post Types set
 		$form['supports-msg-conditions-post-types'] = array(
 			'#type'   => 'markup',
@@ -588,11 +715,24 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 
 		// Filter Association
 		if( $this->current_user_can_edit ) {
+			$does_contain_rfg_or_prf = $this->service_field_group->group_contains_rfg_or_prf( $this->update['id'] );
 			$count = 0;
 			$count += ! empty( $this->update['post_types'] ) ? 1 : 0;
 			$count += ! empty( $this->update['taxonomies'] ) ? 1 : 0;
 			$count += ! empty( $this->update['templates'] ) ? 1 : 0;
-			$display = $count > 1 ? '' : ' style="display:none;"';
+			$display = ! $does_contain_rfg_or_prf && $count > 1 || $does_contain_rfg_or_prf && $count > 2
+				? ''
+				: ' style="display:none;"';
+
+			$conditions_options = $does_contain_rfg_or_prf
+				? array(
+					__( 'when <b>Post Type</b> and <b>ANY</b> other condition is met', 'wpcf' )   => 'any',
+					__( 'when <b>ALL</b> conditions are met', 'wpcf' ) => 'all',
+				)
+				: array(
+					__( 'when <b>ANY</b> condition is met', 'wpcf' )   => 'any',
+					__( 'when <b>ALL</b> conditions are met', 'wpcf' ) => 'all',
+				);
 
 			$form['filters_association'] = array(
 				'#title'         => '<b>' . __( 'Use Field Group:', 'wpcf' ) . '</b>',
@@ -600,10 +740,7 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 				'#name'          => 'wpcf[group][filters_association]',
 				'#id'            => 'wpcf-fields-form-filters-association',
 				'#options-after' => '',
-				'#options'       => array(
-					__( 'when <b>ANY</b> condition is met', 'wpcf' )   => 'any',
-					__( 'when <b>ALL</b> conditions are met', 'wpcf' ) => 'all',
-				),
+				'#options'       => $conditions_options,
 				'#default_value' => ! empty( $this->update['filters_association'] )
 					? $this->update['filters_association']
 					: 'any',
@@ -781,34 +918,71 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 			 * post types
 			 */
 			case 'post-types':
+				$is_rfg_prf_active = toolset_getarr( $_REQUEST, 'rfg_prf_count', false );
+				$is_rfg_prf_active = (bool) $is_rfg_prf_active;
+				$assigned_post_types = toolset_getarr( $_REQUEST, 'assigned_post_types', array() );
+
+				if( $is_rfg_prf_active && count( $assigned_post_types ) == 1 ) {
+					// rfg or prf included
+
+					$assigned_post_type = reset( $assigned_post_types );
+					// show the registered post type and explain user that he cannot change the post type
+					$form['post-types-description-with-rfg-prf'] = array(
+						'#type'   => 'markup',
+						'#markup' => '<p class="description js-wpcf-description">'
+						             . __( 'The Post Type of this Field Group cannot be changed as long as a Repeatable Group or a Post Reference field is used.', 'wpcf' )
+						             . '</p>'
+					);
+
+					$form[ 'option_' . $assigned_post_type ] = array(
+						'#name'          => esc_attr( $assigned_post_type ),
+						'#type'          => 'checkbox',
+						'#value'         => 1,
+						'#default_value' => esc_attr( $assigned_post_type ),
+						'#inline'        => true,
+						'#attributes'    => array(
+							'data-wpcf-value'  => esc_attr( $assigned_post_type ),
+							'data-wpcf-prefix' => 'post-type-',
+							'style' => 'display: none;'
+						),
+					);
+
+					break;
+				}
+
 				$form['post-types-description'] = array(
 					'#type'   => 'markup',
 					'#markup' => '<p class="description js-wpcf-description">' . __( 'Select specific Post Types that you want to use with this Field Group:', 'wpcf' ) . '</p>'
 				);
+
 				$form['post-types-ul-open']     = array(
 					'#type'   => 'markup',
 					'#markup' => '<ul>',
 				);
-
 				$currently_supported = wpcf_admin_get_post_types_by_group( sanitize_text_field( $_REQUEST['id'] ) );
-
 				$post_types = get_post_types( array('show_ui' => true), 'objects' );
 				ksort( $post_types );
-				foreach( $post_types as $post_type_slug => $post_type ) {
-					if( in_array( $post_type_slug, $wpcf->excluded_post_types ) ) {
+				foreach( $post_types as $assigned_post_type => $post_type ) {
+					if( in_array( $assigned_post_type, $wpcf->excluded_post_types ) ) {
 						continue;
 					}
-					$form[ 'option_' . $post_type_slug ] = array(
-						'#name'          => esc_attr( $post_type_slug ),
+
+					$post_type_helper = new Types_Post_Type_Helper( $assigned_post_type );
+					if( $post_type_helper->has_special_purpose() ) {
+						continue;
+					}
+
+					$form[ 'option_' . $assigned_post_type ] = array(
+						'#name'          => esc_attr( $assigned_post_type ),
 						'#type'          => 'checkbox',
 						'#value'         => 1,
-						'#default_value' => $this->ajax_filter_default_value( $post_type_slug, $currently_supported, 'post-type' ),
+						'#default_value' => $this->ajax_filter_default_value( $assigned_post_type, $currently_supported, 'post-type' ),
 						'#inline'        => true,
 						'#before'        => '<li>',
 						'#after'         => '</li>',
 						'#title'         => $post_type->label,
 						'#attributes'    => array(
-							'data-wpcf-value'  => esc_attr( $post_type_slug ),
+							'data-wpcf-value'  => esc_attr( $assigned_post_type ),
 							'data-wpcf-prefix' => 'post-type-'
 						),
 					);
@@ -989,7 +1163,7 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 		$form = array(
 			$slug . '-begin' => array(
 				'#type'   => 'markup',
-				'#markup' => sprintf( '<div class="postbox"><div class="handlediv" title="%s"><br></div><h3 class=""><span>%s</span></h3><div class="inside"><ul>', esc_attr__( 'Click to toggle', 'wpcf' ), $title )
+				'#markup' => sprintf( '<div class="postbox toolset-postbox"><div data-toolset-collapsible=".toolset-postbox" class="toolset-collapsible-handle handlediv" title="%s"><br></div><h3 class=""><span>%s</span></h3><div class=" toolset-collapsible-inside inside" style="padding:0 12px 12px"><ul>', esc_attr__( 'Click to toggle', 'wpcf' ), $title )
 			)
 		);
 		$form += $data;
@@ -1100,10 +1274,12 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 		$_REQUEST[ $this->get_id ] = $group_id;
 
 		// save
-		$this->save_group_fields( $group_id );
+		// Note: The order of these actions is critical, save_group_fields() already needs
+		// the information about assigned post types.
 		$this->save_condition_post_types( $group_id );
 		$this->save_condition_templates( $group_id );
 		$this->save_condition_taxonomies( $group_id );
+		$this->save_group_fields( $group_id );
 
 		do_action( 'types_fields_group_saved', $group_id );
 		do_action( 'types_fields_group_post_saved', $group_id );
@@ -1121,9 +1297,74 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 		if( isset( $_GET['ref'] ) )
 			$args['ref'] = $_GET['ref'];
 
-		wp_safe_redirect( esc_url_raw( add_query_arg( $args, admin_url( 'admin.php' ) ) ) );
+		$default_redirect_url = add_query_arg( $args, admin_url( 'admin.php' ) );
+
+		// Maybe we'll redirect to a Edit Relationship page instead.
+		$redirect_url = $this->relationship_helper->maybe_adjust_redirection_after_save( $default_redirect_url );
+
+		// Executed after hooks for setting the proper post type.
+		$this->relationship_helper->create_intermediary_group_if_needed( $group_id );
+
+		wp_safe_redirect( esc_url_raw( $redirect_url ) );
 
 		die;
+	}
+
+	/**
+	 * We're using the following format for repeatable group inputs '<input name="repeatable-group_%ID%_%ACTION%">'
+	 * This function checks if the name is valid for a repeatable group action and if so it returns the WP_Post object
+	 * of the repeatable group and also the action.
+	 *
+	 * Once getting rid of Enlimbo we should also clean up this form handle. But until than it's the way we "inject"
+	 * our repeatable groups to the Enlimbo form.
+	 *
+	 * @param $string
+	 *
+	 * @return array|bool
+	 *
+	 * @since 2.3
+	 */
+	private function get_repeatable_group_and_action_by_input_name( $string ) {
+		if( strpos( $string, Types_Field_Group_Repeatable::PREFIX ) !== 0 ) {
+			// no repeatble group
+			return false;
+		}
+
+		$repeatable_group_data = explode( '_', str_replace( Types_Field_Group_Repeatable::PREFIX, '', $string ) );
+
+		if( count( $repeatable_group_data ) != 2 ) {
+			// no repeatable group as a repeatable group would contain %ID% and %ACTION%
+			return false;
+		}
+
+		// action
+		$action = $repeatable_group_data[1];
+
+		if( ! in_array( $action, array( 'presaveslug', 'start', 'name', 'slug', 'end' ) ) ) {
+			// no valid action = no valid repeatable group
+			return false;
+		}
+
+		// WP_Post of repeatable group
+		$id = $repeatable_group_data[0];
+
+		if( ! is_numeric( $id ) ) {
+			// no repeatable group
+			return false;
+		}
+
+		$repeatable_group = get_post( $id );
+
+		if( ! $repeatable_group instanceof WP_POST || $repeatable_group->post_type != 'wp-types-group' ) {
+			// no repeatable group
+			return false;
+		}
+
+		// valid repeatable group
+		return( array(
+			'post_object' => $repeatable_group,
+			'action' => $action
+		) );
 	}
 
 	/**
@@ -1145,35 +1386,170 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 	 * @return type Description.
 	 */
 	private function save_group_fields( $group_id ) {
+		$group_factory = Toolset_Field_Group_Factory::get_factory_by_domain( Toolset_Field_Utils::DOMAIN_POSTS );
+		$group = $group_factory->load_field_group( $group_id );
+
+		// Handles deleted fields
+		$previous_fields_slugs = $group->get_field_slugs();
+		$actual_fields_slugs = empty( $_POST['wpcf']['fields'] )
+			? array()
+			: array_keys( $_POST['wpcf']['fields'] );
+		$deleted_fields_slugs = array_diff( $previous_fields_slugs, $actual_fields_slugs );
+		foreach ( $deleted_fields_slugs as $deleted_field_slug ) {
+			Types_Post_Type_Relationship_Settings::delete_slug_fields_selected_related_content( $deleted_field_slug, $group->get_assigned_to_types() );
+		}
+
 		if( empty( $_POST['wpcf']['fields'] ) ) {
 			delete_post_meta( $group_id, '_wp_types_group_fields' );
 
 			return;
 		}
 		$fields = array();
+		$field_group_post = get_post( $group_id );
+
+		/**
+		 * @var WP_Post[]
+		 */
+		$unfinished_rfgs = array();
+		$unfinished_rfgs_fields = array();
 
 		// First check all fields
-		foreach( $_POST['wpcf']['fields'] as $key => $field ) {
-			$field = wpcf_sanitize_field( $field );
-			$field = apply_filters( 'wpcf_field_pre_save', $field );
-			if( ! empty( $field['is_new'] ) ) {
+		foreach( $_POST['wpcf']['fields'] as $key => $field_value ) {
+
+			/**
+			 * The parent group can be a Field Group (Toolset_Field_Group_Post)
+			 * or a Repeatable Field Group (Types_Field_Group_Repeatable extends Toolset_Field_Group_Post)
+			 *
+			 * @var Toolset_Field_Group_Post
+			 */
+			$parent_group = null;
+
+			/**
+			 * Repeatable Group Actions
+			 */
+			if( $rfg_data = $this->get_repeatable_group_and_action_by_input_name( $key ) ) {
+				$rfg_action = $rfg_data['action'];
+
+				/** @var WP_Post $rfg_post */
+				$rfg_post = $rfg_data['post_object'];
+
+				/** @var Types_Field_Group_Repeatable $field_group_object */
+				$field_group_object = $this->service_field_group->get_object_by_id( $rfg_post->ID );
+
+				switch( $rfg_action ) {
+					case 'presaveslug':
+						$presave_slug = $field_value;
+
+						// next loop item
+						continue 2;
+					case 'start':
+						// check if we have a previous repeatable group, which had not reached the "end" status (unfinished)
+						// this is the case if a RFG is nested inside another RFG
+						if( $parent_rfg = end( $unfinished_rfgs ) )  {
+							$parent_group = new Types_Field_Group_Repeatable( $parent_rfg );
+							// nested repeatable group
+							$unfinished_rfgs_fields['group-'.$parent_rfg->ID][] = $field_group_object->get_id_with_prefix();
+						} else {
+							$parent_group = new Toolset_Field_Group_Post( $field_group_post );
+							// add repeatable group to field group
+							$fields[] = $field_group_object->get_id_with_prefix();;
+						}
+
+						if( ! empty( $presave_slug ) ) {
+							// no new group, delete relationship
+							// even if the slug has not changed we need to rebuild the relationship,
+							// because it could be that the field group was sorted to a different group
+							$old_definitions = $this->service_field_group->delete_relationship_of_group(
+								$field_group_object,
+								$presave_slug
+							);
+						}
+
+						// insert relationship
+						$new_definition = $this->service_field_group->create_relationship_one_to_many_between_groups(
+							$parent_group,
+							$field_group_object
+						);
+
+						if( isset( $old_definitions ) && is_array( $old_definitions ) ) {
+							/**
+							 * There can be more than one deleted definition due to a bug (types-1677),
+							 * make sure to move all items to the new generated relationship.
+							 */
+							foreach( $old_definitions as $old_definition ) {
+								if( $old_definition->get_row_id() != $new_definition->get_row_id() ) {
+									// slug has changed, update associations table
+									do_action( 'toolset_do_m2m_full_init' );
+									$database = new Toolset_Relationship_Database_Operations();
+									$database->update_associations_on_definition_renaming(
+										$old_definition,
+										$new_definition
+									);
+								}
+							}
+						}
+
+						$unfinished_rfgs['group-'.$rfg_post->ID] = $rfg_post;
+						$unfinished_rfgs_fields['group-'.$rfg_post->ID] = array();
+
+						// next loop item
+						continue 2;
+					case 'name':
+						if( ! isset( $unfinished_rfgs['group-'.$rfg_post->ID] ) ) continue; // should never happen and means the form html is broken
+
+						$unfinished_rfgs['group-'.$rfg_post->ID]->post_title = sanitize_text_field( $field_value );
+
+						// next loop item
+						continue 2;
+					case 'slug':
+						if( ! isset( $unfinished_rfgs['group-'.$rfg_post->ID] ) ) continue; // should never happen and means the form html is broken
+
+						$unfinished_rfgs['group-'.$rfg_post->ID]->post_name = sanitize_title( $field_value );
+
+						// next loop item
+						continue 2;
+					case 'end':
+						if( ! isset( $unfinished_rfgs['group-'.$rfg_post->ID] ) ) continue; // should never happen and means the form html is broken
+
+						// update name and slug of repeatable group
+						wp_update_post( $unfinished_rfgs['group-'.$rfg_post->ID] );
+
+						// update fields of repeatable group
+						wpcf_admin_fields_save_group_fields( $rfg_post->ID, $unfinished_rfgs_fields['group-'.$rfg_post->ID] );
+
+						// reset repeatable group
+						unset( $unfinished_rfgs['group-'.$rfg_post->ID] );
+						unset( $unfinished_rfgs_fields['group-'.$rfg_post->ID] );
+						$presave_slug = null;
+
+						// next loop item
+						continue 2;
+					default:
+						error_log( 'Repeatable group input ' . $rfg_action . ' is not supported.' );
+						break;
+				}
+			}
+
+			$field_value = wpcf_sanitize_field( $field_value );
+			$field_value = apply_filters( 'wpcf_field_pre_save', $field_value );
+			if( ! empty( $field_value['is_new'] ) ) {
 				// Check name and slug
-				if( wpcf_types_cf_under_control( 'check_exists', sanitize_title( $field['name'] ) ) ) {
+				if( wpcf_types_cf_under_control( 'check_exists', sanitize_title( $field_value['name'] ) ) ) {
 					$this->triggerError();
-					wpcf_admin_message( sprintf( __( 'Field with name "%s" already exists', 'wpcf' ), $field['name'] ), 'error' );
+					wpcf_admin_message( sprintf( __( 'Field with name "%s" already exists', 'wpcf' ), $field_value['name'] ), 'error' );
 
 					return $form;
 				}
-				if( isset( $field['slug'] ) && wpcf_types_cf_under_control( 'check_exists', sanitize_title( $field['slug'] ) ) ) {
+				if( isset( $field_value['slug'] ) && wpcf_types_cf_under_control( 'check_exists', sanitize_title( $field_value['slug'] ) ) ) {
 					$this->triggerError();
-					wpcf_admin_message( sprintf( __( 'Field with slug "%s" already exists', 'wpcf' ), $field['slug'] ), 'error' );
+					wpcf_admin_message( sprintf( __( 'Field with slug "%s" already exists', 'wpcf' ), $field_value['slug'] ), 'error' );
 
 					return $form;
 				}
 			}
-			$field['submit-key'] = $key;
+			$field_value['submit-key'] = $key;
 			// Field ID and slug are same thing
-			$field_id = wpcf_admin_fields_save_field( $field );
+			$field_id = wpcf_admin_fields_save_field( $field_value );
 			if( is_wp_error( $field_id ) ) {
 				$this->triggerError();
 				wpcf_admin_message( $field_id->get_error_message(), 'error' );
@@ -1181,7 +1557,13 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 				return;
 			}
 			if( ! empty( $field_id ) ) {
-				$fields[] = $field_id;
+				if( $parent_rfg = end( $unfinished_rfgs ) )  {
+					// current field belongs to repeatable group
+					$unfinished_rfgs_fields['group-'.$parent_rfg->ID][] = $field_id;
+				} else {
+					// current field belongs to field group
+					$fields[] = $field_id;
+				}
 			}
 			// WPML
 			/** @var string $field_id */
@@ -1191,7 +1573,22 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 					wpml_cf_translation_preferences_store( $key, $real_custom_field_name );
 				}
 			}
+
+			// Post Reference Field
+			if( array_key_exists( 'post_reference_type', $field_value ) ) {
+				$this->save_post_reference_field( $field_group_post, $field_value );
+			}
+
+			// If slug has change, selected fields lists have to be updated too.
+			if ( isset( $field_value['slug-pre-save'] ) && $field_value['slug'] !== $field_value['slug-pre-save'] ) {
+				Types_Post_Type_Relationship_Settings::update_slug_fields_selected_related_content( $field_value['slug-pre-save'], $field_value['slug'] );
+			}
+			// If it is a new field, it has to be added to all the relationships
+			if ( ! isset( $field_value['slug-pre-save'] ) ) {
+				Types_Post_Type_Relationship_Settings::add_slug_fields_selected_related_content( $field_value['slug'], $group->get_assigned_to_types() );
+			}
 		}
+
 		wpcf_admin_fields_save_group_fields( $group_id, $fields );
 	}
 
@@ -1222,6 +1619,11 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 		$post_types = isset( $_POST['wpcf']['group']['supports'] )
 			? $_POST['wpcf']['group']['supports']
 			: array();
+
+		if( ! $this->relationship_helper->allow_saving_post_type_assignments() ) {
+			return;
+		}
+
 		wpcf_admin_fields_save_group_post_types( $group_id, $post_types );
 	}
 
@@ -1256,5 +1658,152 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 			: array();
 
 		wpcf_admin_fields_save_group_templates( $group_id, $post_templates );
+	}
+
+	/**
+	 * Save a post reference field
+	 *
+	 * @param $field_group_post
+	 * @param $field
+	 *
+	 * @since m2m
+	 */
+	private function save_post_reference_field( $field_group_post, $field ) {
+		do_action( 'toolset_do_m2m_full_init' );
+
+		$field_group   = new Toolset_Field_Group_Post( $field_group_post );
+		$group_service = new Types_Field_Group_Service();
+
+		if ( $field_group_assigned_post_type = $group_service->get_unique_assigned_post_type( $field_group ) ) {
+			// create relationship definition
+			$parent     = Toolset_Relationship_Element_Type::build_for_post_type( $field['post_reference_type'] );
+			$child      = Toolset_Relationship_Element_Type::build_for_post_type( $field_group_assigned_post_type->get_slug() );
+			$repository = Toolset_Relationship_Definition_Repository::get_instance();
+
+			try {
+				if ( isset( $field['slug-pre-save'] )
+				     && ! empty( $field['slug-pre-save'] )
+				) {
+					// update a prf
+					$update_to_db_required = false;
+
+					if( $field['slug-pre-save'] != $field['slug'] ) {
+						// slug changed
+						$update_to_db_required = true;
+
+						if( ! $relationship_definiton = $repository->get_definition( $field['slug-pre-save'] ) ){
+							// invalid relationship (shouldn't happen by just using the GUI)
+							return;
+						}
+
+						$repository->change_definition_slug( $relationship_definiton, $field['slug'] );
+						$relationship_definiton->set_display_name( $field['slug'] );
+						$relationship_definiton->set_display_name_singular( $field['slug'] );
+					} else {
+						// no slug change, load definition
+						if( ! $relationship_definiton = $repository->get_definition( $field['slug'] ) ) {
+							// invalid relationship (shouldn't happen by just using the GUI)
+							return;
+						}
+					}
+
+					if( $parent->get_types() != $relationship_definiton->get_parent_type()->get_types() ) {
+						// parent changed
+						$update_to_db_required = true;
+						$relationship_definiton->set_element_type( Toolset_Relationship_Role::PARENT, $parent );
+
+						// delete current post meta
+						global $wpdb;
+						$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => 'wpcf-'.$field['slug'] ) );
+
+						// reapply possible old associations
+						$association_query = new Toolset_Association_Query( array(
+							Toolset_Association_Query::QUERY_RELATIONSHIP_ID => $relationship_definiton->get_row_id(),
+							Toolset_Association_Query::OPTION_RETURN         => Toolset_Association_Query::RETURN_ASSOCIATIONS
+						) );
+
+						$associations = $association_query->get_results();
+
+						if( ! empty( $associations ) ) {
+							foreach( $associations as $association ) {
+								if( $field['post_reference_type'] == $association->get_element( Toolset_Relationship_Role::PARENT )->get_underlying_object()->post_type ) {
+									global $wpdb;
+									$wpdb->insert( $wpdb->postmeta, array(
+										'post_id' => $association->get_element( Toolset_Relationship_Role::CHILD )->get_id(),
+										'meta_key' => 'wpcf-'.$field['slug'],
+										'meta_value' => $association->get_element( Toolset_Relationship_Role::PARENT )->get_id()
+									) );
+								}
+							}
+						}
+					}
+
+					if( $child->get_types() != $relationship_definiton->get_child_type()->get_types() ) {
+						// child changed
+						$update_to_db_required = true;
+						$relationship_definiton->set_element_type( Toolset_Relationship_Role::CHILD, $child );
+					}
+
+					if( $field['name'] != $relationship_definiton->get_display_name() ) {
+						// name changed
+						$update_to_db_required = true;
+						$relationship_definiton->set_display_name( $field['name'] );
+						$relationship_definiton->set_display_name_singular( $field['name'] );
+					}
+
+					if( $update_to_db_required ) {
+						$repository->persist_definition( $relationship_definiton );
+					}
+				} else {
+					// new post reference field
+					$relationship_definiton = $repository->create_definition_post_reference_field(
+						$field['slug'],
+						$field_group_post->post_name,
+						$field['post_reference_type'],
+						$parent,
+						$child
+					);
+
+				$cardinality = new Toolset_Relationship_Cardinality( 1, Toolset_Relationship_Cardinality::INFINITY );
+				$relationship_definiton->set_cardinality( $cardinality );
+				$relationship_definiton->set_origin( new Toolset_Relationship_Origin_Post_Reference_Field() );
+				$relationship_definiton->set_display_name( $field['name'] );
+				$relationship_definiton->set_display_name_singular( $field['name'] );
+				$repository->persist_definition( $relationship_definiton );
+				}
+			} catch ( Exception $e ) {
+				// Definition already exist
+			}
+
+			// add relationship slug to field data
+			$option_fields = get_option( 'wpcf-fields', array() );
+			if ( isset( $option_fields[ $field['slug'] ] ) ) {
+				$option_fields[ $field['slug'] ]['data']['relationship_slug'] = $field['slug'];
+				update_option( 'wpcf-fields', $option_fields );
+			}
+		};
+	}
+
+
+	/**
+	 * Filter metaboxes
+	 *
+	 * It takes the list of metaboxes and use only the permitted ones.
+	 *
+	 * @since 3.0
+	 */
+	public function filter_meta_boxes() {
+		global $wp_filter;
+		foreach ( $wp_filter['add_meta_boxes']->callbacks as $priority => $callbacks ) {
+			foreach ( $callbacks as $callback => $function ) {
+				$valid = false;
+				foreach ( $this->valid_meta_boxes_regexps as $regexp ) {
+					$valid |= preg_match( $regexp, $callback );
+				}
+				if ( ! $valid ) {
+					unset( $wp_filter['add_meta_boxes']->callbacks[ $priority ][ $callback ] );
+				}
+			}
+		}
 	}
 }

@@ -24,6 +24,8 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Frontend class
  *
@@ -273,8 +275,17 @@ class WC_Social_Login_Frontend {
 			$script_deps[] = 'wc-checkout';
 		}
 
+		/**
+		 * Toggles whether to load the Social Login front end scripts in the document footer or not.
+		 *
+		 * @since 2.6.1
+		 *
+		 * @param bool $load_in_footer default false (loads scripts in the document head)
+		 */
+		$load_in_footer = (bool) apply_filters( 'wc_social_login_enqueue_frontend_scripts_in_footer', false );
+
 		// frontend scripts
-		wp_enqueue_script( 'wc-social-login-frontend', wc_social_login()->get_plugin_url() . '/assets/js/frontend/wc-social-login.min.js', $script_deps, WC_Social_Login::VERSION );
+		wp_enqueue_script( 'wc-social-login-frontend', wc_social_login()->get_plugin_url() . '/assets/js/frontend/wc-social-login.min.js', $script_deps, WC_Social_Login::VERSION, $load_in_footer );
 
 		// customize button colors
 		wp_add_inline_style( 'wc-social-login-frontend', wc_social_login()->get_button_colors_css() );

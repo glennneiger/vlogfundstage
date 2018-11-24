@@ -121,7 +121,7 @@ class Types_Admin_Post_Types_List_Table extends WP_List_Table
         //Build row actions
         $actions = array();
         $actions['edit'] = sprintf('<a href="%s">%s</a>', $edit_link, __('Edit', 'wpcf'));
-        if ( 'cpt' == $item['type'] ) {
+        if ( 'cpt' == $item['type'] && ! $this->is_post_type_editing_limited( $item ) ) {
             $a = array(
                 'status' => 'active' == $item['status'] ? wpcf_admin_custom_types_get_ajax_deactivation_link($item['slug']):wpcf_admin_custom_types_get_ajax_activation_link($item['slug']),
                 'duplicate'     => sprintf(
@@ -161,7 +161,9 @@ class Types_Admin_Post_Types_List_Table extends WP_List_Table
                 ),
             );
             $actions += $a;
-        } elseif ( !wpcf_is_builtin_post_types( $item['slug'] ) ) {
+        } elseif ( ! $this->is_post_type_editing_limited( $item ) ) {
+	        // Post types that are not built-in, not special-purpose, but still it's not possible to edit them
+	        // (assuming third-party ones).
             $actions = array(
                 'view' => sprintf('<a href="%s">%s</a>', $edit_link, __('View', 'wpcf')),
             );
@@ -190,7 +192,7 @@ class Types_Admin_Post_Types_List_Table extends WP_List_Table
         /**
          * do not show checkbox for built-in post types
          */
-        if ( isset($item['_builtin']) && $item['_builtin'] ) {
+        if ( $this->is_post_type_editing_limited( $item ) ) {
             return '';
         }
         if ( WPCF_Roles::user_can_edit('custom-post-type', $item ) ) {
@@ -457,11 +459,13 @@ class Types_Admin_Post_Types_List_Table extends WP_List_Table
         $data = array();
         if ( !empty($this->custom_types) ){
             foreach( array_values($this->custom_types) as $type ) {
-                if (empty($type) || empty($type['slug'])) {
-                    continue;
+
+                if ( empty( $type ) || empty( $type['slug'] ) || $this->is_post_type_excluded( $type['slug'] ) ) {
+	                continue;
                 }
+
                 $one = array(
-                    'description' => isset($type['description'])? $type['description']:'',
+                    'description' => $this->get_post_type_description( $type ),
                     'taxonomies' => isset($map_taxonomies_by_post_type[$type['slug']])? $map_taxonomies_by_post_type[$type['slug']]:array(),
                     'slug' => $type['slug'],
                     'status' => isset($type['disabled'])? 'inactive':'active',
@@ -470,6 +474,7 @@ class Types_Admin_Post_Types_List_Table extends WP_List_Table
                     '_builtin' => false,
                     WPCF_AUTHOR => isset($type[WPCF_AUTHOR])? intval($type[WPCF_AUTHOR]):0,
                 );
+
                 $add_one = true;
                 if ( $s ) {
                     $add_one = false;
@@ -601,5 +606,70 @@ class Types_Admin_Post_Types_List_Table extends WP_List_Table
             __('Add New', 'wpcf')
         );
     }
+
+
+	/**
+	 * @param array $post_type_item Listing page item
+	 *
+	 * @return bool
+	 * @since m2m
+	 */
+	private function is_post_type_editing_limited( $post_type_item ) {
+		if ( isset( $post_type_item['_builtin'] ) && $post_type_item['_builtin'] ) {
+			return true;
+		}
+
+		$post_type_helper = new Types_Post_Type_Helper( $post_type_item );
+		if( $post_type_helper->has_special_purpose() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Override a description for special-purpose post types.
+	 *
+	 * @param array $post_type_item Listing page item
+	 *
+	 * @return string
+	 */
+	private function get_post_type_description( $post_type_item ) {
+		$description = ( isset( $post_type_item['description'] ) ? $post_type_item['description'] : '' );
+
+		if( ! is_string( $description ) ) {
+			$description = '';
+		}
+
+		$post_type_helper = new Types_Post_Type_Helper( $post_type_item );
+
+		if( $post_type_helper->is_intermediary() ) {
+			$description = __( 'This is an intermediary post type for a many-to-many relationship.', 'wpcf' );
+		} elseif( $post_type_helper->is_repeating_field_group() ) {
+			$description = __( 'This is a post type used for a repeating field group.', 'wpcf' );
+		}
+
+		return $description;
+	}
+
+
+	/**
+	 * Determine whether a post type should be completely hidden from the listing.
+	 *
+	 * @param $post_type_slug
+	 *
+	 * @return bool
+	 * @since m2m
+	 */
+	private function is_post_type_excluded( $post_type_slug ) {
+		$post_type_helper = new Types_Post_Type_Helper( $post_type_slug );
+		if( $post_type_helper->is_repeating_field_group() ) {
+			return true;
+		}
+
+		$excluded_post_types = new Toolset_Post_Type_Exclude_List();
+		return $excluded_post_types->is_excluded( $post_type_slug );
+	}
 
 }

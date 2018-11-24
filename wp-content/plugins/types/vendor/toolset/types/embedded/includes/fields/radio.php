@@ -64,6 +64,8 @@ function wpcf_fields_radio_meta_box_form( $field ) {
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_radio_editor_callback( $field, $data ) {
 
@@ -107,6 +109,8 @@ function wpcf_fields_radio_editor_callback( $field, $data ) {
 
 /**
  * Editor callback form submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_radio_editor_submit( $data, $field, $context ) {
     $add = '';

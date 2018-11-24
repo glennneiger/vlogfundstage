@@ -3,6 +3,8 @@
 /**
  * Types_Page_Hidden_Helper
  *
+ * @FIXME can we get come comments in here, pretty please? :-P
+ * 
  * @since 2.0
  */
 class Types_Page_Hidden_Helper extends Types_Page_Abstract {
@@ -141,18 +143,24 @@ class Types_Page_Hidden_Helper extends Types_Page_Abstract {
 		$title = sprintf( __( 'Field Group for %s', 'wpcf' ), $type_object->labels->name );
 		$name = sanitize_title( $title );
 
-		$new_post_field_group = Types_Field_Group_Post_Factory::get_instance()->create( $name, $title, 'publish' );
+		$new_post_field_group = Toolset_Field_Group_Post_Factory::get_instance()->create( $name, $title, 'publish' );
 
 		if( ! $new_post_field_group )
 			return false;
 
 		$new_post_field_group->assign_post_type( $type );
 
-		$url = isset( $_GET['ref'] )
-			? 'admin.php?page=wpcf-edit&group_id='.$new_post_field_group->get_id().'&ref='.sanitize_text_field( $_GET['ref'] )
-			: 'admin.php?page=wpcf-edit&group_id='.$new_post_field_group->get_id();
+		$url_args = array(
+			'page' => 'wpcf-edit',
+			'group_id' => $new_post_field_group->get_id(),
+			'field_group_action' => 'add_field'
+		);
 
-		return admin_url( $url );
+		if( isset( $_GET['ref'] ) ) {
+			$url_args['ref'] = $_GET['ref'];
+		}
+
+		return add_query_arg( $url_args, admin_url( 'admin.php' ) );
 	}
 
 	private function add_params_to_url( $url ) {

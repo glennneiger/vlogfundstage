@@ -12,6 +12,7 @@ define( '_POSTS_MODULE_MANAGER_KEY_', 'posts' );
 define( '_GROUPS_MODULE_MANAGER_KEY_', 'groups' );
 define( '_FIELDS_MODULE_MANAGER_KEY_', 'fields' );
 define( '_TAX_MODULE_MANAGER_KEY_', 'taxonomies' );
+define( '_RELATIONSHIPS_MODULE_MANAGER_KEY_', 'm2m_relationships' );
 
 /**
  * Fields table.
@@ -174,6 +175,14 @@ if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
     add_filter( 'wpmodules_import_items_' . _TYPES_MODULE_MANAGER_KEY_,
             'wpcf_import_modules_items_types', 10, 2 );
 
+    // Relationships
+    add_filter( 'wpmodules_register_items_' . _RELATIONSHIPS_MODULE_MANAGER_KEY_,
+            'wpcf_register_modules_items_relationships', 10, 1 );
+    add_filter( 'wpmodules_export_items_' . _RELATIONSHIPS_MODULE_MANAGER_KEY_,
+            'wpcf_export_modules_items_relationships', 10, 2 );
+    add_filter( 'wpmodules_import_items_' . _RELATIONSHIPS_MODULE_MANAGER_KEY_,
+            'wpcf_import_modules_items_relationships', 10, 2 );
+
     // Groups
     add_filter( 'wpmodules_register_items_' . _GROUPS_MODULE_MANAGER_KEY_,
             'wpcf_register_modules_items_groups', 10, 1 );
@@ -191,12 +200,17 @@ if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
             'wpcf_import_modules_items_taxonomies', 10, 2 );
 
     // Check items
-    add_filter( 'wpmodules_items_check_' . _TYPES_MODULE_MANAGER_KEY_,
+		add_filter( 'wpmodules_items_check_' . _TYPES_MODULE_MANAGER_KEY_,
             'wpcf_modman_items_check_custom_post_types', 10, 2 );
     add_filter( 'wpmodules_items_check_' . _GROUPS_MODULE_MANAGER_KEY_,
             'wpcf_modman_items_check_groups', 10, 2 );
     add_filter( 'wpmodules_items_check_' . _TAX_MODULE_MANAGER_KEY_,
             'wpcf_modman_items_check_taxonomies', 10, 2 );
+	add_filter( 'wpmodules_items_check_' . _RELATIONSHIPS_MODULE_MANAGER_KEY_,
+		'wpcf_modman_items_check_relationships', 10, 2 );
+
+		// Filter modules result.
+		add_filter( 'wpmodules_saved_items', 'wpcf_modman_wpmodules_saved_items' );
 
 	//Module manager: Hooks for adding plugin version
 
@@ -230,7 +244,14 @@ if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
             'icon' => WPCF_EMBEDDED_RES_RELPATH . '/images/types-icon-color_12X12.png',
             'icon_css' => 'icon-types-logo ont-icon-16 ont-color-orange'
         );
-        $sections[_GROUPS_MODULE_MANAGER_KEY_] = array(
+
+	    $sections[_RELATIONSHIPS_MODULE_MANAGER_KEY_] = array(
+		    'title' => __( 'Relationships', 'wpcf' ),
+		    'icon' => WPCF_EMBEDDED_RES_RELPATH . '/images/types-icon-color_12X12.png',
+		    'icon_css' => 'icon-types-logo ont-icon-16 ont-color-orange'
+	    );
+
+	    $sections[_GROUPS_MODULE_MANAGER_KEY_] = array(
             'title' => __( 'Field Groups', 'wpcf' ),
             'icon' => WPCF_EMBEDDED_RES_RELPATH . '/images/types-icon-color_12X12.png',
             'icon_css' => 'icon-types-logo ont-icon-16 ont-color-orange'
@@ -249,16 +270,59 @@ if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
         return $sections;
     }
 
-    function wpcf_register_modules_items_types( $items ) {
+	/**
+	 * Returns post types for module manager
+	 *
+	 * @param array $items Previous items handled by the filter.
+	 * @param array[]
+	 *
+	 * @return array
+	 */
+    function wpcf_register_modules_items_types( $items, $custom_types = null ) {
 	    $post_type_option = new Types_Utils_Post_Type_Option();
-        $custom_types = $post_type_option->get_post_types();
+        $custom_types = ! $custom_types
+            ? $post_type_option->get_post_types()
+            : $custom_types;
+
+        $custom_types = array_map( function( $post_type ) {
+	        if( $post_type instanceof WP_Post_Type ) {
+        		// Transform the post type object to an array, for the purpose of the function below.
+        		$post_type = (array) $post_type;
+        		$post_type['slug'] = $post_type['name'];
+	        } elseif( $post_type instanceof Toolset_Post_Type_From_Types ) {
+	        	$post_type = $post_type->get_definition();
+	        } elseif( $post_type instanceof IToolset_Post_Type ) {
+	        	$post_type = (array) $post_type->get_wp_object();
+		        $post_type['slug'] = $post_type['name'];
+	        }
+
+	        // This should be a post type definition array as expected below.
+	        return $post_type;
+        }, $custom_types );
+
         foreach ( $custom_types as $type ) {
-            if ( empty($type) ) {
-                continue;
-            }
-            if (isset($type['_builtin']) && $type['_builtin']) {
-                continue;
-            }
+	        if (isset($type['_builtin']) && $type['_builtin']) {
+		        // skip builtin post type
+		        continue;
+	        }
+
+        	if( isset( $type['labels'] ) && is_object( $type['labels'] ) ) {
+	        	// convert labels to array
+        		$type['labels'] = (array) $type['labels'];
+	        }
+
+        	if( ! is_array( $type )
+	            || empty($type)
+	            || ! isset( $type['public'] )
+	            || ! isset( $type['slug'] )
+		        || ! isset( $type['labels'] )
+		        || ! isset( $type['description'] )
+	            || ! isset( $type['labels']['name'] ) || ! isset( $type['labels']['singular_name'] )
+	        ) {
+				// we proof all required fields here, if one is missing skip the cpt
+		        continue;
+	        }
+
             $_details = sprintf( __( '%s post type: %s', 'wpcf' ), ucfirst( $type['public'] ), $type['labels']['name'] );
             $details = !empty( $type['description'] ) ? $type['description'] : $_details;
             $items[] = array(
@@ -269,15 +333,18 @@ if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
                 '__types_title' => $type['labels']['name'],
             );
         }
+
         return $items;
     }
 
     function wpcf_export_modules_items_types( $res, $items ) {
+        $existing_types = array();
         foreach ( $items as $ii => $item ) {
-            if ( isset( $item['id'] ) ) {
+            if ( isset( $item['id'] ) && ! in_array( $item['id'], $existing_types ) ) {
                 $items[$ii] = str_replace( '12' . _TYPES_MODULE_MANAGER_KEY_ . '21',
                         '', $item['id'] );
             }
+            $existing_types[] = $item['id'];
         }
         $xmlstring = wpcf_admin_export_selected_data( $items, 'types',
                 'module_manager' );
@@ -294,16 +361,171 @@ if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
         return $result2;
     }
 
+	/**
+	 * Register m2m Relationships
+	 * @param array    $items
+	 * @param string[] $selected_relationships List of existing relationships.
+	 *
+	 * @return array
+	 *
+	 * @since 3.0
+	 */
+	function wpcf_register_modules_items_relationships( $items, $selected_relationships = null ) {
+		do_action( 'toolset_do_m2m_full_init' );
+
+		if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			return array();
+		}
+
+		$relationship_repository = Toolset_Relationship_Definition_Repository::get_instance();
+		$post_type_repository = Toolset_Post_Type_Repository::get_instance();
+
+		$relationship_definitions = $relationship_repository->get_definitions();
+
+		foreach( $relationship_definitions as $relationship_definition ) {
+			if ( null !== $selected_relationships ) {
+				if ( ! in_array( $relationship_definition->get_slug(), $selected_relationships ) ) {
+					continue;
+				}
+			}
+			$parent_types_slugs = $relationship_definition->get_parent_type()->get_types();
+			$child_types_slugs = $relationship_definition->get_child_type()->get_types();
+
+			$parent_types_labels = $child_types_labels = array( 'singular' => array(), 'plural' => array() );
+
+			$post_types_list = array();
+
+			foreach( $parent_types_slugs as $slug ) {
+				if( $post_type = $post_type_repository->get( $slug ) ) {
+					$parent_types_labels['plural'][] = $post_type->get_label( );
+					$parent_types_labels['singular'][] = $post_type->get_label( Toolset_Post_Type_Labels::SINGULAR_NAME );
+					$post_types_list[ $slug ] = $post_type;
+				}
+			}
+
+			foreach( $child_types_slugs as $slug ) {
+				if( $post_type = $post_type_repository->get( $slug ) ) {
+					$child_types_labels['plural'][] = $post_type->get_label( );
+					$child_types_labels['singular'][] = $post_type->get_label( Toolset_Post_Type_Labels::SINGULAR_NAME );
+					$post_types_list[ $slug ] = $post_type;
+				}
+			}
+
+			// repeatable field group
+			if( $relationship_definition->get_origin()->get_origin_keyword()
+			    == Toolset_Relationship_Origin_Repeatable_Group::ORIGIN_KEYWORD ) {
+
+				$details = sprintf( 'Repeatable Field Group used on %s',
+					implode( ' / ', $parent_types_labels['plural'] )
+				);
+			// post reference field
+			} else if( $relationship_definition->get_origin()->get_origin_keyword()
+			           == Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD ) {
+				$details = sprintf( 'Post Reference Field for %s used on %s',
+					implode( ' / ', $parent_types_labels['plural'] ),
+					implode( ' / ', $child_types_labels['plural'] )
+				);
+			// wizard created relationship (or any other origin, which does not exist while writing this)
+			} else {
+				$details = sprintf( 'A %s (%s) relationship between post types %s and %s',
+					$relationship_definition->get_cardinality()->get_type(),
+					$relationship_definition->get_cardinality()->to_string(),
+					implode( ' / ', $parent_types_labels['singular'] ),
+					implode( ' / ', $child_types_labels['singular'] )
+				);
+			}
+
+			ModMan_Loader::tpl('modules', array(
+					'onlyfunctions' => true
+				)
+			);
+			$post_type_modules = modman_list_items(
+				wpcf_register_modules_items_types( array(), $post_types_list ),
+				'types',
+				null,
+				'icon-types-logo ont-icon-16 ont-color-gray',
+				false,
+				false
+			);
+
+			$items[] = array(
+				'id' => '12' . _RELATIONSHIPS_MODULE_MANAGER_KEY_ . '21' . $relationship_definition->get_slug(),
+				'title' => $relationship_definition->get_display_name(),
+				'details' => '<p style="padding:5px;">' . $details . $post_type_modules . '</p>',
+				'__types_id' => $relationship_definition->get_slug(),
+				'__types_title' => $relationship_definition->get_display_name()
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Export m2m relationships
+	 * @param $res
+	 * @param $items
+	 *
+	 * @return string
+	 *
+	 * @since 3.0
+	 */
+	function wpcf_export_modules_items_relationships( $res, $items ) {
+		foreach ( $items as $ii => $item ) {
+			if ( isset( $item['id'] ) ) {
+				$items[$ii] = str_replace( '12' . _RELATIONSHIPS_MODULE_MANAGER_KEY_ . '21',
+					'', $item['id'] );
+			}
+		}
+		$xmlstring = wpcf_admin_export_selected_data( $items, 'relationships',
+			'module_manager' );
+		return $xmlstring;
+	}
+
+	/**
+	 * Import m2m relationships
+	 *
+	 * @param $result
+	 * @param $xmlstring
+	 *
+	 * @return bool|string|void|WP_Error
+	 *
+	 * @since 3.0
+	 */
+	function wpcf_import_modules_items_relationships( $result, $xmlstring ) {
+		require_once WPCF_EMBEDDED_INC_ABSPATH . '/import-export.php';
+		$result2 = wpcf_admin_import_data_from_xmlstring( $xmlstring, 'm2m_relationships', 'modman' );
+		if ( false === $result2 || is_wp_error( $result2 ) )
+			return (false === $result2) ? __( 'Error during Post Types import', 'wpcf' ) : $result2->get_error_message( $result2->get_error_code() );
+
+		return $result2;
+	}
+
     function wpcf_register_modules_items_groups( $items ) {
         $groups = wpcf_admin_fields_get_groups();
         foreach ( $groups as $group ) {
             $_details = sprintf( __( 'Fields group: %s', 'wpcf' ),
                     $group['name'] );
             $details = !empty( $group['description'] ) ? $group['description'] : $_details;
+
+            $relationship_slugs = wpcf_get_relationships_included_in_field_groups( $group['slug'] );
+
+            ModMan_Loader::tpl('modules', array(
+                    'onlyfunctions' => true
+                )
+            );
+            $relationship_modules = modman_list_items(
+                wpcf_register_modules_items_relationships( array(), $relationship_slugs ),
+                'm2m_relationships',
+                null,
+                'icon-types-logo ont-icon-16 ont-color-gray',
+                false,
+                false
+            );
+
             $items[] = array(
                 'id' => '12' . _GROUPS_MODULE_MANAGER_KEY_ . '21' . $group['id'],
                 'title' => $group['name'],
-                'details' => '<p style="padding:5px;">' . $details . '</p>',
+                'details' => '<p style="padding:5px;">' . $details . $relationship_modules . '</p>',
                 '__types_id' => $group['slug'],
                 '__types_title' => $group['name'],
             );
@@ -393,6 +615,89 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
     $data = array();
     $data['settings'] = wpcf_get_settings();
 
+	// m2m relationships...
+    if( apply_filters( 'toolset_is_m2m_enabled', false ) === true ) {
+	    // ...on all data export
+	    if ( $_type === 'all' ) {
+		    do_action( 'toolset_do_m2m_full_init' );
+		    $relationship_repository = Toolset_Relationship_Definition_Repository::get_instance();
+		    $relationship_repository->load_definitions();
+		    $relationships = $relationship_repository->get_definitions();
+
+		    if( ! empty( $relationships ) ) {
+			    $relationship_definition_translator = new Toolset_Relationship_Definition_Translator();
+
+			    // let's make an array of our relationships
+			    foreach( $relationships as $relationship ) {
+				    $relationship_array = array( 'id' => $relationship->get_row_id() );
+				    $relationship_array = $relationship_array + $relationship_definition_translator->to_database_row( $relationship );
+
+				    // list parent types
+				    $relationship_array['parent_types'] = array();
+				    foreach( $relationship->get_parent_type()->get_types() as $type ) {
+					    $relationship_array['parent_types'][$type] = true;
+				    }
+
+				    // list child types
+				    $relationship_array['child_types'] = array();
+				    foreach( $relationship->get_child_type()->get_types() as $type ) {
+					    $relationship_array['child_types'][$type] = true;
+				    }
+				    $data['m2m_relationships'][$relationship->get_slug()] = $relationship_array;
+			    }
+		    }
+	    }
+
+	    // ...on relationships export only (module manager)
+	    else if ( 'relationships' === $_type ) {
+		    do_action( 'toolset_do_m2m_full_init' );
+		    $relationship_repository = Toolset_Relationship_Definition_Repository::get_instance();
+		    $relationship_repository->load_definitions();
+
+		    $relationship_definition_translator = new Toolset_Relationship_Definition_Translator();
+		    foreach ( $items as $relationship_slug ) {
+
+			    $relationship = $relationship_repository->get_definition( $relationship_slug );
+			    if ( $relationship ) {
+				    $relationship_array = array( 'id' => $relationship->get_row_id() );
+				    $relationship_array = $relationship_array + $relationship_definition_translator->to_database_row( $relationship );
+
+				    // list parent types
+				    $relationship_array['parent_types'] = array();
+				    foreach( $relationship->get_parent_type()->get_types() as $type ) {
+					    $relationship_array['parent_types'][$type] = true;
+				    }
+
+				    // list child types
+				    $relationship_array['child_types'] = array();
+				    foreach( $relationship->get_child_type()->get_types() as $type ) {
+					    $relationship_array['child_types'][$type] = true;
+				    }
+				    $relationship_array['__types_id'] = $relationship->get_slug();
+				    $relationship_array['__types_title'] = $relationship->get_display_name();
+				    $relationship_array['hash'] = $relationship_array['checksum'] = $wpcf->export->generate_checksum( 'relationship', $relationship->get_slug() );
+				    $data['m2m_relationships'][$relationship->get_slug()] = $relationship_array;
+			    }
+		    }
+
+		    if ( 'module_manager' === $return ) {
+			    $items = array();
+			    foreach ( $data['m2m_relationships'] as $relationship_slug => $relationship_data ) {
+				    $_item = array();
+				    $_item['id'] = $relationship_data['__types_id'];
+				    $_item['title'] = $relationship_data['__types_title'];
+				    $_item['hash'] = $_item['checksum'] = $relationship_data['hash'];
+				    $items[$relationship_data['__types_id']] = $_item;
+			    }
+			    return array(
+				    'xml' => $xml->array2xml( $data, 'm2m_relationships' ),
+				    'items' => $items,
+			    );
+		    }
+	    }
+    }
+
+
     if ( 'user_groups' == $_type || 'all' == $_type ) {
         // Get groups
         if ( empty( $items ) ) {
@@ -445,7 +750,8 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
                             array(
                                 '_wp_types_group_showfor',
                                 '_wp_types_group_fields',
-                                '_wp_types_group_admin_styles'
+                                '_wp_types_group_admin_styles',
+								Toolset_Field_Group::POSTMETA_GROUP_PURPOSE,
                             )
                         )
                         ) {
@@ -495,7 +801,7 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
             }
 
             // WPML
-	        // todo remove WPML dependency, see https://onthegosystems.myjetbrains.com/youtrack/issue/types-749#comment=102-105900
+            // todo remove WPML dependency, see https://onthegosystems.myjetbrains.com/youtrack/issue/types-749#comment=102-105900
             global $iclTranslationManagement;
             if ( !empty( $iclTranslationManagement ) ) {
                 foreach ( $fields as $field_id => $field ) {
@@ -510,14 +816,14 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
             $data['user_fields']['__key'] = 'field';
         }
     }
-	
-	
+
+
 	// Export term field groups and term field definitions.
 	if( in_array( $_type, array( 'term_groups', 'all' ) ) ) {
 		$ie_controller = Types_Import_Export::get_instance();
-		
-		$data['term_groups'] = $ie_controller->export_field_groups_for_domain( Types_Field_Utils::DOMAIN_TERMS );
-		$data['term_fields'] = $ie_controller->export_field_definitions_for_domain( Types_Field_Utils::DOMAIN_TERMS );
+
+		$data['term_groups'] = $ie_controller->export_field_groups_for_domain( Toolset_Field_Utils::DOMAIN_TERMS );
+		$data['term_fields'] = $ie_controller->export_field_definitions_for_domain( Toolset_Field_Utils::DOMAIN_TERMS );
 	}
 
 
@@ -546,7 +852,15 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
             );
             $groups = get_posts( $args );
         }
+
         if ( !empty( $groups ) ) {
+        	$rfg_service = new Types_Field_Group_Repeatable_Service();
+
+        	// collect all nested rfgs first.
+        	foreach( $groups as $key => $post ) {
+        	    $groups = apply_rfgs_by_group( $groups, $post->ID, $rfg_service );
+	        }
+
             $data['groups'] = array('__key' => 'group');
             foreach ( $groups as $key => $post ) {
                 $post = (array) $post;
@@ -571,12 +885,19 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
                                 '_wp_types_group_templates',
                                 '_wpcf_conditional_display',
                                 '_wp_types_group_filters_association',
-                                '_wp_types_group_admin_styles'
+                                '_wp_types_group_admin_styles',
+	                            '_types_repeatable_field_group_post_type',
+								Toolset_Field_Group::POSTMETA_GROUP_PURPOSE,
                             )
                         )
                         ) {
                             $_meta[$meta_key] = $meta_value[0];
                             $_meta[$meta_key] = maybe_unserialize($_meta[$meta_key]);
+                        }
+
+	                    // for fields list: rename rfg ids to slug
+	                    if( $meta_key == '_wp_types_group_fields' ) {
+		                    $_meta[$meta_key] = $rfg_service->on_export_fields_string( $_meta[$meta_key] );
                         }
                     }
                     if ( !empty( $_meta ) ) {
@@ -612,11 +933,18 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
                 // TODO WPML and others should use hook
                 $fields[$field_id] = apply_filters( 'wpcf_export_field',
                     $fields[$field_id] );
-                $fields[$field_id]['__types_id'] = $field_id;
-                $fields[$field_id]['__types_title'] = $field['name'];
-                $fields[$field_id]['checksum'] = $fields[$field_id]['hash'] = $wpcf->export->generate_checksum(
-                    'field', $field_id
-                );
+                // RFG.
+                if ( $field_id === $fields[$field_id] ) {
+                    $post_id = str_replace( Types_Field_Group_Repeatable::PREFIX, '', $field_id );
+                    $post = get_post( $post_id );
+                    $fields[$field_id] = Types_Field_Group_Repeatable::PREFIX . $post->post_name;
+                } else {
+                    $fields[$field_id]['__types_id'] = $field_id;
+                    $fields[$field_id]['__types_title'] = $field['name'];
+                    $fields[$field_id]['checksum'] = $fields[$field_id]['hash'] = $wpcf->export->generate_checksum(
+                        'field', $field_id
+                    );
+                }
             }
 
             // WPML
@@ -683,6 +1011,24 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
                 $custom_types[$key]['id'] = $key;
                 $custom_types[$key] = apply_filters( 'wpcf_export_custom_post_type',
                     $custom_types[$key] );
+
+                // fix RFGs created in beta
+	            // for these we stored supports by not using arrays keys: array('post_title', 'author'),
+	            // which results in an xml error.
+                if( isset( $custom_types[$key]['is_repeating_field_group'] )
+                    && $custom_types[$key]['is_repeating_field_group']
+                    && isset( $custom_types[$key]['supports'] )
+                ) {
+                	$supports_fixed = array();
+                	foreach( $custom_types[$key]['supports'] as $supports_key => $supports_value ) {
+                		if( is_int( $supports_key ) && is_string( $supports_value ) ) {
+			                $supports_fixed[$supports_value] = 1;
+		                } else {
+			                $supports_fixed[$supports_key] = $supports_value;
+		                }
+	                }
+	                $custom_types[$key]['supports'] = $supports_fixed;
+	            }
 
                 $custom_types[$key]['__types_id'] = $key;
                 $custom_types[$key]['__types_title'] = $type['labels']['name'];
@@ -871,6 +1217,29 @@ function wpcf_admin_export_selected_data ( array $items, $_type = 'all', $return
 }
 
 /**
+ * This function is needed to get nested rfgs
+ * The id of each rfg will be added to $groups
+ *
+ * @param array $groups
+ * @param int $group_post_id
+ * @param Types_Field_Group_Repeatable_Service $rfg_service
+ *
+ * @return array
+ */
+function apply_rfgs_by_group( $groups, $group_post_id, $rfg_service ) {
+	$meta_fields = get_post_meta( $group_post_id, '_wp_types_group_fields', true );
+
+	if( $rfgs = $rfg_service->get_rfgs_by_fields_string( $meta_fields ) ) {
+		foreach( $rfgs as $rfg ) {
+			$groups[] = $rfg->get_wp_post();
+			$groups = apply_rfgs_by_group( $groups, $rfg->get_id(), $rfg_service );
+		}
+	}
+
+	return $groups;
+}
+
+/**
  * Custom Import function for Module Manager.
  *
  * Import selected items given by xmlstring.
@@ -912,6 +1281,9 @@ function wpcf_admin_import_data_from_xmlstring( $data = '', $_type = 'types',
     $errors = array();
     $imported = false;
     // Process groups
+
+    $groups_with_rfgs = array();
+    $rfgs = array();
 
     if ( !empty( $data->groups ) && 'groups' == $_type ) {
         $imported = true;
@@ -999,6 +1371,12 @@ function wpcf_admin_import_data_from_xmlstring( $data = '', $_type = 'types',
                 // Update meta
                 if ( !empty( $group['meta'] ) ) {
                     foreach ( $group['meta'] as $meta_key => $meta_value ) {
+                        if ( ! is_array( $meta_value ) && preg_match( '/(' . Types_Field_Group_Repeatable::PREFIX . '[a-z0-9_-]+)/', $meta_value, $m ) ) {
+                            if ( ! isset( $groups_with_rfgs[ $m[1] ] ) ) {
+                                $groups_with_rfgs[ $m[1] ] = array();
+                            }
+                            $groups_with_rfgs[ $m[1] ][] = $group_wp_id;
+                        }
                         update_post_meta( $group_wp_id, $meta_key,
                                 maybe_unserialize( $meta_value ) );
                     }
@@ -1018,7 +1396,11 @@ function wpcf_admin_import_data_from_xmlstring( $data = '', $_type = 'types',
             // Set insert data from XML
             foreach ( $data->fields->field as $field ) {
                 $field = wpcf_admin_import_export_simplexml2array( $field );
-                $fields[$field['id']] = $field;
+                if ( isset( $field['id'] ) ) {
+                    $fields[$field['id']] = $field;
+                } else {
+                    $rfgs[] = $field[0];
+                }
             }
             // Insert fields
             foreach ( $fields as $field_id => $field ) {
@@ -1071,6 +1453,40 @@ function wpcf_admin_import_data_from_xmlstring( $data = '', $_type = 'types',
                     $iclTranslationManagement->save_settings();
                 }
             }
+
+            // RFGs.
+	        $field_group_factory = Toolset_Field_Group_Post_Factory::get_instance();
+	        $all_rfgs = $field_group_factory->query_groups(
+		        array(
+			        'purpose' => '*',
+			        'post_status' => 'hidden'
+		        )
+	        );
+
+	        $all_rfgs_slug_id = array();
+
+	        foreach( $all_rfgs as $rfg ) {
+				$all_rfgs_slug_id[$rfg->get_slug()] = $rfg->get_id();
+	        }
+
+	        foreach ( $rfgs as $rfg ) {
+                $relationship_slug = str_replace( Types_Field_Group_Repeatable::PREFIX, '', $rfg );
+
+                if( ! isset( $all_rfgs_slug_id[ $relationship_slug ] ) ) {
+                	// rfg could not be found
+                	continue;
+                }
+
+                $post_id = $all_rfgs_slug_id[ $relationship_slug ];
+	            if ( isset( $groups_with_rfgs[ $rfg ] ) ) {
+                    foreach ( $groups_with_rfgs[ $rfg ] as $group_id ) {
+                        $fields_meta = get_post_meta( $group_id, Types_Field_Group_Service::OPTION_FIELDS, true );
+                        $fields_meta = str_replace( $rfg, Types_Field_Group_Repeatable::PREFIX . $post_id, $fields_meta );
+                        update_post_meta( $group_id, Types_Field_Group_Service::OPTION_FIELDS, $fields_meta );
+                    }
+                }
+            }
+
             update_option( 'wpcf-fields', $fields_existing );
         }
     }
@@ -1171,7 +1587,7 @@ function wpcf_admin_import_data_from_xmlstring( $data = '', $_type = 'types',
             }
 
             $taxonomy = wpcf_admin_import_export_simplexml2array( $taxonomy );
-			$taxonomy = apply_filters( 'wpcf_filter_import_custom_taxonomy', $taxonomy );
+            $taxonomy = apply_filters( 'wpcf_filter_import_custom_taxonomy', $taxonomy );
             $taxonomies[$_id] = $taxonomy;
         }
         // Insert taxonomies
@@ -1202,6 +1618,93 @@ function wpcf_admin_import_data_from_xmlstring( $data = '', $_type = 'types',
         update_option( WPCF_OPTION_NAME_CUSTOM_TAXONOMIES, $taxonomies_existing );
     }
 
+	// Add m2m relationships
+	if( ! empty( $data->m2m_relationships ) && $_type == 'm2m_relationships' ) {
+		do_action( 'toolset_do_m2m_full_init' );
+		$relationship_repository = Toolset_Relationship_Definition_Repository::get_instance();
+		$post_type_repository = Toolset_Post_Type_Repository::get_instance();
+
+		// all required keys - trust is good, control is better
+		$dependency_keys = array( 'slug', 'parent_types', 'child_types',
+			'intermediary_type', 'display_name_plural', 'display_name_singular',
+			'cardinality_parent_max', 'cardinality_child_max', 'needs_legacy_support' );
+
+		foreach ( $data->m2m_relationships as $relationships ) {
+			$relationships = (array) $relationships;
+			$intermediary_post_type = null;
+
+			foreach ( $relationships as $relationship ) {
+				$relationship = (array) $relationship;
+
+				try {
+					// check required values are available
+					foreach( $dependency_keys as $key ) {
+						if( ! isset( $relationship[$key] ) ) {
+							throw new Exception( __( 'Incompatible module', 'wpcf' ) );
+						}
+					}
+
+					// get parent type (throws Exception if not available)
+					foreach( $relationship['parent_types'] as $post_type_slug => $isset ) {
+						// currently we only support one type, so there is only one item to loop
+						$parent_type = Toolset_Relationship_Element_Type::build_for_post_type(
+							sanitize_title( $post_type_slug ) );
+					}
+					// for the case of an empty $relationship['parent_types'] array
+					if( ! isset( $parent_type ) ) {
+						throw new Exception( __( 'Parent Post Type missing.', 'wpcf' ) );
+					}
+
+					// get child type (throws Exception if not available)
+					foreach( $relationship['child_types'] as $post_type_slug => $isset ) {
+						// currently we only support one type, so there is only one item to loop
+						$child_type = Toolset_Relationship_Element_Type::build_for_post_type(
+							sanitize_title( $post_type_slug ) );
+					}
+					// for the case of an empty $relationship['child_types'] array
+					if( ! isset( $child_type ) ) {
+						throw new Exception( __( 'Child Post Type missing.', 'wpcf' ) );
+					}
+
+					// check for intermediary type (m2m)
+					if ( ! empty( $relationship['intermediary_type'] ) ) {
+						/** @var $intermediary_post_type Toolset_Post_Type_From_Types */
+						if( ! $intermediary_post_type = $post_type_repository->get( $relationship['intermediary_type'] ) ) {
+							throw new Exception( __( 'Intermediary Post Type missing.', 'wpcf' ) );
+						};
+					}
+
+
+					/** @var Toolset_Relationship_Definition $definition */
+					$definition = $relationship_repository->create_definition( $relationship['slug'], $parent_type, $child_type, false );
+					$definition->set_display_name( $relationship['display_name_plural'] );
+					$definition->set_display_name_singular( $relationship['display_name_singular'] );
+
+					$cardinality = new Toolset_Relationship_Cardinality(
+						$relationship['cardinality_parent_max'],
+						$relationship['cardinality_child_max']
+					);
+					$definition->set_cardinality( $cardinality );
+					$definition->is_distinct( true );
+					$definition->set_origin( $relationship['origin'] );
+					$legacy_support = $relationship['needs_legacy_support'] ? true : false;
+					$definition->set_legacy_support_requirement( $legacy_support );
+					if ( isset( $intermediary_post_type ) ) {
+						$definition->get_driver()->set_intermediary_post_type(
+							$intermediary_post_type, $intermediary_post_type->is_public() );
+					}
+
+					$relationship_repository->persist_definition( $definition );
+
+					$result['new']++;
+
+				} catch( Exception $e ) {
+					$result['failed']++;
+				}
+			}
+		}
+	}
+
     if ( $imported ) {
         // WPML bulk registration
         // TODO WPML move
@@ -1223,7 +1726,6 @@ function wpcf_admin_import_data_from_xmlstring( $data = '', $_type = 'types',
  * @param type $items
  */
 function wpcf_modman_items_check_custom_post_types( $items ) {
-
     global $wpcf;
 
     foreach ( $items as $k => $item ) {
@@ -1305,6 +1807,49 @@ function wpcf_modman_items_check_taxonomies( $items ) {
 }
 
 /**
+ * Check if relationships already exists
+ *
+ * @param $relationships
+ *
+ * @return mixed
+ *
+ * @since 3.1
+ */
+function wpcf_modman_items_check_relationships( $relationships ) {
+	if( ! is_array( $relationships ) ) {
+		// invalid input
+		return $relationships;
+	}
+
+	global $wpcf;
+
+	foreach ( $relationships as $slug => $relationship ) {
+		if( ! is_array( $relationship ) || ! isset( $relationship['id'] ) ) {
+			// invalid entry
+			continue;
+		}
+
+		// check if the relationship already exists
+		$relationship['exists'] = $wpcf->import->item_exists( 'relationship', $relationship['id'] );
+
+		// if relationship exists, proof if it's the same as in the import file
+		if ( $relationship['exists'] && isset( $relationship['hash'] ) ) {
+			$relationship['is_different'] =
+				$wpcf->import->checksum( 'relationship', $relationship['id'], $relationship['hash'] )
+					? false
+					: true;
+		}
+
+		// store updated relationship data
+		$relationships[$slug] = $relationship;
+	}
+
+	// return updated data array
+	return $relationships;
+}
+
+
+/**
  * Extracts ID.
  *
  * @param type $item
@@ -1364,4 +1909,101 @@ function wpcf_fix_exported_taxonomy_assignment_to_cpt( $taxonomy_data = array() 
 
 	$taxonomy_data['supports'] = $post_type_support_settings;
 	return $taxonomy_data;
+}
+
+
+/**
+ * Filters the items of the saved modules
+ *
+ * In our case we need to remove duplicated post types, the ones that are included in the relationships and the relationships included in the Field Groups.
+ *
+ * @param array $modules Modules saved.
+ * @return array
+ */
+function wpcf_modman_wpmodules_saved_items( $modules ) {
+	if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+		return $modules;
+	}
+	$relationship_repository = Toolset_Relationship_Definition_Repository::get_instance();
+	foreach ( $modules as $module_name => $module ) {
+		if ( isset( $module['m2m_relationships'] ) ) {
+			$post_types_in_relationships = array();
+			// Getting post types from relationships.
+			foreach ( $module['m2m_relationships'] as $relationship_data ) {
+				$relationship_slug = str_replace( '12' . _RELATIONSHIPS_MODULE_MANAGER_KEY_ . '21', '', $relationship_data['id'] );
+
+				if( ! $relationship_definition = $relationship_repository->get_definition( $relationship_slug ) ) {
+					// no relationship found (happens when the user deletes the relationship after module creation)
+					continue;
+				};
+
+				$post_types = array_merge(
+					$relationship_definition->get_parent_type()->get_types(),
+					$relationship_definition->get_child_type()->get_types()
+				);
+
+				foreach ( $post_types as $post_type_slug ) {
+					$post_types_in_relationships[] = '12' . _TYPES_MODULE_MANAGER_KEY_ . '21' . $post_type_slug;
+				}
+			}
+			// Removing CPT.
+			foreach ( $module['types'] as $i => $post_type_data ) {
+				if ( in_array( $post_type_data['id'], $post_types_in_relationships ) ) {
+					unset( $modules[ $module_name ]['types'][ $i ] );
+				}
+			}
+		}
+
+		if ( isset( $module['groups'] ) && isset( $module['m2m_relationships'] ) ) {
+			$relationships_in_groups = array();
+			foreach ( $module['groups'] as $group_data ) {
+				$group_id = str_replace( '12' . _GROUPS_MODULE_MANAGER_KEY_ . '21', '', $group_data['id'] );
+				$relationships_in_groups = array_merge( $relationships_in_groups, wpcf_get_relationships_included_in_field_groups( $group_id ) );
+			}
+			// Removing CPT.
+			foreach ( $module['m2m_relationships'] as $i => $relationship_data ) {
+				$relationship_slug = str_replace( '12' . _RELATIONSHIPS_MODULE_MANAGER_KEY_ . '21', '', $relationship_data['id'] );
+				if ( in_array( $relationship_slug, $relationships_in_groups ) ) {
+					unset( $modules[ $module_name ]['m2m_relationships'][ $i ] );
+				}
+			}
+		}
+	}
+
+	return $modules;
+}
+
+
+/**
+ * gets a list of relationship slugs belonging to a Field Group: PRF or RFG
+ *
+ * @param int|string $group Group ID or slug.
+ * @return array
+ * @since 3.0
+ */
+function wpcf_get_relationships_included_in_field_groups( $group ) {
+	if( ! $group_object = Toolset_Field_Group_Post_Factory::load( $group ) ) {
+		// no group = no fields
+		return array();
+	}
+
+	$service_field_group = new Types_Field_Group_Repeatable_Service();
+	$definition_factory = Toolset_Field_Definition_Factory_Post::get_instance();
+	$relationship_slugs = array();
+	foreach ( $group_object->get_field_slugs() as $field_slug ) {
+		$field_definition = $definition_factory->load_field_definition( $field_slug );
+		if ( $field_definition ) {
+			if ( $field_definition->get_type()->get_slug() === 'post' ) {
+				$relationship_slugs[] = $field_slug;
+			}
+		} else {
+			$repeatable_group = $service_field_group->get_object_from_prefixed_string( $field_slug );
+			if ( $repeatable_group ) {
+				$post_id = $service_field_group->get_id_from_prefixed_string( $field_slug );
+				$post = get_post( $post_id );
+				$relationship_slugs[] = $post->post_name;
+			}
+		}
+	}
+	return $relationship_slugs;
 }

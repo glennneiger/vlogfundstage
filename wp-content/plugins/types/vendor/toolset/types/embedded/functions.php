@@ -313,8 +313,9 @@ function wpcf_compare_wp_version($version = '3.2.1', $operator = '>')
 /**
  * Gets post type with data to which belongs.
  *
- * @param type $post_type
- * @return type
+ * @param $post_type
+ * @return mixed
+ * @deprecated Since 2.3. Use toolset_get_related_post_types() instead.
  */
 function wpcf_pr_get_belongs($post_type)
 {
@@ -325,8 +326,10 @@ function wpcf_pr_get_belongs($post_type)
 /**
  * Gets all post types and data that owns.
  *
- * @param type $post_type
- * @return type
+ * @param $post_type
+ *
+ * @return array|false
+ * @deprecated Since 2.3. Use toolset_get_related_post_types() instead.
  */
 function wpcf_pr_get_has($post_type)
 {
@@ -337,9 +340,12 @@ function wpcf_pr_get_has($post_type)
 /**
  * Gets individual post ID to which queried post belongs.
  *
- * @param type $post_id
- * @param type $post_type Post Type of owner
- * @return type
+ * @param $post_id
+ * @param string $post_type Post Type of owner
+ *
+ * @return mixed
+ *
+ * @deprecated Since 2.3.
  */
 function wpcf_pr_post_get_belongs($post_id, $post_type)
 {
@@ -349,9 +355,12 @@ function wpcf_pr_post_get_belongs($post_id, $post_type)
 /**
  * Gets all posts that belong to queried post, grouped by post type.
  *
- * @param type $post_id
- * @param type $post_type
- * @return type
+ * @deprecated Since 2.3.
+ *
+ * @param $post_id
+ * @param null $post_type_q
+ *
+ * @return array|mixed
  */
 function wpcf_pr_post_get_has($post_id, $post_type_q = null)
 {
@@ -409,8 +418,16 @@ function wpcf_save_settings($settings)
  */
 function wpcf_admin_can_be_repetitive($type)
 {
-    return !in_array( $type,
-                    array('checkbox', 'checkboxes', 'wysiwyg', 'radio', 'select') );
+	// for post reference field
+	if( $type == 'post' ) {
+		$factory = new Types_Field_Type_Post_Factory();
+		$field = $factory->get_field();
+
+		return $field->is_repeatable();
+	}
+
+	// all other fields
+    return ! in_array( $type, array('checkbox', 'checkboxes', 'wysiwyg', 'radio', 'select' ) );
 }
 
 /**

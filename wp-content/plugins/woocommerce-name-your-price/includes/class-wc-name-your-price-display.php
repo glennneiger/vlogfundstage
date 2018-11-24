@@ -38,6 +38,7 @@ class WC_Name_Your_Price_Display {
 		add_filter( 'post_class', array( $this, 'add_post_class' ), 30, 3 );
 
 		// Variable products.
+		add_action( 'woocommerce_before_variations_form', array( $this, 'move_display_for_variable_product' ) );
 		add_filter( 'woocommerce_variation_is_visible', array( $this, 'variation_is_visible' ), 10, 3 );
 		add_filter( 'woocommerce_available_variation', array( $this, 'available_variation' ), 10, 3 );
 		add_filter( 'woocommerce_get_variation_price', array( $this, 'get_variation_price' ), 10, 4 );
@@ -103,7 +104,7 @@ class WC_Name_Your_Price_Display {
 			'annual_price_factors' =>  WC_Name_Your_Price_Helpers::annual_price_factors()
 		);
 
-		wp_localize_script( 'woocommerce-nyp', 'woocommerce_nyp_params', $params );
+		wp_localize_script( 'woocommerce-nyp', 'woocommerce_nyp_params', apply_filters( 'nyp_script_params', $params ) );
 
 	}
 
@@ -356,6 +357,15 @@ class WC_Name_Your_Price_Display {
 	/*-----------------------------------------------------------------------------------*/
 
 	/**
+	 * Fix price input position on variable products - This shows them before Product Addons.
+	 * @since 2.8.3
+	 */
+	public function move_display_for_variable_product() {
+		remove_action( 'woocommerce_before_add_to_cart_button', array( $this, 'display_price_input' ), 9 );
+		add_action( 'woocommerce_single_variation', array( $this, 'display_price_input' ), 12 ); // After WC variation wrap and before Product Add-ons.
+	}
+
+	/**
 	 * Make NYP variations visible.
 	 *
 	 * @param  boolean $visible - whether to display this variation or not
@@ -366,8 +376,9 @@ class WC_Name_Your_Price_Display {
 	 */
 	public function variation_is_visible( $visible, $variation_id, $product_id ){
 
-		if( WC_Name_Your_Price_Helpers::is_nyp( $variation_id ) )
+		if( WC_Name_Your_Price_Helpers::is_nyp( $variation_id ) ) {
 			$visible = TRUE;
+		}
 
 		return $visible;
 	}
@@ -389,10 +400,14 @@ class WC_Name_Your_Price_Display {
 
 		if( $is_nyp ){
 			$nyp_data['minimum_price'] = WC_Name_Your_Price_Helpers::get_minimum_price( $variation );
+			$nyp_data['maximum_price'] = WC_Name_Your_Price_Helpers::get_maximum_price( $variation );
 			$nyp_data['initial_price'] =  WC_Name_Your_Price_Helpers::get_initial_price( $variation );
 			$nyp_data['posted_price'] =  WC_Name_Your_Price_Helpers::get_posted_price( $variation );
+			$nyp_data['display_price'] = WC_Name_Your_Price_Helpers::get_price_value_attr( $variation );
+			$nyp_data['display_regular_price'] = $nyp_data['display_price'];
 			$nyp_data['price_html'] = '<span class="price">' . WC_Name_Your_Price_Helpers::get_suggested_price_html( $variation ) . '</span>';
 			$nyp_data['minimum_price_html'] = WC_Name_Your_Price_Helpers::get_minimum_price_html( $variation );
+			$nyp_data['hide_minimum'] = WC_Name_Your_Price_Helpers::is_minimum_hidden( $variation );
 			$nyp_data['add_to_cart_text'] = $variation->single_add_to_cart_text();
 			if( $product->is_type( 'variable-subscription' ) ){
 				$nyp_data['subscription_terms'] = WC_Name_Your_Price_Helpers::get_subscription_terms( '', $variation );

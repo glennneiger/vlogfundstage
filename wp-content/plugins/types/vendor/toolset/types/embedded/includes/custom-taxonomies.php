@@ -61,9 +61,9 @@ function wpcf_custom_taxonomies_init()
     $custom_taxonomies = get_option( WPCF_OPTION_NAME_CUSTOM_TAXONOMIES, array() );
     if ( !empty( $custom_taxonomies ) ) {
         foreach ( $custom_taxonomies as $taxonomy => $data ) {
-            if ( 
-				! isset( $data['_builtin'] ) 
-				|| ! $data['_builtin'] 
+            if (
+				! isset( $data['_builtin'] )
+				|| ! $data['_builtin']
 			) {
                 wpcf_custom_taxonomies_register( $taxonomy, $data );
             }
@@ -172,6 +172,9 @@ function wpcf_custom_taxonomies_register( $taxonomy, $data ) {
 
 		foreach ( $data['labels'] as $label_key => $label ) {
 			$data['labels'][ $label_key ] = $label = stripslashes( $label );
+
+			// Allows several instances of %s in the label.
+			$label = str_replace( '%s', '%1$s', $label );
 
 			switch ( $label_key ) {
 

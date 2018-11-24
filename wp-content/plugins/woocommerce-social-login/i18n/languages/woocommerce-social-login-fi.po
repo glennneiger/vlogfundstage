@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: WooCommerce Social Login 1.5.0\n"
 "Report-Msgid-Bugs-To: https://woocommerce.com/my-account/marketplace-ticket-"
 "form/\n"
-"POT-Creation-Date: 2014-08-23 20:36:33+00:00\n"
+"POT-Creation-Date: 2018-06-05 04:24:43+00:00\n"
 "PO-Revision-Date: 2015-07-29 21:18+0200\n"
 "Last-Translator: Illimar Tambek\n"
 "Language-Team: \n"
@@ -129,7 +129,7 @@ msgid ""
 msgstr "Tämä teksti näkyy ”Social Login” -kirjautumispainikkeiden yläpuolella."
 
 #: includes/admin/class-wc-social-login-settings.php:126
-#: woocommerce-social-login.php:854
+#: woocommerce-social-login.php:965
 msgid "For faster checkout, login or register using your social account."
 msgstr "Rekisteröidy tai kirjaudu jonkin alla olevan palvelun avulla."
 
@@ -146,7 +146,7 @@ msgid ""
 msgstr "Tämä teksti näkyy ”Social Login” -kirjautumispainikkeiden yläpuolella."
 
 #: includes/admin/class-wc-social-login-settings.php:135
-#: woocommerce-social-login.php:855 woocommerce-social-login.php:978
+#: woocommerce-social-login.php:966 woocommerce-social-login.php:1089
 msgid "Use a social account for faster login or easy registration."
 msgstr ""
 
@@ -220,37 +220,41 @@ msgstr "tiliä yhdistetty"
 msgid "Provider Authentication error"
 msgstr "Todennus epäonnistui"
 
-#: includes/class-wc-social-login-hybridauth.php:268
+#: includes/class-wc-social-login-hybridauth.php:282
 msgid "Please enter your email address to complete your registration"
 msgstr "Viimeistele tili antamalla sähköpostiosoitteesi"
 
 #. translators: %s - a URL
-#: includes/class-wc-social-login-hybridauth.php:271
+#: includes/class-wc-social-login-hybridauth.php:285
 #, fuzzy
 msgid ""
 "Please enter your email address to complete your registration and continue "
 "to %s"
 msgstr "Viimeistele tili antamalla sähköpostiosoitteesi"
 
-#: includes/class-wc-social-login-hybridauth.php:332
+#: includes/class-wc-social-login-hybridauth.php:346
 msgid "No provider class found for %s"
 msgstr ""
 
-#: includes/class-wc-social-login-hybridauth.php:341
+#: includes/class-wc-social-login-hybridauth.php:355
 msgid "%s returned an invalid user identifier."
 msgstr ""
 
-#: includes/class-wc-social-login-hybridauth.php:393
+#: includes/class-wc-social-login-hybridauth.php:407
 msgid ""
 "Oops, it looks like you may already have an account&hellip; please log in to "
 "link your profile."
 msgstr ""
 
-#: includes/class-wc-social-login-hybridauth.php:511
+#: includes/class-wc-social-login-hybridauth.php:527
+msgid "User"
+msgstr ""
+
+#: includes/class-wc-social-login-hybridauth.php:545
 msgid "ERROR"
 msgstr "Virhe"
 
-#: includes/class-wc-social-login-hybridauth.php:511
+#: includes/class-wc-social-login-hybridauth.php:545
 msgid ""
 "Couldn&#8217;t register you&hellip; please contact us if you continue to "
 "have problems."
@@ -267,6 +271,15 @@ msgstr ""
 #: includes/frontend/class-wc-social-login-frontend.php:295
 msgid "Click here to login"
 msgstr "Klikkaa tästä kirjautuaksesi"
+
+#: includes/integrations/class-wc-social-login-integrations-memberships.php:119
+#, fuzzy
+msgid "Social Login Buttons"
+msgstr "Yhdistetyt verkkopalvelut"
+
+#: includes/integrations/class-wc-social-login-integrations-memberships.php:120
+msgid "Add Social Login buttons to restriction messages for logged out users"
+msgstr ""
 
 #: includes/providers/class-wc-social-login-provider-amazon.php:44
 msgid "Amazon"
@@ -395,40 +408,63 @@ msgstr "Facebook"
 #. translators: Placeholders: %1$s - opening HTML <a> tag, %2$s - closing HTML
 #. </a> tag
 #: includes/providers/class-wc-social-login-provider-facebook.php:49
-#: includes/providers/class-wc-social-login-provider-facebook.php:64
+#: includes/providers/class-wc-social-login-provider-facebook.php:65
 msgid "Need help setting up and configuring Facebook? %1$sRead the docs%2$s"
 msgstr "Tarvitsetko apua? %1$sKatso ohjeet%2$s (englanniksi)"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:108
+#. translators: Placeholder: %s - a url
+#: includes/providers/class-wc-social-login-provider-facebook.php:68
+#, fuzzy
+msgid "The redirect URI is %s"
+msgstr "App redirect URL: %s"
+
+#: includes/providers/class-wc-social-login-provider-facebook.php:114
 msgid "App ID"
 msgstr "App ID"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:109
+#: includes/providers/class-wc-social-login-provider-facebook.php:115
 msgid "App Secret"
 msgstr "App Secret"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:121
+#: includes/providers/class-wc-social-login-provider-facebook.php:118
+msgid "Redirect URI"
+msgstr ""
+
+#. translators: Placeholders: %1$s - <strong> tag, %2$s - </strong> tag
+#: includes/providers/class-wc-social-login-provider-facebook.php:123
+msgid ""
+"I certify that I have added this site to my app's list of %1$sValid OAuth "
+"redirect URIs%2$s"
+msgstr ""
+
+#. translators: Placeholders: %s - OAuth redirect URI, wrapped in <code> tags
+#: includes/providers/class-wc-social-login-provider-facebook.php:128
+#, fuzzy
+msgid "Your redirect URI is %s"
+msgstr "App redirect URL: %s"
+
+#: includes/providers/class-wc-social-login-provider-facebook.php:143
 msgid "Log in with Facebook"
 msgstr "Kirjaudu Facebook-tunnuksellasi"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:133
+#: includes/providers/class-wc-social-login-provider-facebook.php:155
 msgid "Link your account to Facebook"
 msgstr "Yhdistä Facebook-tiliin"
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:145
+#: includes/providers/class-wc-social-login-provider-facebook.php:180
 msgid "Your Facebook account is now linked to your account."
 msgstr "Facebook-tilisi on nyt yhdistetty tiliisi."
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:146
+#: includes/providers/class-wc-social-login-provider-facebook.php:181
 #, fuzzy
 msgid "Facebook was successfully unlinked from your account."
 msgstr "Yhteys Facebook-tiliisi poistettu."
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:147
+#: includes/providers/class-wc-social-login-provider-facebook.php:182
 msgid "This Facebook account is already linked to another user account."
 msgstr "Tämä Facebook-tili on jo yhdistetty toiseen tiliin."
 
-#: includes/providers/class-wc-social-login-provider-facebook.php:148
+#: includes/providers/class-wc-social-login-provider-facebook.php:183
 msgid ""
 "A user account using the same email address as this Facebook account already "
 "exists."
@@ -870,7 +906,7 @@ msgstr "Voit yhdistää tilisi näihin palveluihin."
 
 #. translators: Placeholders: %1$s - opening HTML <a> tag, %2$s - closing HTML
 #. </a> tag
-#: woocommerce-social-login.php:572
+#: woocommerce-social-login.php:591
 #, fuzzy
 msgid ""
 "Thanks for installing Social Login! Before you get started, please take a "
@@ -879,7 +915,17 @@ msgstr ""
 "Kiitos Social Login -lisäosan asentamisesta! Katso ohjeet %skäyttöönottoon%s "
 "täältä."
 
-#: woocommerce-social-login.php:629
+#. translators: Placeholders: %1$s - <a> tag, %2$s - </a> tag, %3$s - <a> tag,
+#. %4$s - </a> tag
+#: woocommerce-social-login.php:609
+msgid ""
+"WooCommerce Social Login: Facebook now requires your site's full OAuth "
+"Redirect URI to be configured for your app. Please head over to the "
+"%1$sFacebook settings%2$s to get your Redirect URI, and read more about "
+"%3$sconfiguring your app &raquo;%4$s"
+msgstr ""
+
+#: woocommerce-social-login.php:667
 msgid ""
 "Oops, looks like iThemes Security is set to Filter Long URLs. This is likely "
 "to cause a conflict with Social Login -- please disable that setting for "
@@ -887,12 +933,28 @@ msgid ""
 msgstr ""
 
 #. translators: %1$s, %3$s - opening <a> tag, %2$s, %4$s - closing </a> tag
-#: woocommerce-social-login.php:641
+#: woocommerce-social-login.php:679
 msgid ""
 "Please update callback URLs for each Social Login provider, then switch "
 "callback URLs to the Default format in the %1$sSocial Login settings%2$s. "
 "You can %3$slearn more from the plugin documentation%4$s."
 msgstr ""
+
+#. translators: Placeholders: %1$s - WooCommerce Social Login plugin name, %2$s
+#. - opening <a> HTML link tag, %3$s - closing </a> HTML link tag, %4$s cookie
+#. name wrapped in <code> HTML tags
+#: woocommerce-social-login.php:690
+msgid ""
+"If you are experiencing issues with customers linking a social account using "
+"%1$s, please %2$sfollow the guidelines here%3$s, as your host should fix "
+"your site's caching rules to exclude %4$s cookies from caching. If you're "
+"not seeing any issues with %1$s, please disregard this notice."
+msgstr ""
+
+#: woocommerce-social-login.php:787
+#, fuzzy
+msgid "Removed customer Social Login data"
+msgstr "WooCommerce Social Login"
 
 #. Plugin URI of the plugin/theme
 #, fuzzy
@@ -930,7 +992,7 @@ msgctxt "noun"
 msgid "Link Button Text"
 msgstr "Yhdistä tilit -painikkeen teksti"
 
-#: woocommerce-social-login.php:603
+#: woocommerce-social-login.php:641
 msgctxt "Requires SSL"
 msgid ""
 "WooCommerce Social Login: %s requires SSL for authentication, please force "

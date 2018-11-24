@@ -24,12 +24,14 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * LinkedIn social login provider class
  *
  * @since 1.1.0
  */
-class WC_Social_Login_Provider_LinkedIn extends WC_Social_Login_Provider {
+class WC_Social_Login_Provider_LinkedIn extends \WC_Social_Login_Provider {
 
 
 	/**
@@ -55,13 +57,13 @@ class WC_Social_Login_Provider_LinkedIn extends WC_Social_Login_Provider {
 	 * as a convenience since LinkedIn requires the admin to enter it for the app
 	 *
 	 * @since 1.1.0
-	 * @see WC_Social_Login_Provider::get_description()
+	 * @see \WC_Social_Login_Provider::get_description()
 	 * @return string
 	 */
 	public function get_description() {
 
 		/* translators: Placeholders: %1$s - <a> tag, %2$s - </a> tag */
-		$description = sprintf( __( 'Need help setting up and configuring LinkedIn? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="http://docs.woocommerce.com/document/woocommerce-social-login-create-social-apps#linkedin">', '</a>');
+		$description = sprintf( __( 'Need help setting up and configuring LinkedIn? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="' . $this->get_documentation_url() . '">', '</a>' );
 
 		$callback_url_format = get_option( 'wc_social_login_callback_url_format' );
 
@@ -113,7 +115,7 @@ class WC_Social_Login_Provider_LinkedIn extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.1.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_login_button_text() {
@@ -125,7 +127,7 @@ class WC_Social_Login_Provider_LinkedIn extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.1.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_link_button_text() {

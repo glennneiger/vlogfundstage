@@ -39,7 +39,6 @@ class WC_XR_Line_Item_Manager {
 
 			// Get the sales account
 			$sales_account = $this->settings->get_option( 'sales_account' );
-
 			// Check we need to send sku's
 			$send_inventory = ( ( 'on' === $this->settings->get_option( 'send_inventory' ) ) ? true : false );
 
@@ -77,7 +76,7 @@ class WC_XR_Line_Item_Manager {
 
 				// Send SKU?
 				if ( $send_inventory ) {
-					$line_item->set_item_code( $product->sku );
+					$line_item->set_item_code( $product->get_sku() );
 				}
 
 				// Send Discount?
@@ -112,6 +111,8 @@ class WC_XR_Line_Item_Manager {
 						$line_item->set_tax_rate( $rates[ key( $rates ) ] );
 					}
 				}
+
+				$line_item->set_is_digital_good( ! $product->needs_shipping() );
 
 				// Add Line Item to array
 				$line_items[] = $line_item;
@@ -256,6 +257,72 @@ class WC_XR_Line_Item_Manager {
 	}
 
 	/**
+	 * Build fee line items.
+	 *
+	 * @param WC_Order $order
+	 * @param WC_XR_Line_Item[] $line_items
+	 *
+	 * @return <array>WC_XR_Line_Item
+	 */
+	public function build_fees( $order ) {
+
+		$items      = $order->get_fees();
+		$line_items = array();
+
+		if ( ! $items || 0 == count( $items ) ) {
+			return $line_items;
+		}
+
+		// Add order items as line items.
+		foreach ( $items as $fee ) {
+
+			// Create Line Item object.
+			$line_item = new WC_XR_Line_Item( $this->settings );
+
+			$line_item->set_description( $fee->get_name() );
+
+			if ( $this->settings->get_option( 'fees_account' ) ) {
+
+				$line_item->set_account_code( $this->settings->get_option( 'fees_account' ) );
+
+			} else {
+
+				$line_item->set_account_code( $this->settings->get_option( 'sales_account' ) );
+
+			}
+
+			// Set the Unit Amount.
+			$line_item->set_unit_amount( $fee->get_total() );
+
+			// Set line amount.
+			$line_item->set_line_amount( $fee->get_total() );
+
+			// Add Quantity.
+			$line_item->set_quantity( 1 );
+
+			// Add Tax Amount.
+			$line_item->set_tax_amount( $fee->get_total_tax() );
+
+			// Add Tax Rate.
+			$item_tax_status   = $fee->get_tax_status();
+			if ( 'taxable' === $item_tax_status ) {
+				add_filter( 'woocommerce_get_tax_location', array( $this, 'set_tax_location' ), 10, 2 );
+				$rates = WC_Tax::get_rates( $fee->get_tax_class() );
+				remove_filter( 'woocommerce_get_tax_location', array( $this, 'set_tax_location' ) );
+				reset( $rates );
+				if ( ! empty( $rates ) ) {
+					$line_item->set_tax_rate( $rates[ key( $rates ) ] );
+				}
+			}
+
+			// Add Line Item to array.
+			$line_items[] = $line_item;
+		}
+
+		return $line_items;
+	}
+
+	/**
 	 * Build a correction line if needed
 	 *
 	 * @param WC_Order $order
@@ -271,14 +338,21 @@ class WC_XR_Line_Item_Manager {
 		// The line item total in cents
 		$line_total = 0;
 
+		// Invoice precision
+		$precision = 'on' === $this->settings->get_option( 'four_decimals' ) ? 4 : 2;
+
 		// Get a sum of the amount and tax of all line items
 		if ( count( $line_items ) > 0 ) {
 
 			foreach ( $line_items as $line_item ) {
-				$val = round( $line_item->get_unit_amount(), 2 ) * $line_item->get_quantity() * ( ( 100 - $line_item->get_discount_rate() ) / 100 );
-				$line_total += round( $val, 2 ) + round( $line_item->get_tax_amount(), 2 );
+				$line_val    = round( $line_item->get_unit_amount(), $precision ) * $line_item->get_quantity() * ( ( 100 - $line_item->get_discount_rate() ) / 100 );
+				$line_tax    = round( $line_item->get_tax_amount(), $precision );
+				$line_total += $line_val + $line_tax ;
 			}
 		}
+
+		// Line total in cents
+		$line_total = round( $line_total, 2 );
 
 		// Order total in cents
 		$order_total = round( $order->get_total(), 2 );
@@ -328,22 +402,28 @@ class WC_XR_Line_Item_Manager {
 	 */
 	public function build_line_items( $order ) {
 
-		// Fill line items array with products
-		$line_items = $this->build_products( $order );
+		// Grab all products.
+		$products = $this->build_products( $order );
 
-		// Add shipping line item if there's shipping
+		// Grab all fees.
+		$fees     = $this->build_fees( $order );
+
+		// Merge $line_items with products and fees.
+		$line_items = array_merge( $products, $fees );
+
+		// Add shipping line item if there's shipping.
 		$order_shipping = is_callable( array( $order, 'get_shipping_total' ) ) ? $order->get_shipping_total() : $order->order_shipping;
 		if ( $order_shipping > 0 ) {
 			$line_items[] = $this->build_shipping( $order );
 		}
 
-		// Build correction
+		// Build correction.
 		$correction = $this->build_correction( $order, $line_items );
 		if ( null !== $correction ) {
 			$line_items[] = $correction;
 		}
 
-		// Return line items
+		// Return line items.
 		return $line_items;
 	}
 

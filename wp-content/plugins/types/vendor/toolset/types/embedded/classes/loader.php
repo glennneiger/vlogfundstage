@@ -27,9 +27,8 @@ class WPCF_Loader
 
     public static function init( $settings = array() ) {
         self::$__settings = (array) $settings;
-        self::__registerScripts();
-        self::__registerStyles();
-        self::__toolset();
+        self::registerScripts();
+        self::registerStyles();
         add_action( 'admin_print_scripts', array('WPCF_Loader', 'renderJsSettings'), 5 );
 		add_filter( 'the_posts', array('WPCF_Loader', 'wpcf_cache_complete_postmeta') );
 		add_filter( 'wpcf_fields_postmeta_value_save', array( 'WPCF_Loader', 'wpcf_sanitize_postmeta_values_on_save' ) );
@@ -117,7 +116,7 @@ class WPCF_Loader
     /**
      * Register scripts.
      */
-    private static function __registerScripts() {
+    private static function registerScripts() {
         $min = '';//WPCF_DEBUG ? '-min' : '';
         wp_register_script( 'types',
 	        WPCF_EMBEDDED_RES_RELPATH . '/js/basic.js',
@@ -133,9 +132,6 @@ class WPCF_Loader
         }
         wp_register_script( 'types-utils',
                 WPCF_EMBEDDED_RES_RELPATH . "/js/utils{$min}.js", array('jquery'),
-                WPCF_VERSION, true );
-        wp_register_script( 'types-wp-views',
-                WPCF_EMBEDDED_RES_RELPATH . '/js/wp-views.js', array('jquery'),
                 WPCF_VERSION, true );
         global $pagenow;
         // Exclude on post edit screen
@@ -170,7 +166,7 @@ class WPCF_Loader
     /**
      * Register styles.
      */
-    private static function __registerStyles() {
+    private static function registerStyles() {
         wp_register_style( 'types',
                 WPCF_EMBEDDED_RES_RELPATH . '/css/basic.css', array(),
                 WPCF_VERSION );
@@ -313,17 +309,6 @@ class WPCF_Loader
             var types = ' . json_encode( $settings ) . ';
             //]]>
         </script>';
-    }
-
-    /**
-     * Toolset loading.
-     */
-    private static function __toolset() {
-        // Views
-        if ( defined( 'WPV_VERSION' ) ) {
-            self::loadClass( 'wpviews' );
-            WPCF_WPViews::init();
-        }
     }
 
 }

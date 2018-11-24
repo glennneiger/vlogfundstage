@@ -1,6 +1,11 @@
 <?php
 
-
+/**
+ * Class Types_Setting_Preset_Information_Table
+ *
+ * @method get_id
+ * @method get_value
+ */
 class Types_Setting_Preset_Information_Table {
 
 	private $setting;
@@ -16,13 +21,8 @@ class Types_Setting_Preset_Information_Table {
 		$option_edit_post_type->set_description( __( 'Edit Post Type pages', 'wpcf' ) );
 		$option_edit_post_type->set_default( true );
 
-		$option_edit_field_group = new Types_Setting_Option( 'show-on-field-group' );
-		$option_edit_field_group->set_description( __( 'Edit Field Group pages', 'wpcf' ) );
-		$option_edit_field_group->set_default( true );
-
 		$this->setting->add_option( $option_edit_post );
 		$this->setting->add_option( $option_edit_post_type );
-		$this->setting->add_option( $option_edit_field_group );
 	}
 
 	public function __call( $name, $arguments ) {

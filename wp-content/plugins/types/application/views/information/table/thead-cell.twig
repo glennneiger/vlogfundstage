@@ -9,7 +9,7 @@
 
             {% for description in description %}
                 {%  if description.type %}
-                    {% include 'information/description/' ~ description.type ~ '.twig' %}
+                    {% include '@types/information/description/' ~ description.type ~ '.twig' %}
                 {% endif %}
             {% endfor %}
         </div>

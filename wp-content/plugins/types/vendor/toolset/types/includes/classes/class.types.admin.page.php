@@ -2,28 +2,13 @@
 
 include_once WPCF_INC_ABSPATH.'/common-functions.php';
 
-/**
- * Summary.
- *
- * Description.
- *
- * @since x.x.x
- * @access (for functions: only use if private)
- *
- * @see Function/method/class relied on
- * @link URL
- * @global type $varname Description.
- * @global type $varname Description.
- *
- * @param type $var Description.
- * @param type $var Optional. Description.
- * @return type Description.
- */
 
 abstract class Types_Admin_Page
 {
     protected $post_type = null;
     protected $boxes = array();
+
+    /** @var null|Types_Admin_Post_Type */
     protected $ct = null;
 
 	/** @var string|null GET parameter name where the ID of the field group. */
@@ -31,10 +16,6 @@ abstract class Types_Admin_Page
     protected $current_user_can_edit = false;
     protected $_errors = false;
     protected $screen = false;
-
-    public function __construct()
-    {
-    }
 
     abstract public function init_admin();
 
@@ -178,7 +159,8 @@ abstract class Types_Admin_Page
     protected function prepare_screen()
     {
         $post = null;
-
+        $self = $this;
+        add_action( 'add_meta_boxes',  array( $this, 'filter_meta_boxes' ), 1 );
         do_action( 'add_meta_boxes', $this->post_type, $post );
 
         /** This action is documented in wp-admin/edit-form-advanced.php */
@@ -208,23 +190,17 @@ abstract class Types_Admin_Page
 
         );
     }
+
+
     /**
-     * Summary.
+     * Determine whether the Delete link should be hidden.
      *
-     * Description.
-     *
-     * @since x.x.x
-     * @access (for functions: only use if private)
-     *
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Description.
-     * @global type $varname Description.
-     *
-     * @param type $var Description.
-     * @param type $var Optional. Description.
-     * @return type Description.
+     * @return bool
+     * @since m2m
      */
+    protected function is_delete_action_forbidden() { return false; }
+
+
     protected function submitdiv($button_text, $form = array(), $type = 'custom-post-type', $built_in = false )
     {
         if ( WPCF_Roles::user_can_edit($type, $this->ct) ) {
@@ -234,11 +210,14 @@ abstract class Types_Admin_Page
                 '_builtin' => true,
             );
 
-            if(
-                ( isset( $_GET['group_id'] ) || isset( $_GET['wpcf-tax'] ) )
-                && isset( $_GET['page'] )
-                && ! $built_in
-            ) {
+            $has_delete_action = (
+            	( isset( $_GET['group_id'] ) || isset( $_GET['wpcf-tax'] ) )
+	            && isset( $_GET['page'] )
+	            && ! $built_in
+	            && ! $this->is_delete_action_forbidden()
+            );
+
+            if( $has_delete_action ) {
                 switch( $_GET['page'] ) {
                     case 'wpcf-edit':           // post fields
                         $action = 'delete_group';
@@ -278,7 +257,7 @@ abstract class Types_Admin_Page
                     $form['delete'] = array(
                         '#type' => 'markup',
                         '#markup' => sprintf(
-                            '<div id="delete-action"><a href="%s" class="submitdelete wpcf-ajax-link wpcf-group-delete-link" id="wpcf-list-delete-%d"">%s</a></div>',
+                            '<div id="delete-action"><a href="%s" class="submitdelete wpcf-ajax-link wpcf-group-delete-link" id="wpcf-list-delete-%d" data-bind="click: deleteFieldGroup">%s</a></div>',
                             esc_url(
                                 add_query_arg(
                                     $args,
@@ -464,8 +443,8 @@ abstract class Types_Admin_Page
                 '#attributes' => array(
                     'class' => 'js-wpcf-filter-button-edit wpcf-filter-button-edit',
                     'data-wpcf-type' => esc_attr($type),
-	                'data-wpcf-page' => esc_attr( wpcf_getget( 'page' ) ),
-                    'data-wpcf-nonce' => wp_create_nonce($type),
+	                'data-wpcf-page' => esc_attr( toolset_getget( 'page' ) ),
+                    'data-wpcf-nonce' => wp_create_nonce($type)
                 ),
                 '#inline' => true,
                 '#before' => '<div class="wpcf-filter-button-edit-container">',
@@ -828,5 +807,14 @@ abstract class Types_Admin_Page
         }
         return $data;
     }
-}
 
+
+    /**
+  	 * Filter metaboxes
+  	 *
+  	 * It takes the list of metaboxes and use only the permitted ones.
+  	 *
+  	 * @since 3.0
+  	 */
+  	public function filter_meta_boxes() {}
+}

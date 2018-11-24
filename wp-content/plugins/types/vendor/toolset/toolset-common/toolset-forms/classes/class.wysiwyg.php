@@ -28,7 +28,7 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
             ) {
                 $attributes['readonly'] = 'readonly';
                 $extra_markup .= sprintf(
-                        '<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' )
+                        '<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' )
                 );
             }
             $markup .= sprintf(

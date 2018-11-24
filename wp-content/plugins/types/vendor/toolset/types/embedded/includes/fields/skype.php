@@ -115,6 +115,8 @@ function wpcf_fields_skype_meta_box_form( $field ) {
 
 /**
  * Editor callback form.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_skype_editor_callback( $field, $settings, $meta_type, $post ) {
     // Get saved button style if any
@@ -142,6 +144,8 @@ function wpcf_fields_skype_editor_callback( $field, $settings, $meta_type, $post
 
 /**
  * Editor submit.
+ *
+ * @since m2m Probably DEPRECATED
  */
 function wpcf_fields_skype_editor_submit( $data, $field, $context ) {
     $add = '';
@@ -269,38 +273,38 @@ function wpcf_fields_skype_get_button( $skypename, $template = '',
 
         case 'btn1':
 // Call me big drawn
-            $output = '<script type="text/javascript" src="http://download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
-<a href="skype:' . $skypename . '?call"><img src="http://download.skype.com/share/skypebuttons/buttons/call_green_white_153x63.png" style="border: none;" width="153" height="63" alt="Skype Me™!"' . $class . ' /></a>';
+            $output = '<script type="text/javascript" src="//download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
+<a href="skype:' . $skypename . '?call"><img src="//download.skype.com/share/skypebuttons/buttons/call_green_white_153x63.png" style="border: none;" width="153" height="63" alt="Skype Me™!"' . $class . ' /></a>';
             break;
 
         case 'btn4':
 // Call me small
-            $output = '<script type="text/javascript" src="http://download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
-<a href="skype:' . $skypename . '?call"><img src="http://download.skype.com/share/skypebuttons/buttons/call_blue_transparent_34x34.png" style="border: none;" width="34" height="34" alt="Skype Me™!"' . $class . ' /></a>';
+            $output = '<script type="text/javascript" src="//download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
+<a href="skype:' . $skypename . '?call"><img src="//download.skype.com/share/skypebuttons/buttons/call_blue_transparent_34x34.png" style="border: none;" width="34" height="34" alt="Skype Me™!"' . $class . ' /></a>';
             break;
 
         case 'btn3':
 // Call me small drawn
-            $output = '<script type="text/javascript" src="http://download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
-<a href="skype:' . $skypename . '?call"><img src="http://download.skype.com/share/skypebuttons/buttons/call_green_white_92x82.png" style="border: none;" width="92" height="82" alt="Skype Me™!"' . $class . ' /></a>';
+            $output = '<script type="text/javascript" src="//download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
+<a href="skype:' . $skypename . '?call"><img src="//download.skype.com/share/skypebuttons/buttons/call_green_white_92x82.png" style="border: none;" width="92" height="82" alt="Skype Me™!"' . $class . ' /></a>';
             break;
 
         case 'btn6':
 // Status
-            $output = '<script type="text/javascript" src="http://download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
-<a href="skype:' . $skypename . '?call"><img src="http://mystatus.skype.com/bigclassic/' . $skypename . '" style="border: none;" width="182" height="44" alt="My status"' . $class . ' /></a>';
+            $output = '<script type="text/javascript" src="//download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
+<a href="skype:' . $skypename . '?call"><img src="//mystatus.skype.com/bigclassic/' . $skypename . '" style="border: none;" width="182" height="44" alt="My status"' . $class . ' /></a>';
             break;
 
         case 'btn5':
 // Status drawn
-            $output = '<script type="text/javascript" src="http://download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
-<a href="skype:' . $skypename . '?call"><img src="http://mystatus.skype.com/balloon/' . $skypename . '" style="border: none;" width="150" height="60" alt="My status"' . $class . ' /></a>';
+            $output = '<script type="text/javascript" src="//download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
+<a href="skype:' . $skypename . '?call"><img src="//mystatus.skype.com/balloon/' . $skypename . '" style="border: none;" width="150" height="60" alt="My status"' . $class . ' /></a>';
             break;
 
         default:
 // Call me big
-            $output = '<script type="text/javascript" src="http://download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
-<a href="skype:' . $skypename . '?call"><img src="http://download.skype.com/share/skypebuttons/buttons/call_blue_white_124x52.png" style="border: none;" width="124" height="52" alt="Skype Me™!"' . $class . ' /></a>';
+            $output = '<script type="text/javascript" src="//download.skype.com/share/skypebuttons/js/skypeCheck.js"></script>
+<a href="skype:' . $skypename . '?call"><img src="//download.skype.com/share/skypebuttons/buttons/call_blue_white_124x52.png" style="border: none;" width="124" height="52" alt="Skype Me™!"' . $class . ' /></a>';
             break;
     }
 
@@ -324,32 +328,32 @@ function wpcf_fields_skype_get_button_image( $skypename = '', $template = '' ) {
 
         case 'btn1':
 // Call me big drawn
-            $output = '<img src="http://download.skype.com/share/skypebuttons/buttons/call_green_white_153x63.png" style="border: none;" width="153" height="63" alt="Skype Me™!" />';
+            $output = '<img src="//download.skype.com/share/skypebuttons/buttons/call_green_white_153x63.png" style="border: none;" width="153" height="63" alt="Skype Me™!" />';
             break;
 
         case 'btn4':
 // Call me small
-            $output = '<img src="http://download.skype.com/share/skypebuttons/buttons/call_blue_transparent_34x34.png" style="border: none;" width="34" height="34" alt="Skype Me™!" />';
+            $output = '<img src="//download.skype.com/share/skypebuttons/buttons/call_blue_transparent_34x34.png" style="border: none;" width="34" height="34" alt="Skype Me™!" />';
             break;
 
         case 'btn3':
 // Call me small drawn
-            $output = '<img src="http://download.skype.com/share/skypebuttons/buttons/call_green_white_92x82.png" style="border: none;" width="92" height="82" alt="Skype Me™!" />';
+            $output = '<img src="//download.skype.com/share/skypebuttons/buttons/call_green_white_92x82.png" style="border: none;" width="92" height="82" alt="Skype Me™!" />';
             break;
 
         case 'btn6':
 // Status
-            $output = '<img src="http://mystatus.skype.com/bigclassic/' . $skypename . '" style="border: none;" width="182" height="44" alt="My status" />';
+            $output = '<img src="//mystatus.skype.com/bigclassic/' . $skypename . '" style="border: none;" width="182" height="44" alt="My status" />';
             break;
 
         case 'btn5':
 // Status drawn
-            $output = '<img src="http://mystatus.skype.com/balloon/' . $skypename . '" style="border: none;" width="150" height="60" alt="My status" />';
+            $output = '<img src="//mystatus.skype.com/balloon/' . $skypename . '" style="border: none;" width="150" height="60" alt="My status" />';
             break;
 
         default:
 // Call me big
-            $output = '<img src="http://download.skype.com/share/skypebuttons/buttons/call_blue_white_124x52.png" style="border: none;" width="124" height="52" alt="Skype Me™!" />';
+            $output = '<img src="//download.skype.com/share/skypebuttons/buttons/call_blue_white_124x52.png" style="border: none;" width="124" height="52" alt="Skype Me™!" />';
             break;
     }
 
@@ -480,7 +484,7 @@ function wpcf_fields_skype_conditional_filter_post_meta( $null, $object_id,
         $meta_key, $single ) {
 
     global $wpcf;
-    $field = wpcf_admin_fields_get_field( $wpcf->field->__get_slug_no_prefix( $meta_key ) );
+    $field = wpcf_admin_fields_get_field( $wpcf->field->get_slug_no_prefix( $meta_key ) );
     if ( !empty( $field ) && $field['type'] == 'skype' ) {
         $_meta = maybe_unserialize( wpcf_get_post_meta( $object_id, $meta_key,
                         $single ) );

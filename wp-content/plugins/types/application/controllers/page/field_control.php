@@ -13,12 +13,18 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 
 
 	// Screen options...
-	const SCREEN_OPTION_PER_PAGE_NAME = 'types_field_control_fields_per_page';
+	const SCREEN_OPTION_PER_PAGE_NAME = 'toolset_fields_per_page';
 	const SCREEN_OPTION_PER_PAGE_DEFAULT_VALUE = 20;
 
 
 	/** @var string Current field domain. Will be populated during self::prepare(). Never access directly. */
 	private $current_domain;
+
+	/** @var Toolset_Field_Definition_Abstract[] */
+	private $field_definitions;
+
+	/** @var string[] */
+	private $_fields_without_sanitized_slug;
 
 
 	private static $instance;
@@ -47,7 +53,7 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	 */
 	public static function get_page_url( $domain ) {
 
-		if( !in_array( $domain, Types_Field_Utils::get_domains() ) ) {
+		if( !in_array( $domain, Toolset_Field_Utils::get_domains() ) ) {
 			return null;
 		}
 
@@ -79,7 +85,7 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			throw new InvalidArgumentException( 
 				sprintf( 
 					__( 'Invalid field domain provided. Expected one of those values: %s', 'wpcf' ),
-					implode( ', ', Types_Field_Utils::get_domains() )
+					implode( ', ', Toolset_Field_Utils::get_domains() )
 				)
 			);
 		}
@@ -98,11 +104,11 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	public function get_title() {
 
 		switch( $this->get_current_domain() ) {
-			case Types_Field_Utils::DOMAIN_POSTS:
+			case Toolset_Field_Utils::DOMAIN_POSTS:
 				return __( 'Post Field Control', 'wpcf' );
-			case Types_Field_Utils::DOMAIN_USERS:
+			case Toolset_Field_Utils::DOMAIN_USERS:
 				return __( 'User Field Control', 'wpcf' );
-			case Types_Field_Utils::DOMAIN_TERMS:
+			case Toolset_Field_Utils::DOMAIN_TERMS:
 				return __( 'Term Field Control', 'wpcf' );
 			default:
 				// will never happen
@@ -155,30 +161,40 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	 */
 	private function get_current_domain() {
 		if( null == $this->current_domain ) {
-			$this->current_domain = wpcf_getget( self::PARAM_DOMAIN, null, Types_Field_Utils::get_domains() );
+			$this->current_domain = toolset_getget( self::PARAM_DOMAIN, null, Toolset_Field_Utils::get_domains() );
 		}
 		return $this->current_domain;
 	}
-	
-	
+
+
+	/**
+	 * Enqueue all assets needed by the page.
+	 *
+	 * (Notice the dependencies on Toolset GUI base assets.)
+	 *
+	 * @since 2.0
+	 */
 	public function on_admin_enqueue_scripts() {
 
 		$main_handle = 'types-page-field-control-main';
 
 		// Enqueuing with the wp-admin dependency because we need to override something !important.
-		Types_Asset_Manager::get_instance()->enqueue_styles(
+		$asset_manager = Types_Asset_Manager::get_instance();
+		$asset_manager->enqueue_styles(
 			array(
 				'wp-admin',
 				'common',
 				'font-awesome',
 				'wpcf-css-embedded',
-				'wp-jquery-ui-dialog'
+				'wp-jquery-ui-dialog',
+				'toolset-notifications-css',
 			)
 		);
 
 		wp_enqueue_style(
 			$main_handle,
-			TYPES_RELPATH . '/public/page/field_control/style.css'
+			TYPES_RELPATH . '/public/page/field_control/style.css',
+			array( Toolset_Gui_Base::STYLE_GUI_BASE )
 		);
 
 		wp_enqueue_script( 
@@ -186,6 +202,7 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			TYPES_RELPATH . '/public/page/field_control/main.js',
 			array( 
 				'jquery', 'backbone', 'underscore',
+				Toolset_Gui_Base::SCRIPT_GUI_LISTING_PAGE_CONTROLLER,
 				Types_Asset_Manager::SCRIPT_HEADJS,
 				Types_Asset_Manager::SCRIPT_ADJUST_MENU_LINK,
 				Types_Asset_Manager::SCRIPT_KNOCKOUT,
@@ -200,12 +217,20 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	private $twig = null;
 
 
+	/**
+	 * Retrieve a Twig environment initialized by the Toolset GUI base.
+	 *
+	 * @return Twig_Environment
+	 * @since 2.2
+	 */
 	private function get_twig() {
 		if( null == $this->twig ) {
-			$loader = new Twig_Loader_Filesystem();
-			$loader->addPath( TYPES_ABSPATH . '/application/views/page', 'generic_page' );
-			$loader->addPath( TYPES_ABSPATH . '/application/views/page/field_control', 'field_control' );
-			$this->twig = new Twig_Environment( $loader );
+
+			$gui_base = Toolset_Gui_Base::get_instance();
+
+			$this->twig = $gui_base->create_twig_environment(
+				array( 'field_control' => TYPES_ABSPATH . '/application/views/page/field_control' )
+			);
 		}
 		return $this->twig;
 	}
@@ -220,7 +245,9 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 
 		$context = $this->build_page_context();
 
-		echo $this->get_twig()->render( '@field_control/main.twig', $context );
+		$twig = $this->get_twig();
+
+		echo $twig->render( '@field_control/main.twig', $context );
 	}
 
 
@@ -234,15 +261,32 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	 */
 	private function build_page_context() {
 
-		$context = array(
+		$gui_base = Toolset_Gui_Base::get_instance();
+
+		// Basics for the listing page which we'll merge with specific data later on.
+		$base_context = $gui_base->get_twig_context_base( Toolset_Gui_Base::TEMPLATE_LISTING, $this->build_js_data() );
+
+		$specific_context = array(
 			'strings' => $this->build_strings_for_twig(),
-			'js_model_data' => base64_encode( wp_json_encode( $this->build_js_data() ) ),
-			'assets' => array(
-				'loaderOverlay' => Types_Assets::get_instance()->get_image_url( Types_Assets::IMG_AJAX_LOADER_OVERLAY )
-			)
+			'fieldsWithoutSanitizedSlug' => $this->get_fields_without_sanitized_slug()
 		);
 
+		$context = toolset_array_merge_recursive_distinct( $base_context, $specific_context );
+
 		return $context;
+	}
+
+	/**
+	 * Fields without sanitized slug
+	 *
+	 * @since 3.1
+	 */
+	private function get_fields_without_sanitized_slug() {
+		if( $this->_fields_without_sanitized_slug === null ) {
+			$this->build_field_definitions();
+		}
+
+		return $this->_fields_without_sanitized_slug;
 	}
 
 
@@ -254,12 +298,17 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	 */
 	private function build_js_data() {
 		
-		$field_action_name = Types_Ajax::get_instance()->get_action_js_name( Types_Ajax::CALLBACK_FIELD_CONTROL_ACTION );
+		$ajax_controller = Types_Ajax::get_instance();
+		$field_type_definition_factory = Toolset_Field_Type_Definition_Factory::get_instance();
+		$field_type_converter = Types_Field_Type_Converter::get_instance();
+
+		$field_action_name = $ajax_controller->get_action_js_name( Types_Ajax::CALLBACK_FIELD_CONTROL_ACTION );
 		
 		return array(
 			'jsIncludePath' => TYPES_RELPATH . '/public/page/field_control',
+			'typesVersion' => TYPES_VERSION,
 			'fieldDefinitions' => $this->build_field_definitions(),
-			'fieldTypeDefinitions' => Types_Field_Type_Definition_Factory::get_instance()->get_field_type_definitions(),
+			'fieldTypeDefinitions' => $field_type_definition_factory->get_field_type_definitions(),
 			'templates' => $this->build_templates(),
 			'strings' => $this->build_strings_for_js(),
 			'ajaxInfo' => array(
@@ -270,7 +319,7 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			),
 			'currentDomain' => $this->get_current_domain(),
 			'groups' => $this->build_group_data(),
-			'typeConversionMatrix' => Types_Field_Type_Converter::get_instance()->get_conversion_matrix(),
+			'typeConversionMatrix' => $field_type_converter->get_conversion_matrix(),
 			'itemsPerPage' => $this->get_items_per_page_setting()
 		);
 		
@@ -284,6 +333,10 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	 * @since 2.0
 	 */
 	private function build_field_definitions() {
+		if( $this->field_definitions !== null || $this->_fields_without_sanitized_slug !== null ) {
+			// already build
+			return $this->field_definitions;
+		}
 		
 		$query_args = array(
 			'filter' => 'all',
@@ -291,26 +344,38 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			'order' => 'asc'
 		);
 
-		$definitions = array();
-		switch( $this->get_current_domain() ) {
-			case Types_Field_Utils::DOMAIN_POSTS:
-				$definitions = WPCF_Field_Definition_Factory_Post::get_instance()->query_definitions( $query_args );
-				break;
-			case Types_Field_Utils::DOMAIN_USERS:
-				$definitions = WPCF_Field_Definition_Factory_User::get_instance()->query_definitions( $query_args );
-				break;
-			case Types_Field_Utils::DOMAIN_TERMS:
-				$definitions = WPCF_Field_Definition_Factory_Term::get_instance()->query_definitions( $query_args );
-				break;
-		}
+		$definition_factory = Toolset_Field_Definition_Factory_Post::get_factory_by_domain( $this->get_current_domain() );
 
+		if( null != $definition_factory ) {
+			$definitions = $definition_factory->query_definitions( $query_args );
+		} else {
+			$definitions = array();
+		}
 
 		$definition_data = array();
+		$fields_without_sanitized_slug = array();
+
+		$blacklisted_fields = $this->get_blacklisted_fields();
+		
 		foreach( $definitions as $definition ) {
+			if( in_array( $definition->get_slug(), $blacklisted_fields ) ) {
+				// do not included blacklisted fields
+				continue;
+			}
+
+			if( sanitize_key( $definition->get_slug() ) != $definition->get_slug() ) {
+				// do not include fields which does not match sanitize_key rules
+				$fields_without_sanitized_slug[] = $definition->get_slug();
+				continue;
+			}
+
 			$definition_data[] = $definition->to_json();
 		}
-		
-		return $definition_data;
+
+		$this->field_definitions              = $definition_data;
+		$this->_fields_without_sanitized_slug = $fields_without_sanitized_slug;
+
+		return $this->field_definitions;
 	}
 	
 
@@ -325,14 +390,14 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	private function build_templates() {
 
 		$template_sources = array(
-			'messageDefinitionList' => 'field_control/message_definition_list.html',
-			'messageMultiple' => 'field_control/message_multiple.html',
+			'messageDefinitionList' => 'page/field_control/message_definition_list.html',
+			'messageMultiple' => 'misc/message_multiple.html',
 		);
 
 		$templates = array();
 		foreach( $template_sources as $template_name => $template_relpath ) {
 
-			$template_path = TYPES_ABSPATH . '/application/views/page/' . $template_relpath;
+			$template_path = TYPES_ABSPATH . '/application/views/' . $template_relpath;
 
 			if( file_exists( $template_path ) ) {
 				$templates[ $template_name ] = file_get_contents( $template_path );
@@ -360,15 +425,11 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			),
 			'misc' => array(
 				'noItemsFound' => __( 'No field definitions found.', 'wpcf' ),
-				'applyBulkAction' => __( 'Apply', 'wpcf' ),
-				'searchPlaceholder' => __( 'Search', 'wpcf' ),
 				'pageTitle' => $this->get_title(),
-				'items' => __( 'items', 'wpcf' ),
-				'of' => __( 'of', 'wpcf' ),
-				'thisFieldIsRepeating' => __( 'This is a repeating field.', 'wpcf' )
+				'thisFieldIsRepeating' => __( 'This is a repeating field.', 'wpcf' ),
+				'fieldsNotSupportedBecauseOfNotSanitizedSlug' => __( 'Toolset Types only allow fields with names containing lowercase alphanumeric characters, dashes and underscores. The following third party fields are not supported:', 'wpcf' )
 			),
 			'bulkAction' => array(
-				'select' => __( 'Bulk action', 'wpcf' ),
 				'delete' => __( 'Delete', 'wpcf' ),
 				'manageWithTypes' => __( 'Manage with Types', 'wpcf' ),
 				'stopManagingWithTypes' => __( 'Stop managing with Types', 'wpcf' )
@@ -433,8 +494,14 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	 * @since 2.0
 	 */
 	private function build_group_data() {
-		$factory = Types_Field_Utils::get_group_factory_by_domain( $this->get_current_domain() );
-		$groups = $factory->query_groups();
+		$factory = Toolset_Field_Utils::get_group_factory_by_domain( $this->get_current_domain() );
+
+		// for post field groups we also need to fetch RFGs
+		$group_qry_args = $this->get_current_domain() == Toolset_Element_Domain::POSTS
+			? array( 'purpose' => '*', 'post_status' => 'any' )
+			: array();
+
+		$groups = $factory->query_groups( $group_qry_args );
 
 		$group_data = array();
 		foreach( $groups as $group ) {
@@ -467,20 +534,20 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	/**
 	 * Update the "per page" screen option.
 	 * 
-	 * @param $status
+	 * @param $original_value
 	 * @param string $option
-	 * @param $value
+	 * @param $option_value
+	 *
 	 * @return mixed
 	 * @since 2.0
 	 */
-	public function set_screen_option( $status, $option, $value ) {
-
+	public function set_screen_option( $original_value, $option, $option_value ) {
 		if ( self::SCREEN_OPTION_PER_PAGE_NAME == $option ) {
-			return $value;
+			return $option_value;
 		}
 
-		return $status;
-
+		// not our option, return the original value (which is by default "false" = no saving)
+		return $original_value;
 	}
 
 
@@ -510,7 +577,7 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 	 */
 	public function prepare_dialogs() {
 
-		new Types_Dialog_Box(
+		new Toolset_Twig_Dialog_Box(
 			'types-change-assignment-dialog',
 			$this->get_twig(),
 			array(
@@ -522,7 +589,7 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			'@field_control/change_assignment_dialog.twig'
 		);
 
-		new Types_Dialog_Box(
+		new Toolset_Twig_Dialog_Box(
 			'types-delete-field-dialog',
 			$this->get_twig(),
 			array(
@@ -535,11 +602,14 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			'@field_control/delete_dialog.twig'
 		);
 		
-		new Types_Dialog_Box(
+
+		$type_definition_factory = Toolset_Field_Type_Definition_Factory::get_instance();
+
+		new Toolset_Twig_Dialog_Box(
 			'types-change-field-type-dialog',
 			$this->get_twig(),
 			array(
-				'fieldTypeDefinitions' => Types_Field_Type_Definition_Factory::get_instance()->get_field_type_definitions(),
+				'fieldTypeDefinitions' => $type_definition_factory->get_field_type_definitions(),
 				'strings' => array(
 					'aboutFieldTypeChanging' => __( 'Select a new type for this field.', 'wpcf' ),
 					'someTypesAreDisabled' => __( 'Note: Some of the field types are disabled for conversion because they\'re using a significantly different data format, which is not compatible with the current field type.', 'wpcf' ),
@@ -555,7 +625,7 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 		);
 		
 		
-		new Types_Dialog_Box(
+		new Toolset_Twig_Dialog_Box(
 			'types-bulk-change-management-status-dialog',
 			$this->get_twig(),
 			array(
@@ -614,4 +684,16 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 		);
 	}
 
+
+	/**
+	 * Returns list of field slugs, which should not be displayed on the field control page
+	 *
+	 * @return array
+	 */
+	private function get_blacklisted_fields() {
+		return array(
+			'toolset-post-sortorder',
+			'types_field_group_purpose'
+		);
+	}
 }

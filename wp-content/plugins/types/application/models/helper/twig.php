@@ -5,41 +5,73 @@
  *
  * @since 2.0
  */
-class Types_Helper_Twig {
+class Types_Helper_Twig implements Types_Interface_Template {
 
-	private $filesystem;
+	/**
+	 * @var Twig_Environment
+	 */
 	private $twig;
 
-	public function __construct() {
-		// backwards compatibility for php5.2
-		if ( ! defined( 'E_DEPRECATED' ) )
-			define( 'E_DEPRECATED', 8192 );
 
-		if ( ! defined( 'E_USER_DEPRECATED' ) )
-			define( 'E_USER_DEPRECATED', 16384 );
+	/**
+	 * Types_Helper_Twig constructor.
+	 *
+	 * @param string[] $additional_namespaces Twig namespaces to add, "namespace => absolute path" value pairs.
+	 * @param Toolset_Common_Bootstrap|null $toolset_common_bootstrap_di
+	 * @param Toolset_Gui_Base|null $toolset_gui_base_di
+	 *
+	 * @since m2m Implemented possibility to add other Twig namespaces.
+	 */
+	public function __construct(
+		array $additional_namespaces = array(),
+		Toolset_Common_Bootstrap $toolset_common_bootstrap_di = null,
+		Toolset_Gui_Base $toolset_gui_base_di = null
+	) {
 
-		$this->filesystem = new Twig_Loader_Filesystem();
-		$this->filesystem->addPath( TYPES_ABSPATH . '/application/views' );
-		$this->twig = new Twig_Environment( $this->filesystem );
-		$this->twig->addFunction( new Twig_SimpleFunction( '__', array( $this, 'translate' ) ) );
+		// Ensure that we have Twig ready
+		$tcb = ( null === $toolset_common_bootstrap_di ? Toolset_Common_Bootstrap::get_instance() : $toolset_common_bootstrap_di );
+		$tcb->register_gui_base();
+
+		$gui_base = ( null === $toolset_gui_base_di ? Toolset_Gui_Base::get_instance() : $toolset_gui_base_di );
+		$gui_base->init();
+
+		$namespaces = array_merge( array( 'types' => TYPES_ABSPATH . '/application/views' ), $additional_namespaces );
+
+		$this->twig = $gui_base->create_twig_environment( $namespaces );
+	}
+
+
+	public function render( $file, $data ) {
+		return $this->twig->render( "@types$file", $data );
+	}
+
+
+	/**
+	 * Return the underlying Twig environment.
+	 *
+	 * @since m2m
+	 */
+	public function get_environment() {
+		return $this->twig;
 	}
 
 	/**
-	 * This allows to use __( 'Text to translate', 'wpcf' ) in twig templates
+	 * Alias for Toolset_Twig_Dialog_Box::construct()
 	 *
-	 * @param $text
-	 * @param string $domain
+	 * @param $id
+	 * @param $template_path
+	 * @param array $template_values
 	 *
-	 * @return mixed
+	 * @return Toolset_Twig_Dialog_Box
 	 */
-	public function translate( $text, $domain = 'wpcf' ) {
-		return __( $text, $domain );
-	}
-	
-	public function render( $file, $data ) {
-		if( $this->filesystem->exists( $file ) )
-			return $this->twig->render( $file, $data );
+	public function prepare_dialog( $id, $template_path, $template_values = array() ) {
+		$twig_factory = new Toolset_Twig_Dialog_Box_Factory();
 
-		return false;
+		$twig_factory->create(
+			$id,
+			$this->twig,
+			$template_values,
+			"@types$template_path"
+		);
 	}
 }

@@ -11,15 +11,12 @@
  * Block dependencies
  */
 import CTSelect from './ct-select';
-// import QueryFilters from './query-filters';
-// import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal block libraries
  */
 const {
 	__,
-	// sprintf,
 } = wp.i18n;
 
 const {
@@ -28,16 +25,10 @@ const {
 
 const {
 	InspectorControls,
-} = wp.blocks;
-
-// const {
-// 	SelectControl,
-// } = wp.blocks.InspectorControls;
+} = wp.editor;
 
 const {
-	// PanelBody,
-	// PanelRow,
-	// Notice,
+	PanelBody,
 } = wp.components;
 
 /**
@@ -47,7 +38,6 @@ export default class Inspector extends Component {
 	render() {
 		const {
 			attributes,
-			className,
 			onChangeCT,
 		} = this.props;
 
@@ -55,40 +45,19 @@ export default class Inspector extends Component {
 			ct,
 		} = attributes;
 
-		// const getCTSelectOptions = () => {
-		// 	const newOptions = cts.map(
-		// 		item => {
-		// 			const rCT = {};
-		// 			rCT.value = item.ID;
-		// 			rCT.label = item.post_title;
-		// 			return rCT;
-		// 		}
-		// 	);
-		//
-		// 	newOptions.unshift(
-		// 		{
-		// 			value: '',
-		// 			label: __( 'Select a Content Template' ),
-		// 		}
-		// 	);
-		//
-		// 	return newOptions;
-		// };
-
 		return (
 			<InspectorControls>
-				<div className={ className }>
-					<h2>{ __( 'Content Template' ) }</h2>
+				<PanelBody title={ __( 'Content Template' ) }>
 					<CTSelect
 						attributes={
 							{
 								ct: ct,
 							}
 						}
-						className="blocks-select-control__input"
+						className="components-select-control__input"
 						onChangeCT={ onChangeCT }
 					/>
-				</div>
+				</PanelBody>
 			</InspectorControls>
 		);
 	}

@@ -506,10 +506,13 @@ class WPToolset_Types
      */
     public static function translate($name, $string, $context = 'plugin Types')
     {
-        if ( !function_exists( 'icl_t' ) ) {
-            return $string;
-        }
-        return icl_t( $context, $name, stripslashes( $string ) );
+        return apply_filters(
+            'wpml_translate_single_string',
+            stripslashes( $string ),
+            $context,
+            $name,
+            apply_filters( 'wpml_current_language', NULL )
+        );
     }
 
     /**

@@ -108,7 +108,8 @@ class Toolset_Shortcode_Attr_Item_Legacy extends Toolset_Shortcode_Attr_Item_Id 
 		}
 
 		// find parent by using the slug (to support legacy use of the shortcode [types id="$parent_slug"])
-		$parents_with_specific_slug = $this->service_relationship->find_parents_by_child_id_and_parent_slug( $post->ID, $role_slug );
+		// We don't need more than two items (to detect there are more than one and to choose one).
+		$parents_with_specific_slug = $this->service_relationship->find_legacy_parents_by_child_id_and_parent_slug( $post->ID, $role_slug );
 
 		if( count( $parents_with_specific_slug ) > 1 ) {
 			// todo show a message to the admin that he should replace the old shortcode structure by the new

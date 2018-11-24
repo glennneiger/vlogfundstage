@@ -26,6 +26,16 @@ ToolsetCommon.BootstrapCssComponentsQuickTags = function($){
     self.wrap_codemirror_buttons = function($instance,$buttons){
 
         var toolbar_div = jQuery("#wp-"+$instance+"-editor-container .quicktags-toolbar");
+
+        if (
+            toolbar_div.length === 0
+            && 'content' == $instance
+        ) {
+            // Support pseudo-content editors in native edit pages,
+            // like the post/user forms editors in Forms 2.1+
+            toolbar_div = jQuery( '#ed_toolbar.quicktags-toolbar' );
+        }
+
         if(toolbar_div.length === 0){
 
             var views_toolbar = jQuery("#qt_"+$instance+"_toolbar");

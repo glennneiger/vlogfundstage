@@ -1,6 +1,6 @@
 <?php
 /**
- * This example file is a part of the Types plugin online documentation found at: https://wp-types.com/documentation/customizing-sites-using-php/
+ * This example file is a part of the Types plugin online documentation found at: https://toolset.com/documentation/customizing-sites-using-php/
  * It is based on the original Twenty Sixteen theme's single.php file.
  * It does not use template parts, but loads the post contents directly.
  * It also features additional code to render custom fields created with the Types plugin.
@@ -27,7 +27,7 @@ get_header(); ?>
 		<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 			<header class="entry-header">
 			<?php if ( is_sticky() && is_home() && ! is_paged() ) : ?>
-				<span class="sticky-post"><?php _e( 'Featured', 'twentysixteen' ); ?></span>
+				<span class="sticky-post"><?php _e( 'Featured', 'wpcf' ); ?></span>
 			<?php endif; ?>
 
 			<?php the_title( sprintf( '<h2 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a></h2>' ); ?>
@@ -54,16 +54,16 @@ get_header(); ?>
 				<?php
 				/* translators: %s: Name of current post */
 					the_content( sprintf(
-					__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'twentysixteen' ),
+					__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'wpcf' ),
 					get_the_title()
 					) );
 
 					wp_link_pages( array(
-						'before'      => '<div class="page-links"><span class="page-links-title">' . __( 'Pages:', 'twentysixteen' ) . '</span>',
+						'before'      => '<div class="page-links"><span class="page-links-title">' . __( 'Pages:', 'wpcf' ) . '</span>',
 						'after'       => '</div>',
 						'link_before' => '<span>',
 						'link_after'  => '</span>',
-						'pagelink'    => '<span class="screen-reader-text">' . __( 'Page', 'twentysixteen' ) . ' </span>%',
+						'pagelink'    => '<span class="screen-reader-text">' . __( 'Page', 'wpcf' ) . ' </span>%',
 						'separator'   => '<span class="screen-reader-text">, </span>',
 					) );
 				?>
@@ -79,7 +79,7 @@ get_header(); ?>
 					edit_post_link(
 						sprintf(
 						/* translators: %s: Name of current post */
-						__( 'Edit<span class="screen-reader-text"> "%s"</span>', 'twentysixteen' ),
+						__( 'Edit<span class="screen-reader-text"> "%s"</span>', 'wpcf' ),
 						get_the_title()
 						),
 					'<span class="edit-link">',
@@ -101,16 +101,16 @@ get_header(); ?>
 			if ( is_singular( 'attachment' ) ) {
 				// Parent post navigation.
 				the_post_navigation( array(
-					'prev_text' => _x( '<span class="meta-nav">Published in</span><span class="post-title">%title</span>', 'Parent post link', 'twentysixteen' ),
+					'prev_text' => _x( '<span class="meta-nav">Published in</span><span class="post-title">%title</span>', 'Parent post link', 'wpcf' ),
 				) );
 			} elseif ( is_singular( 'post' ) ) {
 				// Previous/next post navigation.
 				the_post_navigation( array(
-					'next_text' => '<span class="meta-nav" aria-hidden="true">' . __( 'Next', 'twentysixteen' ) . '</span> ' .
-						'<span class="screen-reader-text">' . __( 'Next post:', 'twentysixteen' ) . '</span> ' .
+					'next_text' => '<span class="meta-nav" aria-hidden="true">' . __( 'Next', 'wpcf' ) . '</span> ' .
+						'<span class="screen-reader-text">' . __( 'Next post:', 'wpcf' ) . '</span> ' .
 						'<span class="post-title">%title</span>',
-					'prev_text' => '<span class="meta-nav" aria-hidden="true">' . __( 'Previous', 'twentysixteen' ) . '</span> ' .
-						'<span class="screen-reader-text">' . __( 'Previous post:', 'twentysixteen' ) . '</span> ' .
+					'prev_text' => '<span class="meta-nav" aria-hidden="true">' . __( 'Previous', 'wpcf' ) . '</span> ' .
+						'<span class="screen-reader-text">' . __( 'Previous post:', 'wpcf' ) . '</span> ' .
 						'<span class="post-title">%title</span>',
 				) );
 			}

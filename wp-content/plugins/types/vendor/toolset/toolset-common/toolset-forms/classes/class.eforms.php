@@ -417,7 +417,7 @@ class Enlimbo_Forms {
 			 */
 			if ( Toolset_Utils::is_real_admin() && function_exists( 'wpcf_wpml_field_is_copied' ) && wpcf_wpml_field_is_copied( $element ) ) {
 				$element['#title'] .= sprintf(
-					'<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' )
+					'<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' )
 				);
 				$element['#attributes']['readonly'] = true;
 				$element['#attributes']['disabled'] = true;
@@ -853,7 +853,8 @@ class Enlimbo_Forms {
 		$is_boolean = is_bool( $element['#value'] );
 		$use_default_value = ( ( $is_empty && $is_zero ) || $is_boolean );
 		$value_output = ( $use_default_value ? $value : esc_attr( $element['#value'] ) );
-		$element['_render']['element'] .= $value_output;
+		// we need to convert special characters of the input attr "value" (types-1643)
+		$element['_render']['element'] .= htmlspecialchars( $value_output );
 
 		$element['_render']['element'] .= '"' . $element['_attributes_string'];
 		if (
@@ -1223,7 +1224,7 @@ class Enlimbo_Forms {
 		$element = $this->_setRender( $element );
 		$output = '<input type="hidden" id="' . $element['#id'] . '" name="'
 			. $element['#name'] . '" value="';
-		$output .= isset( $element['#value'] ) ? $element['#value'] : 1;
+		$output .= array_key_exists( '#value', $element ) ? esc_attr( $element['#value'] ) : 1;
 		$output .= '"' . $element['_attributes_string'] . $this->_getDataWptId( $element ) . ' />';
 
 		return $output;

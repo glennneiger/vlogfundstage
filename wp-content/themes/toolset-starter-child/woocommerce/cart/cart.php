@@ -11,41 +11,28 @@
  * the readme will list any important changes.
  *
  * @see     https://docs.woocommerce.com/document/template-structure/
- * @author  WooThemes
  * @package WooCommerce/Templates
- * @version 3.3.0
+ * @version 3.5.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-wc_print_notices();
+defined( 'ABSPATH' ) || exit;
 
 do_action( 'woocommerce_before_cart' ); ?>
-
-
-
-
-
 
 <form class="woocommerce-cart-form sfc-checkout-billing-container" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
 	<?php do_action( 'woocommerce_before_cart_table' ); ?>
 
 	<table class="shop_table shop_table_responsive cart woocommerce-cart-form__contents" cellspacing="0">
-
-
 		<!--<thead>
-			<tr>
-				<th class="product-remove">&nbsp;</th>
-				<th class="product-thumbnail">&nbsp;</th>
-				<th class="product-name"><?php _e( 'Product', 'woocommerce' ); ?></th>
-				<th class="product-price"><?php _e( 'Price', 'woocommerce' ); ?></th>
-				<th class="product-quantity"><?php _e( 'Quantity', 'woocommerce' ); ?></th>
-				<th class="product-subtotal"><?php _e( 'Total', 'woocommerce' ); ?></th>
-			</tr>
+		<tr>
+			<th class="product-remove">&nbsp;</th>
+			<th class="product-thumbnail">&nbsp;</th>
+			<th class="product-name"><?php esc_html_e( 'Product', 'woocommerce' ); ?></th>
+			<th class="product-price"><?php esc_html_e( 'Price', 'woocommerce' ); ?></th>
+			<th class="product-quantity"><?php esc_html_e( 'Quantity', 'woocommerce' ); ?></th>
+			<th class="product-subtotal"><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
+		</tr>
 		</thead>-->
-
 		<tbody>
 			<?php do_action( 'woocommerce_before_cart_contents' ); ?>
 
@@ -60,14 +47,9 @@ do_action( 'woocommerce_before_cart' ); ?>
 					<tr class="woocommerce-cart-form__cart-item <?php echo esc_attr( apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key ) ); ?>">
 
 
-
-
-
-
-
-
 						<td class="product-remove">
 							<?php
+								// @codingStandardsIgnoreLine
 								echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf(
 									'<a href="%s" class="remove" aria-label="%s" data-product_id="%s" data-product_sku="%s">&times;</a>',
 									esc_url( wc_get_cart_remove_url( $cart_item_key ) ),
@@ -77,9 +59,6 @@ do_action( 'woocommerce_before_cart' ); ?>
 								), $cart_item_key );
 							?>
 						</td>
-
-
-
 
 						<!--<td class="product-thumbnail">
 							<?php
@@ -111,7 +90,7 @@ do_action( 'woocommerce_before_cart' ); ?>
 
 								// Backorder notification
 								if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) {
-									echo '<p class="backorder_notification">' . esc_html__( 'Available on backorder', 'woocommerce' ) . '</p>';
+									echo wp_kses_post( apply_filters( 'woocommerce_cart_item_backorder_notification', '<p class="backorder_notification">' . esc_html__( 'Available on backorder', 'woocommerce' ) . '</p>', $product_id ) );
 								}
 							?>
                           <!--<div class="sf-cart-yt-video-thumbnails">
@@ -206,19 +185,11 @@ do_action( 'woocommerce_before_cart' ); ?>
 							?>
 						</td>
 
-
-
-
 						<td class="product-subtotal" data-title="<?php esc_attr_e( 'Total', 'woocommerce' ); ?>">
 							<?php
 								echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key );
 							?>
 						</td>
-
-
-
-
-
 					</tr>
 					<?php
 				}

@@ -406,17 +406,6 @@ class WC_XR_OAuth_Simple {
         }
         return join('&',$elements);
     }
-    
-    function _readFile($filePath) {
-       
-       	$fp = fopen($filePath,"r");
-       	
-		$file_contents = fread($fp,8192);
-		
-		fclose($fp);
-		
-        return $file_contents;
-    }
 
     function _generateSignature () {
         $secretKey = '';
@@ -430,14 +419,14 @@ class WC_XR_OAuth_Simple {
         	case 'RSA-SHA1':
         	
         		// Fetch the public key  
-                $publickey = openssl_get_publickey($this->_readFile($this->_secrets['public_key']));
+                $publickey = openssl_get_publickey($this->_secrets['public_key']);
                 if ( $publickey == false ) {
 				    throw new WC_XR_OAuthSimpleException('Unable to retrieve public key.');
 	                return;
                 }  
                 
                 // Fetch the private key 
-                $privatekeyid = openssl_get_privatekey($this->_readFile($this->_secrets['private_key']));
+                $privatekeyid = openssl_get_privatekey($this->_secrets['private_key']);
                 if ( $privatekeyid == false ) {
 				    throw new WC_XR_OAuthSimpleException('Unable to retrieve private key.');
 	                return;

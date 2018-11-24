@@ -27,7 +27,7 @@ class WPCF_Usermeta_Field extends WPCF_Field
          */
         if ( is_string( $cf ) ) {
             WPCF_Loader::loadInclude( 'fields' );
-            $cf = wpcf_admin_fields_get_field( $this->__get_slug_no_prefix( $cf ) );
+            $cf = wpcf_admin_fields_get_field( $this->get_slug_no_prefix( $cf ) );
             if ( empty( $cf ) ) {
                 $this->_reset();
                 return false;

@@ -5,22 +5,17 @@
  *
  * @since 2.6.0
  */
-class Toolset_Blocks_View {
+class Toolset_Blocks_View implements Toolset_Gutenberg_Block_Interface {
+
+	const BLOCK_NAME = 'toolset/view';
 
 	public function init_hooks() {
+		add_action( 'init', array( $this, 'register_block_editor_assets' ) );
 
-		// "toolset_register_block_editor_assets" and "toolset_register_block_type" are hooked on "init" with priority 111
-		// because "wpv_generic_register_secondary_shortcodes_dialog_groups" that registers the transient for published Views
-		// used there, is hooked on "init" with priority 110.
-		add_action( 'init', array( $this, 'toolset_register_block_editor_assets' ), 111 );
+		add_action( 'init', array( $this, 'register_block_type' ) );
 
-		add_action( 'init', array( $this, 'toolset_register_block_type' ), 111 );
-
-		// Hook scripts function into block editor hook
-		add_action( 'enqueue_block_editor_assets', array( $this, 'toolset_blocks_editor_scripts' ) );
-
-		// Hook scripts function into block editor hook
-		add_action( 'enqueue_block_assets', array( $this, 'toolset_blocks_scripts' ) );
+		// Hook scripts function into block editor hook.
+		add_action( 'enqueue_block_editor_assets', array( $this, 'blocks_editor_scripts' ) );
 	}
 
 	/**
@@ -28,13 +23,13 @@ class Toolset_Blocks_View {
 	 *
 	 * @since 2.6.0
 	 */
-	public function toolset_register_block_editor_assets() {
+	public function register_block_editor_assets() {
 		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
 
 		$toolset_assets_manager->register_script(
 			'toolset-view-block-js',
 			TOOLSET_COMMON_URL . '/toolset-blocks/assets/js/view.block.editor.js',
-			array( 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-api' ),
+			array( 'wp-blocks', 'wp-element' ),
 			TOOLSET_COMMON_VERSION
 		);
 
@@ -43,30 +38,17 @@ class Toolset_Blocks_View {
 			'toolset-view-block-js',
 			'toolset_view_block_strings',
 			array(
-				'published_views' => get_transient( 'wpv_transient_published_views' ),
+				'block_name' => self::BLOCK_NAME,
+				'published_views' => apply_filters( 'wpv_get_available_views', array() ),
 				'wpnonce' => wp_create_nonce( Toolset_Ajax::CALLBACK_GET_VIEW_BLOCK_PREVIEW ),
 				'actionName' => $toolset_ajax_controller->get_action_js_name( Toolset_Ajax::CALLBACK_GET_VIEW_BLOCK_PREVIEW ),
 			)
 		);
 
-		$toolset_assets_manager->register_script(
-			'toolset-view-block-frontend-js',
-			TOOLSET_COMMON_URL . '/toolset-blocks/assets/js/view.block.frontend.js',
-			array( 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-api' ),
-			TOOLSET_COMMON_VERSION
-		);
-
 		$toolset_assets_manager->register_style(
 			'toolset-view-block-editor-css',
 			TOOLSET_COMMON_URL . '/toolset-blocks/assets/css/view.block.editor.css',
-			array( 'wp-blocks', 'wp-edit-blocks' ),
-			TOOLSET_COMMON_VERSION
-		);
-
-		$toolset_assets_manager->register_style(
-			'toolset-view-block-editor-frontend-css',
-			TOOLSET_COMMON_URL . '/toolset-blocks/assets/css/view.block.style.css',
-			array( 'wp-blocks', 'wp-edit-blocks' ),
+			array(),
 			TOOLSET_COMMON_VERSION
 		);
 	}
@@ -74,18 +56,78 @@ class Toolset_Blocks_View {
 	/**
 	 * Register block type. We can use this method to register the editor & frontend scripts as well as the render callback.
 	 *
-	 * @note For now the scripts registration is disabled as it creates console errors on the classic editor.
-	 *
 	 * @since 2.6.0
 	 */
-	public function toolset_register_block_type() {
-		register_block_type( 'toolset/view', array(
-//		        'editor_script' => 'toolset-view-block-js', // Editor script
-//		        'editor_style'  => 'toolset-view-block-editor-css', // Editor style
-//		        'script' => 'toolset-view-block-frontend-js', // Frontend script
-//		        'style' => 'toolset-view-block-editor-frontend-css', // Frontend style
+	public function register_block_type() {
+		register_block_type(
+			self::BLOCK_NAME,
+			array(
+				'attributes' => array(
+					'view'      => array(
+						'type' => 'string',
+						'default' => '',
+					),
+					'hasCustomSearch' => array(
+						'type' => 'boolean',
+						'default' => false,
+					),
+					'hasSubmit' => array(
+						'type' => 'boolean',
+						'default' => false,
+					),
+					'hasExtraAttributes' => array(
+						'type' => 'array',
+						'default' => array(),
+						'items' => array(
+							'type' => 'object',
+						),
+					),
+					'formDisplay' => array(
+						'type' => 'string',
+						'default' => 'full',
+					),
+					'formOnlyDisplay' => array(
+						'type' => 'string',
+						'default' => 'samePage',
+					),
+					'otherPage' => array(
+						'type' => 'object',
+						'default' => '',
+					),
+					'limit' => array(
+						'type' => 'string',
+						'default' => '-1',
+					),
+					'offset' => array(
+						'type' => 'string',
+						'default' => '0',
+					),
+					'orderby' => array(
+						'type' => 'string',
+						'default' => '',
+					),
+					'order' => array(
+						'type' => 'string',
+						'default' => '',
+					),
+					'secondaryOrderby' => array(
+						'type' => 'string',
+						'default' => '',
+					),
+					'secondaryOrder' => array(
+						'type' => 'string',
+						'default' => '',
+					),
+					'queryFilters' => array(
+						'type' => 'object',
+						'default' => new stdClass(),
+					),
+				),
+				'editor_script' => 'toolset-view-block-js', // Editor script.
+				'editor_style' => 'toolset-view-block-editor-css', // Editor style.
 				'render_callback' => array( $this, 'wpv_gutenberg_view_block_render' ),
-		) );
+			)
+		);
 	}
 
 	/**
@@ -93,25 +135,15 @@ class Toolset_Blocks_View {
 	 *
 	 * @since 2.6.0
 	 */
-	public function toolset_blocks_editor_scripts() {
-		do_action( 'toolset_enqueue_scripts', array( 'toolset-view-block-js' ) );
-		do_action( 'toolset_enqueue_styles', array( 'toolset-view-block-editor-css' ) );
-	}
-
-	/**
-	 * Enqueue assets, needed on the frontend side, for the Toolset Gutenberg blocks
-	 *
-	 * @since 2.6.0
-	 */
-	public function toolset_blocks_scripts() {
-		return;
+	public function blocks_editor_scripts() {
+		do_action( 'toolset_enqueue_styles', array( 'toolset-blocks-react-select-css' ) );
 	}
 
 	/**
 	 * Toolset View Gutenberg Block render callback. Dynamic blocks are rendered using PHP instead of JavaScript.
 	 *
 	 * @param  array $attributes The attributes of the block.
-	 * @return The output of the block. In this case the block renders a View shortcode.
+	 * @return string The output of the block. In this case the block renders a View shortcode.
 	 *
 	 * @since 2.6.0
 	 */
@@ -157,13 +189,14 @@ class Toolset_Blocks_View {
 				|| 'samePage' === $attributes['formOnlyDisplay']
 			) {
 				$target = ' target_id="self"';
-			} else if (
+			} elseif (
 				isset( $attributes['formOnlyDisplay'] )
 				&& 'otherPage' === $attributes['formOnlyDisplay']
 				&& isset( $attributes['hasSubmit'] )
 				&& $attributes['hasSubmit']
+				&& is_array( $attributes['otherPage'] )
 			) {
-				$target = ' target_id="' . $attributes['otherPageID'] . '"';
+				$target = ' target_id="' . $attributes['otherPage']['value'] . '"';
 			}
 		}
 
@@ -179,7 +212,10 @@ class Toolset_Blocks_View {
 
 		$query_filters = '';
 		foreach ( $attributes['hasExtraAttributes'] as $extra_attribute ) {
-			if ( ! empty( $attributes['queryFilters'][ $extra_attribute['filter_type'] ] ) ) {
+			if (
+				is_array( $attributes['queryFilters'] ) &&
+				! empty( $attributes['queryFilters'][ $extra_attribute['filter_type'] ] )
+			) {
 				$query_filters .= ' ' . $extra_attribute['attribute'] . '="' . $attributes['queryFilters'][ $extra_attribute['filter_type'] ] . '"';
 			}
 		}

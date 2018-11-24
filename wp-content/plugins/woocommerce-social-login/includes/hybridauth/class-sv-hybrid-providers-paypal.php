@@ -24,7 +24,12 @@
 
 // load base class
 if ( ! class_exists( 'Hybrid_Providers_PayPal' ) ) {
-	require_once( Hybrid_Auth::$config['path_providers'] . 'Paypal.php' );
+	// TODO since v2.10.0 HybridAuth moved to use the official PayPal SDK library, which requires a refactoring of our implementation {FN 2018-08-08}
+	/* @see https://github.com/hybridauth/hybridauth/pull/857 */
+	/* @link https://hybridauth.github.io/hybridauth/userguide/IDProvider_info_PayPal.html */
+	require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-sv-hybrid-providers-paypal-legacy.php' );
+	// TODO when updating to use the PayPal SDK the following may be used instead {FN 2018-08-08}
+	// require_once( \Hybrid_Auth::$config['path_providers'] . 'Paypal.php' );
 }
 
 
@@ -35,7 +40,7 @@ if ( ! class_exists( 'Hybrid_Providers_PayPal' ) ) {
  * @link https://developer.paypal.com/docs/api/auth-headers/
  * @link https://www.sitepoint.com/implement-user-log-paypal/
  */
-class SV_Hybrid_Providers_PayPal extends Hybrid_Providers_PayPal {
+class SV_Hybrid_Providers_PayPal extends \Hybrid_Providers_PayPal {
 
 
 	/**
@@ -49,7 +54,7 @@ class SV_Hybrid_Providers_PayPal extends Hybrid_Providers_PayPal {
 	public function initialize() {
 
 		if ( ! $this->config['keys']['id'] || ! $this->config['keys']['secret'] ) {
-			throw new Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
+			throw new \Exception( "Your application id and secret are required in order to connect to {$this->providerId}.", 4 );
 		}
 
 		// override requested scope
@@ -63,11 +68,13 @@ class SV_Hybrid_Providers_PayPal extends Hybrid_Providers_PayPal {
 		}
 
 		// include OAuth2 client
-		require_once( Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
+		require_once( \Hybrid_Auth::$config['path_libraries'] . 'OAuth/OAuth2Client.php' );
 		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-wp-oauth2-client.php' );
+		// TODO remove the following line when updating to use the PayPal SDK {FN 2018-08-08}
+		require_once( wc_social_login()->get_plugin_path() . '/includes/hybridauth/class-sv-hybrid-providers-paypal-legacy-oauth2client.php' );
 
 		// create a new OAuth2 client instance
-		$this->api = new WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
+		$this->api = new \WP_OAuth2_Client( $this->config['keys']['id'], $this->config['keys']['secret'], $this->endpoint, $this->compressed );
 
 		if ( $this->sandbox ) {
 
@@ -118,7 +125,7 @@ class SV_Hybrid_Providers_PayPal extends Hybrid_Providers_PayPal {
 		$response = $this->api->api( 'https://api' . ( $this->sandbox ? '.sandbox' : '' ) . '.paypal.com/v1/identity/openidconnect/userinfo/?schema=openid' );
 
 		if ( ! isset( $response->user_id ) || isset( $response->message ) ) {
-			throw new Exception( "User profile request failed! {$this->providerId} returned an invalid response.", 6 );
+			throw new \Exception( "User profile request failed! {$this->providerId} returned an invalid response.", 6 );
 		}
 
 		$this->user->profile->identifier    = ( property_exists( $response, 'user_id' ) )        ? $response->user_id : '';

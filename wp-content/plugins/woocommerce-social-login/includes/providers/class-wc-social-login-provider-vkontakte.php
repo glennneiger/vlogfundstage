@@ -24,6 +24,8 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * VK social login provider class
  *
@@ -31,7 +33,7 @@ defined( 'ABSPATH' ) or exit;
  *
  * @since 1.6.0
  */
-class WC_Social_Login_Provider_VKontakte extends WC_Social_Login_Provider {
+class WC_Social_Login_Provider_VKontakte extends \WC_Social_Login_Provider {
 
 
 	/**
@@ -56,12 +58,12 @@ class WC_Social_Login_Provider_VKontakte extends WC_Social_Login_Provider {
 	 * Get the description
 	 *
 	 * @since 1.6.0
-	 * @see WC_Social_Login_Provider::get_description()
+	 * @see \WC_Social_Login_Provider::get_description()
 	 * @return string
 	 */
 	public function get_description() {
 		/* translators: Placeholders: %1$s - opening HTML <a> tag, %2$s - closing HTML </a> tag */
-		return sprintf( __( 'Need help setting up and configuring VK? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="http://docs.woocommerce.com/document/woocommerce-social-login-create-social-apps#vk">', '</a>' );
+		return sprintf( __( 'Need help setting up and configuring VK? %1$sRead the docs%2$s', 'woocommerce-social-login' ), '<a href="' . $this->get_documentation_url() . '">', '</a>' );
 	}
 
 
@@ -98,7 +100,7 @@ class WC_Social_Login_Provider_VKontakte extends WC_Social_Login_Provider {
 	 * so it matches VK's UI
 	 *
 	 * @since 1.6.0
-	 * @see WC_Social_Login_Provider::init_form_fields()
+	 * @see \WC_Social_Login_Provider::init_form_fields()
 	 */
 	public function init_form_fields() {
 
@@ -113,7 +115,7 @@ class WC_Social_Login_Provider_VKontakte extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.6.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_login_button_text() {
@@ -125,7 +127,7 @@ class WC_Social_Login_Provider_VKontakte extends WC_Social_Login_Provider {
 	 * Return the default login button text
 	 *
 	 * @since 1.6.0
-	 * @see WC_Social_Login_Provider::get_default_login_button_text()
+	 * @see \WC_Social_Login_Provider::get_default_login_button_text()
 	 * @return string
 	 */
 	public function get_default_link_button_text() {
@@ -146,6 +148,19 @@ class WC_Social_Login_Provider_VKontakte extends WC_Social_Login_Provider {
 			'account_already_linked' => __( 'This VK account is already linked to another user account.', 'woocommerce-social-login' ),
 			'account_already_exists' => __( 'A user account using the same email address as this VK account already exists.', 'woocommerce-social-login' ),
 		);
+	}
+
+
+	/**
+	 * Returns the provider documentation URL
+	 *
+	 * @since 2.6.0
+	 *
+	 * @return string URL
+	 */
+	public function get_documentation_url() {
+
+		return 'https://docs.woocommerce.com/document/woocommerce-social-login-create-social-apps/#vk';
 	}
 
 

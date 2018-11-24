@@ -153,13 +153,16 @@ function wpcf_wpml_init() {
  * @param string $context context of translation
  * @return string translated string
  */
-function wpcf_translate( $name, $string, $context = 'plugin Types' )
+function wpcf_translate( $name, $string, $context = 'plugin Types', $lang = null )
 {
     /**
      * do not translate if $string is not a string or is empty
      */
     if ( empty($string) || !is_string($string) ) {
         return $string;
+    }
+    if ( ! $lang ) {
+        $lang = apply_filters( 'wpml_current_language', NULL );
     }
     /**
      * translate
@@ -168,7 +171,8 @@ function wpcf_translate( $name, $string, $context = 'plugin Types' )
         'wpml_translate_single_string',
         stripslashes( $string ),
         $context,
-        $name
+        $name,
+        $lang
     );
 }
 
@@ -292,7 +296,7 @@ function wpcf_icl_editor_cf_style_filter( $style, $cf_name ) {
  */
 function wpcf_admin_bulk_string_translation() {
     if ( !function_exists( 'icl_register_string' ) ) {
-        return false;
+        return;
     }
     require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields.php';
     require_once WPCF_EMBEDDED_INC_ABSPATH . '/custom-types.php';
@@ -301,7 +305,7 @@ function wpcf_admin_bulk_string_translation() {
     // Register groups
     $groups = wpcf_admin_fields_get_groups();
     foreach ( $groups as $group_id => $group ) {
-        $group_wpml = new Types_Wpml_Field_Group( Types_Field_Group_Post_Factory::load( $group['slug'] ) );
+        $group_wpml = new Types_Wpml_Field_Group( Toolset_Field_Group_Post_Factory::load( $group['slug'] ) );
         $group_wpml->register();
     }
 
@@ -594,8 +598,8 @@ function wpcf_wpml_relationship_save_post_hook( $parent_post_id ){
 /**
  * Registers translation data.
  *
- * @param type $post_type
- * @param type $data
+ * @param string $post_type
+ * @param array $data
  */
 function wpcf_custom_types_register_translation( $post_type, $data ) {
     if ( !function_exists( 'icl_register_string' ) ) {
@@ -936,8 +940,8 @@ function wpcf_wpml_post_type_renamed( $new_slug, $old_slug ) {
 
 		$conflict_count = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(1) 
-				FROM {$icl_strings_table} AS s 
+				"SELECT COUNT(1)
+				FROM {$icl_strings_table} AS s
 				WHERE `name` LIKE %s AND `context` LIKE %s
 				LIMIT 1",
 				$new_string_name,
@@ -1024,7 +1028,7 @@ function wpcf_wpml_relationship_save_child( $child, $parent )
  * @return boolean
  */
 function wpcf_wpml_field_is_copied( $field, $post = null ) {
-    if ( defined( 'ICL_SITEPRESS_VERSION' ) && defined( 'WPML_TM_VERSION' ) && !defined( 'DOING_AJAX' ) ) {
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) && defined( 'WPML_TM_VERSION' ) && ( !defined( 'DOING_AJAX' ) || isset( $_REQUEST['action'] ) && $_REQUEST['action'] == 'types_repeatable_group') ) {
         if ( !wpcf_wpml_post_is_original( $post ) ) {
             return wpcf_wpml_have_original( $post ) && wpcf_wpml_field_is_copy( $field );
         }
@@ -1112,7 +1116,7 @@ function wpcf_wpml_post_is_original( $post = null ) {
                     $post_lang = $sitepress->get_element_language_details( $post->ID,
                             'post_' . $post->post_type );
                     // Suggestion from Black Studio
-                    // http://wp-types.com/forums/topic/major-bug-on-types-when-setting-fields-to-be-copied-wo-wpml-translated-posts/#post-146182
+                    // https://toolset.com/forums/topic/major-bug-on-types-when-setting-fields-to-be-copied-wo-wpml-translated-posts/#post-146182
                     if ( isset( $post_lang->source_language_code ) ) {
                         return $post_lang->source_language_code == null;
 

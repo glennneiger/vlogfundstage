@@ -186,8 +186,8 @@ abstract class WC_XR_Request {
 		// Check required settings
 		if ( ( '' === $this->settings->get_option( 'consumer_key' ) ) ||
 		     ( '' === $this->settings->get_option( 'consumer_secret' ) ) ||
-		     ( '' === $this->settings->get_option( 'private_key' ) ) ||
-		     ( '' === $this->settings->get_option( 'public_key' ) ) ||
+		     ( '' === $this->settings->get_option( 'private_key_content' ) ) ||
+		     ( '' === $this->settings->get_option( 'public_key_content' ) ) ||
 		     ( '' === $this->settings->get_option( 'sales_account' ) ) ||
 		     ( '' === $this->settings->get_option( 'shipping_account' ) ) ||
 		     ( '' === $this->settings->get_option( 'payment_account' ) )
@@ -206,7 +206,7 @@ abstract class WC_XR_Request {
 	private function do_keys_exist() {
 
 		// Check keys
-		if ( file_exists( $this->settings->get_option( 'private_key' ) ) && file_exists( $this->settings->get_option( 'public_key' ) ) ) {
+		if ( ! empty( 'private_key_content' ) && ! empty( $this->settings->get_option( 'public_key_content' ) ) ) {
 			return true;
 		}
 
@@ -244,8 +244,8 @@ abstract class WC_XR_Request {
 				'signatures' => array(
 					'consumer_key'    => $this->settings->get_option( 'consumer_key' ),
 					'shared_secret'   => $this->settings->get_option( 'consumer_secret' ),
-					'rsa_private_key' => $this->settings->get_option( 'private_key' ),
-					'rsa_public_key'  => $this->settings->get_option( 'public_key' ),
+					'rsa_private_key' => $this->settings->get_option( 'private_key_content' ),
+					'rsa_public_key'  => $this->settings->get_option( 'public_key_content' ),
 					'oauth_secret'    => $this->settings->get_option( 'consumer_secret' ),
 					'oauth_token'     => $this->settings->get_option( 'consumer_key' )
 				)
@@ -274,7 +274,7 @@ abstract class WC_XR_Request {
 
 		// Check if key files exist.
 		if ( false === $this->do_keys_exist() ) {
-			throw new Exception( 'Xero key files are set but file does not exist.' );
+			throw new Exception( 'Xero private and/or public key not set.' );
 		}
 
 		// Do the request.

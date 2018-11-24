@@ -6,7 +6,7 @@
  *
  * @since 2.1
  */
-final class Types_Ajax_Handler_Settings_Action extends Types_Ajax_Handler_Abstract {
+final class Types_Ajax_Handler_Settings_Action extends Toolset_Ajax_Handler_Abstract {
 
 
 	/**
@@ -20,8 +20,8 @@ final class Types_Ajax_Handler_Settings_Action extends Types_Ajax_Handler_Abstra
 
 		$am->ajax_begin( array( 'nonce' => $am->get_action_js_name( Types_Ajax::CALLBACK_SETTINGS_ACTION ) ) );
 
-		$setting = sanitize_text_field( wpcf_getpost( 'setting' ) );
-		$setting_value = wpcf_getpost( 'setting_value' );
+		$setting = sanitize_text_field( toolset_getpost( 'setting' ) );
+		$setting_value = toolset_getpost( 'setting_value' );
 
 		if( !is_array( $setting_value ) ) {
 			parse_str( $setting_value, $setting_value );

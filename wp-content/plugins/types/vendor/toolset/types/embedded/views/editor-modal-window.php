@@ -20,7 +20,9 @@ $data = array_merge(
         'tabs' => array(),
         'supports' => array(),
         'user_form' => '',
-        'parents' => array(),
+				'parents' => array(),
+				'related' => array(),
+				'intermediate' => array(),
         'post_types' => array(),
         'style' => '',
         'class' => '',
@@ -42,7 +44,7 @@ $data = array_merge(
                     <?php foreach ( $data['tabs'] as $tab ): ?>
                         <a class="types-media-menu-item js-raw-disable" href="#"><?php echo $tab['menu_title']; ?></a>
                     <?php endforeach; ?>
-                    <a id="menu-item-styling" class="types-media-menu-item js-raw-disable" href="#" data-bind="visible: showMenuStyling(), tedSupports: 'styling'"><?php _e( 'Styling', 'wpcf' ); ?></a>
+                    <a id="menu-item-styling" class="types-media-menu-item js-raw-disable" href="#" data-bind="visible: showMenuStyling, tedSupports: 'styling'"><?php _e( 'Styling', 'wpcf' ); ?></a>
                     <a class="types-media-menu-item" data-bind="tedSupports: 'separator'" href="#"><?php _e( 'Separator', 'wpcf' ); ?></a>
                     <a class="types-media-menu-item" data-bind="tedSupports: 'user_id'" href="#"><?php _e( 'User','wpcf' ); ?></a>
                     <a class="types-media-menu-item" data-bind="tedSupports: 'post_id'" href="#"><?php _e( 'Post selection', 'wpcf' ); ?></a>
@@ -75,7 +77,7 @@ $data = array_merge(
                         <?php endforeach; ?>
                     <div class="tab js-raw-disable" data-bind="tedSupports: 'styling', template: {name:'tpl-types-editor-modal-styling'}"></div>
                     <div class="tab" data-bind="tedSupports: 'separator', template: {name:'tpl-types-editor-modal-separator'}"></div>
-                    
+
                     <div class="tab" data-bind="tedSupports: 'post_id', template: {name:'tpl-types-editor-modal-post_id'}"></div>
 					<div class="wpcf-extra" data-bind="tedSupports: 'term_id', template: {name:'tpl-types-editor-modal-term_id'}"></div>
 					<div class="tab" data-bind="tedSupports: 'user_id',  template: {name:'tpl-types-editor-modal-user_id'}"></div>
@@ -86,7 +88,7 @@ $data = array_merge(
                     <div class="media-toolbar-secondary"></div>
                     <div class="types-media-toolbar-primary">
                         <a class="button media-button button-secondary button-large media-button-cancel" href="#"><?php _e( 'Cancel', 'wpcf' ); ?></a>
-                        <a class="button media-button button-primary button-large media-button-insert" href="#"><?php echo $data['submit_button_title']; ?></a>
+                        <a class="button media-button button-primary button-large media-button-insert" href="#" data-bind="css: {disabled: submitDisabled}"><?php echo $data['submit_button_title']; ?></a>
                     </div>
                 </div>
             </div>
@@ -155,7 +157,7 @@ $data = array_merge(
 <!-- POST ID FORM -->
 <script id="tpl-types-editor-modal-post_id" type="text/html">
 
-    <h2><?php _e( 'Display this field for:', 'wpcf' ); ?></h2>
+    <h2><?php _e( 'Display this field from:', 'wpcf' ); ?></h2>
 
     <p class="form-inline">
         <input type="radio" id="post-id-current" name="post_id" value="current" data-bind="checked: relatedPost"	/>
@@ -167,35 +169,85 @@ $data = array_merge(
         <label for="post-id-parent"><?php _e( 'The parent of the current post (WordPress parent)', 'wpcf' ); ?></label>
     </p>
 
-    <?php if ( !empty( $data['parents'] ) ): ?>
-    <p class="form-inline">
-        <input type="radio" id="post-id-related" name="post_id" value="related" data-bind="checked: relatedPost" />
-        <label for="post-id-related"><?php _e( 'The parent of this post, set by Types (parent/child relationship)', 'wpcf' ); ?></label>
-    </p>
-    <div class="group-nested" data-bind="visible: relatedPost() == 'related'">
-        <p class="form-inline"><?php foreach ( $data['parents'] as $post ): ?>
-        <input type="radio" name="related_post" id="post-id-<?php echo $post->ID; ?>" value="<?php echo $post->post_type; ?>" data-bind="checked: radioPostType" />
-        <label for="post-id-<?php echo $post->ID; ?>"><?php echo $post->post_type; ?></label>
-    <?php endforeach; ?></p>
-    </div>
-    <?php endif; ?>
+		<?php if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ): ?>
+			<?php if ( !empty( $data['parents'] ) ): ?>
+	    <p class="form-inline">
+	        <input type="radio" id="post-id-related" name="post_id" value="related" data-bind="checked: relatedPost" />
+	        <label for="post-id-related"><?php _e( 'The parent of this post, set by Types (parent/child relationship)', 'wpcf' ); ?></label>
+	    </p>
+	    <div class="group-nested" data-bind="visible: relatedPost() == 'related'">
+	        <p class="form-inline"><?php foreach ( $data['parents'] as $post ): ?>
+	        <input type="radio" name="related_post" id="post-id-<?php echo $post->ID; ?>" value="<?php echo $post->post_type; ?>" data-bind="checked: radioPostType" />
+	        <label for="post-id-<?php echo $post->ID; ?>"><?php echo $post->post_type; ?></label>
+	    <?php endforeach; ?></p>
+	    </div>
+	    <?php endif; ?>
 
-    <?php if ( empty( $data['parents'] ) ): ?>
-    <p class="form-inline">
-        <input type="radio" id="post-id-related" name="post_id" value="related" data-bind="checked: relatedPost" />
-        <label for="post-id-related"><?php _e( 'The parent of this post, set by Types (parent/child relationship)', 'wpcf' ); ?></label>
-    </p>
-    <div class="group-nested">
-        <p class="form-inline">
-            <label for="post-id-related-post-type"><?php _e( 'Post Type', 'wpcf' ); ?></label>
-            <select id="post-id-related-post-type" name="related_post" data-bind="selectedOptions: selectPostType">
-                <?php foreach ( $data['post_types'] as $post_type ): ?>
-                <option value="<?php echo $post_type; ?>"><?php echo $post_type; ?></option>
-                <?php endforeach; ?>
-            </select>
-        </p>
-    </div>
-    <?php endif; ?>
+	    <?php if ( empty( $data['parents'] ) ): ?>
+	    <p class="form-inline">
+	        <input type="radio" id="post-id-related" name="post_id" value="related" data-bind="checked: relatedPost" />
+	        <label for="post-id-related"><?php _e( 'The parent of this post, set by Types (parent/child relationship)', 'wpcf' ); ?></label>
+	    </p>
+	    <div class="group-nested">
+	        <p class="form-inline">
+	            <label for="post-id-related-post-type"><?php _e( 'Post Type', 'wpcf' ); ?></label>
+	            <select id="post-id-related-post-type" name="related_post" data-bind="selectedOptions: selectPostType">
+	                <?php foreach ( $data['post_types'] as $post_type ): ?>
+	                <option value="<?php echo $post_type; ?>"><?php echo $post_type; ?></option>
+	                <?php endforeach; ?>
+	            </select>
+	        </p>
+	    </div>
+	    <?php endif; ?>
+		<?php else: // m2m activated. ?>
+	    <?php if ( ! empty( $data['related'] ) ): ?>
+	    <p class="form-inline">
+	        <input type="radio" id="post-id-related" name="post_id" value="related" data-bind="checked: relatedPost" />
+	        <label for="post-id-related"><?php _e( 'A post from related Post Type (Relationship set in Types)', 'wpcf' ); ?></label>
+	    </p>
+	    <div class="group-nested" data-bind="visible: relatedPost() == 'related'">
+	        <?php foreach ( $data['related'] as $post ): ?>
+	        	<p class="form-inline <?php echo ! $post['enabled'] ? 'disabled' : ''; ?>">
+							<input type="radio" name="related_post" id="related-id-<?php echo sanitize_key( $post['value'] ); ?>" value="<?php echo $post['value']; ?>" data-bind="checked: radioPostType" <?php echo ! $post['enabled'] ? 'disabled="disabled"' : ''; ?> />
+	        		<label for="related-id-<?php echo sanitize_key( $post['value'] ); ?>">
+								<?php echo $post['name']; ?> <?php echo $post['relationship']; ?>
+								<?php
+									if ( ! empty( $post['help'] ) ) {
+								?>
+										<i class="fa fa-question-circle icon-question-sign js-show-tooltip" data-header="<?php echo $post['help']['header']; ?>" data-content="<?php echo $post['help']['content']; ?>"></i>
+								<?php
+									}
+								?>
+							</label>
+						</p>
+	    <?php endforeach; ?>
+	    </div>
+	    <?php endif; ?>
+
+	    <?php if ( ! empty( $data['intermediate'] ) ): ?>
+	    <p class="form-inline">
+	        <input type="radio" id="post-id-intermediate" name="post_id" value="intermediate" data-bind="checked: relatedPost" />
+	        <label for="post-id-intermediate"><?php _e( 'A Relationship', 'wpcf' ); ?></label>
+	    </p>
+	    <div class="group-nested" data-bind="visible: relatedPost() == 'intermediate'">
+				<?php foreach ( $data['intermediate'] as $post ): ?>
+					<p class="form-inline <?php echo ! $post['enabled'] ? 'disabled' : ''; ?>">
+						<input type="radio" name="intermediate_post" id="post-id-<?php echo $post['id']; ?>" value="<?php echo $post['value']; ?>" data-bind="checked: radioPostType" <?php echo ! $post['enabled'] ? 'disabled="disabled"' : ''; ?> />
+						<label for="post-id-<?php echo $post['id']; ?>">
+							<?php echo $post['name']; ?>
+							<?php
+								if ( ! empty( $post['help'] ) ) {
+							?>
+									<i class="fa fa-question-circle icon-question-sign js-show-tooltip" data-header="<?php echo $post['help']['header']; ?>" data-content="<?php echo $post['help']['content']; ?>"></i>
+							<?php
+								}
+							?>
+						</label>
+					</p>
+				<?php endforeach; ?>
+	    </div>
+		<?php endif; ?>
+	<?php endif; // endif m2m activated. ?>
 
     <p class="form-inline">
         <input type="radio" id="post-id" name="post_id" value="post_id" data-bind="checked: relatedPost" />

@@ -20,8 +20,8 @@ class Types_Api_Handler_Import_From_Zip_File implements Types_Api_Handler_Interf
 	 */
 	function process_call( $arguments ) {
 
-		$path = wpcf_getarr( $arguments, 1, null );
-		$args = wpcf_getarr( $arguments, 2, null );
+		$path = toolset_getarr( $arguments, 1, null );
+		$args = toolset_getarr( $arguments, 2, null );
 
 		if( ! is_string( $path ) || ! file_exists( $path ) ) {
 			return new WP_Error( 42, __( 'Invalid path to the import file.', 'wpcf' ) );
@@ -93,13 +93,13 @@ class Types_Api_Handler_Import_From_Zip_File implements Types_Api_Handler_Interf
 		// Prepare legacy arguments for Types_Data_Installer
 		$legacy_args = array();
 		if ( isset($import_args['overwrite']) ){
-			$legacy_args['force_import_post_name'] = wpcf_getarr( $import_args, 'overwrite', array() );
+			$legacy_args['force_import_post_name'] = toolset_getarr( $import_args, 'overwrite', array() );
 		}
 		if ( isset($import_args['skip']) ){
-			$legacy_args['force_skip_post_name'] = wpcf_getarr( $import_args, 'skip', array() );
+			$legacy_args['force_skip_post_name'] = toolset_getarr( $import_args, 'skip', array() );
 		}
 		if ( isset($import_args['duplicate']) ){
-			$legacy_args['force_duplicate_post_name'] = wpcf_getarr( $import_args, 'duplicate', array() );
+			$legacy_args['force_duplicate_post_name'] = toolset_getarr( $import_args, 'duplicate', array() );
 		}
 
 		$result = wpcf_admin_import_data( $import_data, false, $context, $legacy_args );

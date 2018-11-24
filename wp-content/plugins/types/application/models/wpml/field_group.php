@@ -13,7 +13,7 @@ class Types_Wpml_Field_Group implements Types_Wpml_Interface {
 	const STRING_DESCRIPTION = 'description';
 
 	/**
-	 * @var Types_Field_Group
+	 * @var Toolset_Field_Group
 	 */
 	private $group;
 
@@ -30,7 +30,7 @@ class Types_Wpml_Field_Group implements Types_Wpml_Interface {
 	/**
 	 * Types_Wpml_Field_Group constructor.
 	 *
-	 * @param Types_Field_Group $group
+	 * @param Toolset_Field_Group $group
 	 */
 	public function __construct( $group ) {
 

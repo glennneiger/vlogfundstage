@@ -28,13 +28,24 @@ function wpcf_admin_fields_get_active_fields_by_post_type($post_type)
  * @param boolean|string $add_fields - 'field_active', 'field_all', false (to omitt fields)
  * @return array array of custom fields definition
  */
-function wpcf_admin_fields_get_groups( $post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME, $only_active = false, $add_fields = false ) {
+function wpcf_admin_fields_get_groups( $post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME, $only_active = false, $add_fields = false, $include_rfgs = false ) {
     $cache_group = 'types_cache_groups';
     $cache_key = md5( 'group::_get_group' . $post_type );
-    $cached_object = wp_cache_get( $cache_key, $cache_group );
+
+    // check for cached object, but only if "include_rfgs" is false
+    $cached_object = $include_rfgs ? false : wp_cache_get( $cache_key, $cache_group );
+
     if ( false === $cached_object ) {
-        $groups = get_posts( 'numberposts=-1&post_type=' . $post_type . '&post_status=null' );
-        wp_cache_add( $cache_key, $groups, $cache_group );
+        $groups = get_posts( array(
+        	'numberposts' => '-1',
+	        'post_type' => $post_type,
+	        'post_status' => $include_rfgs ? 'any' : array( 'publish', 'draft' )
+        ));
+
+        if( ! $include_rfgs ) {
+        	// cache result if rfgs not included
+	        wp_cache_add( $cache_key, $groups, $cache_group );
+        }
     } else {
         $groups = $cached_object;
     }
@@ -182,7 +193,7 @@ function wpcf_admin_fields_get_fields( $only_active = false,
     switch( $option_name ) {
 	    case 'wpcf-usermeta':
 	    case 'wpcf-fields':
-	    case WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION:
+	    case Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION:
 		    break;
 	    default:
 		    $option_name = 'wpcf-fields';
@@ -243,7 +254,7 @@ function wpcf_admin_fields_get_fields( $only_active = false,
 	    $option_name_to_meta_type = array(
 		    'wpcf-fields' => 'postmeta',
 		    'wpcf-usermeta' => 'usermeta',
-		    WPCF_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION => 'termmeta'
+		    Toolset_Field_Definition_Factory_Term::FIELD_DEFINITIONS_OPTION => 'termmeta'
 	    );
 
         $v['meta_type'] = $option_name_to_meta_type[ $option_name ];
@@ -402,18 +413,33 @@ function wpcf_admin_fields_get_fields_by_group( $group_id, $key = 'slug',
         return $cache[$cache_key];
     }
     $group_fields = get_post_meta( $group_id, '_wp_types_group_fields', true );
+
+	/**
+	 * Filter 'types_fields_of_group'
+	 * Allows to change the fields list of a group.
+	 *
+	 * @since m2m
+	 */
+    $group_fields = apply_filters( 'types_fields_of_group', $group_fields );
+
     if ( empty( $group_fields ) ) {
         return array();
     }
     $group_fields = explode( ',', trim( $group_fields, ',' ) );
     $fields = wpcf_admin_fields_get_fields( $only_active, $disabled_by_type,
-            $strictly_active, $option_name );
+            $strictly_active, $option_name, $use_cache );
     $results = array();
     foreach ( $group_fields as $field_id ) {
-        if ( !isset( $fields[$field_id] ) ) {
+	    $is_repeatable_group = strpos( $field_id, '_repeatable_group' ) !== false;
+
+        if ( ! isset( $fields[$field_id] ) && ! $is_repeatable_group ) {
+        	// field does not exist (anymore) AND is not a repeatable group
             continue;
         }
-        $results[$field_id] = $fields[$field_id];
+
+        $results[$field_id] = $is_repeatable_group
+	        ? $field_id            // is a rfg: use only the identifier of the repeatable_group
+	        : $fields[$field_id];  // is a field: use the field array
     }
     if ( $use_cache ) {
         $cache[$cache_key] = $results;
@@ -697,6 +723,9 @@ function wpcf_fields_type_action( $type, $func = '', $args = array() ) {
  * @param type $field
  * @param type $add Additional attributes
  * @param string $content
+ *
+ * @since m2m Probably DEPRECATED
+ * @deprecated
  */
 function wpcf_fields_get_shortcode( $field, $add = '', $content = '' )
 {
@@ -709,6 +738,10 @@ function wpcf_fields_get_shortcode( $field, $add = '', $content = '' )
     return $shortcode;
 }
 
+/**
+ * @since m2m Probably DEPRECATED
+ * @deprecated
+ */
 function wpcf_termmeta_get_shortcode( $field, $add = '', $content = '' ) {
     $shortcode = '[';
     $shortcode .= "types termmeta='" . $field['slug'] . "'" . $add;
@@ -719,6 +752,10 @@ function wpcf_termmeta_get_shortcode( $field, $add = '', $content = '' ) {
     return $shortcode;
 }
 
+/**
+ * @since m2m Probably DEPRECATED
+ * @deprecated
+ */
 function wpcf_get_termmeta_form_addon_submit() {
 	$add = '';
     if ( ! empty( $_POST['is_termmeta'] ) ) {
@@ -732,6 +769,9 @@ function wpcf_get_termmeta_form_addon_submit() {
  *
  * @param type $field
  * @param type $add Additional attributes
+ *
+ * @since m2m Probably DEPRECATED
+ * @deprecated
  */
 function wpcf_usermeta_get_shortcode( $field, $add = '', $content = '' ) {
     /*if ( isset($_GET['field_type']) && $_GET['field_type'] =='views-usermeta' ) {
@@ -844,6 +884,9 @@ function wpcf_get_usermeta_form_addon( $settings = array() ) {
 
 /*
  * Callback sumit form usermeta addon
+ *
+ * @since m2m Probably DEPRECATED
+ * @deprecated
  */
 
 function wpcf_get_usermeta_form_addon_submit() {
@@ -906,11 +949,15 @@ function wpcf_sanitize_field( $field ) {
  *
  * @static $cache
  * @param type $field_id
+ * @param string $post_type
+ * @param bool $include_rfgs
+ *
+ * @return array
  */
 function wpcf_admin_fields_get_groups_by_field( $field_id,
-        $post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME ) {
+        $post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME, $include_rfgs = false ) {
     static $cache = array();
-    $groups = wpcf_admin_fields_get_groups( $post_type );
+    $groups = wpcf_admin_fields_get_groups( $post_type, false, false, $include_rfgs );
 	switch ( $post_type ) {
 		case TYPES_TERM_META_FIELD_GROUP_CPT_NAME:
 			$meta_name = 'wpcf-termmeta';
@@ -925,7 +972,7 @@ function wpcf_admin_fields_get_groups_by_field( $field_id,
 	}
     $return = array();
     foreach ( $groups as $group_id => $group ) {
-        if ( isset( $cache['groups'][$group_id] ) ) {
+        if ( ! $include_rfgs && isset( $cache['groups'][$group_id] ) ) {
             $fields = $cache['groups'][$group_id];
         } else {
             $fields = wpcf_admin_fields_get_fields_by_group( $group['id'],
@@ -934,7 +981,9 @@ function wpcf_admin_fields_get_groups_by_field( $field_id,
         if ( array_key_exists( $field_id, $fields ) ) {
             $return[$group['id']] = $group;
         }
-        $cache['groups'][$group_id] = $fields;
+        if( ! $include_rfgs ) {
+	        $cache['groups'][$group_id] = $fields;
+        }
     }
     return $return;
 }
@@ -1014,34 +1063,25 @@ function wpcf_admin_get_allowed_fields_by_post_type($post_type)
  * Returns all used field slugs except current group
  */
 function wpcf_get_all_field_slugs_except_current_group( $current_group = false ) {
-    $all_slugs       = array();
-    $all_post_fields = get_option( 'wpcf-fields', array() );
-    $all_user_fields = get_option( 'wpcf-usermeta', array() );
-    $all_term_fields = get_option( 'wpcf-termmeta', array() );
+	$service_field_group = new Types_Field_Group_Repeatable_Service();
 
-    $all_fields = array_merge( $all_post_fields, $all_user_fields, $all_term_fields );
-
-    if( !empty( $all_fields ) ) {
-        foreach( $all_fields as $field ) {
-            $all_slugs[] = $field['slug'];
-        }
-    }
     if( !$current_group && isset( $_REQUEST['group_id'] ) )
         $current_group = (int) $_REQUEST['group_id'];
 
+	$all_slugs = array();
+
     // if no new group
-    if( $current_group && !empty( $all_fields ) ) {
+    if( $current_group ) {
 
         $current_group_fields = get_post_meta( $current_group, '_wp_types_group_fields', true );
         $current_group_fields = explode( ',', trim( $current_group_fields, ',' ) );
 
         if( !empty( $current_group_fields) ) {
-            foreach( $current_group_fields as $field ) {
-                $all_slugs = array_diff( $all_slugs, array( $field ) );
-            }
+			$all_slugs = $service_field_group->diff_of_all_and_given_fields( $current_group_fields );
         }
 
     }
+
     $all_slugs = array_values( $all_slugs );
     if( isset( $_POST['return'] )
         && $_POST['return'] == 'ajax-json' ) {

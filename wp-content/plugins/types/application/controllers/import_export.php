@@ -87,8 +87,8 @@ final class Types_Import_Export {
 	 */
 	public function export_field_groups_for_domain( $domain ) {
 
-		$group_factory = Types_Field_Utils::get_group_factory_by_domain( $domain );
-		$all_groups    = $group_factory->query_groups();
+		$group_factory = Toolset_Field_Utils::get_group_factory_by_domain( $domain );
+		$all_groups = $group_factory->query_groups();
 
 		// Each group will handle its own export.
 		$results = array();
@@ -112,12 +112,12 @@ final class Types_Import_Export {
 	 */
 	public function export_field_definitions_for_domain( $domain ) {
 
-		$definition_factory = Types_Field_Utils::get_definition_factory_by_domain( $domain );
-		$all_definitions    = $definition_factory->query_definitions( array( 'filter' => 'types' ) );
+		$definition_factory = Toolset_Field_Utils::get_definition_factory_by_domain( $domain );
+		$all_definitions = $definition_factory->query_definitions( array( 'filter' => 'types' ) );
 
 		// Each field definition will handle its own export.
 		$results = array();
-		/** @var WPCF_Field_Definition $field_definition */
+		/** @var Toolset_Field_Definition $field_definition */
 		foreach ( $all_definitions as $field_definition ) {
 			$results[] = $field_definition->get_export_object();
 		}
@@ -338,8 +338,8 @@ final class Types_Import_Export {
 
 		$results = array();
 
-		$definition_factory = Types_Field_Utils::get_definition_factory_by_domain( $domain );
-		$option_name        = $definition_factory->get_option_name_workaround();
+		$definition_factory = Toolset_Field_Utils::get_definition_factory_by_domain( $domain );
+		$option_name = $definition_factory->get_option_name_workaround();
 
 		if ( $delete_other_fields ) {
 
@@ -403,7 +403,7 @@ final class Types_Import_Export {
 			$iclTranslationManagement->save_settings();
 		}
 
-		$definition_factory = Types_Field_Utils::get_definition_factory_by_domain( $domain );
+		$definition_factory = Toolset_Field_Utils::get_definition_factory_by_domain( $domain );
 		$definition_factory->set_field_definition_workaround( $definition['slug'], $definition );
 
 		return array(
@@ -452,7 +452,7 @@ final class Types_Import_Export {
 		foreach ( $groups_import_data as $group ) {
 
 			// ID of group from the import file
-			$import_group_id = wpcf_getarr( $group, Types_Field_Group::XML_ID );
+			$import_group_id = toolset_getarr( $group, Toolset_Field_Group::XML_ID );
 
 
 			if ( array_key_exists( 'toolset-themes', $args ) ) {
@@ -466,7 +466,7 @@ final class Types_Import_Export {
 				}
 			} else {
 				// Types Import Way
-				$group_actions            = wpcf_getarr( $group_settings, $import_group_id, array( 'add' => true ) );
+				$group_actions = toolset_getarr( $group_settings, $import_group_id, array( 'add' => true ) );
 				$group_should_be_imported = isset( $group_actions['add'] );
 			}
 
@@ -483,7 +483,7 @@ final class Types_Import_Export {
 					// OVERWRITE
 					$group_action = 'update';
 				} else {
-					$group_action = wpcf_getarr( $group_actions, 'update', 'add', array( 'add', 'update' ) );
+					$group_action = toolset_getarr( $group_actions, 'update', 'add', array( 'add', 'update' ) );
 				}
 			} else {
 				$group_action = 'nothing';
@@ -529,9 +529,9 @@ final class Types_Import_Export {
 	private function maybe_delete_groups( $domain, $delete_other_groups, $groups_to_preserve ) {
 
 		$results = array();
-		if ( $delete_other_groups && ! empty( $groups_to_preserve ) ) {
-			$group_factory = Types_Field_Utils::get_group_factory_by_domain( $domain );
-			$all_groups    = $group_factory->query_groups();
+		if( $delete_other_groups && !empty( $groups_to_preserve ) ) {
+			$group_factory = Toolset_Field_Utils::get_group_factory_by_domain( $domain );
+			$all_groups = $group_factory->query_groups();
 
 			foreach ( $all_groups as $group_to_delete ) {
 				if ( ! in_array( $group_to_delete->get_id(), $groups_to_preserve ) ) {
@@ -575,9 +575,9 @@ final class Types_Import_Export {
 	 */
 	public function import_field_group( $domain, $group, $conflict_resolution ) {
 
-		$group_slug = wpcf_getarr( $group, Types_Field_Group::XML_SLUG );
+		$group_slug = toolset_getarr( $group, Toolset_Field_Group::XML_SLUG );
 
-		$group_factory = Types_Field_Utils::get_group_factory_by_domain( $domain );
+		$group_factory = Toolset_Field_Utils::get_group_factory_by_domain( $domain );
 
 		$existing_groups      = $group_factory->query_groups( array( 'name' => $group_slug ) );
 		$group_already_exists = ( count( $existing_groups ) > 0 );
@@ -604,7 +604,7 @@ final class Types_Import_Export {
 		// Update group's postmeta
 		if ( $is_success && ! empty( $group['meta'] ) ) {
 			foreach ( $group['meta'] as $meta_key => $meta_value ) {
-				if ( Types_Field_Group_Term::POSTMETA_ASSOCIATED_TAXONOMY == $meta_key ) {
+				if ( Toolset_Field_Group_Term::POSTMETA_ASSOCIATED_TAXONOMY == $meta_key ) {
 					$meta_values = explode( ',', $meta_value );
 					delete_post_meta( $new_group_id, $meta_key );
 					foreach ( $meta_values as $single_meta_value ) {
@@ -693,6 +693,48 @@ final class Types_Import_Export {
 
 		// import group (initial import / overwrite / duplicate)
 		return true;
+	}
+
+	/**
+	 * Composite \OTGS\Toolset\Types\Wordpress\Export
+	 * (how nice it would be to have a DIC)
+	 *
+	 * @action export_wp (WordPress default export hook)
+	 * @see /wp-admin/includes/export.php
+	 *
+	 * @since 3.0
+	 */
+	public function wp_export() {
+		// Toolset Association Repository
+		$association_repository = new \OTGS\Toolset\Common\M2M\Association\Repository(
+			new Toolset_Relationship_Query_Factory(),
+			new Toolset_Relationship_Role_Parent(),
+			new Toolset_Relationship_Role_Child(),
+			new Toolset_Relationship_Role_Intermediary(),
+			new Toolset_Element_Domain()
+		);
+
+		// Post Export Extender
+		$post_export_extender = new \OTGS\Toolset\Types\Post\Export\Extender();
+		$post_export_extender->addExportModule(
+			new \OTGS\Toolset\Types\Post\Export\Associations(
+				$association_repository,
+				new \OTGS\Toolset\Types\Post\Meta\Associations()
+			)
+		);
+
+		global $wpdb;
+
+		// Wordpress Export
+		new \OTGS\Toolset\Types\Wordpress\Export(
+			$association_repository,
+			Toolset_Post_Type_Repository::get_instance(),
+			$post_export_extender,
+			new Toolset_Element_Factory(),
+			new \OTGS\Toolset\Types\Wordpress\Postmeta\Temporary(
+				new \OTGS\Toolset\Types\Wordpress\Postmeta\Storage( $wpdb )
+			)
+		);
 	}
 
 }

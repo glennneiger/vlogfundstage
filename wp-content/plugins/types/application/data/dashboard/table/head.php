@@ -8,11 +8,11 @@ $question_marks = array(
 
 	'fields' => array(
 		'id'            => 'fields',
-		'title'         => __( 'Fields', 'wpcf' ),
+		'title'         => __( 'Custom fields', 'wpcf' ),
 		'description'   => array(
 			array(
 				'type' => 'paragraph',
-				'content' => __( 'A list of all Post Fields and their attachment to the Post Types.', 'wpcf' )
+				'content' => __( 'A list of all Custom Post Fields and their attachment to the Post Types.', 'wpcf' )
 			),
 			array(
 				'type'   => 'link',

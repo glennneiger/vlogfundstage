@@ -24,14 +24,16 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 if ( ! class_exists( 'WC_Settings_Social_Login' ) ) :
 
 /**
- * Settings class
+ * Settings class.
  *
  * @since 1.0.0
  */
-class WC_Settings_Social_Login extends WC_Settings_Page {
+class WC_Settings_Social_Login extends \WC_Settings_Page {
 
 
 	/**
@@ -204,7 +206,7 @@ class WC_Settings_Social_Login extends WC_Settings_Page {
 
 			$settings = $this->get_settings();
 
-			WC_Admin_Settings::output_fields( $settings );
+			\WC_Admin_Settings::output_fields( $settings );
 		}
 	}
 
@@ -280,7 +282,7 @@ class WC_Settings_Social_Login extends WC_Settings_Page {
 		if ( ! $current_section ) {
 
 			$settings = $this->get_settings();
-			WC_Admin_Settings::save_fields( $settings );
+			\WC_Admin_Settings::save_fields( $settings );
 			wc_social_login()->get_admin_instance()->process_admin_options();
 
 		} else {
@@ -297,7 +299,7 @@ class WC_Settings_Social_Login extends WC_Settings_Page {
 		}
 	}
 
-} // end \WC_Settings_Social_Login class
+}
 
 endif;
 

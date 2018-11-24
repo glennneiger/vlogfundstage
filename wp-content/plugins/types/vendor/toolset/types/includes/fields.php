@@ -152,7 +152,7 @@ function wpcf_admin_fields_remove_field_from_group( $group_id, $field_id ) {
  */
 function wpcf_admin_fields_remove_field_from_group_bulk( $group_id, $fields ) {
     foreach ( $fields as $field_id ) {
-		$field_id = sanitize_text_field( $field_id );
+    $field_id = sanitize_text_field( $field_id );
         wpcf_admin_fields_remove_field_from_group( $group_id, $field_id );
     }
 }
@@ -210,11 +210,38 @@ function wpcf_admin_fields_delete_field( $field_id,
  * @return int
  */
 function wpcf_admin_fields_delete_group( $group_id,
-        $post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME ) {
+    $post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME ) {
     $group = get_post( $group_id );
     if ( empty( $group ) || $group->post_type != $post_type ) {
         return false;
     }
+
+    $fields = explode( ',', get_post_meta( $group->ID, '_wp_types_group_fields', true ) );
+    $field_group_service = new Types_Field_Group_Repeatable_Service();
+
+    $convert_rfg_into_relationship = toolset_getget( 'wpcf_convert_rfg', false );
+    if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+      $relationship_repository = Toolset_Relationship_Definition_Repository::get_instance();
+
+      foreach( $fields as $field_slug ) {
+          $repeatable_group = $field_group_service->get_object_from_prefixed_string( $field_slug );
+          // delete repeatable group
+          if ( $repeatable_group ) {
+              $field_group_service->delete( $repeatable_group, $convert_rfg_into_relationship !== false );
+          }
+
+          $post_reference_definition = $relationship_repository->get_definition( $field_slug );
+          if ( $post_reference_definition ) {
+              $relationship_repository->remove_definition( $post_reference_definition );
+              $field_definition_factory = Toolset_Field_Definition_Factory::get_factory_by_domain( Toolset_Element_Domain::POSTS );
+              $field_definition = $field_definition_factory->load_field_definition( $field_slug );
+              if( ! $field_definition ) {
+                  $field_definition_factory->delete_definition( $definition );
+              }
+          }
+      }
+    }
+
     wp_delete_post( $group_id, true );
 }
 
@@ -285,20 +312,20 @@ function wpcf_admin_fields_save_group( $group, $post_type = TYPES_CUSTOM_FIELD_G
     // WPML register strings
     if ( function_exists( 'icl_register_string' ) ) {
 
-	    try {
-		    // Legacy function gives us only the underlying post type of the field group.
-		    $group_factory = Types_Field_Utils::get_group_factory_by_post_type( $post_type );
-		    $field_group = $group_factory->load_field_group( sanitize_title( $group['name'] ) );
+    try {
+        // Legacy function gives us only the underlying post type of the field group.
+        $group_factory = Toolset_Field_Utils::get_group_factory_by_post_type( $post_type );
+        $field_group = $group_factory->load_field_group( sanitize_title( $group['name'] ) );
 
-		    // Skip registering if the group does not exist.
-		    if( null != $field_group ) {
-			    $group_wpml = new Types_Wpml_Field_Group( $field_group );
-			    $group_wpml->register( $slug_pre_save );
-		    }
+        // Skip registering if the group does not exist.
+        if( null != $field_group ) {
+            $group_wpml = new Types_Wpml_Field_Group( $field_group );
+            $group_wpml->register( $slug_pre_save );
+        }
 
-	    } catch( InvalidArgumentException $e ) {
-		    // Something is seriously wrong - there's no field group factory for given post type, bail.
-	    }
+      } catch( InvalidArgumentException $e ) {
+        // Something is seriously wrong - there's no field group factory for given post type, bail.
+      }
     }
 
     // admin message
@@ -326,7 +353,7 @@ function wpcf_admin_fields_save_fields( $fields, $forced = false, $option_name =
  * Saves field.
  *
  * Note: This is (probably) intended only for saving field definition data on the Edit Field Group pages.
- * 
+ *
  * @param array $field Field data
  * @param string $post_type
  * @param string $option_name
@@ -354,8 +381,8 @@ function wpcf_admin_fields_save_field( $field, $post_type = TYPES_CUSTOM_FIELD_G
     $temp_field = $field;
     $field['data'] = $temp_field;
     // Unset default fields
-	// fixme These lines effectively erases all new values in "data", does anyone know why?
-	// fixme This function needs SERIOUS review.
+    // fixme These lines effectively erases all new values in "data", does anyone know why?
+    // fixme This function needs SERIOUS review.
     unset( $field['data']['type'], $field['data']['slug'],
             $field['data']['name'], $field['data']['description'],
             $field['data']['user_id'], $field['data']['id'],
@@ -451,12 +478,56 @@ function wpcf_admin_fields_save_field( $field, $post_type = TYPES_CUSTOM_FIELD_G
             $save_data['data']['conditional_display'] = $fields[$field['slug-pre-save']]['data']['conditional_display'];
         }
 
+        /* Check if current field is inside RFG
+
+	    This is how the $fields array is build:
+
+	    {
+	      [FIELD #1 SLUG] (outside RFG) => FIELD_DATA
+	      ...
+	      [_repeatable_group_ID_slug] => SLUG
+	      [FIELD #2 SLUG] => FIELD_DATA
+	      [_repeatable_group_ID_end] => 1
+	      ...
+	    }
+
+	    Means when the previous key and the next key starts with '_repeatable_group'
+	    we know that the field is inside a RFG.
+        */
+	    $field_is_inside_rfg = false;
+        if( isset( $_POST['wpcf']['fields'] ) ) {
+        	$post_fields_slugs = array_keys( $_POST['wpcf']['fields'] );
+
+	        $i_slug = array_search( $field['slug-pre-save'], $post_fields_slugs );
+
+	        if( $i_slug ) {
+		        $prev_field_slug = isset( $post_fields_slugs[$i_slug-1] ) ? $post_fields_slugs[$i_slug-1] : false;
+		        $next_field_slug = isset( $post_fields_slugs[$i_slug+1] ) ? $post_fields_slugs[$i_slug+1] : false;
+
+		        if( $prev_field_slug
+		            && $next_field_slug
+		            && strpos( $prev_field_slug, '_repeatable_group' ) === 0
+		            && strpos( $next_field_slug, '_repeatable_group' ) === 0
+		        ) {
+			        $field_is_inside_rfg = true;
+			        $rfg_id = filter_var( $next_field_slug, FILTER_SANITIZE_NUMBER_INT );
+		        }
+	        }
+        }
+
         // field is assigned ONLY to current group
-        $belongs_to_groups = wpcf_admin_fields_get_groups_by_field( $field['slug-pre-save'], $post_type );
-        if( isset( $_GET['group_id'] )
+        $belongs_to_groups = wpcf_admin_fields_get_groups_by_field( $field['slug-pre-save'], $post_type, $field_is_inside_rfg );
+
+        if( isset( $rfg_id ) ) {
+        	$group_of_field_id = $rfg_id;
+        } elseif( ! $field_is_inside_rfg && isset( $_GET['group_id'] ) ) {
+        	$group_of_field_id = $_GET['group_id'];
+        }
+
+        if( isset( $group_of_field_id )
             && isset( $fields[$field['slug-pre-save']] )
             && count( $belongs_to_groups ) == 1
-            && isset( $belongs_to_groups[$_GET['group_id']] )
+            && isset( $belongs_to_groups[ $group_of_field_id ] )
         ) {
             global $wpdb;
 
@@ -485,7 +556,7 @@ function wpcf_admin_fields_save_field( $field, $post_type = TYPES_CUSTOM_FIELD_G
                 FROM   $wpdb->postmeta
                 WHERE  meta_key = '_wpcf_conditional_display'
                 AND    meta_value LIKE '%" . $field['slug-pre-save'] . "%'
-	        " );
+            " );
 
             if( $groups_conditions ) {
                 foreach( $groups_conditions as $group_condition ) {
@@ -510,41 +581,41 @@ function wpcf_admin_fields_save_field( $field, $post_type = TYPES_CUSTOM_FIELD_G
             unset( $fields[$field['slug-pre-save']] );
 
         // update items by post type
-        } elseif( isset( $_GET['group_id'] ) ) {
+        } elseif( isset( $group_of_field_id ) ) {
 
             switch( $post_type ) {
                 case 'wp-types-group':
-                    $group = Types_Field_Group_Post_Factory::load( $_GET['group_id'] );
+                    $group = Toolset_Field_Group_Post_Factory::load( $group_of_field_id );
                     break;
                 case 'wp-types-term-group':
-                    $group = Types_Field_Group_Term_Factory::load( $_GET['group_id'] );
+                    $group = Toolset_Field_Group_Term_Factory::load( $group_of_field_id );
                     break;
                 case 'wp-types-user-group':
-                    $group = Types_Field_Group_User_Factory::load( $_GET['group_id'] );
+                    $group = Toolset_Field_Group_User_Factory::load( $group_of_field_id );
                     break;
             }
-	        
-	        if( null != $group ) {
 
-		        $assigned_types = $group->get_assigned_to_types();
+            if( null != $group ) {
 
-		        if ( ! empty( $assigned_types ) ) {
-			        $items = $group->get_assigned_to_items();
+            $assigned_types = $group->get_assigned_to_types();
 
-			        if ( is_array( $items ) && ! empty( $items ) ) {
-				        global $wpdb;
-				        foreach ( $items as $item ) {
-					        $wpdb->update(
-						        $wpdb->postmeta,
-						        array( 'meta_key' => 'wpcf-' . $field['slug'] ),
-						        array( 'meta_key' => 'wpcf-' . $field['slug-pre-save'], 'post_id' => $item->ID ),
-						        array( '%s', '%d' ),
-						        array( '%s' )
-					        );
-				        }
-			        }
-		        }
-	        }
+            if ( ! empty( $assigned_types ) ) {
+                $items = $group->get_assigned_to_items();
+
+                if ( is_array( $items ) && ! empty( $items ) ) {
+                global $wpdb;
+                foreach ( $items as $item ) {
+                    $wpdb->update(
+                    $wpdb->postmeta,
+                    array( 'meta_key' => 'wpcf-' . $field['slug'] ),
+                    array( 'meta_key' => 'wpcf-' . $field['slug-pre-save'], 'post_id' => $item->ID ),
+                    array( '%s', '%d' ),
+                    array( '%s' )
+                    );
+                }
+                }
+            }
+            }
         }
     }
 
@@ -711,7 +782,7 @@ function wpcf_admin_fields_save_message( $updated = false, $which_fields = 'none
  * @deprecated Since 2.0 use Types_Field_Type_Converter instead.
  */
 function wpcf_admin_custom_fields_change_type_allowed_matrix() {
-	return Types_Field_Type_Converter::get_instance()->get_conversion_matrix();
+    return Types_Field_Type_Converter::get_instance()->get_conversion_matrix();
 }
 
 
@@ -728,9 +799,9 @@ function wpcf_admin_custom_fields_change_type_allowed_matrix() {
  */
 function wpcf_admin_fields_save_group_fields( $group_id, $fields, $add = false, $post_type = TYPES_CUSTOM_FIELD_GROUP_CPT_NAME, $option_name = null )
 {
-	if( null == $option_name ) {
-		$option_name = ( $post_type == TYPES_CUSTOM_FIELD_GROUP_CPT_NAME ? 'wpcf-fields' : 'wpcf-usermeta' );
-	}
+    if( null == $option_name ) {
+    $option_name = ( $post_type == TYPES_CUSTOM_FIELD_GROUP_CPT_NAME ? 'wpcf-fields' : 'wpcf-usermeta' );
+    }
     $fields = wpcf_types_cf_under_control( 'add', array('fields' => $fields), $post_type, $option_name );
     if ( $add ) {
         $existing_fields = wpcf_admin_fields_get_fields_by_group( $group_id, 'slug', false, true, false, $post_type, $option_name );
@@ -1196,10 +1267,12 @@ function wpcf_admin_fields_get_posts_by_filter_missing_meta( $filter, $meta_key 
     $_query = "SELECT DISTINCT p.ID FROM $wpdb->posts p " . implode( '', $join );
     $_query .= "WHERE NOT EXISTS ( SELECT * FROM $wpdb->postmeta mm WHERE p.ID = mm.post_id AND mm.meta_key = %s )";
 
-    /**
-     * merge $args to one array
-     */
-    $args = array_values(array( $meta_key ) + $args['post_types'] + $args['templates']);
+    // move all args to a one-dimensional array (without dropping duplicated values)
+    $args = array_reduce( array(
+        array( $meta_key ),
+        $args['post_types'],
+        $args['templates']
+    ), 'array_merge', array() );
 
     if ( !empty( $query ) ) {
         $association = ( strtoupper( trim( $filter['association'] ) ) == 'OR' ) ? 'OR' : 'AND';

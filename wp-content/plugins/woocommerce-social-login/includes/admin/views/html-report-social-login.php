@@ -1,14 +1,20 @@
 <?php
 /**
- * HTML for social login report
+ * HTML template file for Social Login reports.
+ *
+ * @since 1.0.0
+ * @version 2.6.0
  */
+
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 ?>
 <div id="poststuff" class="woocommerce-reports-wide wc-social-login-report">
 	<table class="wp-list-table widefat fixed social-registrations">
 		<thead>
 			<tr>
 				<th><?php esc_html_e( 'Provider', 'woocommerce-social-login' ); ?></th>
-				<th><?php /* translators: The number of registrations for a provider */ esc_html_e( 'Registrations', 'woocommerce-social-login' ); ?></th>
+				<th><?php echo esc_html_x( 'Registrations', 'The number of registrations for a provider', 'woocommerce-social-login' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>

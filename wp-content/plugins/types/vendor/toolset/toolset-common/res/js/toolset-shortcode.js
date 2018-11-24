@@ -128,7 +128,7 @@ Toolset.shortcodeManager = function( $ ) {
 		 *
 		 * @since 2.5.4
 		 */
-		Toolset.hooks.addFilter( 'toolset-filter-is-shortcode-attributes-container-valid', self.isShortcodeAttributesContainerValid, 10, 2 );
+		Toolset.hooks.addFilter( 'toolset-filter-is-shortcode-attributes-container-valid', self.isShortcodeAttributesContainerValid, 10 );
 		
 		/**
 		 * Return the shortcode GUI templates.
@@ -151,7 +151,7 @@ Toolset.shortcodeManager = function( $ ) {
 		 *
 		 * @since 2.5.4
 		 */
-		Toolset.hooks.addFilter( 'toolset-filter-get-crafted-shortcode', self.getCraftedShortcode, 10, 2 );
+		Toolset.hooks.addFilter( 'toolset-filter-get-crafted-shortcode', self.getCraftedShortcode, 10 );
 
 		/**
 		 * Filter the generated Types shortcode to support shortcodes with different format.
@@ -165,7 +165,7 @@ Toolset.shortcodeManager = function( $ ) {
 		 *
 		 * @since 2.5.4
 		 */
-		Toolset.hooks.addFilter( 'toolset-filter-shortcode-gui-computed-attribute-values', self.resolveToolsetComboValues, 1, 2 );
+		Toolset.hooks.addFilter( 'toolset-filter-shortcode-gui-computed-attribute-values', self.resolveToolsetComboValues, 1 );
 
         /**
          * Filter the generated shortcode to support shortcodes with different format.
@@ -192,7 +192,7 @@ Toolset.shortcodeManager = function( $ ) {
 		 *
 		 * @since m2m
 		 */
-		Toolset.hooks.addAction( 'toolset-filter-register-shortcode-gui-attribute-template', self.registerShortcodeAttributeTemplate, 1, 2 );
+		Toolset.hooks.addAction( 'toolset-filter-register-shortcode-gui-attribute-template', self.registerShortcodeAttributeTemplate, 1 );
 		
 		/**
 		 * Set the current shortcodes GUI action: 'insert', 'create', 'save', 'append', 'edit', 'skip'.
@@ -208,9 +208,9 @@ Toolset.shortcodeManager = function( $ ) {
 		 * @since m2m Add the callback for the "save" action.
 		 */
 		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action', self.doAction );
-		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-create', self.doActionCreate, 1, 1 );
-		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-insert', self.doActionInsert, 1, 1 );
-		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-save', self.doActionSave, 1, 1 );
+		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-create', self.doActionCreate, 1 );
+		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-insert', self.doActionInsert, 1 );
+		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-save', self.doActionSave, 1 );
 		
 		/**
 		 * Init select2 instances on shortcode dialogs once they are completely opened.
@@ -253,6 +253,7 @@ Toolset.shortcodeManager = function( $ ) {
 			content: wp.template( 'toolset-shortcode-content' ),
 			information: wp.template( 'toolset-shortcode-attribute-information' ),
 			text: wp.template( 'toolset-shortcode-attribute-text' ),
+			textarea: wp.template( 'toolset-shortcode-attribute-textarea' ),
 			radio: wp.template( 'toolset-shortcode-attribute-radio' ),
 			select: wp.template( 'toolset-shortcode-attribute-select' ),
 			select2: wp.template( 'toolset-shortcode-attribute-select2' ),
@@ -1029,6 +1030,9 @@ Toolset.shortcodeManager = function( $ ) {
 				case 'information':
 					shortcodeAttributeValue = false;
 					break;
+				case 'textarea':
+					shortcodeAttributeValue = $('textarea', attributeWrapper ).val();
+					break;
 				default:
 					shortcodeAttributeValue = $('input', attributeWrapper ).val();
 			}
@@ -1059,9 +1063,12 @@ Toolset.shortcodeManager = function( $ ) {
 			shortcodeAttributeValue = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-' + shortcodeName + '-attribute-' + shortcodeAttributeKey + '-value', shortcodeAttributeValue, { shortcode: shortcodeName, attribute: shortcodeAttributeKey } );
 			
 			// Add to the shortcodeAttributeValues collection
+			// only if it does not match the default value
+			// and is not a helper attribute
 			if (
 				shortcodeAttributeValue
 				&& shortcodeAttributeValue != shortcodeAttributeDefaultValue
+				&& ! attributeWrapper.data( 'helper' )
 			) {
 				shortcodeAttributeValues[ shortcodeAttributeKey ] = shortcodeAttributeValue;
 			}
@@ -1363,7 +1370,15 @@ Toolset.shortcodeManager = function( $ ) {
                 )
             )
         ) {
-            shortcode_string = shortcode_string.replace( /\[/g, '{!{' ).replace( /]/g, '}!}' ).replace( /"/g, '\'' );
+            shortcode_string = shortcode_string.replace( /\[/g, '{!{' ).replace( /]/g, '}!}' );
+            // We need to convert double quotes to single quotes because most of the page builders sanitize the values in
+            // their inputs so in this case shortcodes that use double quotes won't work in those inputs.
+            // If a shortcode already contains single quotes then it either doesn't need the quotes conversion
+            // or it contains both single and double quotes (for example conditional shortcodes) and the quotes conversion
+            // will prevent the shortcodes from working properly.
+            // This is why we need to check whether the shortcode string contains single quotes or not before proceeding
+            // to the quotes conversion.
+            shortcode_string = ! shortcode_string.includes( '\'') ? shortcode_string.replace( /"/g, '\'' ) : shortcode_string;
         }
 
         if ( typeof( shortcode_data ) === 'object' ) {

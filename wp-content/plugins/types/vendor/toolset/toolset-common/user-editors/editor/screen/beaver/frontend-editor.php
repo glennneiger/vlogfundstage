@@ -12,6 +12,10 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 			return;
 		}
 
+		add_action( 'init', array( $this, 'register_frontend_editor_assets' ) );
+
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_editor_assets' ) );
+
 		/* disable Toolset Starters "No Content Template assigned" message */
 		add_filter( 'toolset_starter_show_msg_no_content_template', '__return_false' );
 
@@ -77,5 +81,21 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 
 		// shouldn't happen
 		return dirname( __FILE__ ) . '/frontend-editor-template-fallback.php';
+	}
+
+	public function register_frontend_editor_assets() {
+		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager->register_style(
+			'toolset-user-editors-beaver-frontend-editor-style',
+			TOOLSET_COMMON_URL . '/user-editors/editor/screen/beaver/frontend-editor.css',
+			array(),
+			TOOLSET_COMMON_VERSION
+		);
+	}
+
+	public function enqueue_frontend_editor_assets() {
+		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager->enqueue_styles( array( 'toolset-user-editors-beaver-frontend-editor-style' ) );
+		$toolset_assets_manager->enqueue_scripts( array( 'views-widgets-gui-script' ) );
 	}
 }

@@ -94,6 +94,10 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 		// Get backend editor object through VC_Manager (vc di container)
 		global $vc_manager;
 		$this->editor = $vc_manager->backendEditor();
+		// Since VC 5.5 we need to register their backend editor, it does not happen automatically.
+		if ( is_callable( array( $this->editor, 'registerScripts' ) ) ) {
+			$this->editor->registerScripts();
+		}
 
 		// VC_Backend_Editor->render() registers all needed scripts
 		// the "real" render came later in $this->html_output();
@@ -327,6 +331,10 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 	 * @since 2.5.1
 	 */
 	public function save_vc_custom_css( $content_template_id ) {
+	    if ( ! WPV_Content_Template_Embedded::is_valid( $content_template_id ) ) {
+            return;
+        }
+
 		$content_template_has_vc = ( get_post_meta( $content_template_id, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'VC_SCREEN_ID' ) );
 		if ( $content_template_has_vc ) {
 			foreach ( $_POST['properties'] as $property ) {
@@ -334,6 +342,8 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 					update_post_meta( $content_template_id, '_wpb_post_custom_css', $property['value'] );
 				}
 			}
-		}
+		} else {
+			update_post_meta( $content_template_id, '_wpb_post_custom_css', '' );
+        }
 	}
 }

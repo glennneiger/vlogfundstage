@@ -18,9 +18,9 @@ class Types_Api_Handler_Query_Groups implements Types_Api_Handler_Interface {
 	 */
 	function process_call( $arguments ) {
 
-		$query = wpcf_getarr( $arguments, 1, array() );
+		$query = toolset_getarr( $arguments, 1, array() );
 
-		$domain = wpcf_getarr( $query, 'domain', 'all' );
+		$domain = toolset_getarr( $query, 'domain', 'all' );
 		unset( $query['domain'] );
 
 		// Sanitize input
@@ -32,7 +32,7 @@ class Types_Api_Handler_Query_Groups implements Types_Api_Handler_Interface {
 
 			// Separate query for each available domain.
 			$groups_by_domain = array();
-			$domains = Types_Field_Utils::get_domains();
+			$domains = Toolset_Field_Utils::get_domains();
 			foreach( $domains as $field_domain ) {
 				$groups_by_domain[ $field_domain ] = $this->query_specific_domain( $field_domain, $query );
 			}
@@ -52,20 +52,20 @@ class Types_Api_Handler_Query_Groups implements Types_Api_Handler_Interface {
 	 * @param string $domain One of the valid field domains. Legacy "meta type" values will be also accepted.
 	 * @param array $query Query arguments for Types_Field_Group_Factory::query_groups().
 	 *
-	 * @return null|Types_Field_Group[] Array of field groups or null on error.
+	 * @return null|Toolset_Field_Group[] Array of field groups or null on error.
 	 * @since m2m
 	 */
 	private function query_specific_domain( $domain, $query ) {
 
 		// Make sure we have a valid domain string.
-		$valid_domains = Types_Field_Utils::get_domains();
+		$valid_domains = Toolset_Field_Utils::get_domains();
 		if( !in_array( $domain, $valid_domains ) ) {
-			$domain = Types_Field_Utils::legacy_meta_type_to_domain( $domain );
+			$domain = Toolset_Field_Utils::legacy_meta_type_to_domain( $domain );
 		}
 
 		// Pass the group query to the proper factory class.
 		try {
-			$group_factory = Types_Field_Group_Factory::get_factory_by_domain( $domain );
+			$group_factory = Toolset_Field_Group_Factory::get_factory_by_domain( $domain );
 			$groups = $group_factory->query_groups( $query );
 		} catch( Exception $e ) {
 			// We don't care, it's a failure.

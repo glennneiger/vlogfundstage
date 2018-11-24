@@ -229,7 +229,7 @@ class WPToolset_Forms_Conditional {
             wptoolset_form_field_add_filters($c['type']);
             $c['args'] = apply_filters('wptoolset_conditional_args_php', $c['args'], $c['type']);
             $value = isset($config['values'][$c['id']]) ? $config['values'][$c['id']] : null;
-            $value = apply_filters('wptoolset_conditional_value_php', $value, $c['type']);
+            $value = apply_filters('wptoolset_conditional_value_php', $value, $c['type'], $c['id'] );
             $compare = $c['args'][0];
             switch ($c['operator']) {
                 case '=':

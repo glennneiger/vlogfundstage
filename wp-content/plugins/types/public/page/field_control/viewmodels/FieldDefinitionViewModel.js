@@ -1,6 +1,8 @@
 /**
  * ViewModel of a single field definition.
  * 
+ * @extends Toolset.Gui.ItemViewModel
+ * 
  * @param {{isUnderTypesControl:bool,isRepetitive:bool,groups:string[],type:string,displayName:string,slug:string,metaKey:string}} model
  *     Field definition model.
  * @param fieldActions An object with methods to perform actions on field definitions.
@@ -9,17 +11,15 @@
  */
 Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fieldActions) {
 
-    
     var self = this;
     
+    // Apply the ItemViewModel constructor on this object.
+    Toolset.Gui.ItemViewModel.call(self, model, fieldActions);
     
     /** Reusable strings. */
     self.labels = {
         notManagedByTypes: '<em>' + Types.page.fieldControl.strings.misc['notManagedByTypes'] + '</em>'
     };
-    
-    
-    self.fieldActions = fieldActions;
 
 
     // ------------------------------------------------------------------------
@@ -40,52 +40,6 @@ Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fi
     
     self.metaKey = ko.observable(model.metaKey);
 
-
-    /**
-     * @returns {{isUnderTypesControl:bool,isRepetitive:bool,groups:string[],type:string,displayName:string,
-     *     slug:string,metaKey:string}} Updated object with the same properties as the original model.
-     * @since 2.0
-     */
-    self.getModelObject = function() {
-        var ownModelProperties = _.keys(model);
-        var modelObject = {};
-        
-        _.each(ownModelProperties, function(propertyName) {
-            if(_.has(self, propertyName)) {
-                if(_.isFunction(self[propertyName])) {
-                    modelObject[propertyName] = self[propertyName]();
-                } else {
-                    modelObject[propertyName] = self[propertyName];
-                }
-            }
-        });
-        
-        return modelObject;
-    };
-
-
-    /**
-     * Update this ViewModel's properties by properties from a model object.
-     * 
-     * If there is a property on the model that isn't on the viewmodel, or if such property isn't a function 
-     * (which is expected to be a knockout observable), it will be created.
-     * 
-     * If there is the property and is a function, it will be called with the new value as a first parameter.
-     * 
-     * @param updatedModel Model object with updated values.
-     * @since 2.0
-     */
-    self.updateModelObject = function(updatedModel) {
-        var ownModelProperties = _.keys(updatedModel);
-        
-        _.each(ownModelProperties, function(propertyName) {
-            if (!_.has(self, propertyName) && !_.isFunction(self[propertyName])) {
-                self[propertyName] = ko.observable();
-            }
-            self[propertyName](updatedModel[propertyName]);
-        });
-    };
-    
 
     // ------------------------------------------------------------------------
     // Computed properties for display purposes
@@ -177,30 +131,6 @@ Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fi
             return '';
         }
     });
-    
-    
-    self.isSelectedForBulkAction = ko.observable(false);
-
-
-    /**
-     * This will be updated by the main ViewModel.
-     * 
-     * @since 2.0
-     */
-    self.isBeingDisplayed = ko.observable(false);
-
-
-    /**
-     * When the field definition is not displayed in the table, we don't want it to be selected for a bulk action.
-     * 
-     * @since 2.0
-     */
-    self.isBeingDisplayed.subscribe(function(newValue) {
-        if(false == newValue) {
-            self.isSelectedForBulkAction(false);
-        }
-    });
-
 
     
     // ------------------------------------------------------------------------
@@ -211,7 +141,7 @@ Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fi
     self.onChangeAssignmentAction = function() {
         Types.page.fieldControl.viewmodels.ChangeAssignDialogViewModel(self, function(isAccepted, updatedGroups) {
             if(isAccepted) {
-                self.fieldActions.changeGroupAssignment(self, {group_slugs: updatedGroups});
+                self.itemActions.changeGroupAssignment(self, {group_slugs: updatedGroups});
             }
         }).display();
     };
@@ -231,23 +161,23 @@ Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fi
             var isCardinalityChangeNeeded = (self.isRepetitive() != ('single' != newCardinality));
 
             var finalSuccessCallback = function(response, data, fieldDefinitions) {
-                self.fieldActions.updateFieldDefinitionModels(data.results, fieldDefinitions);
+                self.itemActions.updateFieldDefinitionModels(data.results, fieldDefinitions);
             };
             
             var failCallback = function(response) { };
             
-            var doCardinalityChange = _.partial(self.fieldActions.changeFieldCardinality, self, {target_cardinality: newCardinality});
+            var doCardinalityChange = _.partial(self.itemActions.changeFieldCardinality, self, {target_cardinality: newCardinality});
             
             if(isTypeChangeNeeded) {
                 if(isCardinalityChangeNeeded) {
 
                     // The most complex scenario. Change the field type, and if the action is a success, continue with changing
                     // it's cardinality.
-                    self.fieldActions.changeFieldType(
+                    self.itemActions.changeFieldType(
                         self, 
                         function(response, data, fieldDefinitions) {
                             // onSuccess
-                            self.fieldActions.updateFieldDefinitionModels(data.results, fieldDefinitions);
+                            self.itemActions.updateFieldDefinitionModels(data.results, fieldDefinitions);
                             doCardinalityChange();
                         }, 
                         failCallback, 
@@ -256,7 +186,7 @@ Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fi
                 } else {
 
                     // Only change field type.
-                    self.fieldActions.changeFieldType(self, finalSuccessCallback, failCallback, {field_type: typeToConvertInto});
+                    self.itemActions.changeFieldType(self, finalSuccessCallback, failCallback, {field_type: typeToConvertInto});
                 }
             } else {
                 if(isCardinalityChangeNeeded) {
@@ -275,9 +205,9 @@ Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fi
 
     self.onChangeManagementStatusAction = function() {
         if(self.isUnderTypesControl()) {
-            self.fieldActions.stopManagingWithTypes(self);
+            self.itemActions.stopManagingWithTypes(self);
         } else {
-            self.fieldActions.manageWithTypes(self);
+            self.itemActions.manageWithTypes(self);
         }
     };
 
@@ -285,45 +215,11 @@ Types.page.fieldControl.viewmodels.FieldDefinitionViewModel = function(model, fi
     self.onDeleteAction = function() { 
         Types.page.fieldControl.viewmodels.DeleteDialogViewModel(self, function(isAccepted) {
             if(isAccepted) {
-                self.fieldActions.deleteFields(self);
+                self.itemActions.deleteFields(self);
             }
         }).display();
     };
 
-
-
-    /**
-     * Number of AJAX actions currently in progress.
-     *
-     * Do not touch it directly, use beginAction() and finishAction() instead.
-     */
-    self.inProgressActionCount = ko.observable(0);
-
-
-    /**
-     * Show a spinner if there is at least one AJAX action in progress.
-     */
-    self.isSpinnerVisible = ko.pureComputed(function() {
-        return (self.inProgressActionCount() > 0);
-    });
-
-
-    /**
-     * Indicate a beginning of an AJAX action.
-     *
-     * Make sure you also call finishAction() afterwards, no matter what the result is.
-     */
-    self.beginAction = function() {
-        self.inProgressActionCount(self.inProgressActionCount() + 1);
-    };
-
-
-    /**
-     * Indicate that an AJAX action was completed.
-     */
-    self.finishAction = function() {
-        self.inProgressActionCount(self.inProgressActionCount() - 1);
-    };
 
 };
 

@@ -24,6 +24,8 @@
 
 defined( 'ABSPATH' ) or exit;
 
+use SkyVerge\WooCommerce\PluginFramework\v5_3_0 as Framework;
+
 /**
  * Integrations handler.
  *
@@ -32,7 +34,7 @@ defined( 'ABSPATH' ) or exit;
 class WC_Social_Login_Integrations {
 
 
-	/** @var WC_Social_Login_Integrations_Memberships instance */
+	/** @var \WC_Social_Login_Integrations_Memberships instance */
 	private $memberships;
 
 	/** @var bool whether WooCommerce Memberships is installed and active */

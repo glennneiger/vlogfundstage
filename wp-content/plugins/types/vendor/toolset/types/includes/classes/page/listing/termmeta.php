@@ -2,6 +2,9 @@
 
 /**
  * Term Field Groups listing page.
+ *
+ * @deprecated since the combined field group page
+ * todo Delete class (check any usage on all plugins before)
  */
 final class WPCF_Page_Listing_Termmeta extends WPCF_Page_Listing_Abstract {
 
@@ -112,7 +115,7 @@ final class WPCF_Page_Listing_Termmeta extends WPCF_Page_Listing_Abstract {
 			'#type' => 'markup',
 			'#markup' => sprintf(
 				' <a class="button" href="%s">%s</a></p>',
-				Types_Page_Field_Control::get_page_url( Types_Field_Utils::DOMAIN_TERMS ),
+				Types_Page_Field_Control::get_page_url( Toolset_Field_Utils::DOMAIN_TERMS ),
 				__( 'Term Field Control', 'wpcf' )
 			),
 			'_builtin' => true,
@@ -135,24 +138,15 @@ final class WPCF_Page_Listing_Termmeta extends WPCF_Page_Listing_Abstract {
 
 
 	public function add_screen_options() {
-
-		$args = array(
-			'label' => __( 'Term Fields', 'wpcf' ),
-			'default' => self::SCREEN_OPTION_PER_PAGE_DEFAULT_VALUE,
-			'option' => self::SCREEN_OPTION_PER_PAGE_NAME,
-		);
-		add_screen_option( 'per_page', $args );
+        return;
 	}
 
 
 	function set_screen_option($status, $option, $value) {
-
 		if ( self::SCREEN_OPTION_PER_PAGE_NAME == $option ) {
 			return $value;
 		}
-
-		return $status;
-
+		return false;
 	}
 	
 	public function add_contextual_help() {
