@@ -39,7 +39,8 @@ class Post_Views_Counter_Settings {
 
 		$this->modes = array(
 			'php'		=> __( 'PHP', 'post-views-counter' ),
-			'js'		=> __( 'JavaScript', 'post-views-counter' )
+			'js'		=> __( 'JavaScript', 'post-views-counter' ),
+			'ajax'		=> __( 'Fast AJAX', 'post-views-counter' )
 		);
 		
 		if ( function_exists( 'register_rest_route' ) ) {
@@ -306,7 +307,7 @@ class Post_Views_Counter_Settings {
 		}
 
 		echo '
-	    <p class="description">' . __( 'Select the method of collecting post views data. If you are using any of the caching plugins select Javascript or REST API (if available).', 'post-views-counter' ) . '</p>
+	    <p class="description">' . __( 'Select the method of collecting post views data. If you are using any of the caching plugins select Javascript or REST API (if available).', 'post-views-counter' ) . '<br />' . __( 'Optionally try the Fast AJAX experimental method, usually 10+ times faster than Javascript or REST API.', 'post-views-counter' ) . '</p>
 	</div>';
 	}
 
@@ -706,8 +707,8 @@ class Post_Views_Counter_Settings {
 				$input['exclude_ips'] = array_unique( $ips );
 			}
 
-			// restrict edit viewa
-			$input['restrict_edit_views'] = isset( $input['restrict_edit_views'] ) ? $input['restrict_edit_views'] : Post_Views_Counter()->defaults['general']['restrict_edit_views'];
+			// restrict edit views
+			$input['restrict_edit_views'] = isset( $input['restrict_edit_views'] );
 
 			// strict counts
 			$input['strict_counts'] = isset( $input['strict_counts'] );

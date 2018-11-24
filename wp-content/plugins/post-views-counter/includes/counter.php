@@ -25,8 +25,9 @@ class Post_Views_Counter_Counter {
 		add_action( 'plugins_loaded', array( $this, 'check_cookie' ), 1 );
 		add_action( 'deleted_post', array( $this, 'delete_post_views' ) );
 		add_action( 'wp', array( $this, 'check_post_php' ) );
-		add_action( 'wp_ajax_pvc-check-post', array( $this, 'check_post_ajax' ) );
-		add_action( 'wp_ajax_nopriv_pvc-check-post', array( $this, 'check_post_ajax' ) );
+		add_action( 'wp_ajax_pvc-check-post', array( $this, 'check_post_js' ) );
+		add_action( 'wp_ajax_nopriv_pvc-check-post', array( $this, 'check_post_js' ) );
+		add_action( 'pvc_ajax_pvc-check-post', array( $this, 'check_post_ajax' ) );
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 	}
 
@@ -111,30 +112,7 @@ class Post_Views_Counter_Counter {
 		if ( $count_visit ) {
 			// strict counts?
 			if ( Post_Views_Counter()->options['general']['strict_counts'] ) {
-				// get IP cached visits
-				$ip_cache = get_transient( 'post_views_counter_ip_cache' );
-
-				if ( ! $ip_cache )
-					$ip_cache = array();
-
-				// visit exists in transient?
-				if ( isset( $ip_cache[$id][$user_ip] ) ) {
-					if ( $current_time > $ip_cache[$id][$user_ip] + $this->get_timestamp( Post_Views_Counter()->options['general']['time_between_counts']['type'], Post_Views_Counter()->options['general']['time_between_counts']['number'], false ) )
-						$ip_cache[$id][$user_ip] = $current_time;
-					else
-						return;
-				} else
-					$ip_cache[$id][$user_ip] = $current_time;
-				
-				// keep it light, only 10 records per post and maximum 100 post records (=> max. 1000 ip entries)
-				// also, the data gets deleted after a week if there's no activity during this time...
-				if ( count( $ip_cache[$id] ) > 10 )
-					$ip_cache[$id] = array_slice( $ip_cache[$id], -10, 10, true );
-
-				if ( count( $ip_cache ) > 100 )
-					$ip_cache = array_slice( $ip_cache, -100, 100, true );
-
-				set_transient( 'post_views_counter_ip_cache', $ip_cache, WEEK_IN_SECONDS );
+				$this->save_ip( $id );
 			}
 
 			return $this->count_visit( $id );
@@ -164,13 +142,39 @@ class Post_Views_Counter_Counter {
 	}
 
 	/**
-	 * Check whether to count visit via AJAX request.
+	 * Check whether to count visit via Javascript(Ajax) request.
 	 */
-	public function check_post_ajax() {
+	public function check_post_js() {
 		if ( isset( $_POST['action'], $_POST['id'], $_POST['pvc_nonce'] ) && $_POST['action'] === 'pvc-check-post' && ($post_id = (int) $_POST['id']) > 0 && wp_verify_nonce( $_POST['pvc_nonce'], 'pvc-check-post' ) !== false ) {
 
 			// do we use Ajax as counter?
 			if ( Post_Views_Counter()->options['general']['counter_mode'] != 'js' )
+				exit;
+
+			// get countable post types
+			$post_types = Post_Views_Counter()->options['general']['post_types_count'];
+
+			// check if post exists
+			$post = get_post( $post_id );
+
+			// whether to count this post type or not
+			if ( empty( $post_types ) || empty( $post ) || ! in_array( $post->post_type, $post_types, true ) )
+				exit;
+
+			$this->check_post( $post_id );
+		}
+
+		exit;
+	}
+	
+	/**
+	 * Check whether to count visit via Fast AJAX request.
+	 */
+	public function check_post_ajax() {
+		if ( isset( $_POST['action'], $_POST['id'], $_POST['pvc_nonce'] ) && $_POST['action'] === 'pvc-check-post' && ($post_id = (int) $_POST['id']) > 0 ) {
+
+			// do we use Ajax as counter?
+			if ( Post_Views_Counter()->options['general']['counter_mode'] != 'ajax' )
 				exit;
 
 			// get countable post types
@@ -265,6 +269,18 @@ class Post_Views_Counter_Counter {
 	 * @param bool $expired
 	 */
 	private function save_cookie( $id, $cookie = array(), $expired = true ) {
+		$set_cookie = apply_filters( 'pvc_maybe_set_cookie', true );
+		
+		// Cookie Notice compatibility
+		if ( function_exists( 'cn_cookies_accepted' ) ) {
+			if ( ! cn_cookies_accepted() ) {
+				$set_cookie = false;
+			}
+		}
+		
+		if ( $set_cookie != true )
+			return $id;
+		
 		$expiration = $this->get_timestamp( Post_Views_Counter()->options['general']['time_between_counts']['type'], Post_Views_Counter()->options['general']['time_between_counts']['number'] );
 
 		// assign cookie name
@@ -338,6 +354,50 @@ class Post_Views_Counter_Counter {
 				setcookie( $cookie_name . '[' . $key . ']', $value, $cookie['expiration'], COOKIEPATH, COOKIE_DOMAIN, (isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ? true : false ), true );
 			}
 		}
+	}
+	
+	/**
+	 * Save user IP function.
+	 * 
+	 * @param int $id
+	 */
+	private function save_ip( $id ) {
+		$set_cookie = apply_filters( 'pvc_maybe_set_cookie', true );
+		
+		// Cookie Notice compatibility
+		if ( function_exists( 'cn_cookies_accepted' ) ) {
+			if ( ! cn_cookies_accepted() ) {
+				$set_cookie = false;
+			}
+		}
+		
+		if ( $set_cookie != true )
+			return $id;
+		
+		// get IP cached visits
+		$ip_cache = get_transient( 'post_views_counter_ip_cache' );
+
+		if ( ! $ip_cache )
+			$ip_cache = array();
+
+		// visit exists in transient?
+		if ( isset( $ip_cache[$id][$user_ip] ) ) {
+			if ( $current_time > $ip_cache[$id][$user_ip] + $this->get_timestamp( Post_Views_Counter()->options['general']['time_between_counts']['type'], Post_Views_Counter()->options['general']['time_between_counts']['number'], false ) )
+				$ip_cache[$id][$user_ip] = $current_time;
+			else
+				return;
+		} else
+			$ip_cache[$id][$user_ip] = $current_time;
+
+		// keep it light, only 10 records per post and maximum 100 post records (=> max. 1000 ip entries)
+		// also, the data gets deleted after a week if there's no activity during this time...
+		if ( count( $ip_cache[$id] ) > 10 )
+			$ip_cache[$id] = array_slice( $ip_cache[$id], -10, 10, true );
+
+		if ( count( $ip_cache ) > 100 )
+			$ip_cache = array_slice( $ip_cache, -100, 100, true );
+
+		set_transient( 'post_views_counter_ip_cache', $ip_cache, WEEK_IN_SECONDS );
 	}
 
 	/**

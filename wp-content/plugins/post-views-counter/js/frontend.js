@@ -18,11 +18,17 @@
 				beforeSend: function ( xhr ) {
 					xhr.setRequestHeader( 'X-WP-Nonce', pvcArgsFrontend.nonce );
 				}
+			} ).done( function( response ) {
+				// trigger pvcCheckPost event
+				$.event.trigger( {
+					type: 'pvcCheckPost',
+					detail: response
+				} );
 			} );
 
-			// admin ajax request
+		// admin ajax or fast ajax request
 		} else {
-
+			
 			var request = {
 				action: 'pvc-check-post',
 				pvc_nonce: pvcArgsFrontend.nonce,
@@ -35,6 +41,12 @@
 				async: true,
 				cache: false,
 				data: request
+			} ).done( function( response ) {
+				// trigger pvcCheckPost event
+				$.event.trigger( {
+					type: 'pvcCheckPost',
+					detail: response
+				} );
 			} );
 
 		}

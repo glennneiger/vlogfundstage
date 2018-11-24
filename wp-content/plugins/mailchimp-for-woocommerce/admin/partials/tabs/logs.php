@@ -17,8 +17,15 @@ if (!empty($files)) {
         }
     }
 }
-if (!empty($_REQUEST['log_file']) && isset($logs[sanitize_title( $_REQUEST['log_file'])])) {
-    $viewed_log = $logs[sanitize_title($_REQUEST['log_file'])];
+
+$requested_log_file = get_site_transient('mailchimp-woocommerce-view-log-file');
+delete_site_transient('mailchimp-woocommerce-view-log-file');
+
+if (empty($requested_log_file)) {
+    $requested_log_file = !empty($_REQUEST['log_file']) ? $_REQUEST['log_file'] : false;
+}
+if (!empty($requested_log_file) && isset($logs[sanitize_title($requested_log_file)])) {
+    $viewed_log = $logs[sanitize_title($requested_log_file)];
 } elseif (!empty($logs)) {
     $viewed_log = current( $logs );
 }
@@ -29,7 +36,7 @@ $handle = !empty($viewed_log) ? substr($viewed_log, 0, strlen($viewed_log) > 37 
 <p>
     Advanced troubleshooting can be conducted with the logging capability turned on.
     By default, it’s set to “none” and you may toggle to either “standard” or “debug” as needed.
-    With standard logging, you can see basic information about the data submission to MailChimp including any errors.
+    With standard logging, you can see basic information about the data submission to Mailchimp including any errors.
     “Debug” gives a much deeper insight that is useful to share with support if problems arise.
 </p>
 <fieldset>

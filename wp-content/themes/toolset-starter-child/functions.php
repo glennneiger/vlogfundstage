@@ -1365,8 +1365,9 @@ add_filter( 'wpseo_json_ld_output', 'remove_yoast_meta_desc_specific_page' );
 //https://gist.github.com/amboutwe/811e92b11e5277977047d44ea81ee9d4
 add_action('wp_head', 'remove_all_wpseo_og', 1);
 function remove_all_wpseo_og() {
-    if ( is_page(270)) { //is_single also works
+    if ( is_page(270) ) { //is_single also works
   remove_action( 'wpseo_head', array( $GLOBALS['wpseo_og'], 'opengraph' ), 30 );
+	//remove_action( 'wpseo_head' , array( WPSEO_Twitter , 'get_instance' ) , 40 );
     }
 }
 
