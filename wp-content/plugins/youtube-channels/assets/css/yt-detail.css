@@ -3,8 +3,9 @@
 
 html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased; -ms-font-smoothing:antialiased; font-smoothing:antialiased; /* Fix for webkit rendering */ -webkit-text-size-adjust:100%; margin:0; padding:0; }
 
+.channel-banner-img{ display: block; width:100vw; height:calc(100vw / 6.2 - 1px); object-fit:cover; }
 .container-main { max-width:1320px; width:100%; margin:0 auto; padding:0 20px; }
-.channel-details-wrapper { font-family: 'Open Sans', sans-serif; margin-top:160px; color:#242424; }
+.channel-details-wrapper { font-family: 'Open Sans', sans-serif; margin-top:0; color:#242424; }
 .channel-profile-box { background: #242424; color:#fff; text-align:center; font-size:14px; line-height:1.7142; padding:0 20px; }
 .channel-logo img { margin-top:-75px;  max-width:150px; width:auto; border-radius:50%; }
 .channel-logo { margin:0 0 20px; }
@@ -82,7 +83,8 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 
 
 @media only screen and (max-width: 1099px) {
-	.channel-details-wrapper { margin-top:110px; }
+	/*.channel-details-wrapper { margin-top:110px; }*/
+	.channel-banner-img{ height:calc(100vw / 6 - 1px); }
 	.channel-section h2 { font-size:34px; }
 	.channel-section h3 { font-size:20px; }
 	.channel-video-box h3 { padding:15px; }
@@ -102,6 +104,7 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 	.collaboration-col p { font-size:14px; }
 }
 @media only screen and (max-width: 767px) {
+	.channel-banner-img{ height:calc(100vw / 6 - 1px); }
 	.latest-videos-section .grid-col, .tweets-list .grid-col { -ms-flex: 0 0 100%; -webkit-flex: 0 0 100%; flex: 0 0 100%; max-width: 100%; }
 	.grid-cols3 .grid-col { -ms-flex: 0 0 50%; -webkit-flex: 0 0 50%; flex: 0 0 50%; max-width: 50%; }
 	.channel-section h2 { font-size:28px; }
@@ -112,8 +115,9 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 	.collaboration-images img + img { margin-left:-15px; }
 }
 @media only screen and (max-width: 575px) {
+	.channel-banner-img{ height:calc(100vw / 4 - 1px); }
 	.channel-logo img { max-width:120px; margin-top:-60px; }
-	.channel-details-wrapper { margin-top:90px; }
+	/*.channel-details-wrapper { margin-top:0; }*/
 	.channel-name { font-size:18px !important; }
 	.channel-logo { margin-bottom:15px; }
 	.channel-profile-box { font-size:13px; }
@@ -134,6 +138,9 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 	.related-blog-col h4 { padding:10px 15px; }
 	.grid-col, .grid-cols3 .grid-col { -ms-flex: 0 0 100%; -webkit-flex: 0 0 100%; flex: 0 0 100%; max-width: 100%; }
 	.related-blog-col.featured figure img, .related-blog-col figure img{ height:auto; }
+}
+@media only screen and (max-width: 479px) {
+	.channel-banner-img{ height:calc(100vw / 2 - 1px); }
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (-o-min-device-pixel-ratio: 2 / 1), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 2) {
 	.statistic-col i, .score-btn:before { background-image:url(../images/channel-sprites@2x.png);

@@ -120,8 +120,10 @@ class YTC_Admin{
 								update_post_meta( $post_id, 'wpcf-channel_subscribers', $channel->statistics->subscriberCount );
 								update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
 								update_post_meta( $post_id, 'wpcf-channel_img', 		$channel->snippet->thumbnails->medium->url );
+								update_post_meta( $post_id, 'wpcf-channel_banner', 		$channel->brandingSettings->image->bannerImageUrl );
 								update_post_meta( $post_id, 'wpcf-channel_videos', 		$channel->statistics->videoCount );
 								update_post_meta( $post_id, 'wpcf-channel_description', $channel->snippet->description );
+								
 								$updated++;							
 							endif;
 						endforeach; //Endforeach
