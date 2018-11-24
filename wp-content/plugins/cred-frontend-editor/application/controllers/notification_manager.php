@@ -3,13 +3,14 @@
 /**
  * Class CRED_Notification_Manager
  *
- * is responsible of mail notification and is used by CRED to send them as described into
+ * is responsible of mail notification and is used by Toolset Forms to send them as described into
  * cred post/user form notification settings.
  *
  * get_attached_data/set_attached_data attach notification data to a post/user form in order to
  * send notification when is triggered *
  *
  * @since 1.9.1
+ * @deprecated since 1.9.6 use CRED_Notification_Manager_Post & CRED_Notification_Manager_User
  */
 class CRED_Notification_Manager {
 
@@ -60,7 +61,7 @@ class CRED_Notification_Manager {
 					continue;
 				}
 				$action = sprintf('%s_to_%s', $from, $to);
-				add_action('_to_', array($this, 'checkPostForNotifications'), 10, 2);
+				add_action( $action, array($this, 'checkPostForNotifications'), 10, 2);
 			}
 		}
 
@@ -73,7 +74,7 @@ class CRED_Notification_Manager {
 	public function removeHooks() {
 		remove_action('save_post', array($this, 'checkPostForNotifications' ), 10, 2);
 		remove_action('profile_update', array($this, 'checkUserForNotifications'), 10, 2);
-		
+
 		$check_to_status = array('publish', 'pending', 'draft', 'private');
 		$check_from_status = array_merge($check_to_status, array('new', 'future', 'trash'));
 		foreach ($check_from_status as $from) {
@@ -82,10 +83,10 @@ class CRED_Notification_Manager {
 					continue;
 				}
 				$action = sprintf('%s_to_%s', $from, $to);
-				remove_action('_to_', array($this, 'checkPostForNotifications'), 10, 2);
+				remove_action( $action, array($this, 'checkPostForNotifications'), 10, 2);
 			}
 		}
-		
+
 		$post_types = get_post_types(array('public' => true, 'publicly_queryable' => true, '_builtin' => true), 'names', 'or');
 		foreach ($post_types as $pt) {
 			remove_action("updated_{$pt}_meta", array($this, 'updated_meta'), 20, 4);
@@ -344,48 +345,6 @@ class CRED_Notification_Manager {
 	}
 
 	/**
-	 * @param array $params
-	 *
-	 * @return bool
-	 */
-	protected function evaluate($params) {
-		$form_id = $params['form_id'];
-		$is_user_form = $this->is_user_form( $form_id );
-
-		$snapshot = isset($params['snapshot']) ? $params['snapshot'] : array();
-		$fields = isset($params['fields']) ? $params['fields'] : array();
-		$notification = isset($params['notification']) ? $params['notification'] : array();
-		$notification['form_id'] = $form_id;
-		$post = isset($params['post']) ? $params['post'] : array();
-
-		$notification_type = apply_filters('cred_notification_event_type', $notification['event']['type'], $notification, $form_id, $post->ID);
-		switch ($notification_type) {
-			case 'form_submit':
-				if ( $this->event
-					&& 'form_submit' == $this->event
-				) {
-					return $this->evaluateConditions( $notification, $fields, $snapshot );
-				}
-				break;
-			case 'post_modified':
-				if ($is_user_form || ($post->post_status == $notification['event']['post_status'] && $post->post_status != $snapshot['post_status'])) {
-					return $this->evaluateConditions($notification, $fields, $snapshot);
-				}
-				break;
-			case 'meta_modified':
-				return $this->evaluateConditions($notification, $fields, $snapshot);
-				break;
-			// custom event
-			default:
-				if ( apply_filters( 'cred_custom_notification_event_type_condition', ( $this->event && $this->event == $notification['event']['type'] ), $notification, $form_id, $post->ID ) ) {
-					return $this->evaluateConditions( $notification, $fields, $snapshot );
-				}
-				break;
-		}
-		return false;
-	}
-
-	/**
 	 * @param array $notification
 	 * @param array $fields
 	 * @param array $snapshot
@@ -396,7 +355,7 @@ class CRED_Notification_Manager {
 		if ( ! isset( $notification['event']['condition'] )
 			|| empty( $notification['event']['condition'] )
 		) {
-			return true;
+			return false;
 		}
 
 		$form_id = isset($notification['form_id']) ? $notification['form_id'] : '';
@@ -537,10 +496,9 @@ class CRED_Notification_Manager {
 		}
 
 		// trigger for this event, if set
+		$this->event = 'post_modified';
 		if (isset($data['event'])) {
 			$this->event = $data['event'];
-		} else {
-			$this->event = false;
 		}
 
 		$notification = isset($data['notification']) ? $data['notification'] : false;
@@ -554,49 +512,72 @@ class CRED_Notification_Manager {
 			return;
 		}
 
-        $notificationsToSent = array();
-        foreach ($notification->notifications as $ii => $single_notification) {
-	        if ( isset( $single_notification['disabled'] ) && $single_notification['disabled'] == 1 ) {
+        $notifications_to_send = array();
+        foreach ($notification->notifications as $index => $single_notification) {
+	        if ( isset( $single_notification['disabled'] )
+		        && $single_notification['disabled'] == 1
+	        ) {
 		        continue;
 	        }
 
-	        $send_notification = false;
-	        if ( isset( $this->event ) &&
-		        $single_notification['event']['type'] == 'payment_complete'
-		        && $this->event == 'order_completed'
+	        $snapshot = isset($attached_data[$form_id]) ? $attached_data[$form_id]['current'] : array();
+
+	        $is_correct_notification_event_type = ( $single_notification[ 'event' ][ 'type' ] == $this->event );
+
+	        $is_payment_and_order_complete = ( $single_notification[ 'event' ][ 'type' ] == 'payment_complete'
+		        && $this->event == 'order_completed' );
+
+	        $is_order_modified = ( $is_correct_notification_event_type
+		        && $this->event == 'order_modified'
+		        && isset( $data[ 'data_order' ] )
+		        && isset( $data[ 'data_order' ][ 'new_status' ] )
+		        && $data[ 'data_order' ][ 'new_status' ] == $single_notification[ 'event' ][ 'order_status' ]
+		        && $data[ 'data_order' ][ 'previous_status' ] != $data[ 'data_order' ][ 'new_status' ] );
+
+	        $is_post_modified = ( $is_correct_notification_event_type
+		        && $this->event == 'post_modified'
+		        && isset( $object->post_status )
+		        && $object->post_status == $single_notification[ 'event' ][ 'post_status' ]
+		        && isset( $snapshot[ 'post_status' ] )
+		        && $snapshot['post_status'] != $object->post_status );
+
+	        $is_form_submit = ( $is_correct_notification_event_type
+		        && $this->event == 'form_submit' );
+
+	        $is_order_created = ( $is_correct_notification_event_type
+		        && $this->event == 'order_created' );
+
+	        if ( $is_payment_and_order_complete
+		        || $is_order_modified
+		        || $is_post_modified
+		        || $is_form_submit
+		        || $is_order_created
 	        ) {
-		        $notificationsToSent[] = $single_notification;
+		        $notifications_to_send[] = $single_notification;
 	        } else {
 		        if (isset($single_notification['event'])) {
-			        $conditionFields = array();
-			        $_conditionFields = array();
+			        $condition_fields = array();
+			        $notification_condition_fields = array();
 			        if ( isset( $single_notification['event']['condition'] )
 				        && ! empty( $single_notification['event']['condition'] )
 			        ) {
-				        foreach ( $single_notification['event']['condition'] as $jj => $condition ) {
-					        $conditionFields[] = $condition['field'];
+				        foreach ( $single_notification['event']['condition'] as $key => $condition ) {
+					        $condition_fields[] = $condition['field'];
 				        }
-				        $_conditionFields = $model->get_object_fields( $object_id, $conditionFields );
+				        $notification_condition_fields = $model->get_object_fields( $object_id, $condition_fields );
 			        }
 
-			        $send_notification = $this->evaluate(array(
-				        'form_id' => $form_id,
-				        'post' => $object,
-				        'notification' => $single_notification,
-				        'fields' => $_conditionFields,
-				        'snapshot' => isset($attached_data[$form_id]) ? $attached_data[$form_id]['current'] : array()
-			        ));
-		        }
-	        }
+			        $send_notification = $this->evaluateConditions($single_notification, $notification_condition_fields, $snapshot);
 
-	        if ($send_notification) {
-		        $notificationsToSent[] = $single_notification;
+			        if ( $send_notification ) {
+				        $notifications_to_send[] = $single_notification;
+			        }
+		        }
 	        }
         }
 
-        // removed but it's necessary further debugging 'Notification is being sent when visit the post edit screen'
-		if ( ! empty( $notificationsToSent ) ) {
-			$this->sendNotifications( $object_id, $form_id, $notificationsToSent );
+		if ( ! empty( $notifications_to_send ) ) {
+			$this->sendNotifications( $object_id, $form_id, $notifications_to_send );
 		}
     }
 
@@ -787,7 +768,15 @@ class CRED_Notification_Manager {
 		$date = date('Y-m-d H:i:s', current_time('timestamp'));
 
 
-		// placeholder codes, allow to add custom
+		/**
+		 * Extend the notification subject placeholders.
+		 *
+		 * @param array Key-value pairs of placeholder-value
+		 * @param int $form_id
+		 * @param int|null $post_id Will be null on notification tests
+		 *
+		 * @since unknown
+		 */
 		$data_subject = apply_filters('cred_subject_notification_codes', array(
 			'%%USER_LOGIN_NAME%%' => $user->login,
 			'%%USER_DISPLAY_NAME%%' => $user->display_name,
@@ -797,7 +786,15 @@ class CRED_Notification_Manager {
 			'%%DATE_TIME%%' => $date
 		), $form_id, $post_id);
 
-		// placeholder codes, allow to add custom
+		/**
+		 * Extend the notification body placeholders.
+		 *
+		 * @param array Key-value pairs of placeholder-value
+		 * @param int $form_id
+		 * @param int|null $post_id Will be null on notification tests
+		 *
+		 * @since unknown
+		 */
 		$data_body = apply_filters('cred_body_notification_codes', array(
 			'%%USER_LOGIN_NAME%%' => $user->login,
 			'%%USER_DISPLAY_NAME%%' => $user->display_name,
@@ -895,7 +892,7 @@ class CRED_Notification_Manager {
 		$_subj = $this->replacePlaceholders($_subj, $data_subject);
 
 		// parse shortcodes if necessary relative to $post_id
-		$_subj = $this->render_with_post(stripslashes($_subj), $post_id, false);
+		$_subj = do_shortcode( stripslashes( $_subj ) );
 
 		$mailer->setSubject($_subj);
 
@@ -916,10 +913,8 @@ class CRED_Notification_Manager {
 		// replace placeholders
 		$_bod = $this->replacePlaceholders($_bod, $data_body);
 
-		// parse shortcodes/rich text if necessary relative to $post_id
-		$_bod = $this->render_with_post($_bod, $post_id);
-
-		//https://icanlocalize.basecamphq.com/projects/11629195-toolset-peripheral-work/todo_items/195775787/comments#310779109
+		// pseudo the_content filter
+		$_bod = apply_filters( \OTGS\Toolset\Common\BasicFormatting::FILTER_NAME, $_bod );
 		$_bod = stripslashes($_bod);
 
 		$mailer->setBody($_bod);
@@ -1330,21 +1325,14 @@ class CRED_Notification_Manager {
 			// replace placeholders
 			$_bod = $this->replacePlaceholders($_bod, $data_body);
 
-			//fixing https://icanlocalize.basecamphq.com/projects/7393061-toolset/todo_items/188538611/comments
-			if ( defined( 'WPCF_EMBEDDED_ABSPATH' )
-				&& WPCF_EMBEDDED_ABSPATH
-			) {
-				require_once WPCF_EMBEDDED_ABSPATH . '/frontend.php';
-			}
-
 			// parse shortcodes if necessary relative to $post_id
-			$_subj = $this->render_with_post(stripslashes($_subj), $post_id, false);
+			$_subj = do_shortcode( stripslashes( $_subj ) );
 
 			$mailer->setSubject($_subj);
 
-			// parse shortcodes/rich text if necessary relative to $post_id
-			$_bod = $this->render_with_post($_bod, $post_id);
-			$_bod = stripslashes($_bod);
+			// pseudo the_content filter
+			$_bod = apply_filters( \OTGS\Toolset\Common\BasicFormatting::FILTER_NAME, $_bod );
+			$_bod = stripslashes( $_bod );
 
 			$mailer->setBody($_bod);
 
@@ -1383,38 +1371,6 @@ class CRED_Notification_Manager {
 		do_action('cred_after_send_notifications', $post_id);
 
 		return $send_notification_result;
-	}
-
-	/**
-	 * Get the content into some shortcode and filters elaboration
-	 *
-	 * @param $content
-	 * @param $_post_id     post ID information used by Views WPV_wpcf_switch_post_from_attr_id during a post_id switch
-	 * @param bool $rich    flag used to avoid the cred form shortcodes rendering if present in the content
-	 *
-	 * @return string
-	 */
-	protected function render_with_post( $content, $_post_id, $rich = true ) {
-		if ( ! $_post_id ) {
-			$output = do_shortcode( $content );
-			if ( $rich ) {
-				$output = CRED_Helper::render_with_basic_filters( $content );
-			}
-		} else {
-			$isViews = function_exists( 'WPV_wpcf_switch_post_from_attr_id' );
-			if ( $isViews ) {
-				$post_id_switch = WPV_wpcf_switch_post_from_attr_id( array( 'id' => $_post_id ) );
-			}
-			$output = do_shortcode( $content );
-			if ( $rich ) {
-				$output = CRED_Helper::render_with_basic_filters( $content );
-			}
-			if ( $isViews ) {
-				unset( $post_id_switch );
-			}
-		}
-
-		return $output;
 	}
 
 	/**

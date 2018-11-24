@@ -133,7 +133,7 @@ class Toolset_Wp_Query_Adjustments_Table_Join_Manager extends Toolset_Wpdb_User 
 
 		return $this->wpdb->prepare(
 			"JOIN {$this->table_name->association_table()} AS {$associations_table_alias} ON (
-				wp_posts.ID = {$associations_table_alias}.{$role_to_return_id_column}
+				{$this->wpdb->posts}.ID = {$associations_table_alias}.{$role_to_return_id_column}
 				AND {$associations_table_alias}.relationship_id = %d
 				AND {$associations_table_alias}.{$role_to_query_by_id_column} = %d
 			) ",
@@ -179,8 +179,8 @@ class Toolset_Wp_Query_Adjustments_Table_Join_Manager extends Toolset_Wpdb_User 
 			# because that one may not be joined at all time, but we 
 			# need it always - this is safer than trying to reuse the 't' one
 			LEFT JOIN {$this->wpml_service->icl_translations_table_name()} AS {$alias_translation} ON (
-				wp_posts.ID = {$alias_translation}.element_id
-				AND {$alias_translation}.element_type = CONCAT('post_', wp_posts.post_type)
+				{$this->wpdb->posts}.ID = {$alias_translation}.element_id
+				AND {$alias_translation}.element_type = CONCAT('post_', {$this->wpdb->posts}.post_type)
 			) LEFT JOIN {$this->wpml_service->icl_translations_table_name()} AS {$alias_default_lang} ON (
 			    {$alias_translation}.trid = {$alias_default_lang}.trid
 			    AND {$alias_default_lang}.language_code = %s
@@ -189,7 +189,7 @@ class Toolset_Wp_Query_Adjustments_Table_Join_Manager extends Toolset_Wpdb_User 
 					# join the association row if either the post ID matches the
 					# proper column in the associations table or if the ID of the default
 					# language version of the post matches it
-					wp_posts.ID = {$associations_table_alias}.{$role_to_return_column}
+					{$this->wpdb->posts}.ID = {$associations_table_alias}.{$role_to_return_column}
 					OR {$alias_default_lang}.element_id = {$associations_table_alias}.{$role_to_return_column}
 				)
 				AND {$associations_table_alias}.relationship_id = %d

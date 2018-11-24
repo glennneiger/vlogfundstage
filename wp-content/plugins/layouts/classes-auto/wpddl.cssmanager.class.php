@@ -3,16 +3,28 @@ class WPDD_Layouts_CSSManager{
 
 	private static $instance;
 	public $options_manager;
-    private $layout_for_render = 0;
+	private $css_global_option_manager;
 	const API_QUERY_STRING = 'ddl_layouts_css_api';
 	const INITIAL_CSS = '/*Layouts css goes here*/';
 	const CSS_TEMP_DIR = '/ddl-layouts-tmp';
+	const GLOBAL_YES = 'yes';
 
 	//Since we have single css file for all layouts our class is singleton, the instance is called statically with: WPDD_Layouts_CSSManager::getInstance()
-	public function __construct( )
+	private function __construct( WPDDL_Options_Manager $css_global_option_manager = null, WPDDL_Options_Manager $options_manager = null )
 	{
-		$this->options_manager = new WPDDL_Options_Manager( WPDDL_CSS_OPTIONS );
+		$this->css_global_option_manager = $this->set_global_options_manager( $css_global_option_manager );
+		$this->options_manager   = $this->set_options_manager( $options_manager );
 		$this->add_hooks();
+	}
+
+	private function set_options_manager( WPDDL_Options_Manager $options_manager = null ){
+		if( ! $options_manager ){
+			$this->options_manager   = new WPDDL_Options_Manager( WPDDL_CSS_OPTIONS );
+		} else{
+			$this->options_manager = $options_manager;
+		}
+
+		return $this->options_manager;
 	}
 
 	public function add_hooks(){
@@ -26,11 +38,36 @@ class WPDD_Layouts_CSSManager{
 		}
 		else
 		{
-			add_filter('get_layout_id_for_render', array($this,'wpddl_frontend_header_init'), 999, 2);
-			// let's properly use 'wp_enqueue_scripts' instead of 'get_header' (which runs before) with a very high priority to make sure custom CSS is enqueued after theme, third party plugins and Bootstrap CSS
-			add_filter('wp_enqueue_scripts', array($this,'wpddl_frontend_header_init_for_content_layouts'), 999);
+			if( $this->get_css_global() === self::GLOBAL_YES ){
+				add_action('wp_enqueue_scripts', array($this,'handle_layout_css_fe'), 999);
+			} else {
+				add_filter('get_layout_id_for_render', array($this,'wpddl_frontend_header_init'), 999, 2);
+				// let's properly use 'wp_enqueue_scripts' instead of 'get_header' (which runs before) with a very high priority to make sure custom CSS is enqueued after theme, third party plugins and Bootstrap CSS
+				add_action('wp_enqueue_scripts', array($this,'wpddl_frontend_header_init_for_content_layouts'), 999);
+			}
+
 			add_action('template_redirect', array($this, 'layout_style_router'));
+			add_action( 'ddl-loaded-css-file-content', array( $this, 'clean_up_old_css_files' ), 10, 1 );
 		}
+	}
+
+	private function set_global_options_manager( WPDDL_Options_Manager $options_manager = null ){
+		if( ! $options_manager ){
+			$this->css_global_option_manager   = new WPDDL_Options_Manager( WPDDL_Options::CSS_GLOBAL );
+		} else{
+			$this->css_global_option_manager = $options_manager;
+		}
+
+		return $this->css_global_option_manager;
+	}
+
+	public function get_css_global(){
+		$option = $this->get_css_global_option_manager();
+		return $option->get_options( WPDDL_Options::CSS_GLOBAL );
+	}
+
+	public function get_css_global_option_manager( ){
+		return $this->css_global_option_manager;
 	}
 
     public function wpddl_frontend_header_init($id, $layout)
@@ -115,7 +152,6 @@ class WPDD_Layouts_CSSManager{
 				$md5 = md5($css);
 				$file_name = $this->css_dir() .'/'. $md5 . '.css';
 
-
 				if (!is_file($file_name)) {
 					// create the file.
 					$file_ok = file_put_contents($file_name, $css);
@@ -125,13 +161,13 @@ class WPDD_Layouts_CSSManager{
 				}
 
 				$is_file_empty = $this->is_css_file_empty_or_default($file_name);
+
 				if ($file_ok && $is_file_empty === false ) {
 					wp_enqueue_style('wp_ddl_layout_fe_css', $this->css_url() . '/' . $md5 . '.css', array(), WPDDL_VERSION, 'screen' );
 				}
 
+				do_action( 'ddl-loaded-css-file-content', $file_name );
  			}
-
-
 
 			if ( !$file_ok && $this->is_using_permalinks() ) {
 
@@ -140,6 +176,40 @@ class WPDD_Layouts_CSSManager{
 				wp_enqueue_style('wp_ddl_layout_fe_css', site_url() . '/ddl-layouts-load-styles.css?c=1', array(), WPDDL_VERSION, 'screen' );
 			}
 		}
+
+	}
+
+	function clean_up_old_css_files( $exclude_file ){
+
+		$dir_str = $this->css_dir();
+		$dir     = opendir( $dir_str );
+
+		while ( ( $file_name = readdir( $dir ) ) !== false ) {
+
+			$currentFile = $dir_str . DIRECTORY_SEPARATOR . $file_name;
+
+			if ( is_file( $currentFile ) && $exclude_file !== $currentFile ) {
+
+				$info = pathinfo( $currentFile );
+				/**
+				 * http://php.net/manual/en/function.pathinfo.php#refsect1-function.pathinfo-returnvalues
+				 * It will only return 'extension' if the file has an extension
+				 */
+				if ( isset( $info['extension'] ) ) {
+
+					/**
+					 * This file has extension, validate
+					 * Only allows CSS files.
+					 */
+
+					$the_extension= $info['extension'];
+					if( 'css' === $the_extension  ){
+						unlink( $currentFile );
+					}
+				}
+			}
+		}
+		closedir( $dir );
 
 	}
 
@@ -174,7 +244,7 @@ class WPDD_Layouts_CSSManager{
 
 	function save_css_settings() {
 
-		if( $_POST && $_POST['action'] == 'ddl_layout_save_css_settings' )
+		if( isset( $_POST['action'] ) &&  $_POST['action'] == 'ddl_layout_save_css_settings' )
 		{
             if( user_can_edit_layouts() === false ){
                 die( WPDD_Utils::ajax_caps_fail( __METHOD__ ) );
@@ -255,14 +325,21 @@ class WPDD_Layouts_CSSManager{
 		return $wp_rewrite->using_permalinks();
 	}
 
-	public static function getInstance( )
+	public static function getInstance( WPDDL_Options_Manager $css_global_option_manager = null, WPDDL_Options_Manager $options_manager = null )
 	{
 		if (!self::$instance)
 		{
-			self::$instance = new WPDD_Layouts_CSSManager();
+			self::$instance = new WPDD_Layouts_CSSManager( $css_global_option_manager, $options_manager );
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * For unit testing, forces the object to be contructed again
+	 */
+	public static function tearDown(){
+		self::$instance = null;
 	}
 	
 	function layout_style_router() {

@@ -310,15 +310,15 @@ final class Access_Helper
 
         $help = '<p>'.__("<strong>Post Types</strong>",'wpcf-access').'<br>
         '. __('Control who can do different actions for each post type.', 'wpcf-access') .'
-		<a href="https://wp-types.com/documentation/user-guides/setting-access-control/" title="'. __('Access Control for Standard and Custom Content Types', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
+		<a href="https://toolset.com/documentation/user-guides/setting-access-control/" title="'. __('Access Control for Standard and Custom Content Types', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
 
 		$help .= '<p>'.__("<strong>Taxonomies</strong>",'wpcf-access').'<br>
         '. __('Control who can do different actions for each taxonomy.', 'wpcf-access') .'
-		<a href="https://wp-types.com/documentation/user-guides/setting-access-control/" title="'. __('Access Control for Standard and Custom Taxonomies ', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
+		<a href="https://toolset.com/documentation/user-guides/setting-access-control/" title="'. __('Access Control for Standard and Custom Taxonomies ', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
 
 		$help .= '<p>'.__("<strong>Posts Groups</strong>",'wpcf-access').'<br>
         '. __('Control the read access to individual posts (pages, posts and custom post types). Create ‘post groups’,  which will hold all the items that will have the same read permission. Each group of posts can have as many items as you want.', 'wpcf-access') .'
-		<a href="https://wp-types.com/documentation/user-guides/limiting-read-access-specific-content/" title="'. __('Limiting read access to specific content', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
+		<a href="https://toolset.com/documentation/user-guides/limiting-read-access-specific-content/" title="'. __('Limiting read access to specific content', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
 
 		$help .= '<p>'.__("<strong>WPML Groups</strong>",'wpcf-access').'<br>
         '. __('Control access and editing privileges for users for different languages.', 'wpcf-access') .'
@@ -326,15 +326,15 @@ final class Access_Helper
 
 		$help .= '<p>'.__("<strong>Types Fields</strong>",'wpcf-access').'<br>
         '. __('Control who can view and edit custom fields.', 'wpcf-access') .'
-			<a href="https://wp-types.com/documentation/user-guides/access-control-for-user-fields/" title="'. __('Access Control for Fields', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
+			<a href="https://toolset.com/documentation/user-guides/access-control-for-user-fields/" title="'. __('Access Control for Fields', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
 
-		$help .= '<p>'.__("<strong>CRED Forms</strong>",'wpcf-access').'<br>
-        '. __('Control who has access to different CRED forms.', 'wpcf-access') .'
-			<a href="https://wp-types.com/documentation/user-guides/access-control-for-cred-forms/" title="'. __('Access Control for CRED Forms', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
+		$help .= '<p>'.__("<strong>Toolset Forms</strong>",'wpcf-access').'<br>
+        '. __('Control who has access to different Toolset forms.', 'wpcf-access') .'
+			<a href="https://toolset.com/documentation/user-guides/access-control-for-cred-forms/" title="' . esc_attr( __('Access Control for Toolset Forms', 'wpcf-access') ) . '" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
 
 		$help .= '<p>'.__("<strong>Custom Roles</strong>",'wpcf-access').'<br>
         '. __('Set up custom user roles and control their privileges.', 'wpcf-access') .'
-		<a href="https://wp-types.com/documentation/user-guides/managing-wordpress-admin-capabilities-access/" title="'. __('Managing WordPress Admin Capabilities with Access', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
+		<a href="https://toolset.com/documentation/user-guides/managing-wordpress-admin-capabilities-access/" title="'. __('Managing WordPress Admin Capabilities with Access', 'wpcf-access') .'" target="_blank"><i class="fa fa-question-circle"></i></a></p>';
 
 		$screen->add_help_tab(
 					array(
@@ -1483,15 +1483,13 @@ final class Access_Helper
             foreach ( $wpml_active_languages as $language => $language_data ) {
                 if (
 					! isset( $wpcf_access->language_permissions[ $post_type ][ $language ] )
-					&& $post_type != 'attachment'
 					&& isset( $settings_access[ $post_type ]['permissions'] )
 					&& $settings_access[ $post_type ]['mode'] != 'not_managed'
 				) {
                     $wpcf_access->language_permissions[ $post_type ][ $language ] = $settings_access[ $post_type ]['permissions'];
                 }
                 else if (
-                    $post_type != 'attachment'
-					&& isset( $settings_access[ $post_type ]['permissions'] )
+                    isset( $settings_access[ $post_type ]['permissions'] )
                     && $settings_access[ $post_type ]['mode'] == 'not_managed'
                     && isset( $settings_access['post']['permissions'] )
                     && $settings_access['post']['mode'] != 'not_managed'
@@ -1923,14 +1921,7 @@ final class Access_Helper
 	public static function wpcf_access_select_group_metabox_files() {
 		global $post, $pagenow;
 
-		if ( ( isset( $post->post_type ) && $post->post_type != 'attachment' ) ||
-			// Views and WPAs edit pages define a global $post matching the edited element
-			// while at the moment CTs do not: we ensure this here
-			// Note that those assets are supposed to be about the Access metabox to set post groups 
-			// so they might not be needed for Views objects at all.
-			// @todo review this
-             ( isset( $_GET['page'] ) && $_GET['page'] == 'ct-editor' )
-        ) {
+		if ( $pagenow === 'post.php' && isset( $post->post_type ) && $post->post_type != 'attachment' ) {
             TAccess_Loader::loadAsset( 'SCRIPT/wpcf-access-post', 'wpcf-access' );
             TAccess_Loader::loadAsset( 'STYLE/wpcf-access-post', 'wpcf-access' );
 			wp_enqueue_style( 'toolset-notifications-css' );
@@ -3258,7 +3249,7 @@ final class Access_Helper
                 // Check frontend read
                 if ( $needs_min_reading_role && !is_admin() ||$is_allowed_ajax ) {
                     if ( $is_post_managed && 'post' !== $post_type ) {
-                        $data['permissions'] = $settings_access['post']['permissions'];
+	                    $data['permissions'] = toolset_getnest( $settings_access, array( $post_type, 'permissions' ), $settings_access['post']['permissions'] );
                     }
                     if ( isset( $data['permissions']['read']['roles'] ) ) {
                         $wpcf_access->custom_read[] = array(
@@ -4691,39 +4682,64 @@ final class Access_Helper
 			$template = self::wpcf_access_get_custom_error($post_id);
 			Access_Cacher::set( 'wpcf-access-post-permissions-'.$post_id, $template );
 		}
+		
+		$custom_error = toolset_getarr( $template, 0, '' );
+		$custom_error_value = toolset_getarr( $template, 1, '' );
+
+		if ( 'error_ct' === $custom_error ) {
+			self::disable_the_content_hooks();
+		}
 
 		$disable_comments = false;
-		if ( isset($template[0]) && isset($template[1]) && $template[0] == 'error_ct' ){
+		if ( ! empty( $custom_error_value ) && $custom_error == 'error_ct' ) {
 			$do = 'unhide';
 			$return = 1;
 			$disable_comments = true;
 			add_filter('wpv_filter_force_template', array(__CLASS__, 'wpv_access_error_content_template'), 20, 3);
 		}
-		if ( isset($template[0]) && isset($template[1]) && $template[0] == 'error_php' && !$template[2] ){
+		if ( ! empty( $custom_error_value ) && $custom_error == 'error_php' && !$template[2] ) {
 			$do = 'unhide';
 			$return = 1;
-			add_action( 'template_redirect', array(__CLASS__, 'wpv_access_error_php_template'), $template[1] );
+			add_action( 'template_redirect', array(__CLASS__, 'wpv_access_error_php_template'), $custom_error_value );
 		}
-		if ( isset( $template[0] ) && isset( $template[1] ) && $template[0] == 'error_layouts' ){
+		if ( ! empty( $custom_error_value ) && $custom_error == 'error_layouts' ) {
 			$do = 'unhide';
 			$return = 1;
 			add_action( 'wp', array(__CLASS__, 'wpv_access_error_template_layout' ) );
 		}
-		if ( isset($template[0]) && isset($template[1]) && $template[0] == 'error_404' && !$template[2] ){
+		if ( ! empty( $custom_error_value ) && $custom_error == 'error_404' && !$template[2] ) {
 			$do = 'hide';
 			add_action( 'pre_get_posts', array(__CLASS__, 'wpcf_exclude_selected_post_from_single'), 0 );
 			$return = 1;
 		}
-		if ( $template[2] ){
+		if ( $template[2] ) {
 			$do = 'unhide';
 			$return = 1;	
 		}
-		if ( !$template[2] &&  empty($template[0])){
+		if ( ! $template[2] &&  empty( $custom_error ) ) {
 			$do = 'hide';
 			$return = 1;	
 		}
+
+
 		return array($return, $do, $disable_comments);	
 	}
+
+	/**
+	 * Remove the_content filters from Elementor when render Content Template custom error
+	 */
+	public static function disable_the_content_hooks(){
+	    global $wp_filter;
+	    $filters = $wp_filter['the_content'];
+		foreach( $filters as $priority => $filters_array ) {
+            foreach( $filters_array as $filter_index => $filter ) {
+	            if ( isset( $filter['function'][1] ) && is_object( $filter['function'][0] )
+                     && 'Elementor\Frontend' == get_class($filter['function'][0]) && 'apply_builder_in_content' === $filter['function'][1] ) {
+		            remove_filter( 'the_content', array( $filter['function'][0], $filter['function'][1] ), $priority );
+	            }
+            }
+		}
+    }
 	
 	/*
 	 * Exclude current post from list of queries
@@ -4837,10 +4853,12 @@ final class Access_Helper
         remove_filter( 'ddl_apply_the_content_filter_in_cells', array( __CLASS__, 'disable_the_content_filter_for_layouts_cells' ), 11 );
         remove_filter( 'ddl_apply_the_content_filter_in_post_content_cell', array( __CLASS__, 'disable_the_content_filter_for_layouts_cells' ), 11 );
         $error = Access_Cacher::get('wpcf_single_post_error_value');
+        $_GET['layout_id'] = $error;
         add_filter( 'get_layout_id_for_render', array( __CLASS__, 'wpcf_access_load_layout' ) );
         $layout_content = get_the_ddlayout( $error, array( 'initialize_loop' => false ) );
         add_filter( 'ddl_apply_the_content_filter_in_cells', array( __CLASS__, 'disable_the_content_filter_for_layouts_cells' ), 11, 1 );
         add_filter( 'ddl_apply_the_content_filter_in_post_content_cell', array( __CLASS__, 'disable_the_content_filter_for_layouts_cells' ), 11, 1 );
+		add_filter( 'the_content', array( __CLASS__, 'wpv_access_error_template_layout_the_content' ) );
         return $layout_content;
 	}
 

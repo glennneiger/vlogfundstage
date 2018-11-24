@@ -1,5 +1,6 @@
 <?php
 
+use OTGS\Toolset\Common\M2M\PotentialAssociation as potentialAssociation;
 /**
  * Factory for instantiating query classes.
  *
@@ -35,8 +36,11 @@ class Toolset_Relationship_Query_Factory {
 	 * @param IToolset_Relationship_Role_Parent_Child $target_role Target role of the relationships (future role of
 	 *     the posts that are being queried)
 	 * @param IToolset_Element $for_element ID of the element to check against.
+	 * @param potentialAssociation\JoinManager $join_manager
 	 * @param Toolset_Relationship_Table_Name|null $table_names_di
 	 * @param wpdb|null $wpdb_di
+	 *
+	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
 	 *
 	 * @return Toolset_Relationship_Distinct_Post_Query
 	 */
@@ -44,15 +48,51 @@ class Toolset_Relationship_Query_Factory {
 		IToolset_Relationship_Definition $relationship,
 		IToolset_Relationship_Role_Parent_Child $target_role,
 		IToolset_Element $for_element,
+		potentialAssociation\JoinManager $join_manager,
 		Toolset_Relationship_Table_Name $table_names_di = null,
-		wpdb $wpdb_di = null
+		wpdb $wpdb_di = null,
+		Toolset_WPML_Compatibility $wpml_service_di = null
 	) {
 		return new Toolset_Relationship_Distinct_Post_Query(
 			$relationship,
 			$target_role,
 			$for_element,
+			$join_manager,
+			$wpml_service_di,
 			$table_names_di,
 			$wpdb_di
+		);
+	}
+
+
+	/**
+	 * @param IToolset_Relationship_Definition $relationship
+	 * @param IToolset_Relationship_Role_Parent_Child $target_role
+	 * @param IToolset_Element $for_element
+	 * @param potentialAssociation\JoinManager $join_manager
+	 * @param Toolset_Relationship_Table_Name|null $table_names_di
+	 * @param wpdb|null $wpdb_di
+	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
+	 *
+	 * @return potentialAssociation\CardinalityPostQuery
+	 */
+	public function cardinality_query_posts(
+		IToolset_Relationship_Definition $relationship,
+		IToolset_Relationship_Role_Parent_Child $target_role,
+		IToolset_Element $for_element,
+		potentialAssociation\JoinManager $join_manager,
+		Toolset_Relationship_Table_Name $table_names_di = null,
+		wpdb $wpdb_di = null,
+		Toolset_WPML_Compatibility $wpml_service_di = null
+	) {
+		return new potentialAssociation\CardinalityPostQuery(
+			$relationship,
+			$target_role,
+			$for_element,
+			$join_manager,
+			$table_names_di,
+			$wpdb_di,
+			$wpml_service_di
 		);
 	}
 

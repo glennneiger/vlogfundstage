@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Toolset Layouts
-Plugin URI: http://wp-types.com/
+Plugin URI: https://toolset.com/
 Description: Design entire WordPress sites using a drag-and-drop interface.
 Author: OnTheGoSystems
 Author URI: http://www.onthegosystems.com
-Version: 2.2
+Version: 2.4.3
 */
 
 /**

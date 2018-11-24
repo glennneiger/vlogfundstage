@@ -330,7 +330,7 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 
 		$tax_currently_supported = array();
 		$form_tax                = array();
-		
+
 		if(
 			isset( $this->update['taxonomies'] )
 			&& is_array( $this->update['taxonomies'] )
@@ -389,7 +389,7 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 						$tax_currently_supported[ $term->term_taxonomy_id ] = $term->name;
 					}
 				}
-				
+
 				error_log( 'update-taxonomies ' . print_r( $this->update['taxonomies'], true ) );
 				$form_tax[ $term->term_taxonomy_id ] = array(
 					'#type'       => 'hidden',
@@ -417,7 +417,7 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 		$templates_views = get_posts( array(
 			'post_type'   => 'view-template',
 			'numberposts' => - 1,
-			'status'      => 'publish',
+			'post_status'      => 'publish',
 		) );
 		$form_templates  = array();
 
@@ -902,7 +902,7 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 				$templates_views          = get_posts( array(
 					'post_type'   => 'view-template',
 					'numberposts' => - 1,
-					'status'      => 'publish',
+					'post_status'      => 'publish',
 				) );
 				$form['default-template'] = array(
 					'#type'          => 'checkbox',
@@ -1258,4 +1258,3 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 		wpcf_admin_fields_save_group_templates( $group_id, $post_templates );
 	}
 }
-

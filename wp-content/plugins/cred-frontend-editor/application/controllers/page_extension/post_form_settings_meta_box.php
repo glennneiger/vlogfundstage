@@ -1,13 +1,16 @@
 <?php
 
 /**
- * Class responsible to create Form Settings Meta Box
+ * Class Responsible to create Form Settings Meta Box
  *
  * @since 1.9.3
  */
 class CRED_Page_Extension_Post_Form_Settings_Meta_Box extends CRED_Page_Extension_Form_Settings_Meta_Box_Base {
 
 	private static $instance;
+
+	public function __construct() {
+	}
 
 	public static function get_instance() {
 		if ( null == self::$instance ) {
@@ -32,6 +35,12 @@ class CRED_Page_Extension_Post_Form_Settings_Meta_Box extends CRED_Page_Extensio
 
 		//All Page List
 		$form_action_pages = $this->get_form_action_pages( $settings );
+		
+		$repeating_fields_groups_post_types = array();
+		if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			do_action( 'toolset_do_m2m_full_init' );
+			$repeating_fields_groups_post_types = get_post_types( array( Toolset_Post_Type_From_Types::DEF_IS_REPEATING_FIELD_GROUP => true ), 'objects' );
+		}
 
 		//Enqueue scripts
 		$enqueue_scripts_settings = array(
@@ -53,6 +62,7 @@ class CRED_Page_Extension_Post_Form_Settings_Meta_Box extends CRED_Page_Extensio
 			'form' => $form,
 			'settings' => $settings,
 			'post_types' => CRED_Loader::get( 'MODEL/Fields' )->getPostTypes(),
+			'repeating_fields_groups_post_types' => $repeating_fields_groups_post_types,
 			'form_post_types' => $form_post_types,
 			'form_current_custom_post' => $form_current_custom_post,
 			'default_empty_action_post_type' => $default_empty_action_post_type_label,

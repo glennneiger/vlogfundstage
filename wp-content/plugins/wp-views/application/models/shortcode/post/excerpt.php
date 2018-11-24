@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Excerpt implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Excerpt extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-excerpt';
 
@@ -76,15 +76,14 @@ class WPV_Shortcode_Post_Excerpt implements WPV_Shortcode_Interface {
 		
 		$out = '';
 		$debug = '';
-		
-		$item = get_post( $item_id );
-		
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
-		
-		if ( post_password_required( $item_id ) ) {
+
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
+
+		if ( post_password_required( $item->ID ) ) {
 
 			/**
 			* Filter wpv_filter_post_protected_excerpt
@@ -283,6 +282,4 @@ class WPV_Shortcode_Post_Excerpt implements WPV_Shortcode_Interface {
 
 		return array( 'out' => $out, 'debug' => $debug );
 	}
-	
-	
 }

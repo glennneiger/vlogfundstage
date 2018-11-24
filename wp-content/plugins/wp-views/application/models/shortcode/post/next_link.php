@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Next_Link implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Next_Link extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-next-link';
 
@@ -65,17 +65,16 @@ class WPV_Shortcode_Post_Next_Link implements WPV_Shortcode_Interface {
 			// no valid item
 			throw new WPV_Exception_Invalid_Shortcode_Attr_Item();
 		}
-		
-		$out = '';
-		
-		$item = get_post( $item_id );
 
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
+		$out = '';
+
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
 		
-		if ( WPV_WPML_Integration::get_instance()->is_wpml_st_loaded() ) {
+		if ( \OTGS\Toolset\Views\Controller\Compatibility\Wpml::get_instance()->is_wpml_st_loaded() ) {
 			$view_settings = apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
 			$context = 'View ' . $view_settings['view_slug'];
 			$this->user_atts['format'] = wpv_translate(
@@ -100,7 +99,7 @@ class WPV_Shortcode_Post_Next_Link implements WPV_Shortcode_Interface {
 		$original_post = $post;
 		$post = $item;
 
-		$out = get_next_post_link( $format, $link );
+		$out .= get_next_post_link( $format, $link );
 		
 		$post = $original_post;
 
@@ -108,6 +107,4 @@ class WPV_Shortcode_Post_Next_Link implements WPV_Shortcode_Interface {
 
 		return $out;
 	}
-	
-	
 }

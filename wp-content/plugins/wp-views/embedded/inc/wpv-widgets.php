@@ -79,6 +79,14 @@ class WPV_Widget extends WP_Widget {
         );
         $title = $instance['title'];
         $view  = $instance['view'];
+
+		/**
+		 * Action that is triggered before the rendering of the Views WordPress widgets.
+		 *
+		 * @since 2.6.4
+		 */
+		do_action( 'wpv_action_before_render_views_wp_widget_form' );
+
         if ( $views ) {
 		?>
         <p>
@@ -218,6 +226,14 @@ class WPV_Widget_filter extends WP_Widget {
 		if ( $target_id != '' ) {
 			$target_title = esc_attr( get_the_title( $target_id ) );
 		}
+
+		/**
+		 * Action that is triggered before the rendering of the Views WordPress widgets.
+		 *
+		 * @since 2.6.4
+		 */
+	    do_action( 'wpv_action_before_render_views_wp_widget_form' );
+
         if ( count( $view_forms ) > 0 ) {
 		?>
             <p>
@@ -235,7 +251,7 @@ class WPV_Widget_filter extends WP_Widget {
 			</p>
 			<p>
 				<label for="<?php echo $this->get_field_id('target_title'); ?>"><?php _e('Target page to show the results:', 'wpv-views'); ?></label>				
-				<input type="text" id="<?php echo $this->get_field_id('target_title'); ?>" name="<?php echo $this->get_field_name('target_title'); ?>" value="<?php echo $target_title; ?>" class="widefat js-wpv-widget-form-target-suggest-title" placeholder="<?php echo esc_attr( __( 'Please type', 'wpv-views' ) ); ?>" />
+				<input type="text" id="<?php echo $this->get_field_id('target_title'); ?>" name="<?php echo $this->get_field_name('target_title'); ?>" value="<?php echo $target_title; ?>" class="widefat wpv-widget-form-target-suggest-title js-wpv-widget-form-target-suggest-title" placeholder="<?php echo esc_attr( __( 'Please type', 'wpv-views' ) ); ?>" />
 				<input type="hidden" value="<?php echo $target_id; ?>" id="<?php echo $this->get_field_id( 'target_id' ); ?>" name="<?php echo $this->get_field_name( 'target_id' ); ?>" class="widefat js-wpv-widget-form-target-id" />
 				<input type="hidden" name="wpv-target-customizer-helper" class="js-wpv-target-customizer-helper" />
 			</p>
@@ -243,7 +259,7 @@ class WPV_Widget_filter extends WP_Widget {
 				<?php _e( 'Setup incomplete. Please select the page where you would like to show the search results.', 'wpv-views' ); ?>
 			</p>
 			<div class="js-wpv-check-target-setup-box" style="display:none;background:#ddd;margin: 5px 0;padding: 5px 10px 10px;">
-				<?php _e( 'Be sure to complete the setup:', 'wpv-views' ); ?><br />
+				<p><?php esc_html_e( 'Be sure to complete the setup:', 'wpv-views' ); ?></p>
 				<a href="#" target="_blank" class="button-primary js-wpv-check-target-setup-link" data-editurl="<?php echo admin_url( 'post.php' ); ?>?post="><?php _e( 'Check the results page', 'wpv-views' ); ?></a>
 				<a href="#" class="button-secondary js-wpv-discard-target-setup-link"><?php _e( 'Not now', 'wpv-views' ); ?></a>
 			</div>

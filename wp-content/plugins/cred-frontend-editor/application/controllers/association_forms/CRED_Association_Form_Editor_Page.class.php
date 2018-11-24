@@ -258,6 +258,7 @@ class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 	 */
 	function build_js_data() {
 		$prepared_data = array(
+			'toolsetFormsVersion' => CRED_FE_VERSION,
 			'formModelData'       => $this->model->to_array(),
 			'jsEditorIncludePath' => CRED_ABSURL . '/public/association_forms/js/editor_page',
 			'jsIncludePath'       => CRED_ABSURL . '/public/association_forms/js',

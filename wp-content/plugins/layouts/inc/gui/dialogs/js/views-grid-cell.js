@@ -487,6 +487,8 @@ DDLayout.ViewsInIfame = function ($) {
         jQuery('#ddl-layout-toolset-iframe').on('ddl-layout-toolset-iframe-loaded', function( event, iFrameDoc ){
             var iFrameDocument = iFrameDoc, $button = $('.js-wpv-view-save-all', iFrameDocument );
             $button.hide();
+            // we don't need actions bar in Views iFrame
+            $("#js-wpv-general-actions-bar", $( iFrameDocument ) ).hide();
             //$save_button.prop( 'disabled', false );
             $save_button.on('click', function(event){
                 $button.trigger('click');

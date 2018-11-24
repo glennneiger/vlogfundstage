@@ -11,7 +11,7 @@ if( ddl_has_feature('video-cell') === false ){
 	return;
 }
 
-if (!class_exists('Layouts_cell_video')) {
+if (!class_exists('Layouts_cell_video', false )) {
     class Layouts_cell_video{
 
         // define cell name

@@ -64,6 +64,39 @@ class Toolset_Shortcode_Attr_Item_Legacy extends Toolset_Shortcode_Attr_Item_Id 
 
 			return $this->chain_link->get( $data );
 		}
+		
+		if( $role_slug == 'current_page' ) {
+			if ( is_single() || is_page() ) {
+				global $wp_query;
+				if ( isset( $wp_query->posts[0] ) ) {
+					$current_post = $wp_query->posts[0];
+					return $this->return_single_id( $current_post->ID );
+				}
+			}
+			
+			/**
+			 * Get the current top post.
+			 *
+			 * Some Toolset plugins might need to set the top current post under some scenarios,
+			 * like Toolset Views when doing AJAX pagination or AJAX custom search.
+			 * In those cases, they can use this filter to get the top current post they are setting
+			 * and override the ID to apply as the $current_page value.
+			 *
+			 * @not Toolset plugins should set this just in time, not globally, when needed, meaning AJAX calls or whatever.
+			 *
+			 * @param $top_post 	null
+			 *
+			 * @return $top_post 	null/WP_Post object 	The top current post, if set by any Toolset plugin.
+			 *
+			 * @since 2.3.0
+			 */
+			$top_current_post = apply_filters( 'toolset_filter_get_top_current_post', null );
+			if ( $top_current_post ) {
+				return $this->return_single_id( $top_current_post->ID );
+			}
+
+			return $this->chain_link->get( $data );
+		}
 
 		if( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
 			// m2m disabled
@@ -75,7 +108,8 @@ class Toolset_Shortcode_Attr_Item_Legacy extends Toolset_Shortcode_Attr_Item_Id 
 		}
 
 		// find parent by using the slug (to support legacy use of the shortcode [types id="$parent_slug"])
-		$parents_with_specific_slug = $this->service_relationship->find_parents_by_child_id_and_parent_slug( $post->ID, $role_slug );
+		// We don't need more than two items (to detect there are more than one and to choose one).
+		$parents_with_specific_slug = $this->service_relationship->find_legacy_parents_by_child_id_and_parent_slug( $post->ID, $role_slug );
 
 		if( count( $parents_with_specific_slug ) > 1 ) {
 			// todo show a message to the admin that he should replace the old shortcode structure by the new

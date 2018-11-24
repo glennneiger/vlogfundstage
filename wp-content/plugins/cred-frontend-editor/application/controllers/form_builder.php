@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class CRED_Form_Builder responsible of CRED Form creations
+ * Class CRED_Form_Builder responsible of Toolset Form creations
  */
 class CRED_Form_Builder extends CRED_Form_Builder_Base {
 

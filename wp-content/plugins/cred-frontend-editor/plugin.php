@@ -1,9 +1,9 @@
 <?php
 /*
-  Plugin Name: Toolset CRED
-  Plugin URI: https://wp-types.com/home/toolset-components/#cred
-  Description: Create Edit Delete Wordpress content (ie. posts, pages, custom posts) from the front end using fully customizable forms
-  Version: 1.9.4
+  Plugin Name: Toolset Forms
+  Plugin URI: https://toolset.com/home/toolset-components/#cred
+  Description: Create Edit Delete WordPress content (ie. posts, pages, custom posts) from the front end using fully customizable forms
+  Version: 2.1.2
   Author: OnTheGoSystems
   Author URI: http://www.onthegosystems.com/
   License: GPLv2
@@ -13,7 +13,7 @@
 
 // Abort if called directly.
 if (!function_exists('add_action')) {
-    die('CRED is a WordPress plugin and can not be called directly.');
+    die('Toolset Forms is a WordPress plugin and can not be called directly.');
 }
 
 
@@ -24,33 +24,61 @@ if (defined('CRED_FE_VERSION')) {
 
 
 /*
- * Define plugin constants - version, paths, etc.
+ * ---------------------------------------------
+ * CONSTANTS
+ * ---------------------------------------------
  */
 
-// Current plugin version
-define( 'CRED_FE_VERSION', '1.9.4' );
+ /**
+  * Plugin version
+  */
+define( 'CRED_FE_VERSION', '2.1.2' );
 
-
-if (!defined('CRED_ABSPATH')) {
-
-    /**
-     * Absolute path to the new plugin root.
-     *
-     * Everything else is legacy.
-     * No other path definitions should be necessary.
-     *
-     * @since 1.8.6
-     */
-    define('CRED_ABSPATH', dirname(__FILE__));
+/**
+ * Absolute plugin root path.
+ * Everything else is legacy: no other path definitions should be necessary.
+ *
+ * @since 1.8.6
+ */
+if ( ! defined( 'CRED_ABSPATH' ) ) {
+    define( 'CRED_ABSPATH', dirname( __FILE__ ) );
 }
 
-if (!defined('CRED_ABSURL')) {
-    define('CRED_ABSURL', plugins_url() . '/' . basename(CRED_ABSPATH));
+/**
+ * Absolute URL root.
+ */
+if ( ! defined( 'CRED_ABSURL' ) ) {
+    define( 'CRED_ABSURL', plugins_url() . '/' . basename( CRED_ABSPATH ) );
 }
 
+/**
+ * Templates path.
+ */
+$cred_templates = CRED_ABSPATH . '/application/views';
+define( 'CRED_TEMPLATES', $cred_templates );
+
+/**
+ * General plugin capability.
+ */
+define( 'CRED_CAPABILITY', 'manage_options' );
+
+/**
+ * Custom objects post types.
+ * 
+ * @deprecated Use \OTGS\Toolset\CRED\Controller\Forms\Post\Main::POST_TYPE instead.
+ * @deprecated Use \OTGS\Toolset\CRED\Controller\Forms\User\Main::POST_TYPE instead.
+ */
+define( 'CRED_FORMS_CUSTOM_POST_NAME', 'cred-form' );
+define( 'CRED_USER_FORMS_CUSTOM_POST_NAME', 'cred-user-form' );
+
+/**
+ * Module Manager
+ */
+define( '_CRED_MODULE_MANAGER_KEY_', 'cred' );
+define( '_CRED_MODULE_MANAGER_USER_KEY_', 'cred-user' );
 
 
 /*
- * Bootstrap CRED
+ * Bootstrap Toolset Forms
  */
 require_once CRED_ABSPATH . '/application/bootstrap.php';

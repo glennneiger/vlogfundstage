@@ -17,7 +17,7 @@ class WPV_Editor_Loop_Output{
 	
 	static function wpv_screen_options_loop_output( $sections ) {
 		$sections['layout-extra'] = array(
-			'name'		=> __( 'Loop Output Editor', 'wpv-views' ),
+			'name'		=> __( 'Loop Editor', 'wpv-views' ),
 			'disabled'	=> true,
 		);
 		return $sections;
@@ -51,7 +51,7 @@ class WPV_Editor_Loop_Output{
 
 			<div class="wpv-settings-header">
 				<h2>
-					<?php _e( 'Loop Output Editor', 'wpv-views' ) ?>
+					<?php _e( 'Loop Editor', 'wpv-views' ) ?>
 					<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
 							data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 							data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
@@ -88,31 +88,41 @@ class WPV_Editor_Loop_Output{
 								</button>
 							</li>
 							<?php
-							
-								if ( 'normal' == $query_mode ) {
-									// we only add the pagination button to the Layout box if the View is not a WPA
+							    if( wpv_is_views_lite() ){
+								?>
+                                <li class=" js-wpv-disabled-pagination-tooltip">
+                                    <button class="button-secondary js-code-editor-toolbar-button disabled "
+                                            data-content="wpv_filter_meta_html_content">
+                                        <i class="icon-pagination fa fa-wpv-custom"></i>
+                                        <span class="button-label"><?php _e( 'Pagination controls', 'wpv-views' ); ?></span>
+                                    </button>
+                                </li>
+								<?php
+							    } else if ( 'normal' == $query_mode ) {
 									?>
-									<li class="js-wpv-editor-pagination-button-wrapper"<?php if ( isset( $view_settings['pagination']['type'] ) && $view_settings['pagination']['type'] == 'disabled' ) { echo ' style="display:none"'; } ?>>
-										<button class="button-secondary js-code-editor-toolbar-button js-wpv-pagination-popup" data-content="wpv_layout_meta_html_content">
+									<li class="js-wpv-editor-pagination-button-wrapper">
+										<button class="button-secondary js-code-editor-toolbar-button js-wpv-pagination-popup"
+											data-content="wpv_layout_meta_html_content">
 											<i class="icon-pagination fa fa-wpv-custom"></i>
 											<span class="button-label"><?php _e('Pagination controls','wpv-views'); ?></span>
+											<i class="icon-bookmark fa fa-bookmark flow-warning js-wpv-pagination-control-button-incomplete" style="display:none"></i>
 										</button>
 									</li>
 									<?php
 								} else if( 'archive' == $query_mode ) {
-									// Button to the Archive pagination controls popup for WPAs
 									?>
-									<li class="js-wpv-archive-editor-pagination-button-wrapper"<?php if ( isset( $view_settings['pagination']['type'] ) && $view_settings['pagination']['type'] == 'disabled' ) { echo ' style="display:none"'; } ?>>
+									<li class="js-wpv-archive-editor-pagination-button-wrapper">
 										<button class="button-secondary js-code-editor-toolbar-button js-wpv-archive-pagination-popup"
 												data-content="wpv_layout_meta_html_content">
 											<i class="icon-pagination fa fa-wpv-custom"></i>
 											<span class="button-label"><?php _e( 'Pagination controls', 'wpv-views' ); ?></span>
+											<i class="icon-bookmark fa fa-bookmark flow-warning js-wpv-pagination-control-button-incomplete" style="display:none"></i>
 										</button>
 									</li>
 									<?php
 								}
 								
-								// Action to add Toolset buttons to the Loop Output editor
+								// Action to add Toolset buttons to the Loop editor
 								do_action( 'toolset_action_toolset_editor_toolbar_add_buttons', 'wpv_layout_meta_html_content', 'views' );
 
 								do_action( 'wpv_cred_forms_button', 'wpv_layout_meta_html_content' );
@@ -241,6 +251,7 @@ class WPV_Editor_Loop_Output{
 				$view->loop_include_field_names	= wpv_getpost( 'include_field_names' );
 				$view->loop_fields				= wpv_getpost( 'fields' ); // @todo sanitize this
 				$view->loop_real_fields			= wpv_getpost( 'real_fields' ); // @todo sanitize this
+				$view->list_separator = wpv_getpost( 'list_separator' ); // This doesn't need sanitization as it will be sanitized as part of the editor content when the time comes.
 
 				// Remove unused Content Template
 				$ct_to_delete = (int) wpv_getpost( 'delete_view_loop_template', 0 );
@@ -269,7 +280,7 @@ class WPV_Editor_Loop_Output{
 		// Success!
 		$data = array(
 			'id' => $view_id,
-			'message' => __( 'Loop Output saved', 'wpv-views' )
+			'message' => __( 'Loop saved', 'wpv-views' )
 		);
 		wp_send_json_success( $data );
 	}

@@ -41,13 +41,26 @@ var wptCond = (function ($) {
 
     function _getTrigger(trigger, formID)
     {
+        // check rfg items first
+        if( trigger.startsWith( "types-repeatable-group" ) ) {
+            var $trigger = $('[name="' + trigger + '"]', formID );
+
+            return $trigger;
+        }
+
         var $trigger = $('[data-wpt-name="' + trigger + '"]', formID);
         /**
          * wp-admin
          */
-        if ($('body').hasClass('wp-admin')) {
-            trigger = trigger.replace(/wpcf\-/, 'wpcf[') + ']';
-            $trigger = $('[data-wpt-name="' + trigger + '"]', formID);
+        if ( ! $trigger.length && $('body').hasClass('wp-admin')) {
+            if ( trigger.match( /^wpcf\-/ ) ) {
+                trigger = trigger.replace(/wpcf\-/, 'wpcf[') + ']';
+                $trigger = $('[data-wpt-name="' + trigger + '"]', formID);
+            }
+
+            if( ! $trigger.length ) {
+                $trigger = $('[data-wpt-name="wpcf[' + trigger + ']"]', formID);
+            }
         }
         /**
          * handle skype field
@@ -73,7 +86,6 @@ var wptCond = (function ($) {
         if ($trigger.length > 0 && 'option' == $trigger.data('wpt-type')) {
             $trigger = $trigger.parent();
         }
-
         /**
          * Try with cred fields
          */
@@ -115,13 +127,17 @@ var wptCond = (function ($) {
                 radio = $('[name="' + $trigger.attr('name') + '"]:checked', formID);
                 // If no option was selected, the value should be empty
                 val = '';
-                if ('undefined' == typeof (radio.data('types-value'))) {
-                    val = radio.val();
-                } else {
-                    val = radio.data('types-value');
-                }
-                if (wptCondDebug) {
-                    console.log('radio', radio);
+                if ( radio.length > 0 ) {
+                    if ('undefined' == typeof (radio.data('types-value'))) {
+                        val = radio.val();
+                    } else {
+                        val = radio.data('types-value');
+                    }
+                    if (wptCondDebug) {
+                        console.log('radio', radio);
+                    }
+                } else if ( wptCondDebug ) {
+                    console.log('radio', {});
                 }
                 break;
             case 'select':
@@ -179,9 +195,32 @@ var wptCond = (function ($) {
 
     function _getAffected(affected, formID)
     {
+        // decode URI for the case the field group slug has multibyte characters (which are url encoded by wordpress)
+        affected = decodeURIComponent( affected );
+
         if (wptCondDebug) {
             console.info('_getAffected');
         }
+
+        // check rfg fields first
+        if( affected.startsWith( "types-repeatable-group" ) ) {
+            var $affected = $('[name^="' + affected + '"]', formID );
+
+            return $affected;
+        }
+
+        // Related content meta boxes
+        if( affected.startsWith( "wpcf[" ) ) {
+            var $affected = $('[name*="' + affected + '"]', formID );
+
+            // Search for the container
+            if ( $affected ) {
+                $affected = $affected.parents('.js-wpt-field:first');
+            }
+
+            return $affected;
+        }
+
         var $el = $('[data-wpt-id="' + affected + '"]', formID);
         if ($('body').hasClass('wp-admin')) {
             $el = $el.closest('.wpt-field');
@@ -292,6 +331,14 @@ var wptCond = (function ($) {
                 return;
             }
             $trigger = _getTrigger(data.id, formID);
+            if ( ! $trigger ) {
+                if (!passed_single) {
+                    passedAll = false;
+                } else {
+                    passedOne = false;
+                }
+                return;
+            }
             var val = _getTriggerValue($trigger, formID);
             if (wptCondDebug) {
                 console.log('formID', formID);
@@ -773,7 +820,7 @@ var wptCond = (function ($) {
     }
 
 	// @bug This seems to be only used by date.js on its conditional_check_date method,
-	// which again gets only used by its ajaxConditional method, 
+	// which again gets only used by its ajaxConditional method,
 	// which seems hooked into a commented out JS action.
 	// The PHP side is in bootstrap.php :-/
 	// I do not think we have AJAX conditionals, not even for date fields :-//
@@ -799,6 +846,7 @@ var wptCond = (function ($) {
 
     function addConditionals(data)
     {
+
         _.each(data, function (c, formID) {
             if (typeof c.triggers != 'undefined'
                     && typeof wptCondTriggers[formID] != 'undefined') {
@@ -813,7 +861,11 @@ var wptCond = (function ($) {
             if (typeof c.fields != 'undefined'
                     && typeof wptCondFields[formID] != 'undefined') {
                 _.each(c.fields, function (conditionals, field) {
-                    wptCondFields[formID][field] = conditionals;
+                    if ( !! wptCondFields[formID][field] ) {
+                        wptCondFields[formID][field].conditions = [].concat( wptCondFields[formID][field].conditions, conditionals.conditions );
+                    } else {
+                        wptCondFields[formID][field] = conditionals;
+                    }
                 });
             }
             if (typeof c.custom_triggers != 'undefined'
@@ -833,6 +885,9 @@ var wptCond = (function ($) {
                 });
             }
         });
+        if ( typeof Toolset !== 'undefined' && !!Toolset.hooks ) {
+            Toolset.hooks.doAction( 'toolset-conditionals-add-conditionals', data );
+        }
     }
 
     /**
@@ -870,7 +925,9 @@ var wptCond = (function ($) {
     return {
         init: init,
         ajaxCheck: ajaxCheck,
-        addConditionals: addConditionals
+        addConditionals: addConditionals,
+        getTrigger: _getTrigger,
+        check: _check
     };
 
 })(jQuery);

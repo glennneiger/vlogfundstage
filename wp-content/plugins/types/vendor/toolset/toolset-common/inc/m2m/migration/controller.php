@@ -29,8 +29,12 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 	private $_association_migrator;
 
 
-	/** @var  Toolset_Post_Type_Repository */
-	private $post_type_repository;
+	/** @var null|Toolset_Post_Type_Repository */
+	private $_post_type_repository;
+
+
+	/** @var bool */
+	private $_do_detailed_logging;
 
 
 	/** @var Toolset_Relationship_Table_Name */
@@ -49,7 +53,7 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 	 * @param Toolset_Relationship_Definition_Repository|null $relationship_definition_repository_di
 	 * @param Toolset_Relationship_Migration_Associations|null $association_migrator_di
 	 * @param Toolset_Relationship_Table_Name|null $table_name_di
-	 * @param Toolset_Post_Type_Repository|null $post_type_repository
+	 * @param Toolset_Post_Type_Repository|null $post_type_repository_di
 	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
 	 */
 	public function __construct(
@@ -58,7 +62,7 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 		Toolset_Relationship_Definition_Repository $relationship_definition_repository_di = null,
 		Toolset_Relationship_Migration_Associations $association_migrator_di = null,
 		Toolset_Relationship_Table_Name $table_name_di = null,
-		Toolset_Post_Type_Repository $post_type_repository = null,
+		Toolset_Post_Type_Repository $post_type_repository_di = null,
 		Toolset_WPML_Compatibility $wpml_service_di = null
 	) {
 		parent::__construct( $wpdb_di );
@@ -67,7 +71,7 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 		$this->_association_migrator = $association_migrator_di;
 		$this->table_name = $table_name_di ?: new Toolset_Relationship_Table_Name();
 		$this->wpml_compatibility = $wpml_service_di ?: Toolset_WPML_Compatibility::get_instance();
-		$this->post_type_repository = $post_type_repository ? $post_type_repository : Toolset_Post_Type_Repository::get_instance();
+		$this->_post_type_repository = $post_type_repository_di;
 	}
 
 
@@ -83,7 +87,8 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 	private function get_association_migrator( $create_default_language_if_missing, $copy_post_content_when_creating ) {
 		if( null === $this->_association_migrator ) {
 			$this->_association_migrator = new Toolset_Relationship_Migration_Associations(
-				$this->get_relationship_repository(), $create_default_language_if_missing, $copy_post_content_when_creating
+				$this->get_relationship_repository(), $create_default_language_if_missing, $copy_post_content_when_creating,
+				null, null, $this->do_detailed_logging()
 			);
 		}
 
@@ -168,10 +173,12 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 	 *
 	 * Relationship slugs will be {$parent_post_type}_{$child_post_type}. Overwrites existing definitions.
 	 *
+	 * @param bool $adjust_translation_mode
+	 *
 	 * @return Toolset_Result_Set
 	 * @since m2m
 	 */
-	public function migrate_relationship_definitions() {
+	public function migrate_relationship_definitions( $adjust_translation_mode ) {
 
 		$relationships = $this->get_legacy_relationship_post_type_pairs();
 
@@ -187,8 +194,8 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 			$child_post_type = $post_type_pair['child'];
 			$relationship_slug = $post_type_pair['slug'];
 
-			$results->add( $this->check_post_type_translation_mode( $parent_post_type ) );
-			$results->add( $this->check_post_type_translation_mode( $child_post_type ) );
+			$results->add( $this->maybe_adjust_post_type_translation_mode( $parent_post_type, $adjust_translation_mode ) );
+			$results->add( $this->maybe_adjust_post_type_translation_mode( $child_post_type, $adjust_translation_mode ) );
 
 			$result = $this->create_relationship_definition( $parent_post_type, $child_post_type, $relationship_slug );
 			$results->add( $result );
@@ -206,14 +213,25 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 	 * If WPML is active and the given post type has the standard translation mode, switch it to "display as translated".
 	 *
 	 * @param string $post_type_slug
+	 * @param bool $adjust_translation_mode Whether or not to adjust the translation mode.
 	 *
 	 * @return Toolset_Result
 	 * @since 2.5.11
 	 */
-	private function check_post_type_translation_mode( $post_type_slug ) {
+	private function maybe_adjust_post_type_translation_mode( $post_type_slug, $adjust_translation_mode ) {
 		if( Toolset_WPML_Compatibility::MODE_TRANSLATE !== $this->wpml_compatibility->get_post_type_translation_mode( $post_type_slug ) ) {
 			// This will happen also if WPML is not active at all.
 			return new Toolset_Result( true );
+		}
+
+		if( ! $adjust_translation_mode ) {
+			return new Toolset_Result(
+				true,
+				sprintf(
+					__( 'The post type "%s" has a "show only translated items" translation mode but no adjustments are made as per user\'s choice.', 'wpcf'),
+					sanitize_title( $post_type_slug )
+				)
+			);
 		}
 
 		// Fix the wrong translation mode.
@@ -255,22 +273,46 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 		$results = array();
 
 		foreach ( $relationships as $parent_post_type => $relationships_per_post_type ) {
-			$parent_post_type_obj = $this->post_type_repository->get( $parent_post_type );
+			if( ! $parent_post_type_obj = $this->get_post_type_repository()->get( $parent_post_type ) ) {
+				// no parent post type object
+				continue;
+			}
 			$relationships_per_post_type = toolset_ensarr( $relationships_per_post_type );
 
 			foreach ( $relationships_per_post_type as $child_post_type => $temporarily_ignored ) {
-				$child_post_type_obj = $this->post_type_repository->get( $child_post_type );
+				if( ! $child_post_type_obj = $this->get_post_type_repository()->get( $child_post_type ) ) {
+					// no child post type object
+					continue;
+				}
+
 				$results[] = array(
 					'parent' => $parent_post_type,
 					'child' => $child_post_type,
 					'slug' => $this->derive_relationship_slug( $parent_post_type, $child_post_type ),
-					'parent_can_be_used_in_relationship' => $parent_post_type_obj->can_be_used_in_relationship() ? 1 : 0,
-					'child_can_be_used_in_relationship' => $child_post_type_obj->can_be_used_in_relationship() ? 1 : 0,
+					'parent_has_show_only_translated_mode' => (
+						$this->post_type_has_only_show_translated_mode( $parent_post_type ) ? 1 : 0
+					),
+					'child_has_show_only_translated_mode' => (
+						$this->post_type_has_only_show_translated_mode( $child_post_type ) ? 1 : 0
+					),
 				);
 			}
 		}
 
 		return $results;
+	}
+
+
+	private function post_type_has_only_show_translated_mode( $post_type_slug ) {
+		if( ! $this->wpml_compatibility->is_wpml_active_and_configured() ) {
+			return false;
+		}
+
+		if( ! $this->wpml_compatibility->is_post_type_translatable( $post_type_slug ) ) {
+			return false;
+		}
+
+		return ! $this->wpml_compatibility->is_post_type_display_as_translated( $post_type_slug );
 	}
 
 
@@ -322,8 +364,19 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 			);
 		}
 
-		return new Toolset_Result( true );
+		if( $this->do_detailed_logging() ) {
+			return new Toolset_Result(
+				true,
+				sprintf(
+					__( 'Relationship "%s" between post types "%s" and "%s" was created.', 'wpcf' ),
+					$relationship_slug,
+					$parent_post_type,
+					$child_post_type
+				)
+			);
+		}
 
+		return new Toolset_Result( true );
 	}
 
 
@@ -370,9 +423,9 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 		if( empty( $associations_to_migrate ) ) {
 			return new Toolset_Result_Updated( true, 0 );
 		}
-		
+
 		$results = new Toolset_Result_Set();
-		
+
 		foreach( $associations_to_migrate as $association_to_migrate ) {
 			$result = $this->get_association_migrator(
 				$create_default_language_if_missing, $copy_post_content_when_creating
@@ -383,7 +436,7 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 			);
 			$results->add( $result );
 		}
-		
+
 		if( $results->is_complete_success() ) {
 			return new Toolset_Result_Updated( true, count( $associations_to_migrate ), $results->concat_messages( self::MESSAGE_SEPARATOR ) );
 		} else {
@@ -437,7 +490,7 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 	private function get_association_postmeta_records( $offset, $limit ) {
 
 		$query = $this->wpdb->prepare(
-			"SELECT post.ID AS child_id, 
+			"SELECT post.ID AS child_id,
 		  		postmeta.meta_key AS relationship_meta_key,
 				postmeta.meta_value AS parent_id,
 				post.post_type AS post_type
@@ -454,6 +507,18 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 
 
 	/**
+	 * @return Toolset_Post_Type_Repository
+	 */
+	private function get_post_type_repository() {
+		if( null === $this->_post_type_repository ) {
+			$this->_post_type_repository = Toolset_Post_Type_Repository::get_instance();
+		}
+
+		return $this->_post_type_repository;
+	}
+
+
+	/**
 	 * Final migration step.
 	 *
 	 * @since m2m
@@ -461,6 +526,22 @@ class Toolset_Relationship_Migration_Controller extends Toolset_Wpdb_User {
 	public function finish() {
 	    update_option( Toolset_Relationship_Controller::IS_M2M_ENABLED_OPTION, 'yes', true );
 	}
+
+
+	private function do_detailed_logging() {
+		if( null === $this->_do_detailed_logging ) {
+			/**
+			 * toolset_m2m_migration_do_detailed_logging
+			 *
+			 * Allow for reducing the m2m migration log output by skipping successful associations.
+			 *
+			 * @since 3.0
+			 */
+			$this->_do_detailed_logging = apply_filters( 'toolset_m2m_migration_do_detailed_logging', true );
+		}
+		return $this->_do_detailed_logging;
+	}
+
 
 }
 

@@ -6,6 +6,11 @@
  * @since m2m
  */
 class CRED_Field_Command_Relationships extends CRED_Field_Command_Base {
+	
+	/**
+	 * @var boolean
+	 */
+	private $disabled_for_non_default_wpml_language = false;
 
 	public function execute() {
 		$field = CRED_StaticClass::$out[ 'fields' ][ 'relationships' ][ $this->field_name ];
@@ -80,8 +85,10 @@ class CRED_Field_Command_Relationships extends CRED_Field_Command_Base {
 			);
 		}
 		$field[ 'data' ][ 'options' ][ 'default' ] = $default_option;
-
+		
 		$force_author = $this->maybe_set_ancestor_filter_by_author( $force_author, $field_name );
+		
+		$this->maybe_disable_for_non_default_wpml_language();
 
 		$additional_attributes = array(
 			'preset_value' => $this->value,
@@ -154,8 +161,33 @@ class CRED_Field_Command_Relationships extends CRED_Field_Command_Base {
 			'plugin_type' => ( isset( $field[ 'plugin_type' ] ) ) ? $field[ 'plugin_type' ] : '',
 			'name' => $field_name,
 		);
-
+		
+		if ( 
+			$this->disabled_for_non_default_wpml_language 
+			&& current_user_can( 'manage_options' )
+		) {
+			$field_object['description'] = __( 'Relationships can only be managed in the default language.', 'wp-cred' );
+		}
+		
 		return $field_object;
+	}
+	
+	/**
+	 * Disable relationship fields displayed on a form to create posts in a language different than default.
+	 *
+	 * You can only create an association for a post that has a translation into the default language.
+	 * When creating new posts, this does not happen automatically.
+	 *
+	 * @since 2.1
+	 */
+	private function maybe_disable_for_non_default_wpml_language() {
+		if ( 'new' != $this->form_type ) {
+			return;
+		}
+		if ( apply_filters( 'wpml_default_language', '' ) != apply_filters( 'wpml_current_language', '' ) ) {
+			$this->disabled_for_non_default_wpml_language = true;
+			$this->readonly = true;
+		}
 	}
 
 	private function maybe_set_ancestor_filter_by_author( $force_author, $field_name ) {

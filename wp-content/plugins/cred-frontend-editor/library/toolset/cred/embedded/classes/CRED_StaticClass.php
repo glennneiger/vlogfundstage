@@ -18,6 +18,7 @@ class CRED_StaticClass {
 
 	const DELAY = 0;
 
+	/** @var array main variable used to store all cred fields during the form rendering */
 	public static $out = array(// info about currently output form
 		'count' => null,
 		'prg_id' => null,
@@ -95,10 +96,16 @@ class CRED_StaticClass {
 		$content = str_replace( $what, $to, $content );
 	}
 
+	/**
+	 * @return array
+	 */
 	public static function cred_empty_array() {
 		return array();
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public static function getIP() {
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) { //check ip from share internet
 			$ip = $_SERVER['HTTP_CLIENT_IP'];
@@ -111,60 +118,22 @@ class CRED_StaticClass {
 		return $ip;
 	}
 
-	public static function create_temporary_user_from_draft( $post_id, $order_id = null ) {
-		global $wpdb;
-		$_cred_user_orders = self::get_draft_users();
-
-		if ( isset( $_cred_user_orders[ $post_id ] ) ) {
-
-			$data = $_cred_user_orders[ $post_id ];
-			$userdata = $data['userdata'];
-			$user_role = is_array( $userdata['user_role'] ) ? $userdata['user_role'] : json_decode( $userdata['user_role'], true );
-			$user_role = $user_role[0];
-
-			unset( $userdata['user_role'] );
-			unset( $userdata['ID'] );
-
-			$model = CRED_Loader::get( 'MODEL/UserForms' );
-			$real_post_id = $model->addUser( $data['userdata'], $data['usermeta'], $data['fieldsInfo'], $data['removed_fields'] );
-			if ( $order_id != null ) {
-				$sql = $wpdb->prepare( 
-					"SELECT * FROM {$wpdb->postmeta} 
-					WHERE meta_value = %d and post_id = %d", 
-					array( $post_id, $order_id )
-				);
-				$metas = $wpdb->get_results( $sql );
-				foreach ( $metas as $meta ) {
-					//$mkey = substr($meta->meta_key, 1, strlen($meta->meta_key));
-					//update_user_meta($meta->post_id, $meta->meta_key, $real_post_id);
-					update_post_meta( $meta->post_id, $meta->meta_key, $real_post_id );
-				}
-			}
-
-			return $real_post_id;
-		}
-
-		return - 1;
-	}
-
-	public static function get_draft_users() {
-		$_cred_user_orders = get_option( "_cred_user_orders", "" );
-		if ( ! isset( $_cred_user_orders ) || empty( $_cred_user_orders ) ) {
-			$_cred_user_orders = array();
-		}
-
-		if ( ! empty( $_cred_user_orders ) ) {
-			$_cred_user_orders = unserialize( self::decrypt( $_cred_user_orders ) );
-		}
-
-		return $_cred_user_orders;
-	}
-
+	/**
+	 * @param $string
+	 *
+	 * @return bool|string
+	 */
 	public static function decrypt( $string ) {
 		return self::crypt( 'decrypt', $string );
 	}
 
-	private static function crypt( $action, $string ) {
+	/**
+	 * @param $action
+	 * @param $string
+	 *
+	 * @return bool|string
+	 */
+	public static function crypt( $action, $string ) {
 		if ( ! isset( $string ) || empty( $string ) ) {
 			return $string;
 		}
@@ -198,23 +167,11 @@ class CRED_StaticClass {
 		return $output;
 	}
 
-	public static function delete_temporary_user( $user_id ) {
-		global $wpdb;
-		$ret1 = $wpdb->query(
-			$wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE user_id = %d", $user_id )
-		);
-		$ret2 = $wpdb->query(
-			$wpdb->prepare( "DELETE FROM $wpdb->users WHERE ID = %d", $user_id )
-		);
-	}
-
-	public static function delete_all_draft_users() {
-		update_option( "_cred_user_orders", "" );
-		$cred_user_orders = self::get_draft_users();
-
-		return empty( $cred_user_orders );
-	}
-
+	/**
+	 * @param $data
+	 *
+	 * @return array|null|string|string[]
+	 */
 	public static function unesc_meta_data( $data ) {
 		//reverse special escape for meta data to prevent serialize eliminate CRLF (\r\n)
 		if ( is_array( $data ) || is_object( $data ) ) {
@@ -232,6 +189,9 @@ class CRED_StaticClass {
 		return $data;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public static function get_current_user_role() {
 		global $current_user;
 		$user_roles = $current_user->roles;
@@ -240,6 +200,11 @@ class CRED_StaticClass {
 		return $user_role;
 	}
 
+	/**
+	 * @param $post_types
+	 *
+	 * @return array
+	 */
 	public static function my_cred_exclude( $post_types ) {
 		$post_types[] = CRED_FORMS_CUSTOM_POST_NAME;
 		$post_types[] = CRED_USER_FORMS_CUSTOM_POST_NAME;
@@ -247,6 +212,11 @@ class CRED_StaticClass {
 		return $post_types;
 	}
 
+	/**
+	 * @param int $length
+	 *
+	 * @return string
+	 */
 	public static function generateRandomString( $length = 10 ) {
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$charactersLength = strlen( $characters );
@@ -258,6 +228,11 @@ class CRED_StaticClass {
 		return $randomString;
 	}
 
+	/**
+	 * @param $email
+	 *
+	 * @return string
+	 */
 	public static function generateUsername( $email ) {
 		$username = sanitize_user( current( explode( '@', $email ) ), true );
 
@@ -273,6 +248,11 @@ class CRED_StaticClass {
 		return $username;
 	}
 
+	/**
+	 * @param $value
+	 *
+	 * @return string
+	 */
 	public static function cf_sanitize_values_on_save( $value ) {
 		if ( current_user_can( 'unfiltered_html' ) ) {
 			if ( is_array( $value ) ) {
@@ -295,20 +275,36 @@ class CRED_StaticClass {
 		return $value;
 	}
 
+	/**
+	 * @param $mimes
+	 *
+	 * @return array
+	 */
 	public static function cred__add_custom_mime_types( $mimes ) {
 		return self::$_allowed_mime_types = array_merge( $mimes, self::$_allowed_mime_types );
 	}
 
+	/**
+	 * @param $v
+	 */
 	public static function _pre( $v ) {
 		echo "<pre>";
 		print_r( $v );
 		echo "</pre>";
 	}
 
+	/**
+	 * @param $string
+	 *
+	 * @return bool|string
+	 */
 	public static function encrypt( $string ) {
 		return self::crypt( 'encrypt', $string );
 	}
 
+	/**
+	 * Init CRED Variables
+	 */
 	public static function initVars() {
 		static $setts = null;
 		static $user_setts = null;
@@ -359,6 +355,88 @@ class CRED_StaticClass {
 		return $user_data;
 	}
 
-}
+	/**
+	 * @param int|string $post_id
+	 * @param int $order_id
+	 *
+	 * @return int
+	 * @deprecated since 2.0 moved to CRED_User_Premium_Handler::create_draft_temporary_user
+	 */
+	public static function create_temporary_user_from_draft( $post_id, $order_id = null ) {
+		global $wpdb;
+		$_cred_user_orders = self::get_draft_users();
+		if ( ! isset( $_cred_user_orders[ $post_id ] ) ) {
+			return - 1;
+		}
 
-?>
+		$data = $_cred_user_orders[ $post_id ];
+		$userdata = $data[ 'userdata' ];
+		$user_role = is_array( $userdata[ 'user_role' ] ) ? $userdata[ 'user_role' ] : json_decode( $userdata[ 'user_role' ], true );
+		$user_role = $user_role[ 0 ];
+
+		unset( $userdata[ 'user_role' ] );
+		unset( $userdata[ 'ID' ] );
+
+		$model = CRED_Loader::get( 'MODEL/UserForms' );
+		$real_post_id = $model->addUser( $data[ 'userdata' ], $data[ 'usermeta' ], $data[ 'fieldsInfo' ], $data[ 'removed_fields' ] );
+		if ( $order_id != null ) {
+			$sql = $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta}	WHERE meta_key = %s and meta_value = %d and post_id = %d",
+				array(
+					'_cred_post_id',
+					$post_id,
+					$order_id,
+				)
+			);
+			$metas = $wpdb->get_results( $sql );
+			foreach ( $metas as $meta ) {
+				update_post_meta( $meta->post_id, $meta->meta_key, $real_post_id );
+			}
+		}
+
+		return $real_post_id;
+	}
+
+	/**
+	 * Get the list of Draft Users
+	 *
+	 * @return array
+	 * @deprecated since 2.0 moved to CRED_User_Premium_Handler
+	 */
+	public static function get_draft_users() {
+		$_cred_user_orders = get_option( "_cred_user_orders", "" );
+		if ( ! isset( $_cred_user_orders ) || empty( $_cred_user_orders ) ) {
+			$_cred_user_orders = array();
+		}
+
+		if ( ! empty( $_cred_user_orders ) ) {
+			$_cred_user_orders = unserialize( self::decrypt( $_cred_user_orders ) );
+		}
+
+		return $_cred_user_orders;
+	}
+
+	/**
+	 * @param $user_id
+	 * @deprecated since 2.0 moved to CRED_User_Premium_Handler::delete_db_temporary_user
+	 */
+	public static function delete_temporary_user( $user_id ) {
+		global $wpdb;
+		$ret1 = $wpdb->query(
+			$wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE user_id = %d", $user_id )
+		);
+		$ret2 = $wpdb->query(
+			$wpdb->prepare( "DELETE FROM $wpdb->users WHERE ID = %d", $user_id )
+		);
+	}
+
+	/**
+	 * @return bool
+	 * @deprecated since 2.0 moved to CRED_User_Premium_Handler
+	 */
+	public static function delete_all_draft_users() {
+		update_option( "_cred_user_orders", "" );
+		$cred_user_orders = self::get_draft_users();
+
+		return empty( $cred_user_orders );
+	} 
+}

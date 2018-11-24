@@ -62,11 +62,16 @@ WP_Toolset.HelpVideosFactory = function ($) {
                 self.create_on_the_fly( videos[video].element ? videos[video].element : WP_ToolsetVideoSettings.GENERIC_ELEMENT, videos[video].append_to );
             }
 
-            var model = WP_Toolset.HelpVideos.hasOwnProperty(video) ? WP_Toolset.HelpVideos[video] : new WP_Toolset.HelpVideo(videos[video]),
-                view  = new WP_Toolset.HelpVideoView({
-                    el: videos[video].element ? videos[video].element : WP_ToolsetVideoSettings.GENERIC_ELEMENT,
-                    model: model
-                });
+            try{
+                var model = WP_Toolset.HelpVideos.hasOwnProperty(video) ? WP_Toolset.HelpVideos[video] : new WP_Toolset.HelpVideo(videos[video]),
+                    view  = self.getVideoViewInstance(model, {
+                        el: videos[video].element ? videos[video].element : WP_ToolsetVideoSettings.GENERIC_ELEMENT,
+                        model: model
+                    });
+            } catch( error ){
+                console.log( error.message );
+            }
+
 
             if( adminpage !== WP_ToolsetVideoSettings.detached_page && self.get_seen() === 'seen' && triggered_manually === false ){
                 view.$el.hide();
@@ -82,6 +87,25 @@ WP_Toolset.HelpVideosFactory = function ($) {
         }
 
         return null;
+    };
+
+    self.getVideoViewInstance = function( model, arguments ){
+        var className = "Help"+model.getCapitalisedRenderer()+"View",
+            nameSpacedClassName = "WP_Toolset";
+
+        // this is to be formally correct, but if this would be true we couldn't be here
+        if( _.isUndefined( window[nameSpacedClassName] ) ){
+            throw new TypeError( nameSpacedClassName + ' namespace is not defined' );
+        }
+
+        // if there is no alternative, then use default base video class
+        if( ! _.isFunction( window[nameSpacedClassName][className] ) ){
+            className = "HelpVideoView";
+        }
+
+        instance = window[nameSpacedClassName][className];
+
+        return new instance( arguments );
     };
 
     self.show_new_video = function( model ){
@@ -111,7 +135,18 @@ WP_Toolset.HelpVideo = Backbone.Model.extend({
         element: '',
         screens: [],
         width:'600px',
-        height:'400px'
+        height:'400px',
+        renderer: 'video',
+        track: ''
+    },
+    getRenderer: function(){
+        return this.get('renderer');
+    },
+    getCapitalisedRenderer: function(){
+        var renderer = this.getRenderer(),
+            name = renderer.charAt(0).toUpperCase() + renderer.substring(1);
+
+        return name;
     }
 });
 
@@ -120,29 +155,36 @@ WP_Toolset.HelpVideosCollection = Backbone.Collection.extend({
     current:null
 });
 
-
 WP_Toolset.HelpVideoView = Backbone.View.extend({
     DELAY:200,
     initialize: function (options) {
         var self = this;
-        self.template_selector = '#toolset-video-template';
+        self.template_selector = self.getTemplateName();
         self.template = _.template(jQuery(self.template_selector).html());
         self.deatch_url = WP_ToolsetVideoSettings.detach_url;
         self.render(options).el;
+    },
+    getTemplateName: function(){
+        var self = this,
+            model = self.model,
+            renderer = model.getRenderer(),
+            name = renderer.toLowerCase();
+
+        return '#toolset-'+name+'-template';
     },
     render: function (options) {
         var self = this;
         self.$el.html(self.template(self.model.toJSON()));
         self.wrap = jQuery('.js-toolset-box-container', self.$el);
         self.handle_detach();
-        self.wrap.loaderOverlay('show', {
-                class:'loader-overlay-high-z',
-                css : {
-                    "opacity" : "0.65",
-                    height : self.model.get('height')
-                }
+        self.handleOverlay( self.wrap, 'show', {
+            class:'loader-overlay-high-z',
+            css : {
+                "opacity" : "0.65",
+                height : self.model.get('height')
             }
-        );
+        } );
+
         self.hidden_wrap = jQuery('.js-video-player-box', self.$el);
         self.remove_button = jQuery('.js-remove-video', self.$el);
         self.handle_video();
@@ -185,7 +227,7 @@ WP_Toolset.HelpVideoView = Backbone.View.extend({
                     self.setPlay( mediaElement, true );
                 }, false);
                 mediaElement.addEventListener('play', function(e) {
-                    jQuery('.mejs-mediaelement').loaderOverlay('hide');
+                    self.handleOverlay( jQuery('.mejs-mediaelement'), 'hide', {} );
                 }, false);
             },
             // fires when a problem is detected
@@ -195,17 +237,18 @@ WP_Toolset.HelpVideoView = Backbone.View.extend({
         } );
     },
     setPlay:function( mediaElement, after_ended ){
-        var play = jQuery('<i class="fa fa-play-circle js-toolset-play-video"></i>'),
+        var self = this,
+            play = jQuery('<i class="fa fa-play-circle js-toolset-play-video"></i>'),
             $title = jQuery('.js-video-box-title-open').eq(0).detach().clone();
 
-        jQuery('.mejs-mediaelement').loaderOverlay('show', {
+
+        self.handleOverlay( jQuery('.mejs-mediaelement'), 'show', {
             class:'loader-overlay-high-z',
             css : {
                 "opacity" : "0.7",
                 'height': jQuery('.mejs-mediaelement').height() - 30 + 'px'
             }
         });
-
 
         jQuery('.js-video-box-title-open').remove();
         jQuery('.toolset-box-container .loader-overlay').append($title);
@@ -217,13 +260,17 @@ WP_Toolset.HelpVideoView = Backbone.View.extend({
         jQuery('.js-toolset-play-video').on('click', function(event){
             event.stopImmediatePropagation();
             event.preventDefault();
-            jQuery('.mejs-mediaelement').loaderOverlay('hide',{onRemove:function(){
-                mediaElement.play();
-            }});
+            self.handleOverlay( jQuery('.mejs-mediaelement'), 'hide', {onRemove:function(){
+                    mediaElement.play();
+                }
+            });
         });
 
-        this.wrap.loaderOverlay('hide',{onRemove:function(){
-        }, fadeOutSpeed:200});
+        self.handleOverlay( self.wrap, 'hide', {onRemove:function(){
+            }, fadeOutSpeed:200} );
+    },
+    handleOverlay : function( $element, action, configurationObject ){
+        $element.loaderOverlay( action, configurationObject );
     },
     remove_video:function(){
         var self = this;
@@ -259,6 +306,65 @@ WP_Toolset.HelpVideoView = Backbone.View.extend({
 
         parent.insertAtIndex(index, new_me.$el);
         return new_me;
+    }
+});
+
+WP_Toolset.HelpYouTubeView = WP_Toolset.HelpVideoView.extend({
+    initialize:function(options){
+
+        this.origin = window.location.protocol + '//' + window.location.host;
+        
+        WP_Toolset.HelpVideoView.prototype.initialize.call(this, options);
+    },
+    handleOverlay:function(){
+        // do nothing
+    },
+    setPlay: function(){
+        // do nothing
+    },
+    handle_video:function(){
+        var self = this;
+        var video = jQuery('.js-video-player');
+        if( video.length === 0 ) return; // if no player instances in DOM then do nothing
+        self.player = new MediaElementPlayer( video[0], {
+            plugins: ['youtube'],
+            features: ['playpause','progress','current','tracks','volume'],
+            startLanguage: 'en',
+            alwaysShowHours: false,
+            width:self.model.get('width'),
+            height:self.model.get('height'),
+            youtube:{
+                cc_load_policy: 1,
+                enablejsapi: 1,
+                iv_load_policy: 1,
+                origin: self.origin,
+                rel: 0,
+                showinfo: 1,
+                widget_referrer: self.origin
+            },
+            success: function (mediaElement, domObject, instance) {
+                var playerContainer = instance.getElement(instance.container);
+                var startPlayer = function(e) {
+                    mediaElement.pause();
+                    self.hidden_wrap.fadeIn(self.DELAY, function(event){
+                        self.setPlay( mediaElement );
+                        e.target.removeEventListener( 'controlsshown', startPlayer, false );
+                    });
+                };
+                playerContainer.addEventListener('controlsshown', startPlayer, false);
+
+                mediaElement.addEventListener('ended', function(e) {
+                    self.setPlay( mediaElement, true );
+                }, false);
+                mediaElement.addEventListener('play', function(e) {
+                    self.handleOverlay( jQuery('.mejs-mediaelement'), 'hide', {} );
+                }, false);
+            },
+            // fires when a problem is detected
+            error: function () {
+                console.log( 'error', arguments );
+            }
+        } );
     }
 });
 

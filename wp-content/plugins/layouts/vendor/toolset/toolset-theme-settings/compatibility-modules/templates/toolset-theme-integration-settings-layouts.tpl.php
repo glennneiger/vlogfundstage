@@ -1,11 +1,11 @@
 <div class="dd-layouts-wrap">
-    <div class="theme-settings-wrap">
+    <div class="theme-settings-wrap theme-settings-wrap-collapsed">
         <span role="button" tabindex="0" class="theme-settings-toggle js-theme-settings-toggle">
-            <i class="fa fa-caret-up" aria-hidden="true"></i>
+            <i class="fa fa-caret-down" aria-hidden="true" data-closed="true"></i>
         </span>
         <h2 class="theme-settings-title"><?php _e( 'Theme Options', 'wpv-views' ); echo $this->render_help_tip(); ?></h2>
 
-        <form id="toolset_theme_settings_form">
+        <form id="toolset_theme_settings_form" class="hidden">
 	        <?php $this->render_non_assigned_layout_message( $this->get_user_visibility_preference_for_gui(), $options_visible ); ?>
             <span class="js-toolset-theme-settings-form" style="<?php if( $options_visible ){ echo "display: none;";}?>">
                 <?php foreach ( $collections as $group_name => $group_items ): ?>

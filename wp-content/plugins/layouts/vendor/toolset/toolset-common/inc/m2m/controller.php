@@ -17,10 +17,21 @@ class Toolset_Relationship_Controller {
 	private $_post_type_query_factory;
 
 
+	/** @var Toolset_Relationship_Database_Operations|null */
+	private $_database_operations;
+
+
+	/** @var null|Toolset_Association_Cleanup_Factory */
+	private $_cleanup_factory;
+
+
 	/** @var Toolset_Relationship_Controller|null */
 	private static $instance;
 
 
+	/**
+	 * @return Toolset_Relationship_Controller
+	 */
 	public static function get_instance() {
 		if( null == self::$instance ) {
 			self::$instance = new self();
@@ -34,19 +45,32 @@ class Toolset_Relationship_Controller {
 	 * Toolset_Relationship_Controller constructor.
 	 *
 	 * @param Toolset_Post_Type_Query_Factory|null $post_type_query_factory_di
+	 * @param Toolset_Relationship_Database_Operations|null $database_operations_di
+	 * @param Toolset_Association_Cleanup_Factory|null $cleanup_factory_di
 	 */
-	public function __construct( Toolset_Post_Type_Query_Factory $post_type_query_factory_di = null ) {
+	public function __construct(
+		Toolset_Post_Type_Query_Factory $post_type_query_factory_di = null,
+		Toolset_Relationship_Database_Operations $database_operations_di = null,
+		Toolset_Association_Cleanup_Factory $cleanup_factory_di = null
+	) {
 		$this->_post_type_query_factory = $post_type_query_factory_di;
+		$this->_database_operations = $database_operations_di;
+		$this->_cleanup_factory = $cleanup_factory_di;
 	}
 
 
 	const IS_M2M_ENABLED_OPTION = 'toolset_is_m2m_enabled';
+	const IS_M2M_ENABLED_YES_VALUE = 'yes';
+
+	// This is not a typo. Initially, we had 'no', but then we changed the algorithm to determine the initial
+	// m2m state, and we have force re-checking.
+	const IS_M2M_ENABLED_NO_VALUE = 'noo';
 
 
 	/**
 	 * We need WPML to fire certain actions when it updates its icl_translations table.
 	 */
-	const MINIMAL_WPML_VERSION = '3.9.0';
+	const MINIMAL_WPML_VERSION = '3.9.3';
 
 
     private $is_autoloader_initialized = false;
@@ -73,10 +97,12 @@ class Toolset_Relationship_Controller {
 
 		$is_enabled = get_option( self::IS_M2M_ENABLED_OPTION, null );
 
-		if( null === $is_enabled ) {
+		// We'll force the check again if 'no' is stored, because the algorithm for determining
+		// the initial state has changed since (now a different value for a negative result is used).
+		if( null === $is_enabled || 'no' === $is_enabled ) {
 			$is_enabled = $this->set_initial_m2m_state();
 		} else {
-			$is_enabled = ( 'no' == $is_enabled ? false : true );
+			$is_enabled = ( self::IS_M2M_ENABLED_YES_VALUE === $is_enabled );
 		}
 
 		/**
@@ -111,9 +137,8 @@ class Toolset_Relationship_Controller {
 			return;
 		}
 
-		$this->is_core_initialized = true;
-
 		$this->add_hooks();
+		$this->is_core_initialized = true;
 	}
 
 
@@ -141,7 +166,8 @@ class Toolset_Relationship_Controller {
 		// fixme: This is for the purpose of alpha and beta versions: If there's a database problem,
 		// at least make it fail on every request. Otherwise, we'll just waste a little performance
 		// on checking that the tables already exist.
-		$migration = new Toolset_Relationship_Migration();
+		// @refactoring
+		$migration = new Toolset_Relationship_Migration_Controller();
 		$migration->do_native_dbdelta();
 
         $this->is_everything_initialized = true;
@@ -187,23 +213,9 @@ class Toolset_Relationship_Controller {
 			return;
 		}
 
+		add_action( 'admin_init', array( $this, 'on_admin_init' ) );
+
 		add_filter( 'before_delete_post', array( $this, 'on_before_delete_post' ) );
-
-		// Intercept icl_translations table changes
-		//
-		//
-
-		/**
-		 * toolset_use_default_m2m_wpml_interoperability_manager
-		 *
-		 * Allow for disabling the standard WPML interoperability manager if it's about to be overridden by
-		 * something else.
-		 *
-		 * @since m2m
-		 */
-		if( true == apply_filters( 'toolset_use_default_m2m_wpml_interoperability_manager', true ) ) {
-			// add_action( 'wpml_translation_update', array( $this, 'on_wpml_translation_update' ), 10 );
-		}
 
 		/**
 		 * toolset_relationship_query
@@ -222,7 +234,7 @@ class Toolset_Relationship_Controller {
 		 *
 		 * @since 2.5.6
 		 */
-		add_action( 'wpcf_post_type_renamed', array( $this, 'on_types_cpt_rename_slug' ), 10, 2 );
+		$this->add_action_to_wpcf_post_type_renamed();
 
 		/**
 		 * toolset_report_m2m_integrity_issue
@@ -233,19 +245,35 @@ class Toolset_Relationship_Controller {
 		 * @since 2.5.6
 		 */
 		add_action( 'toolset_report_m2m_integrity_issue', array( $this, 'report_integrity_issue' ) );
+
+
+		/**
+		 * toolset_cron_cleanup_dangling_intermediary_posts
+		 *
+		 * A WP-Cron event hook defined as Toolset_Association_Cleanup_Cron_Event.
+		 *
+		 * @since 2.5.10
+		 */
+		add_action( 'toolset_cron_cleanup_dangling_intermediary_posts', array( $this, 'cleanup_dangling_intermediary_posts' ) );
 	}
 
+	/**
+	 * On change of cpt slug.
+	 * Method to prevent any misconfiguration/duplicated actions by callers.
+	 *
+	 * @since 3.0.7 (only the function to add the action, the action itself is added since 2.5.6)
+	 */
+	public function add_action_to_wpcf_post_type_renamed() {
+		add_action( 'wpcf_post_type_renamed', array( $this, 'on_types_cpt_rename_slug' ), 10, 2 );
+	}
 
 	/**
-	 * Intercept icl_translations table changes.
+	 * Counter part of add_action_to_wpcf_post_type_renamed()
 	 *
-	 * @param $args
-	 * @since m2m
+	 * @since 3.0.7
 	 */
-	public function on_wpml_translation_update( $args ) {
-		$this->initialize_full();
-		$view_manager = Toolset_Relationship_WPML_Interoperability::get_instance();
-		$view_manager->on_wpml_translation_update( $args );
+	public function remove_action_of_wpcf_post_type_renamed() {
+		remove_action( 'wpcf_post_type_renamed', array( $this, 'on_types_cpt_rename_slug' ), 10 );
 	}
 
 
@@ -255,7 +283,7 @@ class Toolset_Relationship_Controller {
 	 * @param $ignored
 	 * @param $query_args
 	 *
-	 * @return int[]|Toolset_Association_Base[]|Toolset_Element[]
+	 * @return int[]|Toolset_Association[]|Toolset_Element[]
 	 */
 	public function on_toolset_relationship_query( /** @noinspection PhpUnusedParameterInspection */ $ignored, $query_args ) {
 		$this->initialize_full();
@@ -280,8 +308,7 @@ class Toolset_Relationship_Controller {
 
 		$this->initialize_full();
 
-		$database = new Toolset_Relationship_Database_Operations();
-		$result = $database->update_type_on_type_sets( $new_slug, $old_slug );
+		$result = $this->get_database_operations()->update_type_on_type_sets( $new_slug, $old_slug );
 
 		if( $result->is_error() ) {
 			error_log( $result->get_message() );
@@ -323,8 +350,6 @@ class Toolset_Relationship_Controller {
 	 * Basically, that means checking if there are any associations with this post and delete them.
 	 * Note that that will also trigger deleting the intermediary post and possibly some owned elements.
 	 *
-	 * WIP
-	 *
 	 * @param int $post_id
 	 * @since m2m
 	 */
@@ -333,15 +358,12 @@ class Toolset_Relationship_Controller {
 		$this->initialize_full();
 
 		try {
-			$post = Toolset_Post::get_instance( $post_id );
-
-			$assocation_repository = Toolset_Association_Repository::get_instance();
-			$assocation_repository->delete_associations_involving_element( $post );
-
-			// todo Query all post's associations and delete them. That should trigger deleting the intermediary posts and owned elements.
-
+			$cleanup = $this->get_cleanup_factory()->post();
+			$cleanup->cleanup( $post_id );
 		} catch( Exception $e ) {
-
+			// Silently do nothing and avoid disrupting the current process, whatever it is.
+			// In the worst case, any potential dangling db stuff can be sorted out
+			// later on the Troubleshooting page.
 		}
 	}
 
@@ -360,20 +382,34 @@ class Toolset_Relationship_Controller {
 	 * @since m2m
 	 */
 	private function set_initial_m2m_state() {
-		$legacy_relationships = toolset_ensarr( get_option( 'wpcf_post_relationship', array() ) );
-		$has_legacy_relationships = ! empty( $legacy_relationships );
-
+		$has_legacy_relationships = new Toolset_Condition_Plugin_Types_Has_Legacy_Relationships();
 		$is_ready_for_m2m = new Toolset_Condition_Plugin_Types_Ready_For_M2M();
 
-		$enable_m2m = ( $is_ready_for_m2m->is_met() && ! $has_legacy_relationships );
+		$enable_m2m = ( $is_ready_for_m2m->is_met() && ! $has_legacy_relationships->is_met() );
+
+		// If there are no relationships but Toolset is not ready for m2m yet (too old Types), we don't
+		// update the option, but keep trying until the update finally comes.
+		$store_m2m_state = $is_ready_for_m2m->is_met();
 
 		if( $enable_m2m ) {
 			$this->force_autoloader_initialization();
-			$migration = new Toolset_Relationship_Migration();
-			$migration->do_native_dbdelta();
+			$migration = new Toolset_Relationship_Migration_Controller();
+			$enabling_result = $migration->do_native_dbdelta();
+
+			if( ! $enabling_result->is_complete_success() ) {
+				// Something went wrong, we will not try again, the user has to try manually (and probably investigate the issue).
+				$enable_m2m = false;
+			}
 		}
 
-		update_option( self::IS_M2M_ENABLED_OPTION, ( $enable_m2m ? 'yes' : 'no' ), true );
+		if( $store_m2m_state ) {
+			update_option(
+				self::IS_M2M_ENABLED_OPTION,
+				( $enable_m2m ? self::IS_M2M_ENABLED_YES_VALUE : self::IS_M2M_ENABLED_NO_VALUE ),
+				true
+			);
+		}
+
 		return $enable_m2m;
 	}
 
@@ -402,5 +438,54 @@ class Toolset_Relationship_Controller {
     	if( $issue instanceof IToolset_Relationship_Database_Issue ) {
     		$issue->handle();
 	    }
+	}
+
+
+	/**
+	 * @return Toolset_Relationship_Database_Operations
+	 */
+	private function get_database_operations() {
+		if( null === $this->_database_operations ) {
+			$this->initialize_full();
+			$this->_database_operations = new Toolset_Relationship_Database_Operations();
+		}
+
+		return $this->_database_operations;
+	}
+
+
+	/**
+	 * @return Toolset_Association_Cleanup_Factory
+	 */
+	private function get_cleanup_factory() {
+		if( null === $this->_cleanup_factory ) {
+			$this->initialize_full();
+			$this->_cleanup_factory = new Toolset_Association_Cleanup_Factory();
+		}
+
+		return $this->_cleanup_factory;
+	}
+
+
+	/**
+	 * Callback for the WP-Cron event defined as Toolset_Association_Cleanup_Cron_Event.
+	 *
+	 * @since 2.5.10
+	 */
+	public function cleanup_dangling_intermediary_posts() {
+		$this->initialize_full();
+		$cron_handler = $this->get_cleanup_factory()->cron_handler();
+		$cron_handler->handle_event();
+	}
+
+
+	/**
+	 * This will run on admin_init:10 if m2m is enabled.
+	 *
+	 * @since 2.5.10
+	 */
+	public function on_admin_init() {
+		$this->initialize_full();
+		$this->get_cleanup_factory()->troubeshooting_section()->register();
 	}
 }

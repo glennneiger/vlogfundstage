@@ -10,10 +10,11 @@ Toolset.Gui = Toolset.Gui || {};
  * @param {{[]}} itemModels
  * @param {{sortBy:string,itemsPerPage:int}} defaults
  * @param itemSearchFunction
+ * @param {Toolset.Gui.AbstractPage} pageController
  * @constructor
  * @since 2.2
  */
-Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction) {
+Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction, pageController) {
 
     var self = this;
 
@@ -43,18 +44,22 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
      * Determine a current class for an column sorting indicator icon based on property name.
      *
      * @param {string} propertyName Name of property that the column uses for sorting.
+     * @param {string} sortType alpha|numeric
      * @returns {string} One or more CSS classes.
      * @since 2.0
      */
-    self.sortIconClass = function (propertyName) {
+    self.sortIconClass = function (propertyName, sortType) {
+        if ( 'undefined' === typeof sortType || ['alpha', 'numeric'].indexOf( sortType ) === -1 ) {
+            sortType = 'alpha';
+        }
         if (sortHelper.currentSortBy() === propertyName) {
             if (1 === sortHelper.currentSortDirection()) {
-                return 'fa fa-sort-alpha-asc';
+                return 'fa fa-sort-' + sortType + '-asc';
             } else {
-                return 'fa fa-sort-alpha-desc';
+                return 'fa fa-sort-' + sortType + '-desc';
             }
         } else {
-            return 'fa sort-icon-inactive fa-sort-alpha-asc';
+            return 'fa sort-icon-inactive fa-sort-' + sortType + '-asc';
         }
     };
 
@@ -328,6 +333,9 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
         self.hideDisplayedMessage();
         self.displayedMessage({text: text, type: type});
         self.messageVisibilityMode('show');
+        if ( type !== 'error' ) {
+            self.autoHideDisplayedMessage( text );
+        }
     };
 
 
@@ -354,6 +362,33 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
 
 
     /**
+     * Auto hide displayed message after a time depending on text long
+     *
+     * @param {string} text Text needed for timing calculation
+     * @since m2m
+     * @link https://ux.stackexchange.com/a/85898
+     */
+    self.autoHideDisplayedMessage = function( text ) {
+        // Make sure the message will be displayed for at least two seconds.
+        var miliseconds = Math.max( text.length * 50, 2000 );
+        if(miliseconds > 7000) {
+            // If the text is too long for autohiding, keep it displayed forever.
+            return;
+        }
+        setTimeout( self.removeDisplayedMessage, miliseconds );
+    };
+
+
+    /**
+     * Backward compatibility measure for a fixed typo.
+     * @deprecated Do not use.
+     * @type {Toolset.Gui.ListingViewModel.autoHideDisplayedMessage|*}
+     * @since 3.0.6
+     */
+    self.autoHideDislayedMessage = self.autoHideDisplayedMessage;
+
+
+    /**
      * Determine CSS class for the message, based on it's type.
      */
     self.messageNagClass = ko.pureComputed(function () {
@@ -365,6 +400,39 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
                 return 'updated';
         }
     });
+
+
+    /**
+     * Robust handling of AJAX responses with display messages.
+     *
+     * Display a single message, multiple messages or a default one.
+     *
+     * @param {*} data Response data object, which may contain the "message" or "messages" property.
+     * @param {string} messageType 'error'|'info'
+     * @param {string} defaultMessage
+     */
+    self.displayMessagesFromAjax = function(data, messageType, defaultMessage) {
+
+        var messageText = data.message || defaultMessage;
+
+        // If we have an array of messages, use that instead.
+        if(_.has(data, 'messages') && _.isArray(data.messages)) {
+            var messages = _.without(data.messages, '');
+            if (0 === messages.length) {
+                // keep the default text
+            } else if (1 === messages.length) {
+                messageText = (messages[0]);
+            } else {
+                // This will display a simple list of messages.
+                messageText = pageController.templates.renderUnderscore('messageMultiple', {
+                    messages: messages
+                });
+            }
+        }
+
+        self.displayMessage(messageText, messageType);
+    };
+
 
 
     /**
@@ -485,13 +553,36 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
     });
 
 
+    self.allowSelectAllVisibleItems = ko.pureComputed(function() {
+        return ( self.itemsToShow().length !== 0 && _.every(self.itemsToShow(), function(item) {
+            return item.isBulkActionAllowed();
+        }));
+    });
+
+
     // ------------------------------------------------------------------------
     // Initialization
     // ------------------------------------------------------------------------
 
+    var notImplemented = function() {
+        console.error( 'Not implemented.' );
+    };
 
+
+    // noinspection JSUnusedLocalSymbols
     self.createItemViewModels = function (itemModels) {
         // to be overridden
+        notImplemented();
+    };
+
+
+    /**
+     * Get the DOM node that will be used for knockout bindings of this viewmodel.
+     *
+     * By default, the whole document will be used.
+     */
+    self.getRootNodeForKnockout = function() {
+        return null;
     };
 
 
@@ -499,7 +590,7 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
 
         self.createItemViewModels(itemModels);
 
-        ko.applyBindings(self);
+        ko.applyBindings(self, self.getRootNodeForKnockout());
 
         self.currentPage(1);
 

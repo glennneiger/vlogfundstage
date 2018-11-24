@@ -274,14 +274,6 @@ CREDFileUpload.init = function () {
         self.credFileFuInit();
     });
 
-    if (typeof jQuery.validator !== 'undefined') {
-        //Added mock "mime_type" validator method because it is presents in wpt-data-validate
-        //credfile fields tag but used only in file_upload.js by jquery-upload
-        jQuery.validator.addMethod("mime_type", function (value, element, param) {
-            return true;
-        });
-    }
-
     self.credFileFuInit();
 };
 

@@ -77,14 +77,16 @@ class WPDD_layout_cell_text extends WPDD_layout_text_based_cell {
 
 		add_filter( 'icl_post_alternative_languages', '__return_empty_string' );
 
+		$enable_content_filter = $this->the_content_enabled();
+
 		if ($this->get( 'disable_auto_p' ) && has_filter( 'the_content', 'wpautop' )) {
 			remove_filter( 'the_content', 'wpautop' );
-			if( apply_filters( 'ddl_apply_the_content_filter_in_cells', true, $this ) ) {
+			if( apply_filters( 'ddl_apply_the_content_filter_in_cells', $enable_content_filter, $this ) ) {
 				$content = apply_filters( 'the_content', $content );
 			}
 			add_filter( 'the_content', 'wpautop' );
 		} else {
-			if( apply_filters( 'ddl_apply_the_content_filter_in_cells', true, $this ) ) {
+			if( apply_filters( 'ddl_apply_the_content_filter_in_cells', $enable_content_filter, $this ) ) {
 				$content = apply_filters( 'the_content', $content );
 			} else {
 				$content = wpautop( $content );
@@ -97,6 +99,10 @@ class WPDD_layout_cell_text extends WPDD_layout_text_based_cell {
 
 		return do_shortcode( $content );
 	}
+
+	private function the_content_enabled(){
+	    return $this->get('disable_the_content_filter') !== true;
+    }
 
 	function handle_woocommerce_tabs( $bool, $me ){
 		$content = $this->get_content();
@@ -114,7 +120,7 @@ class WPDD_layout_cell_text_factory extends WPDD_layout_text_cell_factory{
 	public function __construct() {
 		parent::__construct();
 		$backend_editor = isset($_GET['page']) && $_GET['page'] == 'dd_layouts_edit';
-		$frontend_editor = isset($_GET['toolset_editor']) && ( current_user_can('manage_options') || current_user_can('edit_others_pages') );
+		$frontend_editor = isset($_GET['toolset_editor']) && ( user_can_edit_layouts() || user_can_edit_private_layouts() );
 
 		if($backend_editor || $frontend_editor){
 			add_filter( 'cred-register_cred_editor_scripts_and_styles', array(&$this, '__return_true'), 10, 1 );
@@ -214,7 +220,7 @@ class WPDD_layout_cell_text_factory extends WPDD_layout_text_cell_factory{
             <div class="js-visual-editor-views-shortcode-notification visual-editor-views-shortcode-notification from-top-0 pad-top-0"
                  data-view="<?php esc_attr_e("It looks like you are trying to display a View. For your convenience, Layouts now comes with a View cell, which will let you achieve this much easier. We suggest that you try the new 'Views Content Grid' cell. You will be able to insert an existing View or create a new View.", 'ddl-layouts');?>"
                  data-content-template="<?php esc_attr_e("It looks like you are trying to display fields. For your convenience, Layouts now comes with a Content Template cell, which will let you achieve this much easier.", 'ddl-layouts');?>"
-                 data-cred="<?php esc_attr_e("It looks like you are trying to display a Form. For your convenience, Layouts now comes with a CRED form cell, which will let you achieve this much easier. We suggest that you try the new 'CRED Form' cell. You will be able to insert an existing Form or create a new Form.", 'ddl-layouts');?>">
+                 data-cred="<?php esc_attr_e("It looks like you are trying to display a Form. For your convenience, Layouts now comes with a Toolset form cell, which will let you achieve this much easier. We suggest that you try the new 'Toolset Form' cell. You will be able to insert an existing Form or create a new Form.", 'ddl-layouts');?>">
             </div>
 
 
@@ -267,6 +273,19 @@ class WPDD_layout_cell_text_factory extends WPDD_layout_text_cell_factory{
 
                 </fieldset>
             </div>
+
+            <div class="ddl-form-item">
+                <fieldset>
+                    <p class="fields-group">
+                        <label class="checkbox" for="<?php the_ddl_name_attr('disable_the_content_filter'); ?>">
+                            <input type="checkbox" name="<?php the_ddl_name_attr('disable_the_content_filter'); ?>" id="<?php the_ddl_name_attr('disable_the_content_filter'); ?>">
+					        <?php printf( __('Disable %sthe_content%s filter', 'ddl-layouts'), '<em>', '</em>'); ?>
+                        </label>
+                    </p>
+
+                </fieldset>
+            </div>
+
 			<?php echo parent::_dialog_template();?>
         </div>
 

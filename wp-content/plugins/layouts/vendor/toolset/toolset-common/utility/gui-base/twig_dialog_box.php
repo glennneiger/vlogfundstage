@@ -10,6 +10,7 @@
  */
 class Toolset_Twig_Dialog_Box extends Toolset_DialogBoxes {
 
+
 	/** @var array */
 	private $context;
 	
@@ -59,6 +60,9 @@ class Toolset_Twig_Dialog_Box extends Toolset_DialogBoxes {
 	 * Render a predefined Twig template.
 	 *
 	 * @since 2.0
+	 * @throws Twig_Error_Loader  When the template cannot be found
+	 * @throws Twig_Error_Syntax  When an error occurred during compilation
+	 * @throws Twig_Error_Runtime
 	 */
 	public function template() {
 		printf(
@@ -70,7 +74,7 @@ class Toolset_Twig_Dialog_Box extends Toolset_DialogBoxes {
 
 
 	/**
-	 * Manually register dialog assets in Types_Asset_Manager because by now we have already missed the
+	 * Manually register dialog assets in Toolset_Assets_Manager because by now we have already missed the
 	 * toolset_add_registered_styles and toolset_add_registered_scripts filters (but there is still enough time
 	 * to enqueue).
 	 *
@@ -88,10 +92,11 @@ class Toolset_Twig_Dialog_Box extends Toolset_DialogBoxes {
 		}
 		*/
 
+		$asset_manager = Toolset_Assets_Manager::get_instance();
+
 		$scripts = $this->register_scripts( array() );
 		foreach( $scripts as $script ) {
-			$asset_manager = Types_Asset_Manager::get_instance();
-			$asset_manager->register_toolset_script( $script );
+			$asset_manager->add_script( $script );
 		}
 	}
 }

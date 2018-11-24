@@ -3,7 +3,7 @@
 WPV_Editor_Loop_Selection::on_load();
 
 class WPV_Editor_Loop_Selection {
-	
+
 	static function on_load() {
 		// Register the section in the screen options of the editor pages
 		add_filter( 'wpv_screen_options_wpa_editor_section_query',		array( 'WPV_Editor_Loop_Selection', 'wpv_screen_options_loop_selection' ), 10 );
@@ -13,7 +13,7 @@ class WPV_Editor_Loop_Selection {
 		add_action( 'wp_ajax_wpv_update_loop_selection',				array( 'WPV_Editor_Loop_Selection', 'wpv_update_loop_selection_callback' ) );
 		add_action( 'wp_ajax_wpv_update_post_types_for_archive_loop',	array( 'WPV_Editor_Loop_Selection', 'wpv_update_post_types_for_archive_loop' ) );
 	}
-	
+
 	static function wpv_screen_options_loop_selection( $sections ) {
 		$sections['archive-loop'] = array(
 			'name'		=> __( 'Loop Selection', 'wpv-views' ),
@@ -21,7 +21,7 @@ class WPV_Editor_Loop_Selection {
 		);
 		return $sections;
 	}
-	
+
 	static function wpv_wpa_editor_section_loop_selection( $view_settings, $view_id ) {
 		$hide = '';
 		if ( isset( $view_settings['sections-show-hide'] )
@@ -38,8 +38,8 @@ class WPV_Editor_Loop_Selection {
 				<h2>
 					<?php _e('Loops Selection', 'wpv-views' ) ?>
 				</h2>
-				<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
-					data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
+				<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
+					data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 					data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 				</i>
 			</div>
@@ -57,8 +57,8 @@ class WPV_Editor_Loop_Selection {
 			<div class="wpv-settings-header">
 				<h2>
 					<?php _e('Loops Selection', 'wpv-views' ) ?>
-					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
-						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
+					<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
+						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 					</i>
 				</h2>
@@ -87,7 +87,7 @@ class WPV_Editor_Loop_Selection {
 		<?php
 		}
 	}
-	
+
 	/**
 	* wpv_update_loop_selection_callback
 	*
@@ -104,9 +104,9 @@ class WPV_Editor_Loop_Selection {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_loop_selection_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_loop_selection_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -117,7 +117,7 @@ class WPV_Editor_Loop_Selection {
 		if (
 			! isset( $_POST["id"] )
 			|| ! is_numeric( $_POST["id"] )
-			|| intval( $_POST['id'] ) < 1 
+			|| intval( $_POST['id'] ) < 1
 		) {
 			$data = array(
 				'type' => 'id',
@@ -141,7 +141,7 @@ class WPV_Editor_Loop_Selection {
 		);
 		wp_send_json_success( $data );
 	}
-	
+
 	static function wpv_update_post_types_for_archive_loop() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
@@ -150,9 +150,9 @@ class WPV_Editor_Loop_Selection {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_nonce_editor_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_nonce_editor_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -163,7 +163,7 @@ class WPV_Editor_Loop_Selection {
 		if (
 			! isset( $_POST["id"] )
 			|| ! is_numeric( $_POST["id"] )
-			|| intval( $_POST['id'] ) < 1 
+			|| intval( $_POST['id'] ) < 1
 		) {
 			$data = array(
 				'type' => 'id',
@@ -171,11 +171,11 @@ class WPV_Editor_Loop_Selection {
 			);
 			wp_send_json_error( $data );
 		}
-		
+
 		$type = sanitize_text_field( $_POST['type'] );
 		$name = sanitize_text_field( $_POST['name'] );
 		$post_types = array_map( 'sanitize_text_field', $_POST['post_types'] );
-		
+
 		$stored_settings = WPV_Settings::get_instance();
 		$wpv_post_types_for_archive_loop = $stored_settings->wpv_post_types_for_archive_loop;
 		$wpv_post_types_for_archive_loop[ $type ] = isset( $wpv_post_types_for_archive_loop[ $type ] ) ? $wpv_post_types_for_archive_loop[ $type ] : array();
@@ -185,7 +185,7 @@ class WPV_Editor_Loop_Selection {
 		// So for loops without stored data, actual results on different sites can be different indeed
 		$stored_settings->wpv_post_types_for_archive_loop = $wpv_post_types_for_archive_loop;
 		$stored_settings->save();
-		
+
 		$loop_form = '';
 		ob_start();
 		WPV_Editor_Loop_Selection::render_view_loop_selection_form( $_POST['id'] );
@@ -199,7 +199,7 @@ class WPV_Editor_Loop_Selection {
 		);
 		wp_send_json_success( $data );
 	}
-	
+
 	static function render_view_loop_selection_form( $view_id = 0 ) {
 		global $WPV_view_archive_loop, $WPV_settings;
 		$WPV_view_archive_loop->_view_edit_options( $view_id, $WPV_settings ); // TODO check if we just need the $WPV_settings above
@@ -237,7 +237,7 @@ class WPV_Editor_Loop_Selection {
 		$post_year = $post_date->format( "Y" );
 		$post_month = $post_date->format( "n" );
 		$post_day = $post_date->format( "j" );
-		
+
 		$post_types = get_post_types( array( 'public' => true ), 'objects' );
 		$post_types_in_search = wp_list_filter( $post_types, array( 'exclude_from_search' => 1 ), 'NOT' );
 		$post_type_names = array_keys( $post_types );
@@ -315,14 +315,14 @@ class WPV_Editor_Loop_Selection {
 						}
 						?>
 							<li class="wpv-mightlong-list-item-fixwidth<?php if ( 0 == $loop_counter % 2 ) { echo ' wpv-mightlong-list-item-clear'; }?>">
-								<input 
-									type="checkbox" 
-									<?php checked( $is_checked ); ?> 
-									id="wpv-view-loop-<?php echo esc_attr( $loop ); ?>" 
-									name="wpv-view-loop-<?php echo esc_attr( $loop ); ?>" 
-									autocomplete="off" 
-									data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>" 
-									data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>" 
+								<input
+									type="checkbox"
+									<?php checked( $is_checked ); ?>
+									id="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"
+									name="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"
+									autocomplete="off"
+									data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>"
+									data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>"
 								/>
 								<label for="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"><?php
 										echo $loop_definition[ "display_name" ];
@@ -347,21 +347,12 @@ class WPV_Editor_Loop_Selection {
 
 		/* Definition of post type archive loops. Keys are post type slugs and each array element contains array of
 		 * "display_name" and "archive_url" (url to display the archive in frontend) and "loop".*/
-		 // We only offer loops for post types that already have an archive
-		
-		$relationships = get_option( 'wpcf_post_relationship', array() );
-		$types_children = array();
-		if ( is_array( $relationships ) ) {
-			foreach ( $relationships as $has => $belongs ) {
-				$types_children = array_merge( $types_children, array_keys( $belongs ) );
-			}
-		}
-		
+		// We only offer loops for post types that already have an archive
 		$pt_loops = array();
-		
+
 		foreach ( $post_types as $post_type_name => $post_type ) {
-			if ( 
-				! in_array( $post_type_name, array( 'post', 'page', 'attachment' ) ) 
+			if (
+				! in_array( $post_type_name, array( 'post', 'page', 'attachment' ) )
 				&& $post_type->has_archive !== false
 			) {
 				$pt_loops[ $post_type_name ] = array(
@@ -370,7 +361,6 @@ class WPV_Editor_Loop_Selection {
 					'archive_url'	=> get_post_type_archive_link( $post_type_name ),
 					'type'			=> 'post_type',
 					'name'			=> $post_type_name,
-					'typeschild'	=> in_array( $post_type_name, $types_children ) ? 'yes' : 'no',
 					'hierarchical'	=> $post_type->hierarchical ? 'yes' : 'no',
 				);
 			}
@@ -392,16 +382,15 @@ class WPV_Editor_Loop_Selection {
 							}
 							?>
 								<li >
-									<input 
-										type="checkbox" 
-										<?php checked( $is_checked ); ?> 
-										id="wpv-view-loop-<?php echo esc_attr( $loop ); ?>" 
-										name="wpv-view-loop-<?php echo esc_attr( $loop ); ?>" 
-										autocomplete="off" 
-										data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>" 
-										data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>" 
-										data-typeschild="<?php echo esc_attr( $loop_definition['typeschild'] ); ?>" 
-										data-hierarchical="<?php echo esc_attr( $loop_definition['hierarchical'] ); ?>" 
+									<input
+										type="checkbox"
+										<?php checked( $is_checked ); ?>
+										id="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"
+										name="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"
+										autocomplete="off"
+										data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>"
+										data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>"
+										data-hierarchical="<?php echo esc_attr( $loop_definition['hierarchical'] ); ?>"
 									/>
 									<label for="wpv-view-loop-<?php echo esc_attr( $loop ); ?>">
 										<?php
@@ -428,12 +417,12 @@ class WPV_Editor_Loop_Selection {
 		$exclude_tax_slugs = apply_filters( 'wpv_admin_exclude_tax_slugs', array() );
 		$types_cpt = get_option('wpcf-custom-types');
         if (
-			! is_array( $types_cpt ) 
+			! is_array( $types_cpt )
 			|| empty( $types_cpt )
 		) {
             $types_cpt = array();
         }
-		
+
         $types_cpt_for_native = array(
 			'category'	=> array( 'post' ),
 			'post_tag'	=> array( 'post' )
@@ -441,18 +430,18 @@ class WPV_Editor_Loop_Selection {
 
 		foreach ( $types_cpt as $cpt_slug => $cpt ) {
 			if (
-				array_key_exists( 'taxonomies', $cpt ) 
+				array_key_exists( 'taxonomies', $cpt )
 				&& is_array( $cpt['taxonomies'] )
 			) {
 				foreach ( $cpt['taxonomies'] as $tax_slug => $value ) {
 					if (
-						'category' == $tax_slug 
+						'category' == $tax_slug
 						&& $value
 					) {
 						$types_cpt_for_native['category'][] = $cpt_slug;
 					}
 					if (
-						'post_tag' == $tax_slug 
+						'post_tag' == $tax_slug
 						&& $value
 					) {
 						$types_cpt_for_native['post_tag'][] = $cpt_slug;
@@ -493,14 +482,14 @@ class WPV_Editor_Loop_Selection {
 						}
 						?>
 							<li class="wpv-mightlong-list-item-fixwidth<?php if ( 0 == $loop_counter % 2 ) { echo ' wpv-mightlong-list-item-clear'; }?>">
-								<input 
-									type="checkbox" 
-									<?php checked( $is_checked ); ?> 
-									id="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>" 
-									name="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>" 
-									autocomplete="off" 
-									data-type="taxonomy" 
-									data-name="<?php echo esc_attr( $name ); ?>" 
+								<input
+									type="checkbox"
+									<?php checked( $is_checked ); ?>
+									id="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>"
+									name="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>"
+									autocomplete="off"
+									data-type="taxonomy"
+									data-name="<?php echo esc_attr( $name ); ?>"
 								/>
 								<label for="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>">
 									<?php
@@ -512,10 +501,10 @@ class WPV_Editor_Loop_Selection {
 									if( $is_checked ) {
 										// Get ID of a term that has some posts, if such term exists.
 										$terms_with_posts = get_terms( $category_slug, array( "hide_empty" => 1, "number" => 1 ) );
-										if ( 
-											$terms_with_posts instanceof WP_Error 
+										if (
+											$terms_with_posts instanceof WP_Error
 											|| ! is_array( $terms_with_posts )
-											|| empty( $terms_with_posts ) 
+											|| empty( $terms_with_posts )
 										) {
 											printf(
 												'<span style="margin-left: 3px;"></span><span style="color: grey"><i class="icon-external-link fa fa-external-link icon-small" title="%s"></i></span>',
@@ -556,19 +545,19 @@ class WPV_Editor_Loop_Selection {
 			<?php
 		}
 	}
-	
+
 	static function render_view_loop_post_types_info( $loop_definition, $post_types ) {
 		?>
 		<div class="wpv-archive-loop-post-types-info">
 		<?php
 		$post_types_included = array();
-		
+
 		$stored_settings = WPV_Settings::get_instance();
 		$wpv_post_types_for_archive_loop = $stored_settings->wpv_post_types_for_archive_loop;
 		$wpv_post_types_for_archive_loop[ $loop_definition['type'] ] = isset( $wpv_post_types_for_archive_loop[ $loop_definition['type'] ] ) ? $wpv_post_types_for_archive_loop[ $loop_definition['type'] ] : array();
-		if ( 
-			isset( $wpv_post_types_for_archive_loop[ $loop_definition['type'] ][ $loop_definition['name'] ] ) 
-			&& ! empty( $wpv_post_types_for_archive_loop[ $loop_definition['type'] ][ $loop_definition['name'] ] ) 
+		if (
+			isset( $wpv_post_types_for_archive_loop[ $loop_definition['type'] ][ $loop_definition['name'] ] )
+			&& ! empty( $wpv_post_types_for_archive_loop[ $loop_definition['type'] ][ $loop_definition['name'] ] )
 		) {
 			foreach ( $wpv_post_types_for_archive_loop[ $loop_definition['type'] ][ $loop_definition['name'] ] as $included_post_type ) {
 				if ( isset( $post_types[ $included_post_type ] ) ) {
@@ -584,13 +573,13 @@ class WPV_Editor_Loop_Selection {
 			}
 			$selected_post_types = $loop_definition['post_type'];
 		}
-		
+
 		$archive_will_include_template		= __( 'This archive will include %s', 'wpv-views' );
 		$archive_will_include_only_template = __( 'This archive will include %s only', 'wpv-views' );
 		$archive_will_include_one_more_template = __( 'This archive will include %1$s and another post type', 'wpv-views' );
 		$archive_will_include_more_template = __( 'This archive will include %1$s and %2$s more post types', 'wpv-views' );
 		$count_post_types_included = count( $post_types_included );
-		
+
 		switch ( $count_post_types_included ) {
 			case 1:
 				printf( $archive_will_include_only_template, implode( $post_types_included, ', ' ) );
@@ -612,12 +601,12 @@ class WPV_Editor_Loop_Selection {
 		}
 		if ( $loop_definition['extendable'] ) {
 		?>
-		<button class="button button-secomdary button-small js-wpv-apply-post-types-to-archive-loop-tracker js-wpv-apply-post-types-to-archive-loop-dialog" 
-			data-display="<?php echo esc_attr( $loop_definition['display_name'] ); ?>" 
-			data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>" 
-			data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>" 
-			data-selected="<?php echo esc_js( json_encode( $selected_post_types ) ); ?>" 
-			data-default="<?php echo esc_js( json_encode( $loop_definition['post_type'] ) ); ?>" 
+		<button class="button button-secomdary button-small js-wpv-apply-post-types-to-archive-loop-tracker js-wpv-apply-post-types-to-archive-loop-dialog"
+			data-display="<?php echo esc_attr( $loop_definition['display_name'] ); ?>"
+			data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>"
+			data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>"
+			data-selected="<?php echo esc_js( json_encode( $selected_post_types ) ); ?>"
+			data-default="<?php echo esc_js( json_encode( $loop_definition['post_type'] ) ); ?>"
 		>
 			<?php echo __( 'Edit', 'wpv-views' ); ?>
 		</button>
@@ -625,9 +614,9 @@ class WPV_Editor_Loop_Selection {
 		} else {
 		?>
 		<span style="display:none;" class="js-wpv-apply-post-types-to-archive-loop-tracker"
-			data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>" 
-			data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>" 
-			data-selected="<?php echo esc_js( json_encode( $selected_post_types ) ); ?>" 
+			data-type="<?php echo esc_attr( $loop_definition['type'] ); ?>"
+			data-name="<?php echo esc_attr( $loop_definition['name'] ); ?>"
+			data-selected="<?php echo esc_js( json_encode( $selected_post_types ) ); ?>"
 		></span>
 		<?php
 		}
@@ -635,5 +624,5 @@ class WPV_Editor_Loop_Selection {
 		</div>
 		<?php
 	}
-	
+
 }

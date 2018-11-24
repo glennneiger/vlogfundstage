@@ -7,6 +7,7 @@
  *            All containing properties and methods without since tag are part of the initial release
  */
 abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Interface {
+
 	/**
 	 * @var string
 	 */
@@ -58,10 +59,12 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 	 */
 	protected $template_file;
 
+
 	/**
 	 * @var Toolset_Constants
 	 */
 	protected $constants;
+
 
 	/**
 	 * Notice is only for administrators
@@ -76,14 +79,31 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 	 */
 	protected $is_only_for_administrators = true;
 
+
+	/**
+	 * @var string
+	 */
+	private $similar_notices_key;
+
+
+	/**
+	 * @var callable[]
+	 */
+	private $dependency_callbacks = array();
+
+
+	/**
+	 * @var array|null
+	 */
+	private $template_context;
+
+
 	/**
 	 * Toolset_Admin_Notice constructor.
 	 *
 	 * @param string $id
-	 *
 	 * @param string $message
-	 *
-	 * @throws Exception
+	 * @param Toolset_Constants|null $constants
 	 */
 	public function __construct( $id, $message = '', Toolset_Constants $constants = null ) {
 
@@ -94,13 +114,15 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 
 		if( ! function_exists( 'sanitize_title' ) ) {
 			// abort, called to early
-			throw new Exception( 'Toolset_Admin_Notice_Abstract Error: "sanitize_title()" does not exists. ' .
-			                     'Toolset_Admin_Notice_Abstract::create_notice() was called too early.' );
+			throw new InvalidArgumentException(
+				'Toolset_Admin_Notice_Abstract Error: "sanitize_title()" does not exists. '
+				. 'Toolset_Admin_Notice_Abstract::create_notice() was called too early.'
+			);
 		}
 
 		if( ! is_string( $id ) ) {
 			// no string given
-			throw new Exception( 'Toolset_Admin_Notice_Abstract Error: $id must be a string.' );
+			throw new InvalidArgumentException( 'Toolset_Admin_Notice_Abstract Error: $id must be a string.' );
 		}
 
 		if( ! empty( $message ) ) {
@@ -125,6 +147,20 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 	 */
 	public function set_title( $title ) {
 		$this->title = $title;
+	}
+
+	/**
+	 * @param string $key
+	 */
+	public function set_similar_notices_key( $key ) {
+		$this->similar_notices_key = $key;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_similar_notices_key() {
+		return $this->similar_notices_key;
 	}
 
 	/**
@@ -248,6 +284,8 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 			return;
 		}
 
+		$this->run_dependency_callbacks();
+
 		include( $this->template_file );
 	}
 
@@ -307,4 +345,61 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 			$this->template_file = $template_path;
 		}
 	}
+
+	/**
+	 * Template path for a notice with the Toolset Robot
+	 */
+	public function set_template_toolset_robot() {
+		$this->template_file = TOOLSET_COMMON_PATH . '/templates/admin/notice/toolset-robot.phtml';
+	}
+
+
+	/**
+	 * @inheritdoc
+	 * @param callable $callback
+	 * @since 2.8
+	 */
+	public function add_dependency_callback( $callback ) {
+		if( ! is_callable( $callback ) ) {
+			throw new InvalidArgumentException();
+		}
+
+		$this->dependency_callbacks[] = $callback;
+	}
+
+
+	/**
+	 * Run all callbacks previously added via add_dependency_callback().
+	 *
+	 * @since 2.8
+	 */
+	public function run_dependency_callbacks() {
+		foreach( $this->dependency_callbacks as $callback ) {
+			$callback();
+		}
+	}
+
+
+	/**
+	 * Set a context variable that will be accessible when rendering the notice template.
+	 *
+	 * @param array $context
+	 *
+	 * @return void
+	 * @since 2.á
+	 */
+	public function set_template_context( $context ) {
+		$this->template_context = toolset_ensarr( $context );
+	}
+
+
+	/**
+	 * Get the context variable.
+	 *
+	 * @return array
+	 */
+	public function get_template_context() {
+		return toolset_ensarr( $this->template_context );
+	}
+
 }

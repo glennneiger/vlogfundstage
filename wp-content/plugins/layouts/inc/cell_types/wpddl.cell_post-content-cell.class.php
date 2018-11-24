@@ -85,6 +85,7 @@ class WPDD_layout_cell_post_content extends WPDD_layout_cell {
 		
         do_action('ddl-layouts-render-start-post-content');
 
+        $layout_id = sanitize_text_field( toolset_getpost( 'layout_id', '' ) );
 
         $content = '';
         if( $target->is_layout_argument_set( 'post-content-callback' ) && function_exists( $target->get_layout_arguments( 'post-content-callback' ) ) ) {
@@ -99,6 +100,29 @@ class WPDD_layout_cell_post_content extends WPDD_layout_cell {
             call_user_func( $target->get_layout_arguments( 'post-content-callback' ) );
             $content = ob_get_clean();
 
+        } elseif (
+				null === $post &&
+				/**
+				 * Filter for the case where a Post Content cell is used in a Content Template designed with Layouts. Returns
+				 * true if $layout_id represents a Content Template designed with Layouts, false otherwise.
+				 *
+				 * @param bool   $is_ct_designed_with_layouts The boolean value that determines if a Content Template is designed
+				 *                                            with Layouts.
+				 * @param string $ct_id
+				 *
+				 * @return bool
+				 */
+				apply_filters( 'wpv_filter_maybe_ct_designed_with_layouts', false, $layout_id )
+		) {
+	        /**
+	         * Filter the content return by a Post Content cell is used in a Content Template designed with Layouts.
+	         *
+	         * @param string $content The content that will take the place of the "Post Content" cell in a Content Template
+	         *                        designed with Layouts.
+	         *
+	         * @return string
+	         */
+			$content = apply_filters( 'wpv_filter_post_content_for_post_content_cell', $content );
         } else {
             if (is_object($post) && property_exists($post, 'post_content') && apply_filters( 'ddl_apply_the_content_filter_in_post_content_cell', true, $this )) {
                 $content = apply_filters( 'the_content', $post->post_content );
@@ -160,7 +184,7 @@ class WPDD_layout_cell_post_content_factory extends WPDD_layout_cell_factory{
 
 	private function _dialog_template() {
 		$out = $this->switch_dialog_template();
-		$out .= sprintf( __('%s%sLearn more about Post Content cell%s%s', 'ddl-layouts'), '<p class="padding-5">', '<a href="'.WPDLL_POST_CONTENT_CELL.'">', '</a>', '</p>');
+		$out .= sprintf( __('%s%sLearn more about Post Content cell%s%s', 'ddl-layouts'), '<p class="padding-5">', '<a href="'.WPDLL_POST_CONTENT_CELL.'" target="_blank" >', '</a>', '</p>');
 		return $out;
 	}
 

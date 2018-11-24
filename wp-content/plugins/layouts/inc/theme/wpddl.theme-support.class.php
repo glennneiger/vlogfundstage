@@ -19,6 +19,7 @@ class WPDD_Layouts_Theme
     private $layouts_saved = 0;
     private $css_saved = 0;
     private $js_saved = 0;
+    private $json_saved = 0;
     private $layouts_deleted = 0;
     private $layouts_overwritten = 0;
     private $images_created = 0;
@@ -96,6 +97,7 @@ class WPDD_Layouts_Theme
         $deleted = 0;
         $saved_css = 0;
         $saved_js = 0;
+	    $saved_json = 0;
         $saved_layouts = 0;
         $next_file = '';
         $total_files = 0;
@@ -197,7 +199,7 @@ class WPDD_Layouts_Theme
                             $message = __(sprintf('File %s processed', zip_entry_name($zip_entry)), 'ddl-layouts');
                         }elseif( self::get_extension(zip_entry_name($zip_entry)) === 'json' ){
                             $data = @zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
-                            apply_filters( 'ddl-layouts-save_imported_options', $data, $overwrite && $overwrite_assignment );
+                            $this->save_json( $data, $overwrite && $overwrite_assignment );
                             $message = __(sprintf('File %s processed', zip_entry_name($zip_entry)), 'ddl-layouts');
                         }
                         if ( self::get_extension(zip_entry_name($zip_entry)) === 'ddl' || self::get_extension(zip_entry_name($zip_entry)) === 'css' || self::get_extension(zip_entry_name($zip_entry)) === 'js' || self::get_extension(zip_entry_name($zip_entry)) === 'json') {
@@ -322,6 +324,7 @@ class WPDD_Layouts_Theme
         $deleted = $this->layouts_deleted;
         $saved_css = $this->css_saved;
         $saved_js = $this->js_saved;
+	    $saved_json = $this->json_saved;
         $saved_layouts = $this->layouts_saved;
 
         $out = array(
@@ -332,6 +335,7 @@ class WPDD_Layouts_Theme
             'deleted' => $deleted,
             'saved_css' => $saved_css,
             'saved_js' => $saved_js,
+	        'saved_json' => $saved_json,
             'saved_layouts' => $saved_layouts,
             'imported_layouts' => $this->imported_layouts
         );
@@ -428,7 +432,7 @@ class WPDD_Layouts_Theme
                 );
             }
 
-            return true;
+            return $result;
         } else if ($info['extension'] == 'js') {
             $result = $this->handle_single_js($file, $overwrite);
 
@@ -450,11 +454,33 @@ class WPDD_Layouts_Theme
                 );
             }
 
-            return true;
+            return $result;
+        } else if ($info['extension'] == 'json') {
+	        $result = $this->handle_single_json($file, $overwrite);
+
+	        if ($result === false) {
+		        $this->messages[] = (object)array(
+			        'result' => 'error',
+			        'message' => __('There was a problem saving the JSON file.', 'ddl-layouts')
+		        );
+	        } else {
+		        if ($overwrite === false) {
+			        $json_message = __('The Layouts settings were created.', 'ddl-layouts');
+		        } else {
+			        $json_message = __('The Layouts settings were overwritten.', 'ddl-layouts');
+		        }
+
+		        $this->messages[] = (object)array(
+			        'result' => 'updated',
+			        'message' => $json_message
+		        );
+	        }
+
+	        return $result;
         } else {
             $this->messages[] = (object)array(
                 'result' => 'error',
-                'message' => __('The file type is not compatible with layouts. The imported files should be a single .ddl file, a single .css file or a .zip archive of .ddl and .css files.', 'ddl-layouts')
+                'message' => __('The file type is not compatible with layouts. The imported files should be a single .ddl file, a single .css, a single .json file or a .zip archive of .ddl, .js, .json and .css files.', 'ddl-layouts')
             );
             return false;
         }
@@ -491,6 +517,15 @@ class WPDD_Layouts_Theme
 
         return $ret;
     }
+
+	private function handle_single_json($file, $overwrite = false)
+	{
+		$data = @file_get_contents($file['tmp_name']);
+
+		$ret = $this->save_json( $data, $overwrite );
+
+		return $ret;
+	}
 
     private function handle_messages($result, $overwrite, $delete, $extension)
     {
@@ -604,10 +639,14 @@ class WPDD_Layouts_Theme
                     $data = @zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
                     $ret[] = $this->save_css($data, $overwrite);
                 }
+                elseif (self::get_extension(zip_entry_name($zip_entry)) === 'js') {
+	                $data = @zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+	                $ret[] = $this->save_js($data, $overwrite);
+                }
                 elseif( self::get_extension(zip_entry_name($zip_entry)) === 'json' ){
                     $data = @zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
                     if( $data ){
-                        $ret[] = apply_filters( 'ddl-layouts-save_imported_options', $data, $overwrite && $overwrite_assignment );
+                        $ret[] = $this->save_json( $data, $overwrite && $overwrite_assignment );
                     }
                 }
             }
@@ -774,6 +813,13 @@ class WPDD_Layouts_Theme
         if ($save) $this->js_saved++;
         return $save;
     }
+
+	private function save_json($data, $overwrite)
+	{
+		$save = apply_filters( 'ddl-layouts-save_imported_options', $data, $overwrite );
+		if ($save) $this->json_saved++;
+		return $save;
+	}
 
     function get_media()
     {
@@ -1195,37 +1241,6 @@ class WPDD_Layouts_Theme
         }
     }
 
-    private function get_translations(&$layout_array)
-    {
-        $translations = null;
-        if (isset($layout_array['translations'])) {
-            $translations = $layout_array['translations'];
-            unset($layout_array['translations']);
-        }
-
-        return $translations;
-    }
-
-    private function set_translations($translations, $post_id)
-    {
-        if ($translations) {
-
-            $translations = json_decode(json_encode($translations), true);
-
-            WPDD_Layouts::register_strings_for_translation($post_id);
-            do_action('wpml_set_translated_strings',
-                $translations,
-                array(
-                    'kind' => 'Layout',
-                    'name' => $post_id
-                )
-            );
-
-        }
-
-    }
-
-
     public static function layout_exists($layout_name)
     {
         global $wpdb;
@@ -1312,6 +1327,12 @@ class WPDD_Layouts_Theme
         if ($css) {
             $results[] = $this->file_manager_export->save_file('layouts', '.css', $css, array('title' => 'Layouts CSS'), true);
         }
+
+	    $js = $this->get_layout_js();
+
+	    if ($js) {
+		    $results[] = $this->file_manager_export->save_file('layouts', '.js', $js, array('title' => 'Layouts JS'), true);
+	    }
 
         $settings = apply_filters( 'ddl-layouts-exported_for_theme', true );
 
@@ -1476,6 +1497,12 @@ class WPDD_Layouts_Theme
                 )
             );
 
+            $strings = $this->get_layout_wpml_string_strings( WPDD_Layouts::get_layout_settings($layout->ID, false) );
+
+            if( $strings ){
+                $translations = array_merge( $translations, $strings );
+            }
+
             if (!empty($translations)) {
                 $layout_array->translations = $translations;
             }
@@ -1509,6 +1536,55 @@ class WPDD_Layouts_Theme
 
         return $result;
     }
+
+	/**
+	 * @param $layout
+	 *
+	 * @return array|null
+	 */
+    private function get_layout_wpml_string_strings( $layout ){
+        $parser = new WPDD_WPML_Strings_Helper_Export( $layout );
+        $translations = $parser->wpml_get_translated_strings();
+        return $translations && count( $translations ) ? $translations : null;
+    }
+
+	private function set_layout_wpml_string_strings( $layout, $translations ){
+		$parser = new WPDD_WPML_Strings_Helper_Import( $layout  );
+		$parser->wpml_set_translated_strings( $translations );
+	}
+
+	private function get_translations(&$layout_array)
+	{
+		$translations = null;
+		if (isset($layout_array['translations'])) {
+			$translations = $layout_array['translations'];
+			unset($layout_array['translations']);
+		}
+
+		return $translations;
+	}
+
+	private function set_translations($translations, $post_id)
+	{
+		// if the Layout has something to translate register it in the translation package
+		WPDD_Layouts::register_strings_for_translation($post_id);
+		// if there are imported strings for that layout then register them
+		if ($translations) {
+
+			$translations = json_decode(json_encode($translations), true);
+
+			do_action('wpml_set_translated_strings',
+				$translations,
+				array(
+					'kind' => 'Layout',
+					'name' => $post_id
+				)
+			);
+
+			$this->set_layout_wpml_string_strings( WPDD_Layouts::get_layout_settings( $post_id, false ), $translations );
+
+		}
+	}
 
     /**
      * This function gets all posts without layout assigned under passed post type.
@@ -1837,17 +1913,17 @@ class WPDD_Layouts_Theme
             $layouts = array();
             if ( is_resource( $zip ) ) {
                 while ( ( $zip_entry = zip_read( $zip ) ) !== false ) {
+	                $data      = @zip_entry_read( $zip_entry, zip_entry_filesize( $zip_entry ) );
                     if ( self::get_extension( zip_entry_name( $zip_entry ) ) === 'ddl' ) {
-                        $data      = @zip_entry_read( $zip_entry, zip_entry_filesize( $zip_entry ) );
                         $layouts[] = $data;
                     } elseif ( self::get_extension( zip_entry_name( $zip_entry ) ) === 'css' ) {
                         // todo [TOOLSET THEMES] we need to ask user if css already exists
-                        $data = @zip_entry_read( $zip_entry, zip_entry_filesize( $zip_entry ) );
                         $this->save_css( $data, true );
                     } elseif ( self::get_extension( zip_entry_name( $zip_entry ) ) === 'js' ) {
                         // todo [TOOLSET THEMES] we need to ask user if js already exists
-                        $data = @zip_entry_read( $zip_entry, zip_entry_filesize( $zip_entry ) );
                         $this->save_js( $data, true );
+                    } elseif( self::get_extension( zip_entry_name( $zip_entry ) ) === 'json' ){
+	                    $this->save_json( $data, true );
                     }
                 }
             }

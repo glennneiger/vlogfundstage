@@ -15,7 +15,7 @@
 class WPV_Cache {
 	
 	static $stored_cache									= array();
-	static $stored_cache_extended_for_post_relationship		= array();
+	static $stored_cache_extended_for_post_relationship     = array();
 	static $stored_relationship_cache						= array();
 	
 	static $invalidate_views_cache_flag						= false;
@@ -59,11 +59,17 @@ class WPV_Cache {
         add_action( 'wpv_action_wpv_import_item',	array( $this, 'invalidate_views_cache' ) );
 		
 		// Delete the meta keys transients on post and postmeta create/update/delete
+		// Since 2.6.4:
+		// - Deleting a post should not invalidate postmeta cache.
+		// - Deleting a postmeta should not invalidate postmeta cache.
+		// - Adding or updating a postmeta should check whether the meta key
+		//   is already in the cache and invalidate only otherwise.
+		// @todo port this set of decisions to the termmeta and usermeta cache
 		add_action( 'save_post',					array( $this, 'delete_transient_meta_keys' ) );
-		add_action( 'delete_post',					array( $this, 'delete_transient_meta_keys' ) );
-		add_action( 'added_post_meta',				array( $this, 'delete_transient_meta_keys' ) );
-		add_action( 'updated_post_meta',			array( $this, 'delete_transient_meta_keys' ) );
-		add_action( 'deleted_post_meta',			array( $this, 'delete_transient_meta_keys' ) );
+		//add_action( 'delete_post',					array( $this, 'delete_transient_meta_keys' ) );
+		add_action( 'added_post_meta',				array( $this, 'maybe_delete_transient_meta_keys' ), 10, 4 );
+		add_action( 'updated_post_meta',			array( $this, 'maybe_delete_transient_meta_keys' ), 10, 4 );
+		//add_action( 'deleted_post_meta',			array( $this, 'delete_transient_meta_keys' ) );
 		// Delete the meta keys transients on term and termmeta create/update/delete
 		add_action( 'create_term',					array( $this, 'delete_transient_termmeta_keys' ) );
 		add_action( 'edit_term',					array( $this, 'delete_transient_termmeta_keys' ) );
@@ -128,6 +134,7 @@ class WPV_Cache {
 	 * @since 2.1.0
 	 * @since 2.4.0 Add flags to cache post author data and post type data.
 	 * @since 2.4.0 Abstract out the fake shortcodes definitions.
+	 * @since m2m Add flag to cache post relationship data in the m2m format.
 	 */
 	static function get_parametric_search_data_to_cache( $view_settings = array(), $override_settings = array() ) {
 		$parametric_search_data_to_cache = array(
@@ -168,21 +175,30 @@ class WPV_Cache {
 		
 		foreach ( self::$collected_parametric_search_filter_attributes as $atts_set ) {
 			if ( isset( $atts_set['ancestors'] ) ) {
-				if ( function_exists( 'wpcf_pr_get_belongs' ) ) {
-					$returned_post_types = $view_settings['post_type'];
-					$returned_post_types = is_array( $returned_post_types ) ? $returned_post_types : array( $returned_post_types );
-					$returned_post_type_parents = array();
-					if ( empty( $returned_post_types ) ) {
-						$returned_post_types = array( 'any' );
-					}
-					foreach ( $returned_post_types as $returned_post_type_slug ) {
-						$parent_parents_array = wpcf_pr_get_belongs( $returned_post_type_slug );
-						if ( $parent_parents_array != false && is_array( $parent_parents_array ) ) {
-							$returned_post_type_parents = array_merge( $returned_post_type_parents, array_values( array_keys( $parent_parents_array ) ) );
+				$types_condition = new Toolset_Condition_Plugin_Types_Active();
+				if ( $types_condition->is_met() ) {
+					if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+						$filters_manager = WPV_Filter_Manager::get_instance();
+						$filter = $filters_manager->get_filter( Toolset_Element_Domain::POSTS, 'relationship' );
+						$relationship_tree = $filter->get_relationship_tree( $atts_set['ancestors'] );
+						$parametric_search_data_to_cache['relationship'] = $relationship_tree;
+					} else {
+						$filter_manager = WPV_Filter_Manager::get_instance();
+						$post_relationship_filter = $filter_manager->get_filter( Toolset_Element_Domain::POSTS, 'relationship' );
+						$returned_post_types = $post_relationship_filter->get_returned_post_types( $view_settings );
+						$returned_post_type_parents = array();
+						if ( empty( $returned_post_types ) ) {
+							$returned_post_types = array( 'any' );
 						}
-					}
-					foreach ( $returned_post_type_parents as $parent_to_cache ) {
-						$parametric_search_data_to_cache['cf'][] = '_wpcf_belongs_' . $parent_to_cache . '_id';
+						foreach ( $returned_post_types as $returned_post_type_slug ) {
+							$parent_parents_array = wpcf_pr_get_belongs( $returned_post_type_slug );
+							if ( $parent_parents_array != false && is_array( $parent_parents_array ) ) {
+								$returned_post_type_parents = array_merge( $returned_post_type_parents, array_values( array_keys( $parent_parents_array ) ) );
+							}
+						}
+						foreach ( $returned_post_type_parents as $parent_to_cache ) {
+							$parametric_search_data_to_cache['cf'][] = '_wpcf_belongs_' . $parent_to_cache . '_id';
+						}
 					}
 				}
 			} else if ( isset( $atts_set['taxonomy'] ) ) {
@@ -453,6 +469,95 @@ class WPV_Cache {
 	}
 	
 	/**
+	 * Generate the needed cache for the post relationship filter.
+	 *
+	 * The generated cache follows this structure:
+	 * [relationship_slug] => array(
+	 *     [ancestor_id] => array(
+	 *         post_id_1,
+	 *         post_id_2
+	 *         ...
+	 *     )
+	 * )
+	 *
+	 * @param array $cache_post_relationship
+	 * @param array $id_posts Post IDs to generate the cache for
+	 * @param array $relationship_to_cache
+	 *
+	 * @return array
+	 *
+	 * @since m2m
+	 */
+	static function generate_post_relationship_cache( $cache_post_relationship = array(), $id_posts = array(), $relationship_to_cache = array() ) {
+		// Sanitize $id_posts
+		// It usually comes from a WP_Query, but still
+		$id_posts = array_map( 'esc_attr', $id_posts );
+		$id_posts = array_map( 'trim', $id_posts );
+		// is_numeric does sanitization
+		$id_posts = array_filter( $id_posts, 'is_numeric' );
+		$id_posts = array_map( 'intval', $id_posts );
+		
+		if ( 
+			! apply_filters( 'toolset_is_m2m_enabled', false ) 
+			|| empty( $relationship_to_cache ) 
+			|| empty( $id_posts )
+		) {
+			return $cache_post_relationship;
+		}
+		
+		do_action( 'toolset_do_m2m_full_init' );
+		
+		$direct_relationship = end( $relationship_to_cache );
+		
+		$association_query = new Toolset_Association_Query_V2();
+		if ( ! empty( $direct_relationship['relationship'] ) ) {
+			$association_query->add( $association_query->relationship_slug( $direct_relationship['relationship'] ) );
+		}
+		$association_query->limit( PHP_INT_MAX )
+			->add( $association_query->multiple_elements(
+				$id_posts, Toolset_Element_Domain::POSTS, Toolset_Relationship_Role::role_from_name( $direct_relationship['role_target'] )
+			) );
+
+		$associations = $association_query->get_results();
+		
+		if ( empty( $associations ) ) {
+			return $cache_post_relationship;
+		}
+		
+		foreach ( $associations as $association ) {
+			$association_current_role = Toolset_Relationship_Role::role_from_name( $direct_relationship['role_target'] );
+			$current_id = $association->get_element_id( $association_current_role );
+			$association_ancestor_role = Toolset_Relationship_Role::role_from_name( $direct_relationship['role'] );
+			$ancestor_id = $association->get_element_id( $association_ancestor_role );
+			
+			$cache_post_relationship[ $direct_relationship['type'] ] = 
+				isset( $cache_post_relationship[ $direct_relationship['type'] ] ) 
+				? $cache_post_relationship[ $direct_relationship['type'] ] 
+				: array();
+			
+			$cache_post_relationship[ $direct_relationship['type'] ][ $ancestor_id ] = 
+				isset( $cache_post_relationship[ $direct_relationship['type'] ][ $ancestor_id ] ) 
+				? $cache_post_relationship[ $direct_relationship['type'] ][ $ancestor_id ] 
+				: array();
+			
+			$cache_post_relationship[ $direct_relationship['type'] ][ $ancestor_id ][] = $current_id;
+			$cache_post_relationship[ $direct_relationship['type'] ][ $ancestor_id ] = array_unique( $cache_post_relationship[ $direct_relationship['type'] ][ $ancestor_id ] );
+		}
+		
+		array_pop( $relationship_to_cache );
+		if ( null === $relationship_to_cache ) {
+			return $cache_post_relationship;
+		}
+		
+		foreach( $cache_post_relationship as $associated_relationship => $associated_data ) {
+			$associated_data_ids = array_keys( $associated_data );
+			$cache_post_relationship = self::generate_post_relationship_cache( $cache_post_relationship, $associated_data_ids, $relationship_to_cache );
+		}
+		
+		return $cache_post_relationship;
+	}
+	
+	/**
 	 * Mimic the caching construction of WordPress so we can use it for counting posts.
 	 * update_postmeta_cache should get cached data, so we avoind further queries for postmeta.
 	 * We still need to generate the cache for the given taxonomies and post data.
@@ -477,6 +582,7 @@ class WPV_Cache {
 			'post_author'	=> ( isset( $to_cache['post_author'] ) ) ? $to_cache['post_author'] : 'disabled',
 			'post_type'		=> ( isset( $to_cache['post_type'] ) ) ? $to_cache['post_type'] : 'disabled'
 		);
+		$relationship_to_cache = ( isset( $to_cache['relationship'] ) ) ? $to_cache['relationship'] : array();
 		
 		// Sanitize $id_posts
 		// It usually comes from a WP_Query, but still
@@ -507,6 +613,9 @@ class WPV_Cache {
 		}
 		$cache_combined['post_author'] = $cache_post_data['post_author'];
 		$cache_combined['post_type'] = $cache_post_data['post_type'];
+		
+		$cache_post_relationship = array();
+		$cache_combined['post_relationship'] = WPV_Cache::generate_post_relationship_cache( $cache_post_relationship, $id_posts, $relationship_to_cache );
 		
 		self::$stored_cache = $cache_combined;
 		
@@ -540,6 +649,7 @@ class WPV_Cache {
 			'post_author'	=> ( isset( $to_cache['post_author'] ) ) ? $to_cache['post_author'] : 'disabled',
 			'post_type'		=> ( isset( $to_cache['post_type'] ) ) ? $to_cache['post_type'] : 'disabled'
 		);
+		$relationship_to_cache = ( isset( $to_cache['relationship'] ) ) ? $to_cache['relationship'] : array();
 		
 		// Sanitize $id_posts
 		// It usually comes from a WP_Query, but still
@@ -566,6 +676,9 @@ class WPV_Cache {
 		$cache_combined['post_author'] = $cache_post_data['post_author'];
 		$cache_combined['post_type'] = $cache_post_data['post_type'];
 		
+		$cache_post_relationship = isset( $cache_combined['post_relationship'] ) ? $cache_combined['post_relationship'] : array();
+		$cache_combined['post_relationship'] = WPV_Cache::generate_post_relationship_cache( $cache_post_relationship, $id_posts, $relationship_to_cache );
+		
 		return $cache_combined;
 	}
 	
@@ -579,6 +692,7 @@ class WPV_Cache {
 	 *    'cf'          array  List of field meta_key's to cache
 	 *    'post_author' string Whether to cache the author of posts
 	 *    'post_type'   string Whether to cache the type of posts
+	 *    'relationship' string Whether to generate the relationship cache
 	 *
 	 * @uses self::generate_auxiliar_cache
 	 *
@@ -593,7 +707,7 @@ class WPV_Cache {
 	}
 	
 	/**
-	 * Mimics the caching construction of WordPress so we can use it for counting posts.
+	 * Mimic the caching construction of WordPress so we can use it for counting posts.
 	 * Caches data for the passed custom fields and taxonomies, and adds it to self::$stored_cache_extended_for_post_relationship
 	 * Used when rendering post relationship filters with dependency or counters,
 	 * as we need to generate a specific query that avoinds the filter by the current post type in the relationship ree, if it exists
@@ -604,12 +718,14 @@ class WPV_Cache {
 	 *    'cf'          array  List of field meta_key's to cache
 	 *    'post_author' string Whether to cache the author of posts
 	 *    'post_type'   string Whether to cache the type of posts
+	 *    'relationship' string Whether to generate the relationship cache
 	 *
 	 * @uses self::generate_auxiliar_cache
 	 *
-	 * @return (array) cached data compatible with the native $wp_object_cache->cache format
+	 * @return array Cached data compatible with the native $wp_object_cache->cache format
 	 *
 	 * @since 1.12
+	 * @since m2m Keep for bakwards compatibility on sites that do not switch to M2M
 	 */
 	static function generate_cache_extended_for_post_relationship( $id_posts = array(), $to_cache = array() ) {
 		$cache_combined = self::generate_auxiliar_cache( $id_posts, $to_cache );
@@ -618,20 +734,27 @@ class WPV_Cache {
 	}
 	
 	/**
-	* generate_post_relationship_tree_cache
-	*
-	* Generates data for counters and disable/hide elements in a post relationship parametric filter
-	*
-	* @param $tree		string	greater-than separated list of ancestors, in a top-to-bottom order
-	* @param $count		bool	whether the count should return the number of matches or just a true/false statement
-	*
-	* @return
-	*
-	* @since 1.12
-	*/
+	 * Generate data for counters and disable/hide elements in a post relationship parametric filter
+	 *
+	 * @param $tree_array array List of ancestors, in a top-to-bottom order
+	 * @param $count bool Whether the count should return the number of matches or just a true/false statement
+	 *
+	 * @return array
+	 *
+	 * @since 1.12
+	 * @note This is being generated per ancestor shortcode in a relationship query:
+	 *       We should be able to cache it per relationship shortcode and do it once.
+	 *       At least when no ancestor filter has been submitted yet...
+	 */
+	static function generate_post_relationship_tree_cache( $tree_array, $count = true ) {
+		if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			return self::generate_post_relationship_tree_cache_from_m2m( $tree_array, $count );
+		} else {
+			return self::generate_post_relationship_tree_cache_from_postmeta( $tree_array, $count );
+		}
+	}
 	
-	static function generate_post_relationship_tree_cache( $tree, $count = true ) {
-		$tree_array = explode( '>', $tree );
+	private static function generate_post_relationship_tree_cache_from_postmeta( $tree_array, $count ) {
 		$tree_real = array_reverse( $tree_array );
 		$tree_remove = array_shift( $tree_real );
 		$tree_ground = end( $tree_array );
@@ -706,6 +829,46 @@ class WPV_Cache {
 		return $counters;
 	}
 	
+	private static function generate_post_relationship_tree_cache_from_m2m( $tree_array, $count ) {
+		$counters = array();
+		global $wpdb;
+		$cache_combined = self::$stored_cache_extended_for_post_relationship;
+		if ( 
+			! isset( $cache_combined['post_relationship'] )
+			|| ! is_array( $cache_combined['post_relationship'] )
+		) {
+			return $counters;
+		}
+		
+		$cached_post_relationship = $cache_combined['post_relationship'];
+		if ( 0 === count( $cached_post_relationship ) ) {
+			// The cache combined is relationship slug key-based,
+			// following the reverse of the tree array
+			return $counters;
+		}
+		$current_relationship = reset( $cached_post_relationship );
+		$current_relationship_type = key( $cached_post_relationship );
+		foreach ( $cached_post_relationship as $post_type_slug => $relationship_associations ) {
+			foreach ( $relationship_associations as $ancestor_id => $ancestor_children ) {
+				$counters[ $ancestor_id ] = array(
+					'type'	=> $post_type_slug,
+					'count'	=> count( $ancestor_children )
+				);
+				if ( $current_relationship_type != $post_type_slug ) {
+					$corrected_count = 0;
+					foreach ( $ancestor_children as $ancestor_child_maybe_parent ) {
+						if ( isset( $counters[ $ancestor_child_maybe_parent ] ) ) {
+							$corrected_count += $counters[ $ancestor_child_maybe_parent ]['count'];
+						}
+					}
+					$counters[ $ancestor_id ]['count'] = $corrected_count;
+				}
+			}
+		}
+		self::$stored_relationship_cache = $counters;
+		return $counters;
+	}
+	
 	/**
 	* Merge the native and auxiliar caches for taxonomies
 	*
@@ -751,6 +914,37 @@ class WPV_Cache {
 	*/
 	
 	function delete_transient_meta_keys() {
+		self::$delete_transient_meta_keys_flag = true;
+	}
+
+	/**
+	 * Decide whether the postmeta cache needs to be invalidated.
+	 * 
+	 * When a postmeta value is created or edited, but the meta key is already in the cache,
+	 * there is no need to invalidate the cache at all.
+	 *
+	 * @param int    $meta_id    ID of updated metadata entry.
+     * @param int    $object_id  Object ID.
+     * @param string $meta_key   Meta key.
+     * @param mixed  $meta_value Meta value.
+	 * 
+	 * @since 2.6.4
+	 */
+	function maybe_delete_transient_meta_keys( $meta_id, $object_id, $meta_key, $_meta_value ) {
+		if ( strpos( $meta_key, '_' ) === 0 ) {
+			$wpv_transient = get_transient( 'wpv_transient_meta_keys_hidden512' );
+		} else {
+			$wpv_transient = get_transient( 'wpv_transient_meta_keys_visible512' );
+		}
+		if ( $wpv_transient === false ) {
+			return;
+		}
+
+		if ( in_array( $meta_key, $wpv_transient ) ) {
+			// The meta key already belongs to the cache, no need to invalidate it
+			return;
+		}
+		
 		self::$delete_transient_meta_keys_flag = true;
 	}
 	

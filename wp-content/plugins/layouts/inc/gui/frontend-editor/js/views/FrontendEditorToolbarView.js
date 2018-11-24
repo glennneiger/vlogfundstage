@@ -38,7 +38,7 @@
         },
         // Stub for saving the layout
         saveLayout: function (e) {
-            console.log(e.currentTarget.dataset.action + ' event triggered');
+            //console.log(e.currentTarget.dataset.action + ' event triggered');
             DDLayout.ddl_admin_page.trigger( 'save_layout', this );
         },
         render: function () {

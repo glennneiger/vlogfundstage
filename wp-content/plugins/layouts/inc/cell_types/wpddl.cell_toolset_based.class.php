@@ -75,12 +75,12 @@ abstract class Layouts_toolset_based_cell{
 			'cred-cell' => array(
 				'field' => "ddl_layout_cred_id",
 				'url' => admin_url( 'post.php?post=%POST_ID%&action=edit' ),
-				'nice_name' => __('CRED Post Form', 'ddl-layouts')
+				'nice_name' => __('Post Form', 'ddl-layouts')
 			),
 			'cred-user-cell' => array(
 				'field' => "ddl_layout_cred_user_id",
 				'url' => admin_url( 'post.php?post=%POST_ID%&action=edit' ),
-				'nice_name' => __('CRED User Form', 'ddl-layouts')
+				'nice_name' => __('User Form', 'ddl-layouts')
 			),
 			'ddl-container' => null,
 			'child-layout' => array(
@@ -134,7 +134,7 @@ class Layouts_views_based_cell extends Layouts_toolset_based_cell {
 
 
 								&nbsp;&nbsp;
-								<a class="fieldset-inputs" href="http://wp-types.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
+								<a class="fieldset-inputs" href="https://toolset.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
 									<?php _e('About Views', 'ddl-layouts');?>
 								</a>
 
@@ -275,7 +275,7 @@ class Layouts_views_based_cell extends Layouts_toolset_based_cell {
 									<?php _e('You are using the embedded version of Views. Install and activate the full version of Views and you will be able to create custom content-driven grids.', 'ddl-layouts'); ?>
 
 									&nbsp;&nbsp;
-									<a class="fieldset-inputs" href="http://wp-types.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
+									<a class="fieldset-inputs" href="https://toolset.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
 										<?php _e('About Views', 'ddl-layouts');?>
 									</a>
 								</div>
@@ -295,7 +295,7 @@ class Layouts_views_based_cell extends Layouts_toolset_based_cell {
                                                     <i class="icon-download fa fa-download-alt"></i> <?php _e('Download Modules', 'ddl-layouts');?>
                                                 </a>
                                             <?php } else { ?>
-                                                <a class="fieldset-inputs button button-primary-toolset" href="http://wp-types.com/home/module-manager?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-module-manager" target="_blank">
+                                                <a class="fieldset-inputs button button-primary-toolset" href="https://toolset.com/home/module-manager?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-module-manager" target="_blank">
                                                     <?php _e('Get Toolset Module Manager', 'ddl-layouts');?>
                                                 </a>
                                             <?php } ?>
@@ -318,7 +318,7 @@ class Layouts_views_based_cell extends Layouts_toolset_based_cell {
                                                                                                             <i class="icon-download fa fa-download-alt"></i> <?php _e('Download Modules', 'ddl-layouts');?>
                                                                                                     </a>
                                                                                             <?php } else { ?>
-                                                                                                    <a class="fieldset-inputs button button-primary-toolset" href="http://wp-types.com/home/module-manager?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-module-manager" target="_blank">
+                                                                                                    <a class="fieldset-inputs button button-primary-toolset" href="https://toolset.com/home/module-manager?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-module-manager" target="_blank">
                                                                                                             <?php _e('Get Module Manager plugin', 'ddl-layouts');?>
                                                                                                     </a>
                                                                                             <?php } ?>
@@ -340,7 +340,7 @@ class Layouts_views_based_cell extends Layouts_toolset_based_cell {
                                                 <i class="icon-download fa fa-download-alt"></i> <?php _e('Download Modules', 'ddl-layouts');?>
                                             </a>
                                         <?php } else { ?>
-                                            <a class="fieldset-inputs button button-primary-toolset" href="http://wp-types.com/home/module-manager?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-module-manager" target="_blank">
+                                            <a class="fieldset-inputs button button-primary-toolset" href="https://toolset.com/home/module-manager?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-module-manager" target="_blank">
                                                 <?php _e('Get Toolset Module Manager', 'ddl-layouts');?>
                                             </a>
                                         <?php } ?>
@@ -470,7 +470,7 @@ class Layouts_views_based_cell extends Layouts_toolset_based_cell {
 							<?php _e('This cell requires the Toolset Views plugin. Install and activate Views and you will be able to create custom content-driven cells.', 'ddl-layouts'); ?>
 
 							&nbsp;&nbsp;
-							<a class="fieldset-inputs" href="http://wp-types.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
+							<a class="fieldset-inputs" href="https://toolset.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
 								<?php _e('About Views', 'ddl-layouts');?>
 							</a>
 						</p>
@@ -486,7 +486,7 @@ class Layouts_views_based_cell extends Layouts_toolset_based_cell {
 						<?php _e('This cell requires the Toolset Views plugin. Install and activate Views and you will be able to create custom content-driven cells.', 'ddl-layouts'); ?>
 
 						&nbsp;&nbsp;
-						<a class="fieldset-inputs" href="http://wp-types.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
+						<a class="fieldset-inputs" href="https://toolset.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-content-grid-cell&utm_term=get-views" target="_blank">
 							<?php _e('About Views', 'ddl-layouts');?>
 						</a>
 					</p>

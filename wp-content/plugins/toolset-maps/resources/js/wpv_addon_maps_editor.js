@@ -231,6 +231,22 @@ WPViews.AddonMapsEditor = function( $ ) {
     };
 
 	/**
+	 * Initializes all *visible* address fields.
+	 *
+	 * Important when we suspect there will be some hidden ones, which we need to skip because Google Map will be borked
+	 * if inited while hidden.
+	 *
+	 * @since 1.5
+	 */
+	self.init_visible_address_fields = function() {
+		$( self.selector ).filter(':visible')
+			.each( function() {
+				self.test_google_autocomplete_service( $( this ) );
+			}
+		);
+	};
+
+	/**
 	 * Checks if given selector is inside a hidden (collapsed) Bootstrap accordion.
 	 *
 	 * @param {String} selector
@@ -366,7 +382,8 @@ WPViews.AddonMapsEditor = function( $ ) {
 		this_coordinates = thiz.data( 'coordinates' ),
 		this_map_options = {
 			map: $('.js-toolset-google-map-preview', thiz_container),
-			markerOptions: thiz_marker_options
+			markerOptions: thiz_marker_options,
+			types: []
 		},
 		thiz_init_geocode = false;
 		
@@ -546,6 +563,60 @@ WPViews.AddonMapsEditor = function( $ ) {
 			}
 		});
 	};
+
+	/**
+	 * Reacts on reload preview click
+	 *
+	 * @since 1.6
+	 * @param {Event} event
+	 */
+	self.onReloadPreviewClick = function( event ) {
+		event.preventDefault();
+
+		self.reloadPreview( $( this ).closest( '.js-toolset-google-map-container' ) );
+	};
+
+	/**
+	 * Reloads given map preview
+	 *
+	 * @since 1.6
+	 * @param jQuery $container Map container
+	 */
+	self.reloadPreview = function( $container ) {
+		var $containerOverlay = $container.find( '.js-toolset-google-map-preview-reload' );
+
+		if ( $container.find( '.js-toolset-latlon-error' ).length > 0 ) {
+			return;
+		}
+
+		$containerOverlay.fadeOut( 'fast', function() {
+			$containerOverlay.remove();
+		} );
+
+		$( self.selector, $container ).each( function() {
+			var $thisVal = $( this ).val();
+			if (
+				'' != $thisVal
+				&& $thisVal.match("^{")
+				&& $thisVal.match("}$")
+			) {
+				var coords = $thisVal.slice( 1, -1 ),
+					location = coords.split( ',' );
+
+				if ( location.length == 2 ) {
+					var thisMap = $( this ).geocomplete( "map" ),
+						thisMarker = $( this ).geocomplete( "marker" ),
+						thisLatLng = new google.maps.LatLng( location[0], location[1] );
+
+					if ( thisLatLng ) {
+						thisMap.setCenter( thisLatLng );
+						thisMarker.setPosition( thisLatLng );
+						self.get_closest_address_position( thisLatLng, $container );
+					}
+				}
+			}
+		});
+	};
 	
 	/**
 	* ###########################################
@@ -628,40 +699,7 @@ WPViews.AddonMapsEditor = function( $ ) {
 	*
 	* @since 1.1.0
 	*/
-	
-	$( document ).on( 'click', '.js-toolset-google-map-reload-preview', function( e ) {
-		e.preventDefault();
-		var thiz = $( this ),
-		thiz_container = thiz.closest( '.js-toolset-google-map-container' ),
-		thiz_container_overlay = thiz_container.find( '.js-toolset-google-map-preview-reload' );
-		if ( thiz_container.find( '.js-toolset-latlon-error' ).length > 0 ) {
-			return;
-		}
-		thiz_container_overlay.fadeOut( 'fast', function() {
-			thiz_container_overlay.remove();
-		});
-		$( self.selector, thiz_container ).each( function() {
-			var thiz_val = $( this ).val();
-			if (
-				'' != thiz_val 
-				&& thiz_val.match("^{") 
-				&& thiz_val.match("}$")
-			) {
-				var thiz_coords = thiz_val.slice( 1, -1 ),
-				thiz_location = thiz_coords.split( ',' );
-				if ( thiz_location.length == 2 ) {
-					var thiz_map = $( this ).geocomplete( "map" ),
-					thiz_marker = $( this ).geocomplete( "marker" ),
-					thiz_latLng = new google.maps.LatLng( thiz_location[0], thiz_location[1] );
-					if ( thiz_latLng ) {
-						thiz_map.setCenter( thiz_latLng );
-						thiz_marker.setPosition( thiz_latLng );
-						self.get_closest_address_position( thiz_latLng, thiz_container );
-					}
-				}
-			}
-        });
-	});
+	$( document ).on( 'click', '.js-toolset-google-map-reload-preview', self.onReloadPreviewClick );
 	
 	/**
 	* Ensures the address field that belongs to a postbox that is first rendered closed is init when the postbox is opened
@@ -704,7 +742,7 @@ WPViews.AddonMapsEditor = function( $ ) {
 	});
 	
 	/**
-	* Re-init ddress fields on CRED forms after they get submitted using AJAX.
+	* Re-init address fields on Toolset forms after they get submitted using AJAX.
 	*
 	* @since 1.1.1
 	*/
@@ -761,15 +799,40 @@ WPViews.AddonMapsEditor = function( $ ) {
 
 		navigator.geolocation.getCurrentPosition(
 			function (position) {
-				$container.find('.js-toolset-google-map-lat').val( position.coords.latitude );
-				$container.find('.js-toolset-google-map-lon').val( position.coords.longitude ).trigger('input');
+				self.update_latlon_values( $container, position.coords.latitude, position.coords.longitude, 'both' );
+				self.reloadPreview( $container )
 			},
 			function (position_error) {
-				alert( position_error.message );
+				console.warn( position_error.message );
 			}
 		);
 	});
-	
+
+	/**
+	 * Init address field(s) on toolset_ajax_fields_loaded event.
+	 *
+	 * @since 1.5
+	 */
+	$( document ).on( 'toolset_ajax_fields_loaded', function( event, form ) {
+		self.init_address_fields_in_group( $('#'+form.form_id ) );
+	});
+
+	/**
+	 * Reacts to event triggered by Types after the fields are loaded by ajax (too late for regular init).
+	 *
+	 * Also takes care to only init visible fields, because some may be hidden.
+	 *
+	 * @since 1.5
+	 */
+	$( document ).on( 'toolset_types_rfg_item_toggle', function( event, item ) {
+		if ( item.visible() ) {
+			self.init_visible_address_fields();
+
+			// Also do a little cosmetic fix
+			$('input.js-toolset-google-map').css('display', 'block');
+		}
+	});
+
 	/**
 	* init
 	*

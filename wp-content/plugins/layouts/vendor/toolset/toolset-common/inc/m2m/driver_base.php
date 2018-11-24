@@ -9,14 +9,29 @@
  */
 abstract class Toolset_Relationship_Driver_Base {
 
+
 	/** @var Toolset_Relationship_Definition */
 	private $definition;
+
 
 	/** @var array Driver setup array provided by the relationship definition. */
 	private $setup;
 
+
 	/** @var null|Toolset_Potential_Association_Query_Factory */
 	private $_potential_association_query_factory;
+
+
+	/** @var Toolset_Association_Persistence */
+	protected $association_persistence;
+
+
+	/** @var Toolset_Association_Factory */
+	protected $association_factory;
+
+	/** @var null|Toolset_Element_Factory */
+	private $_element_factory;
+
 
 	/**
 	 * Toolset_Relationship_Driver_Base constructor.
@@ -24,15 +39,26 @@ abstract class Toolset_Relationship_Driver_Base {
 	 * @param Toolset_Relationship_Definition $definition Relationship definition that is going to be using this driver.
 	 * @param array $setup Driver setup array provided by the relationship definition.
 	 * @param Toolset_Potential_Association_Query_Factory|null $pa_query_factory_di
+	 * @param Toolset_Association_Persistence|null $association_persistence_di
+	 * @param Toolset_Association_Factory|null $association_factory_di
+	 * @param Toolset_Element_Factory|null $element_factory_di
 	 *
 	 * @since m2m
 	 */
 	public function __construct(
-		Toolset_Relationship_Definition $definition, $setup, Toolset_Potential_Association_Query_Factory $pa_query_factory_di = null
+		Toolset_Relationship_Definition $definition,
+		$setup,
+		Toolset_Potential_Association_Query_Factory $pa_query_factory_di = null,
+		Toolset_Association_Persistence $association_persistence_di = null,
+		Toolset_Association_Factory $association_factory_di = null,
+		Toolset_Element_Factory $element_factory_di = null
 	) {
 		$this->definition = $definition;
 		$this->setup = toolset_ensarr( $setup );
 		$this->_potential_association_query_factory = $pa_query_factory_di;
+		$this->association_persistence = $association_persistence_di ?: new Toolset_Association_Persistence();
+		$this->association_factory = $association_factory_di ?: new Toolset_Association_Factory();
+		$this->_element_factory = $element_factory_di;
 	}
 
 
@@ -58,7 +84,7 @@ abstract class Toolset_Relationship_Driver_Base {
 	 * @param int|Toolset_Element|WP_Post $child_source
 	 * @param array $args Optional arguments, implementation-specific
 	 *
-	 * @return Toolset_Association_Base|Toolset_Result ID of the new association on success or a result information with an error.
+	 * @return Toolset_Association|Toolset_Result ID of the new association on success or a result information with an error.
 	 */
 	public abstract function create_association( $parent_source, $child_source, $args = array() );
 
@@ -66,7 +92,7 @@ abstract class Toolset_Relationship_Driver_Base {
 	/**
 	 * Delete an association from the database.
 	 *
-	 * @param Toolset_Association_Base $association
+	 * @param Toolset_Association $association
 	 *
 	 * @return Toolset_Result
 	 * @since m2m
@@ -129,7 +155,7 @@ abstract class Toolset_Relationship_Driver_Base {
 
 
 	protected function is_association_match( $association ) {
-		return ( $association instanceof Toolset_Association_Base && $association->get_driver() === $this );
+		return ( $association instanceof Toolset_Association && $association->get_driver() === $this );
 	}
 
 
@@ -143,5 +169,18 @@ abstract class Toolset_Relationship_Driver_Base {
 		}
 
 		return $this->_potential_association_query_factory;
+	}
+
+
+	/**
+	 * @return Toolset_Element_Factory
+	 * @since 2.5.9
+	 */
+	protected function get_element_factory() {
+		if( null === $this->_element_factory ) {
+			$this->_element_factory = new Toolset_Element_Factory();
+		}
+
+		return $this->_element_factory;
 	}
 }

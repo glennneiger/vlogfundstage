@@ -27,7 +27,12 @@
  * Now that we have a unique version for all plugins
  * we define the version here
  */
-$toolset_common_version = 262000;
+
+// Note: Since the 2.8 branch is meant just for the support of the legacy Types 2.3.* branch,
+// we're relaxing the rule and incrementing the loader number just by one.
+//
+// This may keep going on for some time and we don't want to run out of numbers for point releases.
+$toolset_common_version = 280001;
 
 
 /* ---------------------------------------------------------------------- *\
@@ -79,7 +84,7 @@ if ( ! function_exists( 'toolset_common_initialize' ) ) {
 
         $path = untrailingslashit( $path );
 		$url = untrailingslashit( $url );
-        
+
         // Save the url in the matching path
         foreach ( $toolset_common_paths as $key => $data ) {
             if ( $toolset_common_paths[ $key ]['path'] == $path ) {

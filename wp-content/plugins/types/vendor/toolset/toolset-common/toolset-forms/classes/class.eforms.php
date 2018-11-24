@@ -459,24 +459,22 @@ class Enlimbo_Forms {
 		}
 
 		switch( $what_to_validate ){
-			case 'required';
-				$element['#attributes']['required'] = 'true';
-				$element['#attributes']['data-parsley-required-message'] = $element['#validate'][ $what_to_validate ]['message'];
-				break;
 
 			case 'number':
 				$element['#attributes']['data-parsley-type'] = 'number';
-				$element['#attributes']['data-parsley-number-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				$element['#attributes']['data-parsley-error-message'] = $element['#validate'][ $what_to_validate ]['message'];
 				break;
-
 			case 'url':
 				$element['#attributes']['data-parsley-type'] = 'url';
-				$element['#attributes']['data-parsley-url-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				$element['#attributes']['data-parsley-error-message'] = $element['#validate'][ $what_to_validate ]['message'];
 				break;
-
 			case 'email':
 				$element['#attributes']['data-parsley-type'] = 'email';
-				$element['#attributes']['data-parsley-email-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				$element['#attributes']['data-parsley-error-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				break;
+			case 'required';
+				$element['#attributes']['data-parsley-required'] = 'true';
+				$element['#attributes']['data-parsley-required-message'] = $element['#validate'][ $what_to_validate ]['message'];
 				break;
 		}
 

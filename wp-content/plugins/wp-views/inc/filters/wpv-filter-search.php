@@ -35,7 +35,7 @@ class WPV_Search_Filter {
 			WPV_VERSION, 
 			false 
 		);
-		$text_search_documentation_link = 'https://wp-types.com/documentation/user-guides/filtering-views-for-a-specific-text-string-search/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-search-text-filter&utm_term=Text Search documentation';
+		$text_search_documentation_link = 'https://toolset.com/documentation/user-guides/filtering-views-for-a-specific-text-string-search/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-search-text-filter&utm_term=Text Search documentation';
 		$search_strings = array(
 			'relevanssi'	=> array(
 								'available'					=> function_exists( 'relevanssi_init' ) ? 'true' : 'false',
@@ -726,8 +726,9 @@ class WPV_Search_Filter {
 				?>
 				<li>
 					<?php $checked = ( $view_settings['search_mode'] == 'manual' || $view_settings['search_mode'] == 'visitor' ) ? 'checked="checked"' : ''; ?>
-					<input type="radio" id="wpv-search-mode-manual" class="js-wpv-post-search-mode" name="search_mode[]" value="manual" <?php echo $checked; ?> />
+					<input type="radio" <?php disabled( wpv_is_views_lite(), true, true );?>  id="wpv-search-mode-manual" class="js-wpv-post-search-mode" name="search_mode[]" value="manual" <?php echo $checked; ?> />
 					<label for="wpv-search-mode-manual"><?php _e( "I'll add the search box to the HTML manually", 'wpv-views' ); ?></label>
+					<?php if( wpv_is_views_lite() ):?><a href="javascript:void(0)" class="dashicons dashicons-editor-help js-wpv-search-disabled-pointer"></a><?php endif;?>
 				</li>
 				<?php
 				break;
@@ -826,8 +827,9 @@ class WPV_Search_Filter {
 				</li>
 				<li>
 					<?php $checked = ( $view_settings['taxonomy_search_mode'] == 'manual' || $view_settings['taxonomy_search_mode'] == 'visitor' ) ? 'checked="checked"' : ''; ?>
-					<input type="radio" id="wpv-taxonomy-search-mode-manual" name="taxonomy_search_mode[]" value="manual" <?php echo $checked; ?> />
+					<input type="radio" <?php disabled( wpv_is_views_lite(), true, true );?>  id="wpv-taxonomy-search-mode-manual" name="taxonomy_search_mode[]" value="manual" <?php echo $checked; ?> />
 					<label for="wpv-taxonomy-search-mode-manual"><?php _e( "I'll add the search box to the HTML manually", 'wpv-views' ); ?></label>
+					<?php if( wpv_is_views_lite() ):?><a href="javascript:void(0)" class="dashicons dashicons-editor-help js-wpv-search-disabled-pointer"></a><?php endif;?>
 				</li>
 			</ul>
 		<?php

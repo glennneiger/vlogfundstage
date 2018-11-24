@@ -3,25 +3,37 @@ class WPDDL_Options_Manager{
 	
 	private  $options = array();
 	private $name;
+	private $default = null;
 
 	public function __construct($name, $default = null )
 	{
 		$this->name = $name;
+		$this->default = $default;
 		$this->options = get_option($this->name, $default);
 		return $this->options;
 	}
 
 	public  function get_options( $option = null ) {
-
 		if (!$option) {
+			if( apply_filters( 'ddl_options_reset', false ) ){
+				$this->options = get_option( $this->name, $this->default );
+			}
 			return $this->options;
 		}
-		if ( isset($this->options[$option] )) {
+		if ( isset( $this->options[$option] ) ) {
 			return $this->options[$option];
 		} else {
-			return '';
+			if( ! apply_filters( 'ddl_options_reset', false ) ){
+				return '';
+			} else {
+				$this->options = get_option( $this->name, $this->default );
+				if ( isset( $this->options[ $option ] ) ) {
+					return $this->options[ $option ];
+				} else {
+					return '';
+				}
+			}
 		}
-
 	}
 
 	public  function save_options( ) {

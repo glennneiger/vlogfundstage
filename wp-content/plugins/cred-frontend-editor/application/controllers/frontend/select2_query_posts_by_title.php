@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class used by CRED Field Utils in order to retrieve query posts by post_title only
+ * Class used by CRED_Field_Utils in order to retrieve query posts by post_title only
  *
  * @since 1.9.4
  */
@@ -28,6 +28,7 @@ class CRED_Frontend_Select2_Query_Posts_By_Title {
 		if ( $has_search_query ) {
 			add_filter( 'posts_where', array( $this, 'search_by_title_only' ), 10, 2 );
 		}
+
 		$wp_query = new WP_Query( $args );
 		$posts = $wp_query->get_posts();
 		if ( $has_search_query ) {

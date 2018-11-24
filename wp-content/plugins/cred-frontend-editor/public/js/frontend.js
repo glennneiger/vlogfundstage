@@ -4,11 +4,11 @@ var credFrontEndViewModel = {
      */
     messagesQueue: {},
     /**
-     * @description Array of CRED forms present in the currnet page
+     * @description Array of Toolset Forms present in the currnet page
      */
     credForms: [],
     /**
-     * @description a list of CRED form IDs that's ready for third-party actions
+     * @description a list of Toolset Form IDs that's ready for third-party actions
      */
     readyCREDForms: [],
 
@@ -109,31 +109,98 @@ var credFrontEndViewModel = {
     },
 
     /**
+     * @type {bool}
+     */
+    isWpEditorAvailable: null,
+
+
+    /**
+     * Check whether wp.editor is available
+     *
+     * @return {bool}
+     */
+    checkWpEditorAvailable: function() {
+        if ( null == this.isWpEditorAvailable ) {
+            this.isWpEditorAvailable = (
+                _.has( window, 'wp' )
+                && _.has( window.wp, 'editor' )
+                && _.has( window.wp.editor, 'remove' )
+                && _.has( window.wp.editor, 'initialize' )
+            );
+        }
+        return this.isWpEditorAvailable;
+    },
+
+    /**
      * Reload and re-init tinyMCE after a cred form ajax call
+     * 
+     * @param {object} $container Node to reload inner tinyMCE editors
      *
      * @since 1.9.3
      */
-    reloadTinyMCE: function () {
-        jQuery('textarea.wpt-wysiwyg').each(function (index) {
-            var $area = jQuery(this),
+    reloadTinyMCE: function( $container ) {
+        $container = ( typeof $container !== 'undefined' ) ? $container : jQuery( document );
+        var currentInstance = this;
+        jQuery( 'textarea.wpt-wysiwyg', $container ).each( function( index ) {
+            var $area = jQuery( this ),
                 area_id = $area.prop('id');
-            if (typeof area_id !== 'undefined') {
-                if (typeof tinyMCE !== 'undefined') {
-                    // @bug This is broken when AJAX submitting a CRED form that is set to keep displaying the form,
-                    // when the WYSIWYG field was submitted in the Text mode
-                    tinyMCE.get(area_id).remove();
+
+            if ( currentInstance.checkWpEditorAvailable() ) {
+                // WordPress over 4.8, hence wp.editor is available and included
+                wp.editor.remove( area_id );
+                var tinymceSettings = (
+                        _.has( window, 'tinyMCEPreInit' )
+                        && _.has( window.tinyMCEPreInit, 'mceInit' )
+                        && _.has( window.tinyMCEPreInit.mceInit, area_id )
+                    ) ? window.tinyMCEPreInit.mceInit[ area_id ] : true,
+                    qtSettings = (
+                        _.has( window, 'tinyMCEPreInit' )
+                        && _.has( window.tinyMCEPreInit, 'qtInit' )
+                        && _.has( window.tinyMCEPreInit.qtInit, area_id )
+                    ) ? window.tinyMCEPreInit.qtInit[ area_id ] : true,
+                    hasMediaButton = ! jQuery( 'textarea#' + area_id ).hasClass( 'js-toolset-wysiwyg-skip-media' ),
+                    hasToolsetButton = ! jQuery( 'textarea#' + area_id ).hasClass( 'js-toolset-wysiwyg-skip-toolset' ),
+                    mediaButtonsSettings = ( hasMediaButton || hasToolsetButton );
+                
+                wp.editor.initialize( area_id, { tinymce: tinymceSettings, quicktags: qtSettings, mediaButtons: mediaButtonsSettings } );
+
+                if ( mediaButtonsSettings ) {
+                    var $mediaButtonsContainer = jQuery( '#wp-' + area_id + '-wrap .wp-media-buttons' );
+                    $mediaButtonsContainer.attr( 'id', 'wp-' + area_id + '-media-buttons' );
+
+                    if ( ! hasMediaButton ) {
+                        $mediaButtonsContainer.find( '.insert-media.add_media' ).remove();
+                    }
+                    if ( hasToolsetButton ) {
+                        /**
+                         * Broadcasts that the WYSIWYG field initialization was completed,
+                         * only if the WYSIWYG field should include Toolset buttons.
+                         *
+                         * @param {string} area_id The underlying textarea id attribute
+                         *
+                         * @event toolset:forms:wysiwygFieldInited
+                         * 
+                         * @since 2.1.2
+                         */
+                        jQuery( document ).trigger( 'toolset:forms:wysiwygFieldInited', [ area_id ] );
+                    }
                 }
-                tinyMCE.init(tinyMCEPreInit.mceInit[area_id]);
-                // @bug This Quicktags initialization is broken by design
-                // since WPV_Toolset.add_qt_editor_buttons expects as second parameter a Codemirror editor instace
-                // and here we are passing just a textarea ID.
-                var quick = quicktags(tinyMCEPreInit.qtInit[area_id]);
-                WPV_Toolset.add_qt_editor_buttons(quick, area_id);
+    
+            } else {
+                // WordPress below 4.8, hence wp-editor is not available
+                // so we turn those fields into simple textareas
+                jQuery( '#wp-' + area_id + '-editor-tools' ).remove();
+                jQuery( '#wp-' + area_id + '-editor-container' )
+                    .removeClass( 'wp-editor-container' )
+                    .find( '.mce-container' )
+                    .remove();
+                jQuery( '#qt_' + area_id + '_toolbar' ).remove();
+                jQuery( '#' + area_id )
+                    .removeClass( 'wp-editor-area' )
+                    .show()
+                    .css( { width: '100%' } );
             }
         });
-
-        jQuery("button.wp-switch-editor").click();
-        jQuery("button.switch-tmce").click();
     },
 
     /**
@@ -178,7 +245,6 @@ var credFrontEndViewModel = {
                         $form.replaceWith(response.output);
 
                         if ('ok' === response.result) {
-                            alert(credSettings.operation_ok);
 
                             /**
                              * cred_form_ajax_error
@@ -244,7 +310,7 @@ var credFrontEndViewModel = {
      *
      * @since 1.9.3
      */
-    onAjaxFormSubmit: function (formID) {
+    onAjaxFormSubmit: function( formID ) {
         $form_selector = jQuery(formID);
         this.enableSubmitForm($form_selector);
         this.initColorPicker($form_selector);
@@ -257,12 +323,12 @@ var credFrontEndViewModel = {
         //Reapply bindings for the form
         this.applyViewModelBindings();
         this.activatePreviewMode();
-        this.reloadTinyMCE();
+        this.reloadTinyMCE( $form_selector );
         this.tryToReloadReCAPTCHA($form_selector);
     },
 
     /**
-     * @description Updates CRED forms auto-draft post ID
+     * @description Updates Toolset Forms auto-draft post ID
      */
     updateFormsPostID: function () {
         this.getAllForms();
@@ -275,7 +341,7 @@ var credFrontEndViewModel = {
     },
 
     /**
-     * @description Returns all CRED forms in document
+     * @description Returns all Toolset Forms in document
      */
     getAllForms: function () {
         var document_forms = jQuery('.cred-form, .cred-user-form', document);
@@ -291,7 +357,7 @@ var credFrontEndViewModel = {
     },
 
     /**
-     * @description Assigns an observable binding ID to each CRED form to be updated dynamically when observable value changes.
+     * @description Assigns an observable binding ID to each Toolset Form to be updated dynamically when observable value changes.
      * @param form_data JSON object returned from extractFormData method
      */
     assignDynamicObservableID: function (form_data) {
@@ -362,7 +428,7 @@ var credFrontEndViewModel = {
                             var callback_data = JSON.parse(callback_data);
                             credFrontEndViewModel[callback_data.form_context_id][callback_data.observable_id](callback_data.pid);
                         } catch (err) {
-                            console.error('CRED: Error parsing callback data for `check_post_id` ');
+                            console.error('Toolset Forms: Error parsing callback data for `check_post_id` ');
                         }
                     }
                 });
@@ -371,7 +437,7 @@ var credFrontEndViewModel = {
     },
 
     /**
-     * @description Looks up all CRED file buttons and assigns event listeners for undo, delete and upload actions.
+     * @description Looks up all Toolset Forms file buttons and assigns event listeners for undo, delete and upload actions.
      */
     initCREDFile: function () {
         jQuery('.js-wpt-credfile-delete, .js-wpt-credfile-undo').on('click', function (e) {
@@ -492,11 +558,11 @@ var credFrontEndViewModel = {
     },
 
     /**
-     * @description Cleans all CRED form nodes and apply the bindings
+     * @description Cleans all Toolset Form nodes and apply the bindings
      * @since 1.9
      */
     applyViewModelBindings: function () {
-        //Clear initialised CRED forms, only from KO bindings and not from custom ones
+        //Clear initialised Toolset Form, only from KO bindings and not from custom ones
         this.readyCREDForms = [];
 
         for (var cred_form in this.credForms) {
@@ -610,7 +676,6 @@ var credFrontEndViewModel = {
 
         credFrontEndViewModel.initColorPicker($form);
 
-        $form.off('submit', null);
         $form.on('submit', function () {
             //If recaptcha is not valid stops the submit
             if (!credFrontEndViewModel.handleReCAPTCHAErrorMessage(jQuery(this))) {
@@ -618,6 +683,15 @@ var credFrontEndViewModel = {
             }
         });
 
+    });
+
+    jQuery( document ).on( 'js_event_wpv_pagination_completed js_event_wpv_parametric_search_results_updated', function( event, data ) {
+        jQuery( '.cred-form, .cred-user-form', data.layout ).each( function() {
+            var $form = jQuery( this );
+            credFrontEndViewModel.initColorPicker( $form );
+            credFrontEndViewModel.reloadTinyMCE( $form );
+            credFrontEndViewModel.tryToReloadReCAPTCHA( $form );
+        });
     });
 
     //bounding onAjaxFormSubmit

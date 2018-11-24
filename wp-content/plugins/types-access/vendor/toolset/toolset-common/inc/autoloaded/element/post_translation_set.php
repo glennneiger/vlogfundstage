@@ -3,7 +3,7 @@
 /**
  * Represents a set of post translations.
  *
- * This class can act as a single post, working as a proxy to one language version of it.
+ * This class can act as a single post, working as a proxy to one of its translations.
  *
  * Each of the interface methods has an additional parameter where a language code may be specified. If it isn't,
  * the best available translation will be chosen: current language > default language > original post language.
@@ -11,7 +11,7 @@
  * In all other aspects, these methods act exactly the same way as in Toolset_Post.
  *
  * Note: It is not possible to instantiate this class when WPML is not active. You should always
- * use Toolset_Element::get_instance() instead of reinventing its logic elsewhere.
+ * use Toolset_Elemen_Factory::get_post() instead of reinventing its logic elsewhere.
  *
  * @since m2m
  */
@@ -30,17 +30,46 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	private $best_translation_for = array();
 
 
+	/** @var Toolset_WPML_Compatibility */
+	private $wpml_service;
+
+
+	/** @var Toolset_Element_Factory */
+	private $element_factory;
+
+
+	/** @var null|Toolset_Post_Type_Repository */
+	private $_post_type_repository;
+
+
+	/** @var null|int */
+	private $_trid;
+
+
 	/**
 	 * Toolset_Post_Translation_Set constructor.
 	 *
 	 * @param Toolset_Post[] $translations Array of this post's translations indexed by language codes.
 	 *     It doesn't need to be complete, but having these values ready can improve performance.
+	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
+	 * @param Toolset_Element_Factory|null $element_factory_di
+	 * @param Toolset_Post_Type_Repository|null $post_type_repository_di
 	 *
 	 * @since m2m
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 */
-	public function __construct( $translations ) {
+	public function __construct(
+		$translations,
+		Toolset_WPML_Compatibility $wpml_service_di = null,
+		Toolset_Element_Factory $element_factory_di = null,
+		Toolset_Post_Type_Repository $post_type_repository_di = null
+	) {
 
-		if ( ! Toolset_WPML_Compatibility::get_instance()->is_wpml_active_and_configured() ) {
+		$this->wpml_service = ( null === $wpml_service_di ? Toolset_WPML_Compatibility::get_instance() : $wpml_service_di );
+		$this->element_factory = ( null === $element_factory_di ? new Toolset_Element_Factory() : $element_factory_di );
+		$this->_post_type_repository = $post_type_repository_di;
+
+		if ( ! $this->wpml_service->is_wpml_active_and_configured() ) {
 			throw new RuntimeException( 'Attempted to use a post translation set while WPML was inactive' );
 		}
 
@@ -50,15 +79,18 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 
 		foreach ( $translations as $translation ) {
 			if ( ! $translation instanceof Toolset_Post ) {
-				$translation = Toolset_Element::get_instance( $this->get_domain(), $translation );
+				$translation = $this->element_factory->get_post_untranslated( $translation );
 			}
 
 			$this->translations[ $translation->get_language() ] = $translation;
 		}
 
-		/** @var Toolset_Post $some_translation */
-		$some_translation = array_shift( array_slice( $this->translations, 0, 1 ) );
-		$this->starting_post_id = $some_translation->get_id();
+		if( array_key_exists( $this->wpml_service->get_default_language(), $this->translations ) ) {
+			$this->starting_post_id = $this->translations[ $this->wpml_service->get_default_language() ]->get_id();
+		} else {
+			$some_translation = reset( $this->translations );
+			$this->starting_post_id = $some_translation->get_id();
+		}
 	}
 
 
@@ -76,9 +108,12 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 		//
 		// Notice that $return_original_if_missing is set to false by default, so we'll not get a result that's not
 		// truly translated.
-		$id = (int) apply_filters( 'wpml_object_id', $this->starting_post_id, $this->get_type(), $return_original_if_missing, $language_code );
+		//
+		// P.S.: Can't use get_type() for the third argument because that requires having a
+		// post instance and it could create an infinite recursion. Luckily, WPML interprets the 'any'
+		// type as "any post type".
+		$id = (int) apply_filters( 'wpml_object_id', $this->starting_post_id, 'any', $return_original_if_missing, $language_code );
 
-		// fixme handle when there's no translation and the same ID is returned as the starting one
 		return $id;
 	}
 
@@ -98,7 +133,11 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 		if ( ! array_key_exists( $language_code, $this->translations ) ) {
 			$translated_post_id = $this->fetch_translation( $language_code );
 			if ( $translated_post_id !== 0 ) {
-				$translation = Toolset_Post::get_instance( $translated_post_id, $language_code );
+				try {
+					$translation = $this->element_factory->get_post_untranslated( $translated_post_id, $language_code );
+				} catch ( Toolset_Element_Exception_Element_Doesnt_Exist $e ) {
+					$translation = null;
+				}
 			} else {
 				$translation = null;
 			}
@@ -124,12 +163,15 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	 * @return Toolset_Post
 	 */
 	private function get_original_translation() {
-		$translated_post_id = $this->fetch_translation( Toolset_Wpml_Utils::get_default_language(), true );
+		$translated_post_id = $this->fetch_translation(
+			$this->wpml_service->get_default_language(),
+			true
+		);
 
 		$post_language_details = apply_filters( 'wpml_post_language_details', null, $translated_post_id );
 		$language_code = toolset_getarr( $post_language_details, 'language_code' );
 
-		$translation = Toolset_Post::get_instance( $translated_post_id, $language_code );
+		$translation = $this->element_factory->get_post_untranslated( $translated_post_id, $language_code );
 
 		// Store it in cache only if we got a language code. At this point I don't trust anything.
 		if ( is_string( $language_code ) && ! empty( $language_code ) ) {
@@ -152,7 +194,7 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	private function get_best_translation( $language_code = null ) {
 
 		if ( null === $language_code ) {
-			$language_code = Toolset_Wpml_Utils::get_current_language();
+			$language_code = $this->wpml_service->get_current_language();
 		}
 
 		if( array_key_exists( $language_code, $this->best_translation_for ) ) {
@@ -162,7 +204,7 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 		if ( $this->is_translated_to( $language_code ) ) {
 			$post = $this->get_translation( $language_code );
 		} else {
-			$default_language = Toolset_Wpml_Utils::get_default_language();
+			$default_language = $this->wpml_service->get_default_language();
 			if ( $this->is_translated_to( $default_language ) ) {
 				$post = $this->get_translation( $default_language );
 			} else {
@@ -180,8 +222,9 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	 * @return string One of the Toolset_Field_Utils::get_domains() values.
 	 */
 	public function get_domain() {
-		return Toolset_Field_Utils::DOMAIN_POSTS;
+		return Toolset_Element_Domain::POSTS;
 	}
+
 
 	/**
 	 * @param null|string $language_code If null, the best translation will be selected automatically.
@@ -203,7 +246,7 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	}
 
 
-		/**
+	/**
 	 * @param null|string $language_code If null, the best translation will be selected automatically.
 	 *
 	 * @return string Post type slug.
@@ -226,6 +269,7 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 		$this->get_best_translation( $language_code )->initialize_fields();
 	}
 
+
 	/**
 	 * @param null|string $language_code If null, the best translation will be selected automatically.
 	 *
@@ -234,6 +278,7 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	function are_fields_loaded( $language_code = null ) {
 		return $this->get_best_translation( $language_code )->are_fields_loaded();
 	}
+
 
 	/**
 	 * Get the object this model is wrapped around.
@@ -294,6 +339,7 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 		return $this->get_best_translation( $language_code )->get_fields();
 	}
 
+
 	/**
 	 * @param null|string $language_code If null, the best translation will be selected automatically.
 	 *
@@ -308,8 +354,10 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	 * @return bool
 	 */
 	function is_translatable() {
-		// fixme actually check this
-		return true;
+		// Assumption: get_type() is the same for all translations, so it doesn't
+		// matter which one gets picked up. If this doesn't work as expected,
+		// the site has way more serious problems.
+		return $this->wpml_service->is_post_type_translatable( $this->get_type() );
 	}
 
 
@@ -337,6 +385,7 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 		return $this->get_best_translation( $language_code )->get_slug();
 	}
 
+
 	/**
 	 * @param string $title New post title
 	 *
@@ -347,5 +396,100 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 	 */
 	public function set_title( $title, $language_code = null ) {
 		$this->get_best_translation( $language_code )->set_title( $title );
+	}
+
+
+	protected function get_post_type_repository() {
+		if( null === $this->_post_type_repository ) {
+			$this->_post_type_repository = Toolset_Post_Type_Repository::get_instance();
+		}
+
+		return $this->_post_type_repository;
+	}
+
+
+	/**
+	 * @return IToolset_Post_Type|null
+	 * @since 2.5.10
+	 */
+	public function get_type_object() {
+		return $this->get_post_type_repository()->get( $this->get_type() );
+	}
+
+
+	/**
+	 * Return an element translation.
+	 *
+	 * If the element domain and type are non-translatable, it will return itself.
+	 *
+	 * If the element could be translated to the target language but is not,
+	 * the return value will depend on the $exact_match_only parameter:
+	 * If it's true, it will return null. Otherwise, it will return the best possible
+	 * translation (default language/original/any).
+	 *
+	 * @param string $language_code
+	 * @param bool $exact_match_only
+	 *
+	 * @return IToolset_Element|null
+	 */
+	public function translate( $language_code, $exact_match_only = false ) {
+		if( $exact_match_only && $this->is_translatable() ) {
+			return $this->get_translation( $language_code );
+		} else {
+			return $this->get_best_translation( $language_code );
+		}
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return int
+	 * @since 2.5.10
+	 */
+	public function get_default_language_id() {
+		$translation = $this->get_translation( $this->wpml_service->get_default_language() );
+		if( null === $translation ) {
+			return 0;
+		}
+
+		return $translation->get_id();
+	}
+
+	/**
+	 * @param string|null $language_code
+	 *
+	 * @return bool
+	 * @since 2.5.10
+	 */
+	public function is_revision( $language_code = null ) {
+		return $this->get_best_translation( $language_code )->is_revision();
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param string|null $language_code
+	 *
+	 * @return int
+	 * @since 2.5.11
+	 */
+	public function get_author( $language_code = null ) {
+		return $this->get_best_translation( $language_code )->get_author();
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return int
+	 * @since 2.5.11
+	 */
+	public function get_trid() {
+		if( null === $this->_trid ) {
+			$this->_trid = $this->wpml_service->get_post_trid( $this->starting_post_id );
+		}
+		return $this->_trid;
 	}
 }

@@ -1,5 +1,7 @@
 <?php
 
+use OTGS\Toolset\Common\Utils\RequestMode;
+
 /**
  * Toolset_Common_Bootstrap
  *
@@ -25,9 +27,6 @@
  *
  * 	TOOLSET_COMMON_PROTOCOL				Deprecated - To be removed - The protocol of TOOLSET_COMMON_URL - http | https
  * 	TOOLSET_COMMON_FRONTEND_PROTOCOL	Deprecated - To be removed - The protocol of TOOLSET_COMMON_FRONTEND_URL - http | https
- *
- * @todo create an admin page with Common info: path, bundled libraries versions, etc
- * todo the above should imho be part of a Troubleshooting page
  */
 class Toolset_Common_Bootstrap {
 
@@ -46,8 +45,11 @@ class Toolset_Common_Bootstrap {
 
 	// Names of various sections/modules of the common library that can be loaded.
 	const TOOLSET_AUTOLOADER = 'toolset_autoloader';
+	const TOOLSET_API = 'toolset_api';
 	const TOOLSET_DEBUG = 'toolset_debug';
 	const TOOLSET_FORMS = 'toolset_forms';
+	const TOOLSET_BLOCKS = 'toolset_blocks';
+	const TOOLSET_PAGE_BUILDER_MODULES = 'toolset_page_builder_modules';
 	const TOOLSET_VISUAL_EDITOR = 'toolset_visual_editor';
 	const TOOLSET_PARSER = 'toolset_parser';
     const TOOLSET_USER_EDITOR = 'toolset_user_editor';
@@ -60,18 +62,17 @@ class Toolset_Common_Bootstrap {
 	const TOOLSET_HELP_VIDEOS = 'toolset_help_videos';
 	const TOOLSET_GUI_BASE = 'toolset_gui_base';
 	const TOOLSET_RELATIONSHIPS = 'toolset_relationships';
+	const TOOLSET_DIC = 'toolset_dic';
 
-    // Request mode
+
+	/** @deprecated Use \OTGS\Toolset\Common\RequestMode::UNDEFINED */
 	const MODE_UNDEFINED = '';
+	/** @deprecated Use \OTGS\Toolset\Common\RequestMode::AJAX */
 	const MODE_AJAX = 'ajax';
+	/** @deprecated Use \OTGS\Toolset\Common\RequestMode::ADMIN */
 	const MODE_ADMIN = 'admin';
+	/** @deprecated Use \OTGS\Toolset\Common\RequestMode::FRONTEND */
 	const MODE_FRONTEND = 'frontend';
-
-
-	/**
-	 * @var string One of the MODE_* constants.
-	 */
-	private $mode = self::MODE_UNDEFINED;
 
 
 	private function __construct() {
@@ -187,6 +188,11 @@ class Toolset_Common_Bootstrap {
 			$this->register_toolset_forms();
 		}
 
+		// Maybe register Toolset blocks
+		if ( $this->should_load_section( $load, self::TOOLSET_BLOCKS ) ) {
+			$this->register_toolset_blocks();
+		}
+
 		// Maybe register the editor addon
 		if ( $this->should_load_section( $load, self::TOOLSET_VISUAL_EDITOR ) ) {
 			$this->register_visual_editor();
@@ -214,7 +220,7 @@ class Toolset_Common_Bootstrap {
 			$this->add_section_loaded( self::TOOLSET_RESOURCES );
 			// Use the class provided by Ric
 			require_once( TOOLSET_COMMON_PATH . '/inc/toolset.assets.manager.class.php' );
-			$this->assets_manager = Toolset_Assets_Manager::getInstance();
+			$this->assets_manager = Toolset_Assets_Manager::get_instance();
 			$this->apply_filters_on_sections_loaded( 'toolset_register_assets_section' );
 		}
 	}
@@ -255,6 +261,13 @@ class Toolset_Common_Bootstrap {
 			$this->add_section_loaded( self::TOOLSET_INCLUDES );
 
 			$this->register_autoloaded_classes();
+
+			// Load the dependency injection container.
+			// This must happen directly after the autoloader initialization.
+			if( ! $this->is_section_loaded( self::TOOLSET_DIC ) ) {
+				require_once TOOLSET_COMMON_PATH . '/utility/dic.php';
+				$this->add_section_loaded( self::TOOLSET_DIC );
+			}
 
 			// Make sure we check for upgrades after the Toolset Common library is fully loaded.
 			$upgrade_controller = Toolset_Upgrade_Controller::get_instance();
@@ -303,7 +316,7 @@ class Toolset_Common_Bootstrap {
 			}
 			if ( ! class_exists( 'Toolset_Internal_Compatibility', false ) ) {
 				require_once( TOOLSET_COMMON_PATH . '/inc/toolset.internal.compatibility.class.php' );
-				$this->internal_compatibility = new Toolset_Internal_Compatibility();
+				new Toolset_Internal_Compatibility();
 			}
 			if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 				require_once TOOLSET_COMMON_PATH . '/inc/toolset.wpml.compatibility.class.php';
@@ -311,7 +324,7 @@ class Toolset_Common_Bootstrap {
 			}
 			if ( ! class_exists( 'Toolset_Relevanssi_Compatibility', false ) ) {
 				require_once( TOOLSET_COMMON_PATH . '/inc/toolset.relevanssi.compatibility.class.php' );
-				$this->relevanssi_compatibility = new Toolset_Relevanssi_Compatibility();
+				new Toolset_Relevanssi_Compatibility();
 			}
 
             if ( ! class_exists( 'Toolset_CssComponent', false ) ) {
@@ -321,7 +334,7 @@ class Toolset_Common_Bootstrap {
 
 			if ( ! class_exists( 'Toolset_Bootstrap_Loader', false ) ) {
                 require_once( TOOLSET_COMMON_PATH . '/inc/toolset.bootstrap.loader.class.php' );
-                $toolset_load_bootstrap = Toolset_Bootstrap_Loader::getInstance();
+                Toolset_Bootstrap_Loader::getInstance();
             }
 
 			// Load Admin Notices Manager
@@ -332,20 +345,31 @@ class Toolset_Common_Bootstrap {
 
 			// Load Admin Notices Controller (user of our Toolset_Admin_Notices_Manager)
             if( ! class_exists( 'Toolset_Controller_Admin_Notices', false ) ) {
-				require_once( TOOLSET_COMMON_PATH . '/inc/controller/admin/notices.php' );
 				new Toolset_Controller_Admin_Notices();
             }
+
+			// Load Toolset Singleton Factory based on PHP_Version
+			if( ! class_exists( 'Toolset_Singleton_Factory', false ) ) {
+				if( version_compare( PHP_VERSION, '5.6.0', '>=' ) ) {
+					require_once( TOOLSET_COMMON_PATH . '/utility/singleton_factory.php' );
+				} else {
+					require_once( TOOLSET_COMMON_PATH . '/utility/singleton_factory_pre_php_5_6.php' );
+				}
+			}
 
 			require_once( TOOLSET_COMMON_PATH . '/inc/toolset.compatibility.php' );
 			require_once( TOOLSET_COMMON_PATH . '/inc/toolset.function.helpers.php' );
 			require_once( TOOLSET_COMMON_PATH . '/deprecated.php' );
+
+			/** @var RequestMode $request_mode */
+			$request_mode = toolset_dic_make( '\OTGS\Toolset\Common\Utils\RequestMode' );
 
 			// Initialize the AJAX handler if DOING_AJAX.
 			//
 			// Otherwise we'll only register it with the autoloader so that it's still safe to create subclasses
 			// from it and use them throughout plugins without too much limitations.
 			$ajax_class_path = TOOLSET_COMMON_PATH . '/inc/toolset.ajax.class.php';
-			if( ( self::MODE_AJAX == $this->get_request_mode() )
+			if( ( RequestMode::AJAX == $request_mode->get() )
 				&& ! class_exists( 'Toolset_Ajax', false ) )
 			{
 				require_once $ajax_class_path;
@@ -356,6 +380,32 @@ class Toolset_Common_Bootstrap {
 			}
 
 			$this->register_relationships();
+
+			// Initialize the admin controller for various tasks if we're in the backend.
+			if( RequestMode::AJAX === $request_mode->get() ) {
+				$admin_controller = new Toolset_Admin_Controller();
+				$admin_controller->initialize();
+			}
+
+			require_once TOOLSET_COMMON_PATH . '/inc/public_api/loader.php';
+			$public_api_loader = new Toolset_Public_API_Loader();
+			$public_api_loader->initialize();
+
+			$wp_query_adjustments = new Toolset_Wp_Query_Adjustments_Loader();
+			$wp_query_adjustments->initialize();
+
+			$interop_mediator = new \OTGS\Toolset\Common\Interop\Mediator();
+			$interop_mediator->initialize();
+			
+			/** 
+			 * Avoid the initialization of this class.
+			 *
+			 * @since m2m
+			 */
+			if ( ! apply_filters( 'toolset_disable_legacy_relationships_meta_access', false ) ) {
+				$postmeta_access = new Toolset_Postmeta_Access_Loader();
+				$postmeta_access->initialize();
+			}
 
 			$this->apply_filters_on_sections_loaded( 'toolset_register_include_section' );
 		}
@@ -373,6 +423,11 @@ class Toolset_Common_Bootstrap {
 		if ( ! $this->is_section_loaded( self::TOOLSET_UTILS ) ) {
 			$this->add_section_loaded( self::TOOLSET_UTILS );
 			require_once TOOLSET_COMMON_PATH . '/utility/utils.php';
+		}
+
+		if ( ! $this->is_section_loaded( self::TOOLSET_API ) ) {
+			$this->add_section_loaded( self::TOOLSET_API );
+			require_once TOOLSET_COMMON_PATH . '/api.php';
 		}
 
 		// Although this is full of DDL prefixes, we need to actually port before using it.
@@ -418,6 +473,15 @@ class Toolset_Common_Bootstrap {
 			do_action( 'toolset_register_classmap', $classmap );
 
 			$this->apply_filters_on_sections_loaded( 'toolset_register_forms_section' );
+		}
+	}
+
+	public function register_toolset_blocks() {
+		if ( ! $this->is_section_loaded( self::TOOLSET_BLOCKS ) ) {
+			$this->add_section_loaded( self::TOOLSET_BLOCKS );
+			$toolset_blocks = new Toolset_Blocks();
+			$toolset_blocks->load_blocks();
+			$this->apply_filters_on_sections_loaded( 'toolset_register_toolset_blocks_section' );
 		}
 	}
 
@@ -520,27 +584,8 @@ class Toolset_Common_Bootstrap {
 	}
 
 
-
 	public function clear_settings_instance() {
 		Toolset_Settings::clear_instance();
-	}
-
-
-	/**
-	 * See get_request_mode().
-	 *
-	 * @since 2.3
-	 */
-	private function determine_request_mode() {
-		if( is_admin() ) {
-			if( defined( 'DOING_AJAX' ) ) {
-				$this->mode = self::MODE_AJAX;
-			} else {
-				$this->mode = self::MODE_ADMIN;
-			}
-		} else {
-			$this->mode = self::MODE_FRONTEND;
-		}
 	}
 
 
@@ -555,12 +600,12 @@ class Toolset_Common_Bootstrap {
 	 *
 	 * @return string
 	 * @since 2.3
+	 * @deprecated Use \OTGS\Toolset\Common\RequestMode::get() instead.
 	 */
 	public function get_request_mode() {
-		if( self::MODE_UNDEFINED == $this->mode ) {
-			$this->determine_request_mode();
-		}
-		return $this->mode;
+		/** @var \OTGS\Toolset\Common\Utils\RequestMode $request_mode */
+		$request_mode = toolset_dic_make( '\OTGS\Toolset\Common\Utils\RequestMode' );
+		return $request_mode->get();
 	}
 
 

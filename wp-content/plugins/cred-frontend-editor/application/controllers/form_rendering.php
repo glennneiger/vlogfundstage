@@ -1,9 +1,15 @@
 <?php
 
+/**
+ * Class CRED_Form_Rendering replace the old lib rendering zebraform
+ *
+ * @since @1.4+
+ */
 class CRED_Form_Rendering {
 
 	public static $current_postid;
 	public $controls;
+	public $is_submitted;
 	public $is_submit_success = false;
 	public $attributes;
 	public $language;
@@ -30,20 +36,33 @@ class CRED_Form_Rendering {
 
 	/**
 	 * @deprecated
-	 * @var type array()
+	 * @var array $form_errors
 	 */
 	public $form_errors = array();
 
 	/**
 	 * @deprecated
-	 * @var type array()
+	 * @var array $form_messages
 	 */
 	public $form_messages = array();
 
+	/** @var mixed $_request */
 	private $_request;
+
+	/** @var array $_validation_errors */
 	public $_validation_errors = array();
 
-	public function __construct( $form_id, $html_form_id, $form_type, $current_postid, $actionUri, $preview = false ) {
+	/**
+	 * CRED_Form_Rendering constructor.
+	 *
+	 * @param int $form_id
+	 * @param string $html_form_id
+	 * @param string $form_type
+	 * @param int $current_postid
+	 * @param string $actionUri
+	 * @param bool $preview
+	 */
+	public function __construct( $form_id, $html_form_id, $form_type, $current_postid, $actionUri, $preview = false, $is_submitted = false ) {
 		$this->form_id = $form_id;
 		$this->html_form_id = $html_form_id;
 		$this->form_type = $form_type;
@@ -54,15 +73,21 @@ class CRED_Form_Rendering {
 		$req = $_REQUEST;
 		$req = stripslashes_deep( $req );
 		$this->_request = $req;
-
+		$this->is_submitted = $is_submitted;
 		return $this->getForm();
 	}
 
+	/**
+	 * @param $formHelper
+	 */
 	public function setFormHelper( $formHelper ) {
 		$this->_formHelper = $formHelper;
 		$this->_translate_field_factory = new CRED_Translate_Field_Factory( $formHelper->_formBuilder, $formHelper, new CRED_Field_Configuration_Translated_Value(), new CRED_Translate_Command_Factory() );
 	}
 
+	/**
+	 * @param $lang
+	 */
 	public function setLanguage( $lang ) {
 		$this->language = $lang;
 	}
@@ -201,18 +226,17 @@ class CRED_Form_Rendering {
 	 * @return string
 	 */
 	public function cred_form_shortcode( $atts, $content = '' ) {
-		extract( shortcode_atts( array(
+		$atts = shortcode_atts( array(
 			'class' => '',
-		), $atts ) );
+		), $atts );
 
 		// return a placeholder instead and store the content in _form_content var
 		$this->_form_content = $content;
 		$this->html_form_id = $this->form_properties['name'];
 		$this->isForm = true;
 
-		if ( ! empty( $class ) ) {
-			$this->_attributes['class'] = esc_attr( $class );
-		}
+		$form_classname = array( 'cred-form', 'cred-keep-original' );
+		$this->set_form_class( $form_classname, $atts );
 
 		return CRED_StaticClass::FORM_TAG . '_' . $this->form_properties['name'] . '%';
 	}
@@ -226,20 +250,40 @@ class CRED_Form_Rendering {
 	 * @return string
 	 */
 	public function cred_user_form_shortcode( $atts, $content = '' ) {
-		extract( shortcode_atts( array(
+		$atts = shortcode_atts( array(
 			'class' => '',
-		), $atts ) );
+		), $atts );
 
 		// return a placeholder instead and store the content in _form_content var
 		$this->_form_content = $content;
 		$this->html_form_id = $this->form_properties['name'];
 		$this->isForm = true;
 
-		if ( ! empty( $class ) ) {
-			$this->_attributes['class'] = esc_attr( $class );
-		}
+		$form_classname = array( 'cred-user-form', 'cred-keep-original' );
+		$this->set_form_class( $form_classname, $atts );
 
 		return CRED_StaticClass::FORM_TAG . '_' . $this->form_properties['name'] . '%';
+	}
+
+	/**
+	 * Set the form tag class attribute value,
+	 * based on the form shortcode class attribute value
+	 * plus some defaults for post and user forms.
+	 *
+	 * @param array $form_classname
+	 * @param array $atts
+	 * 
+	 * @since 2.1
+	 */
+	private function set_form_class( $form_classname = array(), $atts = array() ) {
+		if ( ! empty( $atts['class'] ) ) {
+			$extra_classname = explode( ' ', $atts['class'] );
+			$form_classname = array_merge( $form_classname, $extra_classname );
+		}
+
+		$form_classname = array_unique( $form_classname );
+		$form_classname_string = implode( ' ', $form_classname );
+		$this->_attributes['class'] = esc_attr( $form_classname_string );
 	}
 
 	/**
@@ -286,8 +330,7 @@ class CRED_Form_Rendering {
 	 *  'value'> translated automatically if WPML translation exists
 	 *  'taxonomy'> used with "type" option
 	 *  'type'> used with "taxonomy" option
-	 *
-	 * */
+	 */
 	public function cred_field_shortcodes( $atts ) {
 		return CRED_Field_Factory::create_field( $atts, $this, $this->_formHelper, $this->_formData, $this->_translate_field_factory );
 	}
@@ -313,10 +356,8 @@ class CRED_Form_Rendering {
 	 *
 	 *
 	 * Note:
-	 *
-	 *
-	 * */
-	// parse conditional shortcodes (nested allowed) [cred_show_group]
+	 * parse conditional shortcodes (nested allowed) [cred_show_group]
+	 */
 	public function cred_conditional_shortcodes( $atts, $content = '' ) {
 		static $condition_id = 0;
 
@@ -485,6 +526,9 @@ class CRED_Form_Rendering {
 		return $querystring_array;
 	}
 
+	/**
+	 * Create the Form action uri
+	 */
 	private function set_form_action_uri() {
 		$url_string_parsed_array = parse_url( $this->form_properties['action'] );
 		$querystring_array = array();
@@ -530,6 +574,8 @@ class CRED_Form_Rendering {
 	}
 
 	/**
+	 * Render the form
+	 *
 	 * @return string
 	 */
 	public function render() {
@@ -571,7 +617,11 @@ class CRED_Form_Rendering {
 		return $this->_form_content;
 	}
 
-
+	/**
+	 * @param $txt
+	 *
+	 * @return string
+	 */
 	private function typeMessage2textMessage( $txt ) {
 		switch ( $txt ) {
 			case "date":
@@ -595,6 +645,12 @@ class CRED_Form_Rendering {
 		}
 	}
 
+	/**
+	 * @param $txt
+	 *
+	 * @return string
+	 * @deprecated since 1.4
+	 */
 	private function typeMessage2id( $txt ) {
 		switch ( $txt ) {
 			case "date":
@@ -618,16 +674,13 @@ class CRED_Form_Rendering {
 		}
 	}
 
-	//Client-side validation is not using the custom messages provided in CRED forms for CRED custom fields
-	//https://icanlocalize.basecamphq.com/projects/7393061-toolset/todo_items/187800735/comments
 	/**
 	 * fixCredCustomFieldMessages
 	 * Fix CRED controlled custom fields validation message
 	 * replace with cred form settings messages and localize messages
+	 * Client-side validation is not using the custom messages provided in CRED forms for CRED custom fields
 	 *
-	 * @param type $field
-	 *
-	 * @return type
+	 * @param $field
 	 */
 	public function fixCredCustomFieldMessages( &$field ) {
 		if ( ! isset( $field['cred_custom'] ) || isset( $field['cred_custom'] ) && ! $field['cred_custom'] ) {
@@ -738,6 +791,14 @@ class CRED_Form_Rendering {
 
 			$config = $fieldConfig->createConfig();
 
+			//store temporary global $post that is the cred form post
+			$form_post = false;
+			if ($post) {
+				$form_post = clone $post;
+				//set the global post referring to current post_id
+				$post = get_post($this->_post_id);
+			}
+
 			// Modified by Srdjan
 			// Validation and conditional filtering
 			if ( isset( $field['plugin_type'] ) && $field['plugin_type'] == 'types' ) {
@@ -778,9 +839,15 @@ class CRED_Form_Rendering {
 				unset( $config['default_value'] );
 			}
 
-
 			// Added by Srdjan END
 			$html = wptoolset_form_field( $this->html_form_id, $config, $_values );
+
+			//restore original global $post
+			if ($form_post) {
+				$post = $form_post;
+				unset( $form_post );
+			}
+
 			if ( $add2form_content ) {
 				$this->_form_content .= $html;
 			} else {
@@ -946,52 +1013,7 @@ class CRED_Form_Rendering {
 		return $ret;
 	}
 
-	/**
-	 * @return boolean
-	 */
-	function isSubmitted() {
-		$res = $this->isAjaxSubmitted() || $this->isFormSubmitted();
 
-		return $res;
-	}
-
-	/**
-	 * @return boolean
-	 */
-	function isFormSubmitted() {
-		foreach ( $_POST as $name => $value ) {
-			if ( strpos( $name, 'form_submit' ) !== false ) {
-
-				return true;
-			}
-		}
-		if ( empty( $_POST ) && isset( $_GET['_tt'] ) && ! isset( $_GET['_success'] ) && ! isset( $_GET['_success_message'] ) ) {
-			// HACK in this case, we have used the form to try to upload a file with a size greater then the maximum allowed by PHP
-			// The form was indeed submitted, but no data was passed and no redirection was performed
-			// We return true here and handle the error in the Form_Builder::form() method
-
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @return boolean
-	 */
-	function isAjaxSubmitted() {
-		if ( ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ||
-			! empty( $_SERVER['HTTP_X_REQUESTED_WITH'] ) &&
-			strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) == 'xmlhttprequest'
-		) {
-
-			$res = isset( $_POST['action'] ) && $_POST['action'] == 'cred_ajax_form';
-
-			return $res;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Set the current submitted fields values

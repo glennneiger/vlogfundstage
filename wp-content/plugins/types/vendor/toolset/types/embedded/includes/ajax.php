@@ -3,6 +3,8 @@
 /**
  * All AJAX calls go here.
  *
+ * @refactoring ! No, they don't!!!
+ *
  * @todo auth
  */
 function wpcf_ajax_embedded() {

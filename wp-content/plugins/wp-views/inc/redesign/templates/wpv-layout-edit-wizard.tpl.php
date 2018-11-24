@@ -6,7 +6,7 @@
 
     <ul class="wpv-dialog-nav js-layout-wizard-nav">
         <li class="wpv-dialog-nav-tab">
-            <a href="#js-layout-wizard-layout-style" class="active"><?php _e( 'Loop output style', 'wpv-views' ); ?></a>
+            <a href="#js-layout-wizard-layout-style" class="active"><?php _e( 'Loop style', 'wpv-views' ); ?></a>
         </li>
         <li class="wpv-dialog-nav-tab">
             <a href="#js-layout-wizard-fields" class="js-tab-not-visited"><?php _e('Choose fields','wpv-views') ?></a>
@@ -17,7 +17,7 @@
 
 		<p class="toolset-alert toolset-alert-info js-wpv-layout-wizard-overwrite-notice" style="display:none">
 			<?php
-			_e( 'The Loop Output will be overwritten by this wizard.', 'wpv-views' );
+			_e( 'The Loop will be overwritten by this wizard.', 'wpv-views' );
 			echo WPV_MESSAGE_SPACE_CHAR;
 			_e( 'If you want to add fields and keep your HTML edits, use the <strong>Fields and Views</strong> button.', 'wpv-views' );
 			?>
@@ -33,14 +33,14 @@
                     <li>
                         <input type="radio" name="layout-wizard-style" id="layout-wizard-style-unformatted" class="js-wpv-layout-wizard-style" value="unformatted" />
                         <label for="layout-wizard-style-unformatted">
-                            <i class="icon-code fa fa-code"></i>
+	                        <span class="wpv-layout-wizard-layout-style-icon wpv-layout-wizard-layout-style-unformatted"></span>
                          <?php _e('Unformatted','wpv-views'); ?>
                         </label>
                     </li>
                     <li>
                         <input type="radio" name="layout-wizard-style" id="layout-wizard-style-bootstrap-grid" class="js-wpv-layout-wizard-style" value="bootstrap-grid" />
                         <label for="layout-wizard-style-bootstrap-grid">
-                            <i class="icon-th-large fa fa-th-large"></i>
+	                        <span class="wpv-layout-wizard-layout-style-icon wpv-layout-wizard-layout-style-bootstrap-grid"></span>
                             <?php _e('Bootstrap grid','wpv-views'); ?>
                         </label>
 						<p class="tip js-wpv-bootstrap-message"></p>
@@ -48,14 +48,14 @@
                     <li>
                         <input type="radio" name="layout-wizard-style" id="layout-wizard-style-grid" class="js-wpv-layout-wizard-style" value="table" />
                         <label for="layout-wizard-style-grid">
-                            <i class="icon-th fa fa-th"></i>
+	                        <span class="wpv-layout-wizard-layout-style-icon wpv-layout-wizard-layout-style-table-grid"></span>
                             <?php _e('Table-based grid','wpv-views'); ?>
                         </label>
                     </li>
                     <li>
                         <input type="radio" name="layout-wizard-style" id="layout-wizard-style-table" class="js-wpv-layout-wizard-style" value="table_of_fields" />
                         <label for="layout-wizard-style-table">
-                            <i class="icon-table fa fa-table"></i>
+	                        <span class="wpv-layout-wizard-layout-style-icon wpv-layout-wizard-layout-style-table"></span>
                             <?php _e('Table','wpv-views'); ?>
                         </label>
 						<p class="tip js-wpv-layout-wizard-layout-style-options-table_of_fields js-layout-wizard-include-fields-names hidden">
@@ -66,18 +66,30 @@
                     <li>
                         <input type="radio" name="layout-wizard-style" id="layout-wizard-style-ul" class="js-wpv-layout-wizard-style" value="un_ordered_list" />
                         <label for="layout-wizard-style-ul">
-                            <i class="icon-list-ul fa fa-list-ul"></i>
+	                        <span class="wpv-layout-wizard-layout-style-icon wpv-layout-wizard-layout-style-unordered-list"></span>
                             <?php _e('Unordered list','wpv-views'); ?>
                         </label>
                     </li>
                     <li>
                          <input type="radio" name="layout-wizard-style" id="layout-wizard-style-ol" class="js-wpv-layout-wizard-style" value="ordered_list" />
                          <label for="layout-wizard-style-ol">
-                            <i class="icon-list-ol fa fa-list-ol"></i>
+	                         <span class="wpv-layout-wizard-layout-style-icon wpv-layout-wizard-layout-style-ordered-list"></span>
                             <?php _e('Ordered list','wpv-views'); ?>
                         </label>
                     </li>
+	                <li class="js-wpv-layout-wizard-layout-list-with-separators-style" style="display:none">
+						<input type="radio" name="layout-wizard-style" id="layout-wizard-style-separators-list" class="js-wpv-layout-wizard-style" value="separators_list" />
+						<label for="layout-wizard-style-separators-list">
+							<span class="wpv-layout-wizard-layout-style-icon wpv-layout-wizard-layout-style-separators-list"></span>
+							<?php esc_html_e( 'List with separators', 'wpv-views' ); ?>
+						</label>
+					</li>
                 </ul>
+                <p class="toolset-alert toolset-alert-info js-wpv-layout-wizard-separators-list-characters-trimming-notice" style="display:none">
+		            <?php esc_html_e( 'When you select the "List with separators" style, all line breaks and tabs will be removed from the View output if you have omitted the wrapping DIV around the View.', 'wpv-views' ); ?>
+                    <br />
+                    <?php esc_html_e( 'Unless you change it, the wizard will automatically omit the wrapping DIV around the View when it\'s finished.', 'wpv-views' ); ?>
+                </p>
                 <div class="wpv-layout-wizard-layout-style-options js-wpv-layout-wizard-layout-style-options">
 					<div class="js-wpv-layout-wizard-layout-style-options-bootstrap-grid js-layout-wizard-bootstrap-grid-box hidden">
 						<h4><?php _e('Bootstrap grid options','wpv-views'); ?></h4>
@@ -143,7 +155,7 @@
                 </div>
 				
 				<div style="margin: 10px 0 0;padding: 10px 0 0; border-top: solid 1px #ededed;text-align: right;clear: both;">
-					<?php echo '<a class="wpv-help-link" href="http://wp-types.com/documentation/user-guides/view-layouts-101/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-wizard&utm_term=Learn about different layouts" target="_blank">' . __('Learn about different layouts', 'wpv-views') . ' &raquo;</a>';?>
+					<?php echo '<a class="wpv-help-link" href="https://toolset.com/documentation/user-guides/view-layouts-101/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-wizard&utm_term=Learn about different layouts" target="_blank">' . __('Learn about different layouts', 'wpv-views') . ' &raquo;</a>';?>
 				</div>
             </div>
 
@@ -160,6 +172,14 @@
 						<i class="icon-plus fa fa-plus"></i> <?php _e('Add a field','wpv-views') ?>
 					</button>
 				</p>
+
+	            <div class="js-wpv-list-separator-container" style="margin: 10px 0 0;padding: 10px 0 0; border-top: solid 1px #ededed;">
+		            <label for="js-wpv-list-separator"><?php esc_html_e( 'List separator', 'wpv-views' ); ?></label>
+		            <input type="text" id="js-wpv-list-separator" value=","/>
+		            <span class="wpv-helper-text">
+						<?php esc_html_e( 'The items in the list will be separated using this separator.', 'wpv-views' ); ?>
+					</span>
+	            </div>
 				
 				<div style="margin: 10px 0 0;padding: 10px 0 0; border-top: solid 1px #ededed;">
 					<input type="checkbox" value="1" id="js-wpv-use-view-loop-ct" />

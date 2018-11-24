@@ -3,7 +3,7 @@
 /**
  * Uses custom posts and fields to store form data
  */
-class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
+class CRED_User_Forms_Model extends CRED_Abstract_Model {
 
     public function __construct() {
         parent::__construct();
@@ -14,14 +14,14 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 	public function register_form_type() {
 		$args = array(
 			'labels' => array(
-				'name' => __( 'CRED User Forms', 'wp-cred' ),
-				'singular_name' => __( 'CRED User Form', 'wp-cred' ),
+				'name' => __( 'User Forms', 'wp-cred' ),
+				'singular_name' => __( 'User Form', 'wp-cred' ),
 				'add_new' => __( 'Add New', 'wp-cred' ),
-				'add_new_item' => __( 'Add New CRED User Form', 'wp-cred' ),
-				'edit_item' => __( 'Edit CRED User Form', 'wp-cred' ),
-				'new_item' => __( 'New CRED User Form', 'wp-cred' ),
-				'view_item' => __( 'View CRED User Form', 'wp-cred' ),
-				'search_items' => __( 'Search CRED User Forms', 'wp-cred' ),
+				'add_new_item' => __( 'Add New User Form', 'wp-cred' ),
+				'edit_item' => __( 'Edit User Form', 'wp-cred' ),
+				'new_item' => __( 'New User Form', 'wp-cred' ),
+				'view_item' => __( 'View User Form', 'wp-cred' ),
+				'search_items' => __( 'Search User Forms', 'wp-cred' ),
 				'not_found' => __( 'No user forms found', 'wp-cred' ),
 				'not_found_in_trash' => __( 'No user form found in Trash', 'wp-cred' ),
 				'parent_item_colon' => '',
@@ -38,7 +38,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 			'has_archive' => false,
 			'hierarchical' => false,
 			'menu_position' => 80,
-			'supports' => array( 'title', 'editor' /* ,'author' */ ),
+			'supports' => array( 'title', /*'author'*/ ),
 		);
 		register_post_type( $this->post_type_name, $args );
 
@@ -60,7 +60,8 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
                 'cred_message_no_data_submitted' => 'Invalid User Form Submission (maybe a file has a size greater than allowed)',
                 'cred_message_upload_failed' => 'Upload Failed',
                 'cred_message_field_required' => 'This field is required',
-	            'cred_message_passwords_do_not_match' => __('Passwords do not match', 'wp-cred'),
+	            'cred_message_invalid_username' => 'The username can only contain alphanumeric characters, dashes or underscores',
+	            'cred_message_passwords_do_not_match' => 'Passwords do not match',
                 'cred_message_enter_valid_date' => 'Please enter a valid date',
                 'cred_message_values_do_not_match' => 'Field values do not match',
                 'cred_message_enter_valid_email' => 'Please enter a valid email address',
@@ -69,7 +70,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
                 'cred_message_enter_valid_url' => 'Please enter a valid URL address',
 	            'cred_message_email_already_exists' => 'Sorry, that email address is already used!',
 	            'cred_message_username_already_exists' => 'Sorry, that username already exists!',
-	            'cred_message_invalid_edit_user_role' => 'You can only edit users with following roles',
+	            'cred_message_invalid_edit_user_role' => 'This form can not edit users with a role of %%EDITED_USER_ROLE%%',
                 'cred_message_enter_valid_captcha' => 'Wrong CAPTCHA',
                 'cred_message_missing_captcha' => 'Missing CAPTCHA',
                 'cred_message_show_captcha' => 'Show CAPTCHA',
@@ -104,6 +105,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 		        'cred_message_no_data_submitted' => __( 'Invalid Form Submission (maybe a file has a size greater than allowed)', 'wp-cred' ),
 		        'cred_message_upload_failed' => __( 'Upload failed message', 'wp-cred' ),
 		        'cred_message_field_required' => __( 'Required field message', 'wp-cred' ),
+		        'cred_message_invalid_username' => __( 'Invalid username message', 'wp-cred' ),
 		        'cred_message_passwords_do_not_match' => __('Passwords do not match', 'wp-cred'),
 		        'cred_message_enter_valid_date' => __( 'Invalid date message', 'wp-cred' ),
 		        'cred_message_values_do_not_match' => __( 'Invalid hidden field value message', 'wp-cred' ),
@@ -184,6 +186,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 				    'hide_comments' => isset( $form_settings->hide_comments ) ? $form_settings->hide_comments : 0,
 				    'theme' => isset( $form_settings->cred_theme_css ) ? $form_settings->cred_theme_css : 'minimal',
 				    'has_media_button' => isset( $form_settings->has_media_button ) ? $form_settings->has_media_button : 0,
+				    'has_toolset_buttons' => isset( $form_settings->has_toolset_buttons ) ? $form_settings->has_toolset_buttons : 0,
 				    'autogenerate_username_scaffold' => isset( $form_settings->autogenerate_username_scaffold ) ? $form_settings->autogenerate_username_scaffold : 0,
 				    'autogenerate_nickname_scaffold' => isset( $form_settings->autogenerate_nickname_scaffold ) ? $form_settings->autogenerate_nickname_scaffold : 0,
 				    'autogenerate_password_scaffold' => isset( $form_settings->autogenerate_password_scaffold ) ? $form_settings->autogenerate_password_scaffold : 0,
@@ -318,6 +321,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
                     'hide_comments' => 0,
                     'theme' => 'minimal',
                     'has_media_button' => 0,
+                    'has_toolset_buttons' => 0,
                     'autogenerate_username_scaffold' => 1,
                     'autogenerate_nickname_scaffold' => 1,
                     'autogenerate_password_scaffold' => 1,
@@ -346,11 +350,12 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 	 *
 	 * @param $user_id
 	 * @param $meta
+	 * @param $single
 	 *
 	 * @return mixed
 	 */
-	public function getUserMeta( $user_id, $meta ) {
-		return get_user_meta( $user_id, $meta, true );
+	public function getUserMeta( $user_id, $meta, $single = true ) {
+		return get_user_meta( $user_id, $meta, $single );
 	}
 
 	/**
@@ -388,7 +393,6 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 	 */
 	public function getUserFields( $user_id, $include_only_fields = null ) {
 		$fields = CRED_Loader::get( 'MODEL/UserFields' )->getCustomFields();
-
 		if ( isset( CRED_StaticClass::$out['generic_fields'] )
 			&& ! empty( CRED_StaticClass::$out['generic_fields'] ) ) {
 			$fields = array_merge( CRED_StaticClass::$out['generic_fields'], $fields );
@@ -489,6 +493,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 	 * @param array|null $removed_fields
 	 *
 	 * @return array
+	 * @deprecated since 2.0 moved to CRED_User_Premium_Feature::add_temporary_user
 	 */
     public function addTemporaryUser($userdata, $usermeta, $fieldsInfo, $removed_fields = null) {
 	    if ( CRED_StaticClass::$_password_generated != null ) {
@@ -531,6 +536,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 	 * @param int|null $order_id
 	 *
 	 * @return bool|int|WP_Error
+	 * @deprecated since 2.0 moved to CRED_User_Premium_Feature::publish_temporary_user
 	 */
     public function publishTemporaryUser($num, $order_id = null) {
         $_cred_user_orders = get_option("_cred_user_orders", "");
@@ -583,6 +589,7 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 	 * @param int $num
 	 *
 	 * @return bool
+	 * @deprecated since 2.0 moved to CRED_User_Premium_Feature::delete_draft_temporary_user
 	 */
     public function deleteTemporaryUser($num) {
         $_cred_user_orders = get_option("_cred_user_orders", "");
@@ -618,9 +625,20 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 	 * @return int|WP_Error
 	 */
 	public function addUser( $userdata, $usermeta, $fieldsInfo, $removed_fields = null ) {
-		$allowed_tags = $allowed_protocols = array();
-		$this->setAllowed( $allowed_tags, $allowed_protocols );
+		$user_id = $this->createUser( $userdata );
+		$this->addUserInfo( $user_id, $usermeta, $fieldsInfo, $removed_fields );
+		return $user_id;
+	}
 
+
+	/**
+	 * Creates an user
+	 *
+	 * @param array $userdata User data.
+	 * @return int|WP_Error
+	 * @since 2.0.1
+	 */
+	public function createUser( $userdata ) {
 		if ( ! isset( $userdata['user_role'] )
 			|| empty( $userdata['user_role'] ) ) {
 			global $wp_roles;
@@ -640,6 +658,20 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 		$userdata['role'] = $user_role;
 		$user_id = wp_insert_user( $userdata );
 
+		return $user_id;
+	}
+
+	/**
+	 * Adds user info
+	 *
+	 * @param int|WP_Error $user_id User ID.
+	 * @param array $usermeta
+	 * @param array $fieldsInfo
+	 * @param array|null $removed_fields
+	 */
+	public function addUserInfo( $user_id, $usermeta, $fieldsInfo, $removed_fields = null ) {
+		$allowed_tags = $allowed_protocols = array();
+		$this->setAllowed( $allowed_tags, $allowed_protocols );
 		if ( ! is_wp_error( $user_id ) ) {
 
 			if ( isset( $removed_fields )
@@ -677,28 +709,35 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
 				}
 			}
 		}
-
-		return ( $user_id );
 	}
 
 	/**
 	 * @param array $userdata
-	 * @param array $usermeta
-	 * @param array $fieldsInfo
-	 * @param array $removed_fields
 	 *
 	 * @return int|WP_Error
+	 * @since 2.0.1 splitted in two methods
 	 */
-    public function updateUser($userdata, $usermeta, $fieldsInfo, $removed_fields = null) {
-        $allowed_tags = $allowed_protocols = array();
-        $this->setAllowed($allowed_tags, $allowed_protocols);
-
+    public function updateUser( $userdata ) {
         //CHECK Userdata
         $user_role = $userdata['user_role'];
         unset($userdata['user_role']);
 
         $user_id = wp_update_user($userdata);
 
+        return $user_id;
+    }
+
+    /**
+     * Updates user info
+     *
+     * @param array $usermeta
+     * @param array $fieldsInfo
+     * @param array $removed_fields
+     * @since 2.0.1
+    */
+    public function updateUserInfo( $user_id,  $usermeta, $fieldsInfo, $removed_fields = null ) {
+        $allowed_tags = $allowed_protocols = array();
+        $this->setAllowed($allowed_tags, $allowed_protocols);
         if (!is_wp_error($user_id)) {
             if (isset($removed_fields)
 	            && is_array($removed_fields)) {
@@ -735,7 +774,6 @@ class CRED_User_Forms_Model extends CRED_Abstract_Model implements CRED_Singleto
                 }
             }
         }
-        return ($user_id);
     }
 
 	/**

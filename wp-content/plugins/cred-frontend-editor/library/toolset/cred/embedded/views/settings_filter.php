@@ -3,7 +3,7 @@ $settings_model = CRED_Loader::get('MODEL/Settings');
 $settings = $settings_model->getSettings();
 ?>
 <p>
-	<?php _e('CRED filters the content that is submitted by a form.', 'wp-cred'); ?>
+	<?php _e('Toolset Forms filters the content that is submitted by a form.', 'wp-cred'); ?>
 </p>
 <p>
 	<input type="button" name="show_hide_allowed_tags" value="<?php echo esc_attr(__('Select allowed HTML tags', 'wp-cred')); ?>" class="button button-secondary button-large js-cred-select-allowed-tags"/>
@@ -18,7 +18,7 @@ $settings = $settings_model->getSettings();
 		?>
 		<p class="js-cred-allowed-tags-summary-text">
 		<?php
-		_e( 'The following HTML tags are allowed:', 'wpv-views' );
+		_e( 'The following HTML tags are allowed:', 'wp-cred' );
 		?>
 		</p>
 		<ul class="toolset-taglike-list">
@@ -31,7 +31,7 @@ $settings = $settings_model->getSettings();
 		?>
 		<p class="js-cred-allowed-tags-summary-text">
 		<?php
-		_e( 'No HTML tags have been selected.', 'wpv-views' );
+		_e( 'No HTML tags have been selected.', 'wp-cred' );
 		?>
 		</p>
 		<?php

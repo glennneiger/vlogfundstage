@@ -35,6 +35,7 @@ class Toolset_Association_Query extends Toolset_Relationship_Query_Base {
 	const QUERY_LIMIT = 'limit';
 	const QUERY_SELECT_FIELDS = 'select_fields';
 	const QUERY_RELATIONSHIP_SLUG = 'relationship_slug';
+	const QUERY_INTERMEDIARY_ID = 'intermediary_id';
 	const QUERY_RELATIONSHIP_ID = 'relationship_id';
 	const QUERY_PARENT_ID = 'parent_id';
 	const QUERY_CHILD_ID = 'child_id';
@@ -71,6 +72,7 @@ class Toolset_Association_Query extends Toolset_Relationship_Query_Base {
 		$this->parse_query_arg( $query, self::QUERY_RELATIONSHIP_ID, 'absint' );
 		$this->parse_query_arg( $query, self::QUERY_PARENT_ID, 'absint' );
 		$this->parse_query_arg( $query, self::QUERY_CHILD_ID, 'absint' );
+		$this->parse_query_arg( $query, self::QUERY_INTERMEDIARY_ID, 'absint' );
 		$this->parse_query_arg( $query, self::QUERY_LIMIT, 'absint' );
 		$this->parse_query_arg( $query, self::QUERY_OFFSET, 'absint' );
 		$this->parse_query_arg( $query, self::QUERY_SELECT_FIELDS, null, array() );
@@ -100,6 +102,11 @@ class Toolset_Association_Query extends Toolset_Relationship_Query_Base {
 		if ( $this->has_query_var( self::QUERY_RELATIONSHIP_ID ) ) {
 			$relationship_id = $this->get_query_var( self::QUERY_RELATIONSHIP_ID );
 			$q->add( $q->relationship_id( $relationship_id ) );
+		}
+
+		if ( $this->has_query_var( self::QUERY_INTERMEDIARY_ID ) ) {
+			$intermediary_id = $this->get_query_var( self::QUERY_INTERMEDIARY_ID );
+			$q->add( $q->intermediary_id( $intermediary_id ) );
 		}
 
 		if ( $this->has_query_var( self::QUERY_PARENT_ID ) ) {

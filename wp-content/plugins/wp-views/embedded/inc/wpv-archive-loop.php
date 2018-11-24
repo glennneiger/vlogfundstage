@@ -337,6 +337,15 @@ class WPV_WordPress_Archive_Frontend {
 				$this->wpa_settings	= apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $this->wpa_id );
 			}
 		}
+
+		/**
+		 * Fire an action after checkign whether the current archive loop has a WPA assigned.
+		 * 
+		 * @param int|null The assigned WPA ID, null otherwise
+		 * 
+		 * @since 2.6.0
+		 */
+		do_action( 'wpv_action_after_archive_set', $this->wpa_id );
 		
 	}
 	
@@ -445,9 +454,58 @@ class WPV_WordPress_Archive_Frontend {
 		$stored_settings_per_type = isset( $wpv_post_types_for_archive_loop[ $this->wpa_type ] ) ? $wpv_post_types_for_archive_loop[ $this->wpa_type ] : array();
 		$stored_settings_per_loop = isset( $stored_settings_per_type[ $this->wpa_name ] ) ? $stored_settings_per_type[ $this->wpa_name ] : array();
 		
+		if (
+			empty( $stored_settings_per_loop )
+			&& 'taxonomy' === $this->wpa_type
+			&& in_array( $this->wpa_name, array( 'category', 'post_tag' ) )
+		) {
+			$stored_settings_per_loop = $this->get_default_post_types_for_native_taxonomy( $this->wpa_name );
+		}
+		
 		if ( ! empty( $stored_settings_per_loop ) ) {
 			$query->set('post_type', $stored_settings_per_loop );
 		}
+	}
+
+	/**
+	 * Adjust the post types assigned to a WPA used on native taxonomies.
+	 *
+	 * No post type setting means query only for posts, which breaks the archive loop query.
+	 * We need to manually enforce CPTs assigned to native taxonomies.
+	 *
+	 * @param string $taxonomy
+	 *
+	 * @return array
+	 *
+	 * @since 2.6.2
+	 */
+	function get_default_post_types_for_native_taxonomy( $taxonomy ) {
+		$types_cpt = get_option('wpcf-custom-types');
+		if (
+			! is_array( $types_cpt )
+			|| empty( $types_cpt )
+		) {
+			$types_cpt = array();
+		}
+		$post_types_for_native = array( 'post' );
+
+		foreach ( $types_cpt as $cpt_slug => $cpt ) {
+			if (
+				array_key_exists( 'taxonomies', $cpt )
+				&& is_array( $cpt['taxonomies'] )
+			) {
+				foreach ( $cpt['taxonomies'] as $tax_slug => $value ) {
+					if (
+						$taxonomy == $tax_slug
+						&& $value
+					) {
+						$post_types_for_native[] = $cpt_slug;
+					}
+				}
+			}
+		}
+		
+		return $post_types_for_native;
 	}
 	
 	/**
@@ -1228,32 +1286,6 @@ class WPV_WordPress_Archive_Frontend {
 		$show_asterisk_explanation	= false;
 		?>
 		<div class="wpv-dialog wpv-shortcode-gui-content-wrapper wpv-dialog-change js-wpv-dialog-change js-wpv-dialog-wpa-manager">
-			<?php 
-			if ( $view_id == 0 ) { 
-				?>
-				<strong><label for="wpv-new-archive-name"><?php _e('Name this WordPress Archive','wpv-views'); ?></label></strong>
-				<input type="text" value="" class="js-wpv-new-archive-name wpv-new-archive-name" placeholder="<?php _e('WordPress Archive name','wpv-views') ?>" name="wpv-new-archive-name">
-				
-				<h3><?php _e( 'What kind of Archive do you want to create?', 'wpv-views' ); ?></h3>
-				<ul>
-					<li>
-						<p>
-							<input type="radio" name="wpv_wpa_purpose" class="js-wpv-purpose js-wpv-purpose-all" id="wpv_wpa_purpose_all" value="all" checked="checked" />
-							<label for="wpv_wpa_purpose_all"><?php _e('Display all the items','wpv-views'); ?></label>
-							<span class="wpv-helper-text"><?php _e('Output all the items returned from the query section.', 'wpv-views'); ?></span>
-						</p>
-					</li>
-					<li>
-						<p>
-							<input type="radio" name="wpv_wpa_purpose" class="js-wpv-purpose js-wpv-purpose-parametric" id="wpv_wpa_purpose_parametric" value="parametric" />
-							<label for="wpv_wpa_purpose_parametric"><?php _e('Display the items using a custom search','wpv-views'); ?></label>
-							<span class="wpv-helper-text"><?php _e('Visitors will be able to search through your content using different search criteria.', 'wpv-views'); ?></span>
-						</p>
-					</li>
-				</ul>
-				<?php 
-			} 
-			?>
 			<div class="js-wpv-error-container"></div>
 			<h3 id="wpv-create-archive-view-form-title"><?php _e('What loop will this Archive be used for?','wpv-views') ?></h3>
 			<form id="wpv-create-archive-view-form" class="wpv-create-archive-view-form">
@@ -1424,6 +1456,32 @@ class WPV_WordPress_Archive_Frontend {
 				<?php echo $asterisk_explanation; ?>
 			</span>
 			<?php } ?>
+			<?php 
+			if ( $view_id == 0 ) { 
+				?>
+				<h3><?php _e( 'What kind of Archive do you want to create?', 'wpv-views' ); ?></h3>
+				<ul>
+					<li>
+						<p>
+							<input type="radio" name="wpv_wpa_purpose" class="js-wpv-purpose js-wpv-purpose-all" id="wpv_wpa_purpose_all" value="all" checked="checked" />
+							<label for="wpv_wpa_purpose_all"><?php _e('Display all the items','wpv-views'); ?></label>
+							<span class="wpv-helper-text"><?php _e('Output all the items returned from the query section.', 'wpv-views'); ?></span>
+						</p>
+					</li>
+					<li>
+						<p>
+							<input type="radio" name="wpv_wpa_purpose" class="js-wpv-purpose js-wpv-purpose-parametric" <?php disabled( wpv_is_views_lite(), true, true );?>  id="wpv_wpa_purpose_parametric" value="parametric" />
+							<label for="wpv_wpa_purpose_parametric"><?php _e('Display the items using a custom search','wpv-views'); ?></label>
+							<?php if( wpv_is_views_lite() ):?><a href="javascript:void(0)" class="dashicons dashicons-editor-help" id="wpv_parametric_disabled_pointer"></a><?php endif;?>
+							<span class="wpv-helper-text"><?php _e('Visitors will be able to search through your content using different search criteria.', 'wpv-views'); ?></span>
+						</p>
+					</li>
+				</ul>
+				<h3><?php _e( 'Name this WordPress Archive', 'wpv-views' ); ?></h3>
+				<input type="text" value="" class="js-wpv-new-archive-name wpv-new-archive-name" placeholder="<?php echo esc_attr( __( 'WordPress Archive name', 'wpv-views' ) ); ?>" name="wpv-new-archive-name">
+				<?php 
+			} 
+			?>
 		</div>
 		<?php
 	}

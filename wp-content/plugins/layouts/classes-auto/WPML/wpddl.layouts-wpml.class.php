@@ -85,7 +85,7 @@ class WPDDL_Layouts_WPML{
 
 	public static function wpml_languages(){
 
-		if( count(self::$languages) === 0 ) return null;
+		if( self::$languages === null || count(self::$languages) === 0 ) return null;
 
 		return self::$languages;
 	}

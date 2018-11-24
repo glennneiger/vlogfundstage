@@ -98,11 +98,15 @@ class Toolset_Controller_Admin_Notices {
 		if( $abort_for_development_sites && $this->is_development_environment() ) {
 			return false;
 		}
+		
+		$views_lite_active = function_exists( 'wpv_is_views_lite' )
+			? wpv_is_views_lite()
+			: false;
 
 		if( class_exists( 'WP_Installer' )
 		    && ! WP_Installer()->repository_has_valid_subscription( $repository_id )
 		    && (
-			    $this->is_views_active
+		    	( $this->is_views_active && ! $views_lite_active ) // views lite is not commercial in this context
 			    || $this->is_access_active
 			    || $this->is_cred_active
 			    || $this->is_layouts_active
@@ -399,7 +403,7 @@ class Toolset_Controller_Admin_Notices {
 		$notice = new Toolset_Admin_Notice_Required_Action(
 				'toolset-wpml-version-doesnt-support-m2m',
 				sprintf(
-					__( 'Post relationships in Toolset require WPML %s or newer to work properly with post translations. Please upgrade WPML.', 'wpcf' ),
+					__( 'Post relationships in Toolset require WPML %s or newer to work properly with post translations. Please upgrade WPML.', 'wpv-views' ),
 					sanitize_text_field( Toolset_Relationship_Controller::MINIMAL_WPML_VERSION )
 				)
 		);

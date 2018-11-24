@@ -275,24 +275,132 @@ if ( ! class_exists( 'Toolset_Utils', false ) ) {
 				return null;
 			}
 
-			// Now we're going to quickly search the DB for any attachment GUID with a partial path match.
-			// Example: /uploads/2013/05/test-image.jpg
 			global $wpdb;
 
+			// Check for the guid with the exact url
+            // (will match in most cases and is way faster than partial match search)
 			$query = $wpdb->prepare(
-				"SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND guid LIKE %s",
+				"SELECT ID FROM $wpdb->posts WHERE guid = %s LIMIT 1",
+                $url
+			);
+
+			if( $attachment_id = $wpdb->get_var( $query ) ) {
+                // attachment id found
+			    return (int) $attachment_id;
+            }
+
+			// No match for the full $url. Checking for any attachment GUID with a partial path match.
+			// Example: /uploads/2013/05/test-image.jpg
+			$query = $wpdb->prepare(
+				"SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND guid LIKE %s LIMIT 1",
 				'%' . $attachment_path
 			);
 
-			$attachment = $wpdb->get_col( $query );
-
-			if ( is_array( $attachment ) && ! empty( $attachment ) ) {
-				return (int) array_shift( $attachment );
+			if( $attachment_id = $wpdb->get_var( $query ) ) {
+				// attachment id found
+				return (int) $attachment_id;
 			}
 
 			return null;
 		}
 
+
+		/**
+		 * Set a value in a nested array, creating the structure as needed.
+		 *
+		 * @param array &$array The array to be modified.
+		 * @param string[] $path Array of keys, each element means one level of nesting.
+		 * @param mixed $value The value to be assigned to the last level.
+		 *
+		 * Example:
+		 *
+		 * $result = Toolset_Utils::set_nested_value( $result, array( 'a', 'b', 'c' ), 'x' );
+		 *
+		 * Then $result would be:
+		 *
+		 * array(
+		 *     'a' => array(
+		 *         'b' => array(
+		 *             'c' => 'x'
+		 *         )
+		 *     )
+		 * );
+		 *
+		 * If there are any other elements set, they will not be touched.
+		 *
+		 * @return array
+		 */
+		public static function set_nested_value( &$array, $path, $value ) {
+			if ( ! is_array( $array ) || ! is_array( $path ) ) {
+				throw new InvalidArgumentException();
+			}
+
+			if ( empty( $path ) ) {
+				return $value;
+			}
+
+			$next_level = array_shift( $path );
+
+			if ( ! array_key_exists( $next_level, $array ) ) {
+				$array[ $next_level ] = array();
+			}
+
+			$array[ $next_level ] = self::set_nested_value( $array[ $next_level ], $path, $value );
+
+			return $array;
+		}
+
+
+		/**
+         * Safely resolve a lowercase callback name into a handler class name even if mb_convert_case() is not available.
+         *
+         * It will always work correctly with values that contain only alphabetic characters, numbers and underscores.
+         * But nothing else should be used in callback names anyway.
+         *
+         * Example: "types_ajax_m2m_action" will become "Types_Ajax_M2M_Action"
+         *
+		 * @param string $callback
+		 *
+		 * @return string Name of the handler class.
+         * @since 3.0
+		 */
+		public static function resolve_callback_class_name( $callback ) {
+
+		    // Use the native solution if available (which will happen in the vast majority of most cases).
+		    if( function_exists( 'mb_convert_case' ) && defined( 'MB_CASE_TITLE' ) ) {
+		        return mb_convert_case( $callback, MB_CASE_TITLE );
+            }
+
+            // mb_convert_case() works this way - it also capitalizes first letters after numbers
+			$name_parts = preg_split( "/_|[0-9]/", $callback );
+			$parts_ucfirst = array_map( function( $part ) { return ucfirst( $part ); }, $name_parts );
+
+			$result = '';
+			foreach( $parts_ucfirst as $part ) {
+				$result .= $part;
+				$delimiter_position = strlen( $result );
+
+				// Put back the delimiter (it could be a number or an underscore)
+				if( $delimiter_position < strlen( $callback ) ) {
+					$result .= $callback[ $delimiter_position ];
+				}
+			}
+
+			return $result;
+		}
+
+
+		/**
+		 * Trim whitespace from the beginning and end of the string and reduce all internal
+		 * whitespace characters to a single space.
+		 *
+		 * @param $string
+		 * @return string
+		 * @since 3.0.3
+		 */
+		public static function trim_deep( $string ) {
+			return trim( preg_replace( '/\s+/', ' ', $string ) );
+		}
 	}
 
 }
@@ -624,7 +732,7 @@ if ( ! function_exists( 'toolset_getarr' ) ) {
 	 * Checks if the key is set in the source array. If not, default value is returned. Optionally validates against array
 	 * of allowed values and returns default value if the validation fails.
 	 *
-	 * @param array $source The source array.
+	 * @param array|ArrayAccess $source The source array.
 	 * @param string $key The key to be retrieved from the source array.
 	 * @param mixed $default Default value to be returned if key is not set or the value is invalid. Optional.
 	 *     Default is empty string.

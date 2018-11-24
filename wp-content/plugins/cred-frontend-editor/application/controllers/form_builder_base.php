@@ -20,17 +20,13 @@ abstract class CRED_Form_Builder_Base {
 	/**
 	 * @param int $form_id
 	 * @param int|bool $post_id
-	 * @param int $form_count
+	 * @param int $form_count Related to the submit count form or just 1
 	 * @param bool $preview
 	 *
 	 * @return bool
 	 */
-	public function get_form( $form_id, $post_id = false, $form_count = - 1, $preview = false ) {
+	public function get_form( $form_id, $post_id = false, $form_count = 1, $preview = false ) {
 		$this->try_to_update_by_post( $form_id, $post_id, $form_count, $preview );
-
-		if ( $form_count == - 1 ) {
-			$form_count = CRED_StaticClass::$_staticGlobal['COUNT'];
-		}
 
 		global $post;
 		CRED_StaticClass::$_cred_container_id = ( isset( $_POST[ CRED_StaticClass::PREFIX . 'cred_container_id' ] ) ) ? intval( $_POST[ CRED_StaticClass::PREFIX . 'cred_container_id' ] ) : ( isset( $post ) ? $post->ID : "" );
@@ -46,8 +42,6 @@ abstract class CRED_Form_Builder_Base {
 		$type_form = $form->get_type_form();
 		$output = $form->print_form();
 
-		CRED_StaticClass::$_staticGlobal['COUNT'] ++;
-
 		if ( is_wp_error( $output ) ) {
 			$error_message = $output->get_error_message();
 
@@ -59,11 +53,11 @@ abstract class CRED_Form_Builder_Base {
 		/**
 		 * cred_after_rendering_form
 		 *
-		 *  This action is fired after each CRED Form rendering just before its output.
+		 *  This action is fired after each Toolset Form rendering just before its output.
 		 *
 		 * @param string $form_id ID of the current cred form
 		 * @param string $html_form_id ID of the current cred form
-		 * @param int $form_id CRED form id
+		 * @param int $form_id Toolset Form id
 		 * @param string $type_form Post type of the form
 		 * @param int $form_count Number of forms rendered so far
 		 *
@@ -74,10 +68,10 @@ abstract class CRED_Form_Builder_Base {
 		/**
 		 * cred_after_rendering_form_{$form_id}
 		 *
-		 *  This action is fired after specific CRED $form_id rendering just before its output.
+		 *  This action is fired after specific Toolset Form $form_id rendering just before its output.
 		 *
 		 * @param string $html_form_id ID of the current cred form
-		 * @param int $form_id CRED form id
+		 * @param int $form_id Toolset Form id
 		 * @param string $type_form Post type of the form
 		 * @param int $form_count Number of forms rendered so far
 		 *
@@ -115,6 +109,36 @@ abstract class CRED_Form_Builder_Base {
 	}
 
 	/**
+	 * Maybe hide comments in the current singular page.
+	 *
+	 * @param CRED_Form_Base $form
+	 * @since 2.1.1
+	 */
+	private function maybe_hide_comments( $form ) {
+		global $post;
+
+		if (
+			! $form->get_form_data()->hasHideComments()
+			|| ! is_singular()
+			|| ! isset( $post )
+		) {
+			return;
+		}
+
+		global $wp_query;
+		remove_post_type_support( $post->post_type, 'comments' );
+		remove_post_type_support( $post->post_type, 'trackbacks' );
+		$post->comment_status = "closed";
+		$post->ping_status = "closed";
+		$post->comment_count = 0;
+		$wp_query->comment_count = 0;
+		$wp_query->comments = array();
+		add_filter( 'comments_open', '__return_false', 1000 );
+		add_filter( 'pings_open', '__return_false', 1000 );
+		add_filter( 'comments_array', '__return_empty_array', 1000 );
+	}
+
+	/**
 	 * @param int $form_id
 	 * @param int|bool $post_id
 	 * @param int $form_count
@@ -124,7 +148,7 @@ abstract class CRED_Form_Builder_Base {
 	 */
 	private function get_user_form( $form_id, $post_id, $form_count, $preview ) {
 		$form = new CRED_Form_User( $form_id, $post_id, $form_count, $preview );
-		CRED_Form_Builder_Helper::hideComments();
+		$this->maybe_hide_comments( $form );
 
 		return $form;
 	}
@@ -139,16 +163,7 @@ abstract class CRED_Form_Builder_Base {
 	 */
 	private function get_post_form( $form_id, $post_id, $form_count, $preview ) {
 		$form = new CRED_Form_Post( $form_id, $post_id, $form_count, $preview );
-		$form_post_id = $form->get_post_id();
-		if ( $form_post_id ) {
-			$parent_post = get_post( $form_post_id );
-		}
-		if (
-			$form->get_form_data()->hasHideComments() ||
-			( isset( $parent_post ) && $parent_post->comment_status == 'closed' )
-		) {
-			CRED_Form_Builder_Helper::hideComments();
-		}
+		$this->maybe_hide_comments( $form );
 
 		return $form;
 	}

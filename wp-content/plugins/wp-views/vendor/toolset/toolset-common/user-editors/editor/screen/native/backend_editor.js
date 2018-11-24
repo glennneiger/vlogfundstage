@@ -95,6 +95,9 @@ ToolsetCommon.UserEditor.NativeEditor = function( $ ) {
 
         Toolset.hooks.addFilter( 'wpv-filter-wpv-shortcodes-transform-format', self.secureShortcodeFromSanitization );
 
+		// Here the new Types shortcodes gets sanitized.
+		Toolset.hooks.addFilter( 'toolset-filter-get-crafted-shortcode', self.secureShortcodeFromSanitization, 11 );
+
 		self.removeCtAutosaveDataFromSessionstorage();
 
 		self.removeUnnecessaryNativeEditorElements();

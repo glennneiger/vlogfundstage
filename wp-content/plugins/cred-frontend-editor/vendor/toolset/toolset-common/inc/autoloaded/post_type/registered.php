@@ -7,7 +7,7 @@
  *
  * @since m2m
  */
-class Toolset_Post_Type_Registered implements IToolset_Post_Type_Registered {
+class Toolset_Post_Type_Registered extends Toolset_Post_Type_Abstract implements IToolset_Post_Type_Registered {
 
 
 	/** @var WP_Post_Type */
@@ -21,8 +21,10 @@ class Toolset_Post_Type_Registered implements IToolset_Post_Type_Registered {
 	 * Toolset_Post_Type_Registered constructor.
 	 *
 	 * @param WP_Post_Type $wp_post_type The core object representing the post type.
+	 * @param Toolset_WPML_Compatibility|null $wpml_compatibility_di
 	 */
-	public function __construct( WP_Post_Type $wp_post_type ) {
+	public function __construct( WP_Post_Type $wp_post_type, Toolset_WPML_Compatibility $wpml_compatibility_di = null ) {
+		parent::__construct( $wpml_compatibility_di );
 		$this->wp_post_type = $wp_post_type;
 	}
 
@@ -152,4 +154,15 @@ class Toolset_Post_Type_Registered implements IToolset_Post_Type_Registered {
 	}
 
 
+	/**
+	 * Check if the post type can be used in a many-to-many relationship as an intermediary post.
+	 *
+	 * @param bool $skip_check_for_existing_intermediary
+	 * @param bool $skip_check_for_relationship_involvment
+	 *
+	 * @return Toolset_Result
+	 */
+	public function can_be_used_as_intermediary( $skip_check_for_existing_intermediary = false, $skip_check_for_relationship_involvment = false ) {
+		return new Toolset_Result( false, __( 'Only post types registered by Toolset Types can be used as intermediary.', 'wpv-views' ) );
+	}
 }

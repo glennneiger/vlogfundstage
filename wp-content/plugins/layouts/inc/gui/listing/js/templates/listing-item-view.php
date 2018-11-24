@@ -214,11 +214,11 @@
                     var len = l.length;
                     if( i < len-1 && len > 1 )
                     {
-                    used_on += v +', ';
+                    used_on += _.isObject(v) ? v.title + ', ' : v +', ';
                     }
                     else
                     {
-                    used_on += v;
+                    used_on += _.isObject(v) ? v.title : v;
                     }
                     }); #>
                     <# if( show_used_on ){ #>

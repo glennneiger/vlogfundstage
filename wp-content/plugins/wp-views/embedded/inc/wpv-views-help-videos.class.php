@@ -5,7 +5,7 @@ class WPV_ViewsHelpVideos extends Toolset_HelpVideosFactoryAbstract{
         $videos = array(
             'views_template' =>  array(
                 'name' => 'views_template',
-                'url' => 'http://d7j863fr5jhrr.cloudfront.net/toolset-views-templates.mp4',
+                'url' => 'https://www.youtube.com/watch?v=ylZD-sfXTbs&yt:cc=on',
                 'screens' => array('toolset_page_ct-editor'),
                 'element' => '.toolset-video-box-wrap',
                 'title' => __('Creating a template with Views', 'wpv-views'),
@@ -14,7 +14,7 @@ class WPV_ViewsHelpVideos extends Toolset_HelpVideosFactoryAbstract{
             ),
             'archive_views' =>  array(
                 'name' => 'views_archives',
-                'url' => 'http://d7j863fr5jhrr.cloudfront.net/toolset-custom-post-type-archives.mp4',
+                'url' => 'https://www.youtube.com/watch?v=JXKq95V-pJI&yt:cc=on',
                 'screens' => array('toolset_page_view-archives-editor'),
                 'element' => '.toolset-video-box-wrap',
                 'title' => __('Creating an archive with WordPress Archive', 'wpv-views'),
@@ -23,7 +23,7 @@ class WPV_ViewsHelpVideos extends Toolset_HelpVideosFactoryAbstract{
             ),
             'views_view' =>  array(
                 'name' => 'views_view',
-                'url' => 'http://d7j863fr5jhrr.cloudfront.net/toolset-views-lists-of-content.mp4',
+                'url' => 'https://www.youtube.com/watch?v=xgOO_Lsfny4&yt:cc=on',
                 'screens' => array('toolset_page_views-editor'),
                 'element' => '.toolset-video-box-wrap',
                 'title' => __('Creating and displaying a View', 'wpv-views'),

@@ -546,7 +546,7 @@ if ( ! function_exists( 'wpv_eval_check_syntax' ) ) {
 	function wpv_eval_check_syntax( $code ) {
 		try {
 			return @eval( 'return true;' . $code );
-		} catch( ParseError $parse_error ) {
+		} catch( ParseError $parse_error ) { // @codingStandardsIgnoreLine
 			// PHP7 compatibility, eval() changed it's behaviour:
 			//
 			// http://php.net/manual/en/function.eval.php

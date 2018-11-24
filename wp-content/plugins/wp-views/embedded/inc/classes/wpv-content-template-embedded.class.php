@@ -22,6 +22,10 @@ class WPV_Content_Template_Embedded extends WPV_Post_Object_Wrapper {
      */
     const POST_TYPE = 'view-template';
 
+	/**
+	 * @var Toolset_Constants 
+	 */
+	private $constants;
 
     /**
      * Constructor. Create an instance from Content Template ID or WP_Post object representing a CT.
@@ -32,11 +36,18 @@ class WPV_Content_Template_Embedded extends WPV_Post_Object_Wrapper {
      * by other means), otherwise the behaviour of this object is undefined.
      *
      * @param int|WP_Post $content_template CT ID (integer) or a WP_Post object.
+     * @param null|Toolset_Constants
      *
      * @throws InvalidArgumentException when provided argument is not a WP_Post instance representing a CT or an
      * integer that *might* be a CT ID.
+     *
+     * @since 2.6.4 The constructor started using another parameter for the Toolset_Constants.
      */
-    public function __construct( $content_template ) {
+    public function __construct( $content_template, Toolset_Constants $constants = null ) {
+	    $this->constants = $constants
+		    ? $constants
+		    : new Toolset_Constants();
+
         if( $content_template instanceof WP_Post ) {
             // Let's check that we indeed have a valid post and CT post type
             if( WPV_Content_Template_Embedded::is_wppost_ct( $content_template ) ) {
@@ -124,6 +135,8 @@ class WPV_Content_Template_Embedded extends WPV_Post_Object_Wrapper {
 
     const POST_TEMPLATE_BINDING_POSTMETA_KEY = '_views_template';
 
+	const POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE = '_toolset_user_editors_editor_choice';
+
 
     /**
      * @var array Default postmeta for the Content Template.
@@ -136,7 +149,8 @@ class WPV_Content_Template_Embedded extends WPV_Post_Object_Wrapper {
         WPV_Content_Template_Embedded::POSTMETA_LOOP_OUTPUT_ID => 0,
         WPV_Content_Template_Embedded::POSTMETA_OUTPUT_MODE => 'raw_mode',
         WPV_Content_Template_Embedded::POSTMETA_TEMPLATE_EXTRA_CSS => '',
-        WPV_Content_Template_Embedded::POSTMETA_TEMPLATE_EXTRA_JS => ''
+        WPV_Content_Template_Embedded::POSTMETA_TEMPLATE_EXTRA_JS => '',
+	    WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE => '',
         //WPV_Content_Template_Embedded::POSTMETA_EDIT_LOCK
     );
 
@@ -407,11 +421,43 @@ class WPV_Content_Template_Embedded extends WPV_Post_Object_Wrapper {
                     'language_code' => $language_code,
                     'source_language_code' => apply_filters( 'wpml_default_language', '' )
                 ),
-                admin_url( 'admin.php ')
+                admin_url( 'admin.php' )
             );
         }
         return esc_url( $url );
     }
+
+	/**
+	 * Get information about the standard editor usage by the Content Template.
+	 *
+	 * @return bool
+	 */
+	public function is_using_standard_editor() {
+		// When a Content Template is built with the Views Content Template builder the value of the
+		// "WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE" post meta is "basic" while when it's
+		// created through a Layouts cell the value of the post meta is empty.
+		// Content Templates built through the Layouts cell should be considered as Content Template using the basic editor.
+		return $this->constants->constant( 'BASIC_SCREEN_ID' ) === $this->get_postmeta( WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE ) ||
+			'' === $this->get_postmeta( WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE );
+	}
+
+	/**
+	 * Content Template's Extra CSS public getter.
+	 *
+	 * @return string The Content Template's extra CSS
+	 */
+	public function get_template_extra_css() {
+		return $this->_get_template_extra_css();
+	}
+
+	/**
+	 * Content Template's Extra JS public getter.
+	 *
+	 * @return string The Content Template's extra JS
+	 */
+	public function get_template_extra_js() {
+		return $this->_get_template_extra_js();
+	}
 
 
     /* ************************************************************************* *\

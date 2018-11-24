@@ -43,45 +43,56 @@ class CRED_Form_Association {
 	}
 
 	/**
-	 * @param int $child_id
+	 * @param int $object_id
 	 * @param IToolset_Relationship_Definition $relationship_definition
+	 * @param string $role
 	 *
 	 * @return IToolset_Association[]
 	 */
-	public function get_associations( $child_id, $relationship_definition ) {
-		$query = new Toolset_Association_Query(
-			array(
-				Toolset_Association_Query::QUERY_RELATIONSHIP_ID => $relationship_definition->get_row_id(),
-				Toolset_Association_Query::QUERY_CHILD_ID => $child_id,
-				Toolset_Association_Query::OPTION_RETURN => Toolset_Association_Query::RETURN_ASSOCIATIONS,
-			)
+	public function get_associations( $object_id, $relationship_definition, $role = Toolset_Relationship_Role::CHILD ) {
+		$args = array(
+			Toolset_Association_Query::QUERY_RELATIONSHIP_ID => $relationship_definition->get_row_id(),
+			Toolset_Association_Query::OPTION_RETURN => Toolset_Association_Query::RETURN_ASSOCIATIONS
 		);
+		if ( Toolset_Relationship_Role::PARENT == $role ) {
+			$args[ Toolset_Association_Query::QUERY_PARENT_ID ] = $object_id;
+		} else {
+			$args[ Toolset_Association_Query::QUERY_CHILD_ID ] = $object_id;
+		}
+		$query = new Toolset_Association_Query( $args );
 
 		return $query->get_results();
 	}
 
 	/**
-	 * @param IToolset_Association_Query_Condition $association
+	 * @param IToolset_Association $association
+	 * @param string $role
 	 *
 	 * @return int
 	 */
-	public function get_parent_id( $association ) {
-		return $association->get_element( Toolset_Relationship_Role::PARENT )->get_id();
+	public function get_associated_object_id_by_role( $association, $role ) {
+		return $association->get_element( $role )->get_id();
 	}
 
 	/**
+	 * Get associations by a given item, relationship definition, and role.
+	 *
 	 * @param int $id
 	 * @param IToolset_Relationship_Definition $relationship_definition
 	 * @param string $relationship_role
 	 * @param int $limit
 	 *
 	 * @return array
+	 *
+	 * @note Disable the associations query cache because sometimes this needs to run while rendering a form after saving it,
+	 *       and right now the saving mechanism prints, saves, and prints again, hence the cache holds the previous value.
 	 */
 	public function get_association_by_role( $id, $relationship_definition, $relationship_role, $limit = 1 ) {
 		$query = $this->get_association_query();
 		$role_id = $relationship_role == Toolset_Relationship_Role::CHILD ? $query->child_id( $id ) : $query->parent_id( $id );
 		$relationship_condition = $this->get_association_query()->relationship_id( $relationship_definition->get_row_id() );
 		$results = $query
+			->use_cache( false )
 			->add( $relationship_condition )
 			->add( $role_id )
 			->limit( $limit )

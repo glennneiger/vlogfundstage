@@ -4,6 +4,8 @@
 
 class WPDD_Layouts {
 	private static $instance;
+	public static $raw_cache = null;
+	public static $decoded_cache = null;
 
 	public $header_added = false;
 	private $layouts_editor_page = false;
@@ -20,6 +22,7 @@ class WPDD_Layouts {
 	private $rendered_layout_id = null;
 	private $where_used_count = 0;
 	private $ddl_caps;
+	private $ddl_private_layout_caps;
 	private $options;
 	private $cells_factory = null;
 
@@ -45,7 +48,7 @@ class WPDD_Layouts {
 		WPDDL_ModuleManagerSupport::getInstance();
 		WDDL_ExtraModulesLoader::getInstance();
 
-		$this->ddl_caps = WPDD_Layouts_Users_Profiles::getInstance();
+		$this->init_layouts_caps();
 		$this->layout_post_loop_cell_manager = WPDD_layout_post_loop_cell_manager::getInstance();
 
 		$this->cells_factory = WPDD_RegisteredCellTypesFactory::build();
@@ -96,6 +99,16 @@ class WPDD_Layouts {
 
 	}
 
+	private function init_layouts_caps(){
+		global $wp_roles, $current_user;
+
+		$this->ddl_caps = Toolset_Singleton_Factory::get( 'WPDD_Layouts_Users_Profiles', $wp_roles, $current_user );
+		$this->ddl_caps->add_hooks();
+
+		$this->ddl_private_layout_caps = Toolset_Singleton_Factory::get( 'WPDD_Layouts_Users_Profiles_Private', $wp_roles, $current_user );
+		$this->ddl_private_layout_caps->add_hooks();
+	}
+
 	function add_front_end_hooks(){
 		if ( ! is_admin() ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'load_frontend_js' ) );
@@ -135,7 +148,7 @@ class WPDD_Layouts {
 
 			add_filter( 'icl_get_extra_debug_info', array( $this, 'add_extra_debug_information' ) );
 			add_filter( 'ddl-does_layout_with_this_name_exist', array( &$this, 'does_layout_with_this_name_exist' ), 10, 1 );
-            add_action( 'init', array("WPDDL_HelpVideos", "getInstance"), 999 );
+            add_action( 'init', array("WPDDL_HelpVideos", "getInstance"), 10 );
 		}
 	}
 
@@ -154,6 +167,7 @@ class WPDD_Layouts {
 		add_action( 'init', array($this, 'duplicate_layouts_settings_meta'), 10 );
 
 		add_filter( 'ddl-get_layout_settings', array( __CLASS__, 'get_layout_settings' ), 10, 3 );
+		add_filter( 'ddl-save_layout_settings', array( __CLASS__, 'save_layout_settings' ), 10, 2 );
 		add_filter( 'ddl-containers_elements', array( __CLASS__, 'get_containers_elements' ), 10, 1 );
 		add_filter( 'ddl-get_cell_types', array( $this, 'get_cell_types' ), 10, 1 );
 		add_filter( 'ddl-get_available_parent_layouts', array($this, 'get_available_parent_layouts'), 10, 1 );
@@ -204,6 +218,14 @@ class WPDD_Layouts {
 					if ( $post->post_type == CRED_USER_FORMS_CUSTOM_POST_NAME ) {
 						add_action( 'admin_enqueue_scripts', array( $this, 'cred_user_in_iframe_scripts' ) );
 					}
+				}
+
+				if (isset( $_GET['in-iframe-for-layout']) &&
+				    $_GET['in-iframe-for-layout'] == 1 &&
+				    class_exists('CRED_Association_Form_Main') &&
+				    $pagenow == 'admin.php' &&
+				    isset( $_GET['page'] ) && $_GET['page'] === 'cred_relationship_form' ) {
+					add_action( 'admin_enqueue_scripts', array( $this, 'cred_relationship_in_iframe_scripts' ) );
 				}
 
 				if ( isset( $_GET['page'] ) && ( ( 'views-editor' == $_GET['page'] ) || ( 'views-embedded' == $_GET['page'] ) || ( 'view-archives-embedded' == $_GET['page'] ) || ( 'view-archives-editor' == $_GET['page'] ) ) ) {
@@ -489,6 +511,33 @@ class WPDD_Layouts {
 		}
 
 		$this->localize_script( 'ddl-layouts-cred-user-support', 'DDLayout_cred_settings', $data );
+
+		$this->enqueue_styles( array(
+			'toolset-select2-css',
+			'layouts-select2-overrides-css',
+			'ddl-dialogs-forms-css',
+			'toolset-chosen-styles'
+		) );
+	}
+
+	function cred_relationship_in_iframe_scripts() {
+
+		$this->enqueue_scripts( array(
+			'toolset_select2',
+			'ddl-layouts-cred-relationship-support'
+		) );
+
+		$data = array(
+			'DDL_JS' => array(
+				'cred_help_header' => __( 'Building your form', 'ddl-layouts' ),
+				'new_form'         => isset( $_GET['new_layouts_form'] ) && $_GET['new_layouts_form']
+			)
+		);
+		if ( $data['DDL_JS']['new_form'] ) {
+			$data['DDL_JS']['new_form_help'] = __( 'Build the form using HTML and CRED shortcodes. Use the Add Post Fields button to add fields that belong to this post type, or Add Generic Fields to add any other inputs.', 'ddl-layouts' );
+		}
+
+		$this->localize_script( 'ddl-layouts-cred-relationship-support', 'DDLayout_cred_settings', $data );
 
 		$this->enqueue_styles( array(
 			'toolset-select2-css',
@@ -1031,19 +1080,26 @@ class WPDD_Layouts {
 
 
 	public static function get_layout_settings( $post_id, $as_array = false, $clear_cache = false ) {
-		static $raw_cache = null;
-		static $decoded_cache = null;
-		if ( ! $raw_cache ) {
-			$raw_cache     = new WPDDL_Cache( 'layouts_raw' );
-			$decoded_cache = new WPDDL_Cache( 'layouts_decoded' );
+
+		if ( ! static::$raw_cache ) {
+			static::$raw_cache     = new WPDDL_Cache( 'layouts_raw' );
+			static::$decoded_cache = new WPDDL_Cache( 'layouts_decoded' );
 		}
 		$clear_cache	= apply_filters( 'ddl_force_clear_cache_settings', $clear_cache, $post_id, $as_array );
-		$layout_settings = new WPDDL_Layout_Settings( $post_id, $raw_cache, $decoded_cache );
-		return $layout_settings->get( $as_array, $clear_cache );
+		$layout_settings = new WPDDL_Layout_Settings( $post_id, static::$raw_cache, static::$decoded_cache );
+		$return = $layout_settings->get( $as_array, $clear_cache );
+		return $return;
 	}
 
 	// I added this 'cause in ajax calls after saving the static property of self::get_layout_settings
 	// is not updated so the settings you get are outdated
+	/**
+	 * @param $layout_id
+	 * @param bool $as_array
+	 *
+	 * @return array|mixed|object
+	 * @deprecated 
+	 */
 	public static function get_layout_settings_raw_not_cached( $layout_id, $as_array = true) {
 
 		$settings = get_post_meta( $layout_id, WPDDL_LAYOUTS_SETTINGS, $as_array );
@@ -1064,25 +1120,19 @@ class WPDD_Layouts {
 	}
 
 	public static function save_layout_settings( $post_id, $settings ) {
-		if ( is_string( $settings ) ) {
-			$settings = wp_json_encode( json_decode( $settings, true ) );
-		} else if ( is_array( $settings ) || is_object( $settings ) ) {
-			$settings = wp_json_encode( (array) $settings );
+
+		if ( ! static::$raw_cache ) {
+			static::$raw_cache     = new WPDDL_Cache( 'layouts_raw' );
+			static::$decoded_cache = new WPDDL_Cache( 'layouts_decoded' );
 		}
 
-		$layouts_raw = self::get_layout_settings( $post_id, false );
-		$meta_key = WPDDL_LAYOUTS_SETTINGS;
-		$result = update_post_meta( $post_id, $meta_key, addslashes( $settings ), $layouts_raw );
+		$layout_settings = new WPDDL_Layout_Settings( $post_id, static::$raw_cache, static::$decoded_cache );
+		$result = $layout_settings->update( $settings );
 
-		// clear the cache.
-		$layouts_raw = self::get_layout_settings( $post_id, false, true);
-
-		return $result;
+		return $result ? (int) $post_id : 0;
 	}
 
 	public static function get_layout_parent( $id, $layout_search = false ) {
-		global $wpdb;
-
 		$layout = $layout_search ? $layout_search : self::get_layout_settings( $id, true );
 		$parent = $layout->parent;
 
@@ -1097,7 +1147,6 @@ class WPDD_Layouts {
 	}
 
 	function get_layout( $layout_name ) {
-		global $wpdb;
 
 		$layout = $result = null;
 
@@ -1124,7 +1173,7 @@ class WPDD_Layouts {
 		return $layout;
 	}
 
-	public static function get_layout_from_id( $id, $is_private = false ) {
+	public static function get_layout_from_id( $id, $is_private = false, $clear_cache = false ) {
 
 		if ( true === $is_private ) {
 			return self::get_layout_as_php_object( $id );
@@ -1138,7 +1187,7 @@ class WPDD_Layouts {
 				$result->post_name = $layout;
 			}
 			if ( $result ) {
-				$layout_json = self::get_layout_settings( $result->ID );
+				$layout_json = self::get_layout_settings( $result->ID, false, $clear_cache );
 
 
 				$json_parser = new WPDD_json2layout();
@@ -1390,7 +1439,10 @@ class WPDD_Layouts {
 				$ret_array[] = $value;
 			}
 		} else {
-			$ret_array = array( 'error' => __( sprintf( 'Argument should be an array %s', __METHOD__ ), 'wpv-views' ) );
+			$ret_array = array( 'error' => sprintf(
+				/** translators: This is an error message, not seen by any user */
+				__( 'Argument should be an array %s', 'ddl-layouts' ),
+				__METHOD__ ) );
 		}
 
 		return $ret_array;
@@ -1492,8 +1544,8 @@ class WPDD_Layouts {
 		return $extra_debug;
 	}
 
-	public static function register_strings_for_translation( $layout_id, $is_private = false ) {
-		$layout = self::get_layout_from_id( $layout_id, $is_private );
+	public static function register_strings_for_translation( $layout_id, $is_private = false, $clear_cache = false ) {
+		$layout = self::get_layout_from_id( $layout_id, $is_private, $clear_cache );
 		$layout->register_strings_for_translation( null, true );
 	}
 

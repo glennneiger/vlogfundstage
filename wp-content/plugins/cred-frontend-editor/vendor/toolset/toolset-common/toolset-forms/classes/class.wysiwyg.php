@@ -11,6 +11,13 @@ require_once 'class.textarea.php';
  */
 class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
 
+    /**
+     * Priority for the filter callback to avoid Toolset buttons over WYSIWYG editors.
+     * 
+     * It needs to be high enough as to effectively rmeove buttons despite other callbacks.
+     */
+    const TOOLSET_BUTTONS_FILTER_PRIORITY = 9999;
+
     protected $_settings = array('min_wp_version' => '3.3');
 
     public function metaform() {
@@ -28,7 +35,7 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
             ) {
                 $attributes['readonly'] = 'readonly';
                 $extra_markup .= sprintf(
-                        '<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' )
+                        '<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' )
                 );
             }
             $markup .= sprintf(
@@ -54,14 +61,20 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
 
     protected function _editor(&$attributes) {
 
-        $media_buttons = $this->_data['has_media_button'];
+        $media_buttons = isset( $this->_data['has_media_button'] )
+            ? $this->_data['has_media_button']
+            : false;
+        $toolset_buttons = isset( $this->_data['has_toolset_buttons'] )
+            ? $this->_data['has_toolset_buttons']
+            : false;
         $quicktags = true;
 
         if (
-                isset( $attributes['readonly'] ) && $attributes['readonly'] == 'readonly'
+            isset( $attributes['readonly'] ) && $attributes['readonly'] == 'readonly'
         ) {
             add_filter( 'tiny_mce_before_init', array(&$this, 'tiny_mce_before_init_callback') );
             $media_buttons = false;
+            $toolset_buttons = false;
             $quicktags = false;
         }
 
@@ -82,14 +95,33 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
         if ( true === toolset_getarr( $attributes, 'types-related-content' ) ) {
           $id .= '_' . rand( 10000, 99999 );
         }
+		
+		$editor_classnames = array( 'wpt-wysiwyg' );
+		
+		if ( function_exists( 'wp_enqueue_editor' ) ) {
+			// In WP 4.8 and above, enqueue the needed assets for dynamically initialize the editor
+			wp_enqueue_editor();
+		}
+        
+        // Manage editor toolbar buttons.
+		$include_editor_toolbar = ( $media_buttons || $toolset_buttons );
+		if ( ! $media_buttons ) {
+            remove_action( 'media_buttons', 'media_buttons' );
+            $editor_classnames[] = 'js-toolset-wysiwyg-skip-media';
+		}
+		if ( ! $toolset_buttons ) {
+            add_filter( 'toolset_editor_add_form_buttons', array( $this, 'return_false' ), self::TOOLSET_BUTTONS_FILTER_PRIORITY );
+            $editor_classnames[] = 'js-toolset-wysiwyg-skip-toolset';
+		}
+		
         wp_editor( $this->getValue(), $id, array(
             'wpautop' => true, // use wpautop?
-            'media_buttons' => $media_buttons, // show insert/upload button(s)
+            'media_buttons' => $include_editor_toolbar, // show insert/upload button(s)
             'textarea_name' => $this->getName(), // set the textarea name to something different, square brackets [] can be used here
             'textarea_rows' => get_option( 'default_post_edit_rows', 10 ), // rows="..."
             'tabindex' => '',
             'editor_css' => '', // intended for extra styles for both visual and HTML editors buttons, needs to include the <style> tags, can use "scoped".
-            'editor_class' => 'wpt-wysiwyg', // add extra class(es) to the editor textarea
+            'editor_class' => implode( ' ', $editor_classnames ), // add extra class(es) to the editor textarea
             'teeny' => false, // output the minimal editor config used in Press This
             'dfw' => false, // replace the default fullscreen with DFW (needs specific DOM elements and css)
             'tinymce' => true, // load TinyMCE, can be used to pass settings directly to TinyMCE using an array()
@@ -97,12 +129,21 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
         ) );
         $return = ob_get_clean() . "\n\n";
         if (
-                isset( $attributes['readonly'] ) && $attributes['readonly'] == 'readonly'
+            isset( $attributes['readonly'] ) && $attributes['readonly'] == 'readonly'
         ) {
             remove_filter( 'tiny_mce_before_init', array(&$this, 'tiny_mce_before_init_callback') );
             $return = str_replace( '<textarea', '<textarea readonly="readonly"', $return );
         }
         $wp_styles->do_concat = FALSE;
+        
+        // Maybe restore editor toolbar buttons.
+		if ( ! $media_buttons ) {
+			add_action( 'media_buttons', 'media_buttons' );
+		}
+		if ( ! $toolset_buttons ) {
+			remove_filter( 'toolset_editor_add_form_buttons', array( $this, 'return_false' ), self::TOOLSET_BUTTONS_FILTER_PRIORITY );
+		}
+		
         return $return;
     }
 
@@ -110,5 +151,19 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
         $args['readonly'] = 1;
         return $args;
     }
+    
+    /**
+     * Callback for filters to return FALSE.
+     * 
+     * We need an unique, proper and own callback to manage Toolset buttons over editors because
+     * we do add and remove this callback, and using the native __return_false function
+     * would mean removing it as a callback even if a tird party used it to remove such buttons.
+     *
+     * @param bool $dummy
+     * @return bool
+     */
+	public function return_false( $dummy ) {
+		return false;
+	}
 
 }

@@ -142,13 +142,31 @@ class DDLFieldsAPI {
 
     private $attachment_prefix = 'attachment_';
     private $attachment_suffix = '_attachment';
+    private $translatable_fields = null;
+    private $is_private = false;
+    private $context = null;
+    private $do_not_translate = array( 'slide_url' );
 
-    function set_current_cell_content($content) {
+	function set_current_cell_content( $content, $translatable_fields = null, $context = null ) {
         $this->content = $content;
+        $this->is_private = isset( $content['is_private_layout'] ) ? $content['is_private_layout'] : $this->is_private;
         $this->repeaters = array();
         $this->current_group = '';
+        $this->translatable_fields = $translatable_fields;
+        $this->context = is_array( $context ) ? isset( $context['name'] ) ? $context['name'] : '' : $context;
+		$this->do_not_translate = apply_filters( 'ddl_fields-api-do-not-translate-fields', $this->do_not_translate, $this->translatable_fields, $this->context );
     }
 
+    private function needs_translation( $field_name ){
+        if( ! $this->translatable_fields || in_array( $field_name, $this->do_not_translate ) ) return false;
+
+        $keys = array_keys( $this->translatable_fields );
+
+        $has_key = array_filter( $keys, array( new DDL_Filter_By_String( $field_name ), 'filter_by_position' ) );
+
+        return count( $has_key ) !== 0;
+
+    }
 
     function get_field($field_name) {
 		if ( isset($this->content[$field_name]) ){
@@ -210,7 +228,28 @@ class DDLFieldsAPI {
 
     function get_sub_field($field_name) {
         $temp = $this->content[$this->current_group][$this->repeaters[$this->current_group]['index']][$field_name];
-        return $temp;
+
+        if( ! $this->is_private ){
+	        return $temp;
+        } elseif( $this->is_private && $this->needs_translation( $field_name ) ){
+            $temp = $this->build_wpml_string( $temp, $field_name, $this->current_group );
+            return $temp;
+        } else {
+	        return $temp;
+        }
+    }
+
+    private function build_wpml_string( $value, $field_name, $current_group ){
+        $context = $this->get_context( $field_name, $current_group );
+        return sprintf( '[wpml-string context="%s"]%s[/wpml-string]', $context, $value );
+    }
+
+    private function get_context( $field_name, $current_group ){
+        if( $this->context ){
+            return $this->context . '_' . $current_group . '_' . $field_name;
+        } else {
+            return $current_group . '_' . $field_name;
+        }
     }
 
     function get_attachment_sub_field( $field_name, $size = "thumbnail" ) {
@@ -223,6 +262,19 @@ class DDLFieldsAPI {
 
     function rewind($group_name) {
         unset($this->repeaters[$group_name]);
+    }
+
+}
+
+class DDL_Filter_By_String{
+    private $string;
+
+    public function __construct( $string ) {
+        $this->string = $string;
+    }
+
+    public function filter_by_position( $item ){
+        return strpos( $item, $this->string ) !== false;
     }
 
 }

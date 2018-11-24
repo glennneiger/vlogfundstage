@@ -43,8 +43,7 @@ if ( file_exists( $installer ) ) {
 			$wp_installer_instance,
 			array(
 				'plugins_install_tab' => '1',
-				'repositories_include' => array('toolset', 'wpml'),
-				'high_priority' => '0',
+				'repositories_include' => array('toolset', 'wpml')
 			)
 		);
 	}

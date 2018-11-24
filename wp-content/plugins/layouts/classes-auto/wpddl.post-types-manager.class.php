@@ -191,7 +191,7 @@ class WPDD_Layouts_PostTypesManager
                             isset( $_POST['post_status'] ) &&  $_POST['post_status'] !== 'draft'
                         )
                 ) ||
-                ( isset( $_POST['action'] ) && $_POST['action'] === 'ddl_update_post_content_for_private_layout' ) ||
+                ( isset( $_POST['render_private'] ) &&  $_POST['render_private'] ==='ddl_update_post_content_for_private_layout' ) ||
                 ( isset( $_POST['action'] ) && $_POST['action'] === 'inline-save' ) ||
                 ( isset( $_POST['action'] ) && $_POST['action'] === 'post-quickdraft-save' ) ||
                 ( isset( $_POST['action'] ) && in_array( $_POST['action'], $forbidden_actions ) )
@@ -613,10 +613,12 @@ class WPDD_Layouts_PostTypesManager
 
 		if( $posts->count ===  0 ) return -1;
 
-		$key = self::META_KEY;
-
 		$layout = get_post($layout_id);
+
+		if( ! is_object( $layout ) || ! $layout instanceof WP_Post ) return -1;
+
 		$layout_slug = $layout->post_name;
+		$key = self::META_KEY;
 
 		$count_meta = $wpdb->get_var( "SELECT COUNT(post_id) FROM {$wpdb->postmeta} WHERE
 					meta_key='{$key}' AND meta_value='{$layout_slug}'

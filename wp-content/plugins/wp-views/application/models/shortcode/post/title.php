@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Title implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Title extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-title';
 
@@ -66,14 +66,13 @@ class WPV_Shortcode_Post_Title implements WPV_Shortcode_Interface {
 		}
 		
 		$out = '';
-		
-		$item = get_post( $item_id );
 
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
-		
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
+
 		$out .= apply_filters( 'the_title', $item->post_title, $item->ID );
 		
 		// If output="sanitize" then strip tags, escape attributes and replace brackets
@@ -88,6 +87,4 @@ class WPV_Shortcode_Post_Title implements WPV_Shortcode_Interface {
 
 		return $out;
 	}
-	
-	
 }

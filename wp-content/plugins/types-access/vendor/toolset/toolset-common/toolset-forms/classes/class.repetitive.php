@@ -19,11 +19,16 @@ class WPToolset_Forms_Repetitive
                 true );
 //        wp_register_style( 'wptoolset-forms-repetitive', '' );
         // Render settings
-        add_action( 'admin_footer', array($this, 'renderTemplates') );
-        add_action( 'wp_footer', array($this, 'renderTemplates') );
+        if ( ! did_action('admin_footer') ) {
+            add_action( 'admin_footer', array($this, 'renderTemplates') );
+            add_action( 'wp_footer', array($this, 'renderTemplates') );
+        } else {
+            // Related content doesn't work with hook admin_footer.
+            add_action( 'admin_print_footer_scripts', array($this, 'renderTemplates') );
+        }
 
         wp_enqueue_script( 'wptoolset-forms-repetitive' );
-		
+
 	}
 
     function add( $config, $html ) {

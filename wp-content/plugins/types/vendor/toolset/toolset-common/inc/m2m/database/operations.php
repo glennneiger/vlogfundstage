@@ -260,7 +260,7 @@ class Toolset_Relationship_Database_Operations {
 			child_domain varchar(20) NOT NULL DEFAULT '',
 			child_types bigint(20) UNSIGNED NOT NULL DEFAULT 0,
 			intermediary_type varchar(20) NOT NULL DEFAULT '',
-			ownership enum('parent', 'child', 'none') NOT NULL DEFAULT 'none',
+			ownership varchar(8) NOT NULL DEFAULT 'none',
 			cardinality_parent_max int(10) NOT NULL DEFAULT -1,
 			cardinality_parent_min int(10) NOT NULL DEFAULT 0,
 			cardinality_child_max int(10) NOT NULL DEFAULT -1,
@@ -271,6 +271,10 @@ class Toolset_Relationship_Database_Operations {
 			role_name_parent varchar(255) NOT NULL DEFAULT '',
 			role_name_child varchar(255) NOT NULL DEFAULT '',
 			role_name_intermediary varchar(255) NOT NULL DEFAULT '',
+			role_label_parent_singular VARCHAR(255) NOT NULL DEFAULT '',
+			role_label_child_singular VARCHAR(255) NOT NULL DEFAULT '',
+			role_label_parent_plural VARCHAR(255) NOT NULL DEFAULT '',
+			role_label_child_plural VARCHAR(255) NOT NULL DEFAULT '',
 			needs_legacy_support tinyint(1) NOT NULL DEFAULT 0,
 			is_active tinyint(1) NOT NULL DEFAULT 0,
 			PRIMARY KEY  id (id),
@@ -344,7 +348,7 @@ class Toolset_Relationship_Database_Operations {
 			$rows_updated
 		)
 			: sprintf(
-			__( 'There has been an error when updating the assocation table with the new relationship slug: %s', 'wpcf' ),
+			__( 'There has been an error when updating the association table with the new relationship slug: %s', 'wpcf' ),
 			$this->wpdb->last_error
 		)
 		);
@@ -419,6 +423,10 @@ class Toolset_Relationship_Database_Operations {
 			$relationships_table_alias.role_name_parent AS role_name_parent,
 			$relationships_table_alias.role_name_child AS role_name_child,
 			$relationships_table_alias.role_name_intermediary AS role_name_intermediary,
+			$relationships_table_alias.role_label_parent_singular AS role_label_parent_singular,
+			$relationships_table_alias.role_label_child_singular AS role_label_child_singular,
+			$relationships_table_alias.role_label_parent_plural AS role_label_parent_plural,
+			$relationships_table_alias.role_label_child_plural AS role_label_child_plural,
 			$relationships_table_alias.needs_legacy_support AS needs_legacy_support,
 			$relationships_table_alias.is_active AS is_active,
 			$relationships_table_alias.parent_types AS parent_types_set_id,
@@ -592,12 +600,13 @@ class Toolset_Relationship_Database_Operations {
 		if ( ! in_array( $role_name, Toolset_Relationship_Role::parent_child_role_names() ) ) {
 			throw new InvalidArgumentException( 'Wrong role name' );
 		}
+		$associations_table = Toolset_Relationship_Table_Name::associations();
 		$count = $this->wpdb->get_var(
 			$this->wpdb->prepare(
 				"SELECT max(n) count
 					FROM (
 						SELECT count(*) n
-							FROM `wp_toolset_associations`
+							FROM {$associations_table}
 							WHERE relationship_id = %d
 							GROUP BY {$role_name}_id
 					) count", $relationship_id ) );

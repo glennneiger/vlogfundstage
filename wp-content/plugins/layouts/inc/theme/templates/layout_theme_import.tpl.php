@@ -17,7 +17,7 @@ $wpddlayout_theme->file_manager_export->check_theme_dir_is_writable(__('You can 
 
         <div class="ddl-settings-content">
 
-            <h4><?php _e('Settings', 'wpv-views'); ?>:</h4>
+            <h4><?php _e('Settings', 'ddl-layouts'); ?>:</h4>
 
             <form method="post" action="<?php echo admin_url('admin.php'); ?>?page=toolset-export-import&tab=dd_layout_import_export" enctype="multipart/form-data" name="import-layouts" id="import-layouts">
                 <ul>
@@ -40,7 +40,7 @@ $wpddlayout_theme->file_manager_export->check_theme_dir_is_writable(__('You can 
                     </li>
                 </ul>
 
-                <h4><?php _e('Select a .zip, .ddl or .css file to import from your computer', 'ddl-layouts'); ?>
+                <h4><?php _e('Select a .zip, .ddl, .json or .css file to import from your computer', 'ddl-layouts'); ?>
                     :</h4>
 
                 <p>

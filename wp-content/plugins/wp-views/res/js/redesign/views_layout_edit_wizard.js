@@ -13,6 +13,8 @@ var WPViews = WPViews || {};
 WPViews.LayoutWizard = function( $ ) {
 	
 	var self		= this;
+
+	self.i18n = wpv_layout_wizard_strings;
 	
 	self.view_id	= $('.js-post_ID').val();
 	
@@ -23,10 +25,7 @@ WPViews.LayoutWizard = function( $ ) {
 	self.use_loop_template_id		= '';
 	self.use_loop_template_title	= '';
 	
-	// Types compatibility
-	// @todo merge this into just one variable
-	// @todo store too the style options and loop template state
-	
+	// @since m2m Maybe DEPRECATED
 	self.wizard_dialog				= null;
 	self.wizard_dialog_item			= null;
 	self.wizard_dialog_item_parent	= null;
@@ -42,42 +41,15 @@ WPViews.LayoutWizard = function( $ ) {
 	
 	self.overlay_container		= $("<div class='wpv-setting-overlay js-wpv-loop-output-overlay' style='top:0;'><div class='wpv-transparency'></div><i class='icon-lock fa fa-lock'></i></div>");
 	
-	// ----------------------------------------------------------------------------
-    // Colorbox compatibility - to deprecate
-    // ----------------------------------------------------------------------------
+	// ---------------------------------
+	// Functions
+	// ---------------------------------
 	
-	// Add .colorbox-active to the body element when colorbox is active
-    $(document).on('cbox_complete', function() {
-
-        if ( $('#colorbox .no-scrollbar').length === 0 ) {
-            $('body').addClass('disable-scrollbar');
-        }
-
-        // trigger .button-primary to click when ENTER key is pressed and colorbox popup is opened
-        $(document).on('keypress.colorbox', function(e) {
-            var keycode = parseInt((e.keyCode ? e.keyCode : e.which),10);
-            if ( keycode === 13 ) { // 13 is for ENTER key
-                $('#cboxContent .wpv-dialog-footer .button-primary').click(); // trigger click event on the currently opened popup
-            }
-        });
-
-    });
-
-    $(document).on('cbox_cleanup', function() {
-         $('body').removeClass('disable-scrollbar');
-    });
-
-    // Bind close event to .js-dialog-close classes
-	// @todo remove when colorbox is also removed, that classname will never be used anymore
-    $(document).on('click', '.js-dialog-close', function(e) {
+	$(document).on('click', '.js-dialog-close', function(e) {
         e.preventDefault();
         $.colorbox.close();
         return false;
     });
-	
-	// ---------------------------------
-	// Functions
-	// ---------------------------------
 	
 	// Fetch initial settings - on document ready, from variables added directly to the page, see wpv_loop_wizard_add_data_to_js
 	
@@ -130,6 +102,13 @@ WPViews.LayoutWizard = function( $ ) {
 						$( '.js-wpv-layout-wizard-overwrite-notice' ).show();
 					}
 				}
+
+				// When the wizard for a View is loaded...
+				if ( 'normal' === Toolset.hooks.applyFilters( 'wpv-filter-wpv-edit-screen-get-query-mode', '' ) ) {
+                    // ... offer the "List with separators" option by showing it.
+                    $( '.js-wpv-layout-wizard-layout-list-with-separators-style' ).show();
+                }
+
 				// Set incoming values, if any
 				if ( typeof( self.wizard_dialog_data.style ) != 'undefined' ) {
 					$( 'input.js-wpv-layout-wizard-style[value="' + self.wizard_dialog_data.style + '"]' ).click();
@@ -215,6 +194,10 @@ WPViews.LayoutWizard = function( $ ) {
 				if ( typeof( self.wizard_dialog_data.include_field_names ) != 'undefined' ) {
 					$('input[name="include_field_names"]').prop('checked', ( self.wizard_dialog_data.include_field_names === '1' || self.wizard_dialog_data.include_field_names === 'true' ) );
 				}
+
+				if ( 'undefined' !== typeof( self.wizard_dialog_data.list_separator ) ) {
+					$( '#js-wpv-list-separator' ).val( self.wizard_dialog_data.list_separator );
+				}
 				
 				if ( self.use_loop_template ) {
 					$( 'input#js-wpv-use-view-loop-ct' ).prop( 'checked', true );
@@ -236,6 +219,7 @@ WPViews.LayoutWizard = function( $ ) {
 			data.bootstrap_grid_container = self.settings_from_wizard.bootstrap_grid_container;
 			data.bootstrap_grid_row_class = self.settings_from_wizard.bootstrap_grid_row_class;
 			data.bootstrap_grid_individual = self.settings_from_wizard.bootstrap_grid_individual;
+			data.list_separator = self.settings_from_wizard.list_separator;
 		}
 		return data;
 	};
@@ -307,8 +291,24 @@ WPViews.LayoutWizard = function( $ ) {
 		var count = $('.js-wpv-loop-wizard-item-container').size(),
 		field_html = field_html.replace( /__wpv_layout_count_placeholder__/g, count + 1 );
 		$( '.js-wpv-layout-wizard-layout-fields' )
-			.append( field_html )
-			.sortable( 'refresh' );
+			.append( field_html );
+		if ( 
+			$( '.js-wpv-layout-wizard-layout-fields .js-wpv-loop-wizard-item-container' ).length == 1 
+			&& ! $( '.js-wpv-layout-wizard-layout-fields' ).hasClass( 'js-wpv-layout-wizard-layout-fields-loaded' )
+		) {
+			$( '.js-wpv-layout-wizard-layout-fields' )
+				.addClass( 'js-wpv-layout-wizard-layout-fields-loaded' )
+				.sortable({
+					handle: ".js-layout-wizard-move-field",
+					axis: 'y',
+					containment: ".js-wpv-layout-wizard-layout-fields-containment",
+					items: "> div.js-wpv-loop-wizard-item-container",
+					helper: 'clone',
+					tolerance: "pointer"
+				});
+		} else {
+			$( '.js-wpv-layout-wizard-layout-fields' ).sortable( 'refresh' );
+		}
 		self.manage_dialog_buttons( 1 );
 		$.each( $('.js-wpv-dialog-layout-wizard select.js-wpv-select2' ),function() {
 			if ( ! $( this ).hasClass( 'js-wpv-selec2-inited' ) ) {
@@ -319,10 +319,90 @@ WPViews.LayoutWizard = function( $ ) {
 							dropdownParent: $( '.js-wpv-dialog-layout-wizard' )
 						}
 					)
-					.trigger( 'change' );
+					.data( 'toolset_select2' )
+						.$dropdown
+							.addClass( 'toolset_select2-dropdown-in-dialog' );
+				$( this ).trigger( 'change' );
 			}
 		});
 	};
+	
+	self.addFieldAndSetValue = function( fieldHTML, valueToSelect ) {
+		var count = $('.js-wpv-loop-wizard-item-container').size(),
+			fieldHTML = fieldHTML.replace( /__wpv_layout_count_placeholder__/g, count + 1 ),
+			encodedValueRoSelect = Base64.encode( valueToSelect );
+		$( '.js-wpv-layout-wizard-layout-fields' )
+			.append( fieldHTML );
+			
+		var selectedTag = valueToSelect.split( ']' )[0].split( ' ' )[0].substring(1),
+			parsedShortcode = wp.shortcode.next( selectedTag, valueToSelect ),
+			parsedAttributes = {};
+			_.each( parsedShortcode.shortcode.attrs.named, function( attr_value, attr_key, list ) {
+				if ( ! _.has( parsedAttributes, attr_key ) ) {
+					parsedAttributes[ attr_key ] = attr_value;
+				}
+			});
+		
+		var candidateOptions = $( '#js-wpv-layout-wizard-item-' + ( count + 1 ) ).find( 'option[data-handle="' + selectedTag + '"]' );
+		
+		if ( candidateOptions.length > 0 ) {
+			if ( candidateOptions.length == 1 ) {
+				candidateOptions.prop( 'selected', true );
+			} else {
+				switch( selectedTag ) {
+					case 'wpv-post-body':
+						candidateOptions
+							.filter( 'option[data-idvalue="' + parsedAttributes['view_template'] + '"]' )
+								.prop( 'selected', true )
+								.val( encodedValueRoSelect );
+						break;
+					case 'wpv-post-taxonomy':
+						candidateOptions
+							.filter( 'option[data-idvalue="' + parsedAttributes['type'] + '"]' )
+								.prop( 'selected', true )
+								.val( encodedValueRoSelect );
+						break;
+					case 'wpv-post-field':
+						candidateOptions
+							.filter( 'option[data-idvalue="' + parsedAttributes['name'] + '"]' )
+								.prop( 'selected', true )
+								.val( encodedValueRoSelect );
+						break;
+					case 'wpv-user':
+						candidateOptions
+							.filter( 'option[data-idvalue="' + parsedAttributes['field'] + '"]' )
+								.prop( 'selected', true )
+								.val( encodedValueRoSelect );
+						break;
+					case 'wpv-view':
+						candidateOptions
+							.filter( 'option[data-idvalue="' + parsedAttributes['name'] + '"]' )
+								.prop( 'selected', true )
+								.val( encodedValueRoSelect );
+						break;
+					case 'types':
+						if ( _.has( parsedAttributes, 'field' ) ) {
+							candidateOptions
+								.filter( 'option[data-idvalue="' + parsedAttributes['field'] + '"]' )
+									.prop( 'selected', true )
+									.val( encodedValueRoSelect );
+						} else if ( _.has( parsedAttributes, 'termmeta' ) ) {
+							candidateOptions
+								.filter( 'option[data-idvalue="' + parsedAttributes['termmeta'] + '"]' )
+									.prop( 'selected', true )
+									.val( encodedValueRoSelect );
+						} else if ( _.has( parsedAttributes, 'usermeta' ) ) {
+							candidateOptions
+								.filter( 'option[data-idvalue="' + parsedAttributes['usermeta'] + '"]' )
+									.prop( 'selected', true )
+									.val( encodedValueRoSelect );
+						}
+						break;
+				}
+			}
+		}
+
+	}
 
 	
 	/**
@@ -395,8 +475,10 @@ WPViews.LayoutWizard = function( $ ) {
 			render_individual_columns: $('[name="bootstrap_grid_individual"]:checked').val(),
 			use_loop_template: self.use_loop_template,
 			loop_template_title: self.use_loop_template_title,
-			render_only_wpv_loop: true
-		}		
+			render_only_wpv_loop: true,
+			list_separator: $( '#js-wpv-list-separator' ).val()
+		};
+
 		// Content of the Loop Output.
 		// Content of a Content Template to be created (if self.use_loop_template is true).
 		var loop_output = '',
@@ -411,7 +493,7 @@ WPViews.LayoutWizard = function( $ ) {
 			url: ajaxurl,
 			dataType: 'json',
 			data: {
-				action: 'wpv_generate_view_loop_output',
+				action: self.i18n.ajaxaction.generateViewLoopOutput,
 				wpnonce: $('#layout_wizard_nonce').attr('value'),
 				view_id: self.view_id,
 				style: layout_style,
@@ -423,6 +505,47 @@ WPViews.LayoutWizard = function( $ ) {
 					self.settings_from_wizard = response.data.loop_output_settings;
 					loop_output = response.data.loop_output_settings.layout_meta_html;
 					ct_content = response.data.ct_content;
+
+					// If a list with separators is selected as the loop output style...
+					if ( 'separators_list' === response.data.loop_output_settings.style ) {
+						var disableViewWrapperCheckbox = $( '.js-wpv-settings-disable-view-wrapper' );
+						// ... select to disable the wrapper DIV of the View.
+						disableViewWrapperCheckbox.prop( 'checked', true );
+						disableViewWrapperCheckbox.trigger( 'change' );
+
+						// ... and display a pointer with information on why the View wrapper DIV was selected automatically.
+						var disable_view_wrapper_for_separators_list_pointer_content = $( '.js-wpv-disable-view-wrapper-for-separators-list-pointer' );
+						// If the pointer is not dismissed...
+						if ( ! disable_view_wrapper_for_separators_list_pointer_content.hasClass( 'js-wpv-pointer-dismissed' ) ) {
+							var disable_view_wrapper_for_separators_list_pointer = disableViewWrapperCheckbox.pointer({
+								pointerClass: 'wp-toolset-pointer wp-toolset-views-pointer',
+								pointerWidth: 400,
+								content: disable_view_wrapper_for_separators_list_pointer_content.html(),
+								position: {
+									edge: 'bottom',
+									align: 'left'
+								},
+								show: function (event, t) {
+									t.pointer.show();
+									t.opened();
+								},
+								buttons: function (event, t) {
+									// Add Close button
+									var button_close = $('<button class="button button-primary-toolset alignright js-wpv-close-this">Close</button>');
+									button_close.bind('click.pointer', function (e) {
+										e.preventDefault();
+										if (t.pointer.find('.js-wpv-dismiss-pointer:checked').length > 0) {
+											var pointer_name = t.pointer.find('.js-wpv-dismiss-pointer:checked').data('pointer');
+											$(document).trigger('js_event_wpv_dismiss_pointer', [pointer_name]);
+										}
+										t.element.pointer('close');
+									});
+									return button_close;
+								}
+							});
+							disable_view_wrapper_for_separators_list_pointer.pointer('open');
+						}
+					}
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messages_container} );
 					current_dialog.find('.wpv-spinner.ajax-loader' ).remove();
@@ -711,12 +834,22 @@ WPViews.LayoutWizard = function( $ ) {
 	// Remove a field
 	
 	$( document ).on( 'click', '.js-layout-wizard-remove-field', function( e ) {
-		var row_to_delete = $( this ).closest( '.js-wpv-loop-wizard-item-container' );
+		var row_to_delete = $( this ).closest( '.js-wpv-loop-wizard-item-container' ),
+			layoutStyle = $( '[name=layout-wizard-style]:checked' ).val(),
+			addFieldButton = $( '.js-layout-wizard-add-field' );
+
 		row_to_delete.addClass( 'wpv-layout-wizard-field-deleted' );
 		setTimeout( function () {
 			row_to_delete.remove();
 			self.manage_dialog_buttons( 1 );
 			$( '.js-wpv-layout-wizard-layout-fields' ).sortable( 'refresh' );
+
+			if (
+				'separators_list' === layoutStyle &&
+				addFieldButton.is( ':disabled' )
+			) {
+				addFieldButton.prop( 'disabled', false );
+			}
 		}, 500 );
 	});
 	
@@ -729,15 +862,7 @@ WPViews.LayoutWizard = function( $ ) {
 		dialog_pointer = $( '<div class="wpv-dialog-arrow-left js-wpv-dialog-arrow-left"></div>' );
 		
 		if ( ! self.use_loop_template ) {
-			if ( 
-				style_selected === 'bootstrap-grid' 
-				|| style_selected === 'table_of_fields'
-				|| style_selected === 'table' 
-			) {
-				$( '#js-wpv-use-view-loop-ct' ).prop( 'checked', true );
-			} else {
-				$( '#js-wpv-use-view-loop-ct' ).prop( 'checked', false );
-			}
+			$( '#js-wpv-use-view-loop-ct' ).prop( 'checked', true );
 		}
 		
 		
@@ -764,11 +889,20 @@ WPViews.LayoutWizard = function( $ ) {
 		} else if ( style_container.find( '.js-wpv-layout-wizard-layout-style-options-' + style_selected ).length > 0 ) {
 			style_container.find( '.js-wpv-layout-wizard-layout-style-options-' + style_selected ).show();
 		}
+
+		if ( 'separators_list' === style_selected ) {
+		    $( '.js-wpv-layout-wizard-separators-list-characters-trimming-notice' ).show();
+        } else {
+            $( '.js-wpv-layout-wizard-separators-list-characters-trimming-notice' ).hide();
+        }
 	});
 	
 	// Add a field
 	
 	$( document ).on( 'click', '.js-layout-wizard-add-field', function( e ) {
+		var thiz = $( this ),
+			layoutStyle = $( '[name=layout-wizard-style]:checked' ).val();
+
 		if ( self.add_field_ui ) {
 			self.add_field_ui_callback( self.add_field_ui );
 		} else {
@@ -789,11 +923,12 @@ WPViews.LayoutWizard = function( $ ) {
 						self.add_field_ui = response.data.html;
 						self.add_field_ui_callback( self.add_field_ui );
 					}
-				},
-				complete: function() {
-					
 				}
 			});
+		}
+
+		if ( 'separators_list' === layoutStyle ) {
+            thiz.prop( 'disabled', true );
 		}
 	});
 	
@@ -802,35 +937,20 @@ WPViews.LayoutWizard = function( $ ) {
 	$( document ).on( 'change', 'select.js-wpv-layout-wizard-item', function() {
 		var thiz = $( this ),
 		thiz_container = thiz.closest( '.js-wpv-loop-wizard-item-container' );
-		option = thiz.find( ':selected' );
-		if ( option.data( 'shortcodehandle' ) === 'wpv-post-body' ) {
-			thiz_container.find('.js-layout-wizard-body-template-text').show();
-			thiz_container.find('.js-custom-types-fields').hide();
-			thiz_container.find('.js-wpv-loop-wizard-shortcode-ui').hide();
-		} else if ( option.data( 'istype' ) == 1 ) {
-			thiz_container.find('.js-layout-wizard-body-template-text').hide();
-			thiz_container.find('.js-custom-types-fields')
-				.attr( 'rel', option.data( 'typename' ) )
-				.show();
-			thiz_container.find('.js-wpv-loop-wizard-shortcode-ui').hide();
-		} else if ( option.data( 'hasattributesgui' ) == 1 ) {
-			thiz_container.find('.js-layout-wizard-body-template-text').hide();
-			thiz_container.find('.js-custom-types-fields').hide();
-			thiz_container.find('.js-wpv-loop-wizard-shortcode-ui')
-				.attr( 'rel', option.data( 'shortcodehandle' ) )
-				.show();
-		} else {
-			thiz_container.find('.js-layout-wizard-body-template-text, .js-custom-types-fields, .js-wpv-loop-wizard-shortcode-ui').hide();
+		option = thiz.find( ':selected' ),
+		handle = option.data( 'handle' ),
+		hasGui = option.data( 'hasgui' );
+		
+		thiz_container
+			.find( '.js-layout-wizard-body-template-text, .js-wpv-loop-wizard-types-shortcode-ui, .js-wpv-loop-wizard-shortcode-ui' )
+				.hide();
+		
+		if ( 'types' == handle ) {
+			thiz_container.find('.js-wpv-loop-wizard-types-shortcode-ui').show();
+		} else if ( 1 == option.data( 'hasgui' ) ) {
+			thiz_container.find( '.js-wpv-loop-wizard-shortcode-ui' ).show();
 		}
 	});
-	
-	// Set the Content Template when using a Body field
-	
-	$( document ).on( 'change', 'select.js-wpv-layout-wizard-body-template', function() {
-		var thiz = $( this ),
-		thiz_container = thiz.closest( '.js-wpv-loop-wizard-item-container' );
-        thiz_container.find('select.js-wpv-layout-wizard-item [data-shortcodehandle="wpv-post-body"]').val( thiz.val() );
-    });
 	
 	// Insert layout
 	
@@ -844,62 +964,77 @@ WPViews.LayoutWizard = function( $ ) {
 				! $( '.js-wpv-layout-wizard-layout-fields' ).hasClass( 'js-wpv-layout-wizard-layout-fields-loaded' )
 				&& typeof( self.wizard_dialog_data.real_fields ) != 'undefined' 
 			) {
-				if ( self.saved_fields_html != null ) {
-					$( self.saved_fields_html ).appendTo( '.js-wpv-layout-wizard-layout-fields' );
-				} else if ( self.wizard_dialog_data.real_fields.length > 0 ) {
-					var selected_fields = self.wizard_dialog_data.real_fields,
-					spinnerContainer = $( '<div class="wpv-spinner ajax-loader">' ).prependTo( '.js-wpv-layout-wizard-dialog-footer' ).show();
-					$( '.js-wpv-layout-wizard-layout-fields-feedback' ).show();
-					thiz
-						.prop( 'disabled', true )
-						.removeClass( 'button-primary' )
-						.addClass( 'button-secondary' );
+				if ( self.wizard_dialog_data.real_fields.length > 0 ) {
+					var selected_fields = self.wizard_dialog_data.real_fields;
+					$( '.js-wpv-layout-wizard-layout-fields' )
+						.addClass( 'js-wpv-layout-wizard-layout-fields-loaded' )
+						.sortable({
+							handle: ".js-layout-wizard-move-field",
+							axis: 'y',
+							containment: ".js-wpv-layout-wizard-layout-fields-containment",
+							items: "> div.js-wpv-loop-wizard-item-container",
+							helper: 'clone',
+							tolerance: "pointer"
+						});
 					
-					var data = {
-						action: 'wpv_loop_wizard_load_saved_fields',
-						wpnonce : wpv_layout_wizard_strings.wpnonce,
-						selected_fields: selected_fields,
-						view_id: self.view_id
-					};
-					$.ajax({
-						type: "POST",
-						dataType: "json",
-						url: ajaxurl,
-						data: data,
-						async: false,
-						success: function( response ) {
-							if ( response.success ) {
-								self.saved_fields_html = response.data.html;
-								$( response.data.html ).appendTo( '.js-wpv-layout-wizard-layout-fields' );
-							}
+					if ( self.add_field_ui ) {
+						_.each( selected_fields, function( element, index, list ) {
+							self.addFieldAndSetValue( self.add_field_ui, element );
+						});
+						$( '.js-wpv-layout-wizard-layout-fields' ).sortable( 'refresh' );
+					} else {
+						var data = {
+							action: 'wpv_loop_wizard_add_field',
+							id: '__wpv_layout_count_placeholder__',
+							wpnonce : wpv_layout_wizard_strings.wpnonce,
+							view_id: self.view_id
 						},
-						complete: function() {
-							spinnerContainer.remove();
-							$( '.js-wpv-layout-wizard-layout-fields-feedback' ).hide();
-							thiz
-								.prop( 'disabled', false )
-								.addClass( 'button-primary' )
-								.removeClass( 'button-secondary' );
-						}
-					});
-				
+						spinnerContainer = $( '<div class="wpv-spinner ajax-loader">' ).prependTo( '.js-wpv-layout-wizard-dialog-footer' ).show();
+						
+						$( '.js-wpv-layout-wizard-layout-fields-feedback' ).show();
+						thiz
+							.prop( 'disabled', true )
+							.removeClass( 'button-primary' )
+							.addClass( 'button-secondary' );
+						
+						$.ajax({
+							type: "POST",
+							dataType: "json",
+							url: ajaxurl,
+							data: data,
+							async: false,
+							success: function( response ) {
+								if ( response.success ) {
+									self.add_field_ui = response.data.html;
+									_.each( selected_fields, function( element, index, list ) {
+										self.addFieldAndSetValue( self.add_field_ui, element );
+									});
+									$( '.js-wpv-layout-wizard-layout-fields' ).sortable( 'refresh' );
+								}
+							},
+							complete: function() {
+								spinnerContainer.remove();
+								$( '.js-wpv-layout-wizard-layout-fields-feedback' ).hide();
+								thiz
+									.prop( 'disabled', false )
+									.addClass( 'button-primary' )
+									.removeClass( 'button-secondary' );
+							}
+						});
+					}
 				}
-				
-				/**
-				* todo:
-				*
-				* we need to initialize select2 *after* loading the new tab cause select2 on hidden elements is nasty
-				* hence we can not use self.change_tab here, we need to do it manually, or add the select2 as a callback to change_tab
-				*/
-				
 				
 			}
 			
-			$( '.wpv-dialog-nav-tab a' ).removeClass('active');
+			
+			
+			/**
+			* we need to initialize select2 *after* loading the new tab cause select2 on hidden elements is nasty
+			* hence we can not use self.change_tab here, we need to do it manually, or add the select2 as a callback to change_tab
+			*/
+			$( '.wpv-dialog-nav-tab a' ).removeClass( 'active' );
 			$( '.wpv-dialog-content-tab' ).hide();
-			
 			index++;
-			
 			$( '.wpv-dialog-nav-tab a' )
 				.eq( index )
 					.addClass( 'active' )
@@ -915,35 +1050,59 @@ WPViews.LayoutWizard = function( $ ) {
 										{ 
 											dropdownParent: $( '.js-wpv-dialog-layout-wizard' )
 										}
-									);
+									)
+									.data( 'toolset_select2' )
+										.$dropdown
+											.addClass( 'toolset_select2-dropdown-in-dialog' );
+								$( this ).trigger( 'change' );
+							} else {
+								$( this ).trigger( 'change' );
 							}
 						});
-						$( '.js-wpv-layout-wizard-layout-fields' )
-							.addClass( 'js-wpv-layout-wizard-layout-fields-loaded' )
-							.sortable({
-								handle: ".js-layout-wizard-move-field",
-								axis: 'y',
-								containment: ".js-wpv-layout-wizard-layout-fields-containment",
-								items: "> div.js-wpv-loop-wizard-item-container",
-								helper: 'clone',
-								tolerance: "pointer"
-							});
 					});
 			self.manage_dialog_buttons( index );
-			
+
+			var layoutStyle = $( '[name=layout-wizard-style]:checked' ).val(),
+				useViewLoopCT = $( 'input#js-wpv-use-view-loop-ct' ),
+				useViewLoopCTContainer = useViewLoopCT.parent( 'div' ),
+				addFieldButton = $( '.js-layout-wizard-add-field' ),
+				selectedFields = $( 'select.js-wpv-layout-wizard-item' ),
+				listSeparatorContainer = $( '.js-wpv-list-separator-container' );
+			if ( 'separators_list' === layoutStyle ) {
+				// Uncheck the "Use a Content Template to group the fields in this loop" checkbox...
+				useViewLoopCT.prop( 'checked', false );
+				// ... and also hide its container.
+				useViewLoopCTContainer.hide();
+				if ( 0 === selectedFields.length ) {
+					addFieldButton.prop( 'disabled', false );
+				} else {
+					// If there are more than one fields selected...
+					if ( 1 < selectedFields.length ) {
+						// ... remove all the fields, only keeping the first.
+						selectedFields.not(':first').parent( '.js-wpv-loop-wizard-item-container' ).remove();
+					}
+					addFieldButton.prop( 'disabled', true );
+				}
+
+				listSeparatorContainer.show();
+			} else {
+				useViewLoopCTContainer.show();
+				addFieldButton.prop( 'disabled', false );
+				listSeparatorContainer.hide();
+			}
         } else if ( index === 1 ) {
 			self.saved_fields_html = null;
             var fields = [],
-			spinnerContainer = $( '<div class="wpv-spinner ajax-loader">' ).prependTo( '.js-wpv-layout-wizard-dialog-footer' ).show();			
+			spinnerContainer = $( '<div class="wpv-spinner ajax-loader">' ).prependTo( '.js-wpv-layout-wizard-dialog-footer' ).show();
 			$.each( $( 'select.js-wpv-layout-wizard-item' ), function( index ) {
 				value = $(this).val();
-				headname = $('[value="'+value+'"]').data('headename');
-				rowtitle = $('[value="'+value+'"]').data('rowtitle');
+				headname = $( '[value="'+value+'"]', $( this ) ).data('head');
+				rowtitle = $( '[value="'+value+'"]', $( this ) ).text();
 				fields[index] = Array( '', editor_decode64(value), '', rowtitle, headname, rowtitle );
 			});
-            if ( 
-				$( '#js-wpv-use-view-loop-ct' ).prop( 'checked' ) 
-				&& self.check_for_only_content_template_field( fields ) === false 
+            if (
+				$( '#js-wpv-use-view-loop-ct' ).prop( 'checked' )
+				&& self.check_for_only_content_template_field( fields ) === false
 			) {
                 self.use_loop_template = true;
             } else {
@@ -955,7 +1114,7 @@ WPViews.LayoutWizard = function( $ ) {
 				.addClass( 'button-secondary' );
             if (
 				self.use_loop_template_id == ''
-				&& self.use_loop_template 
+				&& self.use_loop_template
 			) {
                 var data = {
                     wpnonce : $('#layout_wizard_nonce').attr('value'),
@@ -975,9 +1134,9 @@ WPViews.LayoutWizard = function( $ ) {
 							self.use_loop_template_id = response.data.template_id;
 							self.use_loop_template_title = response.data.template_title;
 							$( '.js-wpv-settings-inline-templates' ).show();
-							if ( 
-								response.data.template_id 
-								&& $( '#wpv-ct-listing-' + response.data.template_id ).html() 
+							if (
+								response.data.template_id
+								&& $( '#wpv-ct-listing-' + response.data.template_id ).html()
 							) {
 								$( '#wpv-ct-listing-' + response.data.template_id ).removeClass( 'hidden' );
 							} else {
@@ -1035,7 +1194,7 @@ WPViews.LayoutWizard = function( $ ) {
 	// Select2 behaviour
 	
 	// Close select2 when clicking outside the dropdowns
-	$( document ).on( 'mousedown','.js-wpv-dialog-layout-wizard, #cboxOverlay',function( e ) {
+	$( document ).on( 'mousedown','.js-wpv-dialog-layout-wizard',function( e ) {
 		if ( $( e.target ).parents( '.js-wpv-loop-wizard-item-container' ).length === 0 ) {
 			$( 'select.js-wpv-select2' ).each( function() {
 				$( this ).toolset_select2( 'close' );
@@ -1050,14 +1209,6 @@ WPViews.LayoutWizard = function( $ ) {
 		});
 	});
 	
-	// @todo review if this is used anywhere outside Views, and kill it with fire!
-    $( document ).on( 'cbox_closed', function() {
-         $( '.js-wpv-select2' )
-			.removeClass( 'js-wpv-selec2-inited' )
-			.toolset_select2( 'destroy' );
-         $( document ).off( 'keypress.colorbox' ); // unbind the keypress event
-    });
-	
 	// Shortcodes GUI management
 	
 	$( document ).on( 'click', '.js-wpv-loop-wizard-shortcode-ui', function() {
@@ -1067,7 +1218,7 @@ WPViews.LayoutWizard = function( $ ) {
 		self.doing_shortcode_gui_for_selected = thiz.closest( '.js-wpv-loop-wizard-item-container' ).find( 'select.js-wpv-layout-wizard-item' ).find( ':selected' );
 		
 		var shortcode_value		= Base64.decode( self.doing_shortcode_gui_for_selected.val() ),
-			shortcode_tag		= self.doing_shortcode_gui_for_selected.data( 'shortcodetag' ),
+			shortcode_tag		= self.doing_shortcode_gui_for_selected.data( 'handle' ),
 			parsed_shortcode	= wp.shortcode.next( shortcode_tag, shortcode_value ),
 			shortcode_data		= {};
 		
@@ -1082,6 +1233,48 @@ WPViews.LayoutWizard = function( $ ) {
 			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-edit-shortcode', shortcode_data );
 		}
 		
+	});
+	
+	$( document ).on( 'click', '.js-wpv-loop-wizard-types-shortcode-ui', function() {
+		var selectedButton = $( this ),
+			selectedSelect = selectedButton
+				.closest( '.js-wpv-loop-wizard-item-container' )
+					.find( 'select.js-wpv-layout-wizard-item' ),
+			selectedOption     = selectedSelect.find( 'option:selected' ),
+			selectedParameters = selectedOption.data( 'typesparameters' ),
+			selectedOverrides  = {};
+		
+		$( '.js-wpv-loop-wizard-save-shortcode-ui-active' )
+			.removeClass( 'js-wpv-loop-wizard-save-shortcode-ui-active' );
+		
+		selectedSelect.addClass( 'js-wpv-loop-wizard-save-shortcode-ui-active' );
+		
+		Toolset.hooks.doAction( 'toolset-action-set-shortcode-gui-action', 'save' );
+		
+		// Do not fill attributes, not even parse them, for checkbox(es) and radio fields, 
+		// because they can produce multiple shortcodes at once when displaying custom content 
+		// for each selected, and even unselected, option.
+		if ( -1 == _.indexOf( [ 'checkbox', 'checkboxes', 'radio' ], selectedParameters.metaType ) ) {
+			var shortcodeValue  = Base64.decode( selectedOption.val() ),
+				parsedShortcode	= wp.shortcode.next( 'types', shortcodeValue ),
+				shortcodeData   = {};
+			
+			// Avoid parsing when there are numbered attributes
+			if ( 
+				_.size( parsedShortcode.shortcode.attrs.numeric ) == 0 
+			) {
+				shortcodeData = parsedShortcode.shortcode.attrs.named;
+			}
+			
+			selectedOverrides = { attributes: shortcodeData }
+		}
+		
+		Toolset.hooks.doAction( 'types-action-shortcode-dialog-do-open', {
+			shortcode:  'types',
+			title:      selectedOption.text(),
+			parameters: selectedParameters,
+			overrides:  selectedOverrides
+		});
 	});
 	
 	$( document ).on( 'js_event_wpv_shortcode_action_save_triggered', function( event, shortcode_data_safe ) {
@@ -1197,182 +1390,6 @@ WPViews.LayoutWizard = function( $ ) {
 jQuery( document ).ready( function( $ ) {
     WPViews.layout_wizard = new WPViews.LayoutWizard( $ );
 });
-
-/**
-* Types fields compatibility
-*/
-
-// Types compatibility
-	jQuery(document).on('click', '.js-custom-types-fields', function(){
-		WPViews.layout_wizard.wizard_dialog_fields = [];
-		$i = 0;
-		jQuery('select.js-layout-wizard-item').each(function() {
-			WPViews.layout_wizard.wizard_dialog_fields[$i++] = jQuery(this).find(':selected').val();
-		});
-
-		jQuery.each(jQuery('.js-wpv-dialog-layout-wizard select.js-wpv-select2'),function(){
-				jQuery(this)
-					.removeClass( 'js-wpv-selec2-inited' )
-					.toolset_select2('destroy');
-		});
-		
-		WPViews.layout_wizard.wizard_dialog = jQuery('#colorbox').clone();
-		WPViews.layout_wizard.wizard_dialog_item = jQuery(this).parent().find('[name=layout-wizard-style]').find(':selected');
-
-
-		WPViews.layout_wizard.wizard_dialog_item_parent = jQuery(this).parent();
-		
-		// Collect dialog data to be restored
-		WPViews.layout_wizard.wizard_dialog_style = jQuery('input[name="layout-wizard-style"]:checked').val();
-		WPViews.layout_wizard.wizard_dialog_table_cols = jQuery( 'select.js-wpv-layout-wizard-table-cols[name="table_cols"]' ).val();
-		WPViews.layout_wizard.wizard_dialog_include_field_names = jQuery('input[name="include_field_names"]').prop( 'checked' );
-		WPViews.layout_wizard.wizard_dialog_bootstrap_row_class = jQuery( 'input[name="bootstrap_grid_row_class"]' ).prop( 'checked' );
-		WPViews.layout_wizard.wizard_dialog_bootstrap_grid_cols = jQuery( 'select.js-wpv-layout-wizard-bootstrap-grid-cols[name="bootstrap_grid_cols"]' ).val();
-		WPViews.layout_wizard.wizard_dialog_bootstrap_grid_container = jQuery( 'input[name="bootstrap_grid_container"]' ).prop( 'checked' );
-		WPViews.layout_wizard.wizard_dialog_bootstrap_grid_individual_yes = jQuery( '#bootstrap_grid_individual_yes' ).prop( 'checked' );
-		WPViews.layout_wizard.wizard_dialog_bootstrap_grid_individual_no = jQuery( '#bootstrap_grid_individual_no' ).prop( 'checked' );
-		WPViews.layout_wizard.wizard_dialog_use_content_template = jQuery( 'input#js-wpv-use-view-loop-ct' ).prop( 'checked' );
-
-		var current = Base64.decode(WPViews.layout_wizard.wizard_dialog_item.val());
-		var metatype = 'postmeta';
-		if ( current.search(/types.*?usermeta=/g) != -1 ) {
-			metatype = 'usermeta';
-		}
-		if ( current.search(/types.*?termmeta=/g) != -1 ) {
-			metatype = 'termmeta';
-		}
-		if ( typeof(jQuery(this).data('type')) !== 'undefined') {
-			metatype = jQuery(this).data('type');
-		}
-		typesWPViews.wizardEditShortcode(jQuery(this).attr('rel'), metatype, -1, current);
-	});
-
-function wpv_restore_wizard_popup(shortcode) {
-    jQuery.colorbox({
-		transition: 'fade',
-		opacity: 0.3,
-		speed: 150,
-		fadeOut : 0,
-		closeButton: false,
-		trapFocus: false,
-        html: jQuery(WPViews.layout_wizard.wizard_dialog).find('#cboxLoadedContent').html(),
-		onOpen: function() {
-			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-set-gui-action', 'save' );
-		},
-		onClosed: function() {
-			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-set-gui-action', 'insert' );
-		},
-        onComplete: function() {
-            var select = jQuery('#'+WPViews.layout_wizard.wizard_dialog_item_parent.prop('id')+' select option[value="'+WPViews.layout_wizard.wizard_dialog_item.val()+'"]');
-
-            jQuery('#'+WPViews.layout_wizard.wizard_dialog_item_parent.prop('id')+' select').val(WPViews.layout_wizard.wizard_dialog_item.val());
-
-
-            $i = 0;
-            jQuery('select.js-layout-wizard-item').each(function() {
-                jQuery(this).val(WPViews.layout_wizard.wizard_dialog_fields[$i]);
-                $i++;
-            });
-
-            select.val(Base64.encode(shortcode));
-
-            jQuery('input[name=layout-wizard-style][value='+WPViews.layout_wizard.wizard_dialog_style+']').click();
-			jQuery( 'select.js-wpv-layout-wizard-table-cols[name="table_cols"]' ).val( WPViews.layout_wizard.wizard_dialog_table_cols );
-			jQuery('input[name="include_field_names"]').prop( 'checked', WPViews.layout_wizard.wizard_dialog_include_field_names );
-			jQuery( 'input[name="bootstrap_grid_row_class"]' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_row_class );
-			jQuery( 'select.js-wpv-layout-wizard-bootstrap-grid-cols[name="bootstrap_grid_cols"]' ).val( WPViews.layout_wizard.wizard_dialog_bootstrap_grid_cols );
-			jQuery( 'input[name="bootstrap_grid_container"]' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_grid_container );
-			jQuery( '#bootstrap_grid_individual_yes' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_grid_individual_yes );
-			jQuery( '#bootstrap_grid_individual_no' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_grid_individual_no );
-			jQuery( 'input#js-wpv-use-view-loop-ct' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_use_content_template );
-			
-			
-			jQuery.each( jQuery('.js-wpv-dialog-layout-wizard select.js-wpv-select2'),function() {
-                    jQuery(this)
-						.addClass( 'js-wpv-selec2-inited' )
-						.toolset_select2(
-							{ 
-								dropdownParent: jQuery( '.js-wpv-dialog-layout-wizard' )
-							}
-						);
-            });
-			
-			jQuery( '.js-wpv-layout-wizard-layout-fields' )
-				.addClass( 'js-wpv-layout-wizard-layout-fields-loaded' )
-				.sortable({
-					handle: ".js-layout-wizard-move-field",
-					axis: 'y',
-					containment: ".js-wpv-layout-wizard-layout-fields-containment",
-					items: "> div.js-wpv-loop-wizard-item-container",
-					helper: 'clone',
-					tolerance: "pointer"
-				});
-
-        }
-    });
-}
-
-function wpv_cancel_wizard_popup() {
-    jQuery.colorbox({
-		transition: 'fade',
-		opacity: 0.3,
-		speed: 150,
-		fadeOut : 0,
-		closeButton: false,
-		trapFocus: false,
-        html: jQuery(WPViews.layout_wizard.wizard_dialog).find('#cboxLoadedContent').html(),
-		onOpen: function() {
-			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-set-gui-action', 'save' );
-		},
-		onClosed: function() {
-			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-set-gui-action', 'insert' );
-		},
-        onComplete: function() {
-            var select = jQuery('#'+WPViews.layout_wizard.wizard_dialog_item_parent.prop('id')+' select option[value="'+WPViews.layout_wizard.wizard_dialog_item.val()+'"]');
-
-            jQuery('#'+WPViews.layout_wizard.wizard_dialog_item_parent.prop('id')+' select').val(WPViews.layout_wizard.wizard_dialog_item.val());
-
-            $i = 0;
-            jQuery('select.js-layout-wizard-item').each(function() {
-                jQuery(this).val(WPViews.layout_wizard.wizard_dialog_fields[$i]);
-                $i++;
-            });
-
-            jQuery('input[name=layout-wizard-style][value='+WPViews.layout_wizard.wizard_dialog_style+']').click();
-			jQuery( 'select.js-wpv-layout-wizard-table-cols[name="table_cols"]' ).val( WPViews.layout_wizard.wizard_dialog_table_cols );
-			jQuery('input[name="include_field_names"]').prop( 'checked', WPViews.layout_wizard.wizard_dialog_include_field_names );
-			jQuery( 'input[name="bootstrap_grid_row_class"]' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_row_class );
-			jQuery( 'select.js-wpv-layout-wizard-bootstrap-grid-cols[name="bootstrap_grid_cols"]' ).val( WPViews.layout_wizard.wizard_dialog_bootstrap_grid_cols );
-			jQuery( 'input[name="bootstrap_grid_container"]' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_grid_container );
-			jQuery( '#bootstrap_grid_individual_yes' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_grid_individual_yes );
-			jQuery( '#bootstrap_grid_individual_no' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_bootstrap_grid_individual_no );
-			jQuery( 'input#js-wpv-use-view-loop-ct' ).prop( 'checked', WPViews.layout_wizard.wizard_dialog_use_content_template );
-
-            jQuery.each( jQuery('.js-wpv-dialog-layout-wizard select.js-wpv-select2'),function() {
-                    jQuery(this)
-						.addClass( 'js-wpv-selec2-inited' )
-						.toolset_select2(
-							{ 
-								dropdownParent: jQuery( '.js-wpv-dialog-layout-wizard' )
-							}
-						);
-            });
-			
-			jQuery( '.js-wpv-layout-wizard-layout-fields' )
-				.addClass( 'js-wpv-layout-wizard-layout-fields-loaded' )
-				.sortable({
-					handle: ".js-layout-wizard-move-field",
-					axis: 'y',
-					containment: ".js-wpv-layout-wizard-layout-fields-containment",
-					items: "> div.js-wpv-loop-wizard-item-container",
-					helper: 'clone',
-					tolerance: "pointer"
-				});
-
-        }
-    });
-}
-
 
 var Base64 = {
 

@@ -14,12 +14,6 @@ class Toolset_User_Editors_Editor_Basic
 	protected $id = 'basic';
 	protected $name = 'HTML';
 
-	const DIVI_SCREEN_ID = 'divi';
-	const AVADA_SCREEN_ID = 'avada';
-	const VC_SCREEN_ID = 'vc';
-	const NATIVE_SCREEN_ID = 'native';
-	const BEAVER_SCREEN_ID = 'beaver';
-
 	public function initialize() {
 		add_filter( 'wpv_filter_wpv_shortcodes_transform_format', array( $this, 'secure_shortcode_from_sanitization' ), 10, 2 );
 	}
@@ -53,11 +47,11 @@ class Toolset_User_Editors_Editor_Basic
 					'_toolset_user_editors_editor_choice', true
 				),
 				array(
-					self::DIVI_SCREEN_ID,
-					self::AVADA_SCREEN_ID,
-					self::VC_SCREEN_ID,
-					self::NATIVE_SCREEN_ID,
-					self::BEAVER_SCREEN_ID,
+					Toolset_User_Editors_Editor_Screen_Divi_Backend::DIVI_SCREEN_ID,
+					Toolset_User_Editors_Editor_Screen_Avada_Backend::AVADA_SCREEN_ID,
+					Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend::VC_SCREEN_ID,
+					Toolset_User_Editors_Editor_Screen_Native_Backend::NATIVE_SCREEN_ID,
+					Toolset_User_Editors_Editor_Screen_Beaver_Backend::BEAVER_SCREEN_ID,
 				)
 			)
 		) {

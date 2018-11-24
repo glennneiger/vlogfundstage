@@ -74,11 +74,6 @@ var wptCredfile = (function ($) {
                     thiz_hidden_input = $('.js-wpv-credfile-hidden', credfile_container),
                     thiz_preview = $('.js-wpt-credfile-preview', credfile_container),
                     thiz_existing_value = thiz_hidden_input.val();
-//            if (thiz.val() != '') {
-//                thiz_delete_button.show();
-//            } else {
-//                thiz_delete_button.hide();
-//            }
             if (thiz_existing_value != '' && thiz_existing_value != thiz.val()) {
                 //thiz_undo_button.show();
             } else {
@@ -94,3 +89,11 @@ var wptCredfile = (function ($) {
 jQuery(document).ready(function () {
     wptCredfile.init('body');
 });
+
+if (typeof jQuery.validator !== 'undefined') {
+    //Added mock "mime_type" validator method because it is presents in wpt-data-validate
+    //credfile fields tag but used only in file_upload.js by jquery-upload
+    jQuery.validator.addMethod("mime_type", function (value, element, param) {
+        return true;
+    });
+}

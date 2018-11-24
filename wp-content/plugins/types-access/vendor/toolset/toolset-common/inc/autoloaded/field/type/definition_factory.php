@@ -31,7 +31,8 @@ class Toolset_Field_Type_Definition_Factory {
 	const URL = 'url';
 	const VIDEO = 'video';
 	const WYSIWYG = 'wysiwyg';
-	
+	const POST = 'post';
+
 	private static $instance = null;
 
 	private function __construct() { }
@@ -139,7 +140,7 @@ class Toolset_Field_Type_Definition_Factory {
 
 	/**
 	 * Create the proper instance of a type definition class, based on the type slug.
-	 * 
+	 *
 	 * @param string $field_type_slug
 	 * @param array $field_type_configuration Legacy configuration array
 	 *
@@ -213,7 +214,7 @@ class Toolset_Field_Type_Definition_Factory {
 
 	/**
 	 * Get a map of all field definition slugs to their properties.
-	 * 
+	 *
 	 * @return string[]
 	 * @since 2.0
 	 */

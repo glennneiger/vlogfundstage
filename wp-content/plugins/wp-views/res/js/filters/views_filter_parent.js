@@ -19,13 +19,13 @@ WPViews.ParentFilterGUI = function( $ ) {
 	
 	self.spinner				= '<span class="wpv-spinner ajax-loader"></span>&nbsp;&nbsp;';
 	
-	self.warning_post_missing	= '<p class="js-wpv-filter-post-parent-missing js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_parent_strings.post.post_type_missing + '</p>';
-	self.warning_post_flat		= '<p class="js-wpv-filter-post-parent-flat js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_parent_strings.post.post_type_flat + '</p>';
-	self.warning_post_media		= '<p class="js-wpv-filter-post-parent-media js-wpv-permanent-alert-error toolset-alert toolset-alert-info"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_parent_strings.post.post_type_media + '</p>';
-	self.warning_tax_missing	= '<p class="js-wpv-filter-tax-parent-missing js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_parent_strings.taxonomy.taxonomy_missing + '</p>';
-	self.warning_tax_flat		= '<p class="js-wpv-filter-tax-parent-flat js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_parent_strings.taxonomy.taxonomy_flat + '</p>';
-	self.warning_tax_changed	= '<p class="js-wpv-filter-tax-parent-changed js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_parent_strings.taxonomy.taxonomy_changed + '</p>';
-	self.disabled_for_loop		= '<p class="js-wpv-archive-filter-post-parent-disabled js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_parent_strings.archive.disable_post_parent_filter + '</p>';
+	self.warning_post_missing	= '<p class="js-wpv-filter-post-parent-missing js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_parent_strings.post.post_type_missing + '</p>';
+	self.warning_post_flat		= '<p class="js-wpv-filter-post-parent-flat js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_parent_strings.post.post_type_flat + '</p>';
+	self.warning_post_media		= '<p class="js-wpv-filter-post-parent-media js-wpv-permanent-alert-error toolset-alert toolset-alert-info"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_parent_strings.post.post_type_media + '</p>';
+	self.warning_tax_missing	= '<p class="js-wpv-filter-tax-parent-missing js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_parent_strings.taxonomy.taxonomy_missing + '</p>';
+	self.warning_tax_flat		= '<p class="js-wpv-filter-tax-parent-flat js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_parent_strings.taxonomy.taxonomy_flat + '</p>';
+	self.warning_tax_changed	= '<p class="js-wpv-filter-tax-parent-changed js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_parent_strings.taxonomy.taxonomy_changed + '</p>';
+	self.disabled_for_loop		= '<p class="js-wpv-archive-filter-post-parent-disabled js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_parent_strings.archive.disable_post_parent_filter + '</p>';
 	
 	self.post_row							= '.js-wpv-filter-row-post-parent';
 	self.post_options_container_selector	= '.js-wpv-filter-post-parent-options';

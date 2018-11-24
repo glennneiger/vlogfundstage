@@ -7,7 +7,7 @@ $settings = $settings_model->getSettings();
 		<label class='cred-label'>
 			<input type="checkbox" autocomplete="off" class='cred-checkbox-invalid js-cred-wizard-setting' name="cred_wizard" value="1" <?php if (isset($settings['wizard']) && $settings['wizard']) echo "checked='checked'"; ?> />
 			<span class='cred-checkbox-replace'></span>
-			<span><?php _e('Create new forms using the CRED Wizard', 'wp-cred'); ?></span>
+			<span><?php _e('Create new forms using the Forms Wizard', 'wp-cred'); ?></span>
 		</label>
 	</p>
 </div>

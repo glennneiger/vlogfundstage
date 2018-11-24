@@ -68,6 +68,10 @@ class WPV_Shortcode_Post_Id implements WPV_Shortcode_Interface {
 		
 		$item = get_post( $item_id );
 
+		if ( null === $item ) {
+			return $out;
+		}
+
 		// Adjust for WPML support
 		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
 		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID

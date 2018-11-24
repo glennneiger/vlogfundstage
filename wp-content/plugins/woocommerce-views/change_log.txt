@@ -1,3 +1,9 @@
+Version 2.7.7
+-------------------------------------------------------------------------------------------------------------------
+	- Added the WooCommerce compatibility plugin header tag, up to 3.2.x.
+	- Added compatibility with the changes in Views 2.6 regarding shortcodes.
+	- Updated documentation links to point to toolset.com.
+
 Version 2.7.6
 -------------------------------------------------------------------------------------------------------------------
 	- Added new shortcodes for bringing compatibility with the Storefront Product Sharing and Storefront Product Pagination addons.
@@ -8,6 +14,7 @@ Version 2.7.6
 		- Fixed a compatibility issue with the Pro theme.
 	- Fixed a compatibility issue with the X theme related to rendering its header and footer.
 	- Fixed an issue when the wpv-woo-product-image was used more than once in the same page.
+	- Fixed an issue when a wpv-post-body shortcode was used inside a product content editor.
 
 Version 2.7.5
 -------------------------------------------------------------------------------------------------------------------

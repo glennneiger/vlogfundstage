@@ -46,7 +46,9 @@ class Toolset_Association_Query_Result_Transformation_Element_Id
 	 * @since 2.5.10
 	 */
 	public function request_element_selection( IToolset_Association_Query_Element_Selector $element_selector ) {
-		// We need only one element here.
+		// We need only one element here. Also, we explicitly *don't* want to include association ID
+		// so that we can filter out duplicate IDs by the DISTINCT query.
 		$element_selector->request_element_in_results( $this->role );
+		$element_selector->request_distinct_query();
 	}
 }

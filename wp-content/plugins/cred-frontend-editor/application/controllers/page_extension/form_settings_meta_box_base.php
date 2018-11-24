@@ -1,10 +1,9 @@
 <?php
 
 /**
- * Abstract Class related to Page Extension Form Settings Meta Box
- * in order to share features between Post and User Settings Forms
+ * Abstract Class Responsible to create Form Settings Meta Box
  *
- * @since 1.9.4
+ * @since 1.9.3
  */
 abstract class CRED_Page_Extension_Form_Settings_Meta_Box_Base implements CRED_Page_Extension_Form_Settings_Meta_Box_Interface {
 
@@ -13,13 +12,11 @@ abstract class CRED_Page_Extension_Form_Settings_Meta_Box_Base implements CRED_P
 	 */
 	public function enqueue_scripts( $settings ) {
 		//enqueue template script
-		wp_enqueue_script( CRED_Asset_Manager::CRED_FORM_SETTINGS_BOX );
-		wp_localize_script( CRED_Asset_Manager::CRED_FORM_SETTINGS_BOX, CRED_Asset_Manager::CRED_FORM_SETTINGS_BOX, $settings );
+		wp_enqueue_script( 'cred_form_settings_box' );
+		wp_localize_script( 'cred_form_settings_box', 'cred_form_settings_box', $settings );
 	}
 
 	/**
-     * Gets list of pages for redirection "go to a page" feature in Post/User settings options
-     *
 	 * @param $settings
 	 *
 	 * @return string
@@ -45,14 +42,12 @@ abstract class CRED_Page_Extension_Form_Settings_Meta_Box_Base implements CRED_P
 	}
 
 	/**
-     * Gets common redirection "go to specific post" feature html settings options
-     *
-	 * @param array $settings
-	 * @param string $default_empty_action_post_type_label
-	 * @param string $default_empty_action_post_label
-	 * @param string $current_action_post
-	 * @param string $form_current_custom_post
-	 * @param string $form_post_types
+	 * @param $settings
+	 * @param $default_empty_action_post_type_label
+	 * @param $default_empty_action_post_label
+	 * @param $current_action_post
+	 * @param $form_current_custom_post
+	 * @param $form_post_types
 	 */
 	public function get_form_go_to_specific_post_settings( &$settings, $default_empty_action_post_type_label, $default_empty_action_post_label, &$current_action_post, &$form_current_custom_post, &$form_post_types ) {
 		$current_action_post = null;

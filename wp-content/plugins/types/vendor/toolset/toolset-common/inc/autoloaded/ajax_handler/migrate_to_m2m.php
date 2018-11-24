@@ -18,9 +18,9 @@ class Toolset_Ajax_Handler_Migrate_To_M2M extends Toolset_Ajax_Handler_Abstract 
 
 	// Fixed step numbers in the first phase.
 	// These need to be consecutive numbers.
-	const STEP_MAYBE_DROP_TABLES = 0;
-
-	const STEP_CREATE_TABLES = 1;
+	const STEP_MAINTENANCE_ON = 0;
+	const STEP_MAYBE_DROP_TABLES = 1;
+	const STEP_CREATE_TABLES = 2;
 
 
 	/** @var Toolset_Relationship_Controller */
@@ -105,18 +105,39 @@ class Toolset_Ajax_Handler_Migrate_To_M2M extends Toolset_Ajax_Handler_Abstract 
 		// Used for calculating offsets in the last two phases.
 		$steps_before_association_migration = (int) toolset_getarr( $_POST, 'first_phase_step', 0 );
 
+		$has_maintenance_mode = (bool) toolset_getarr( $options, 'use_maintenance_mode', false );
+
+		$is_fatal_error = false;
+		$keep_maintenance_mode = false;
+
 		switch ( $current_phase ) {
 
 			case self::PHASE_DBDELTA: {
-				$continue = $this->phase_dbdelta( $step_number , $migration_controller, $results, $next_phase );
+				// Putting this here because adding another phase would require more changes to the
+				// migration dialog.
+				if( $step_number === self::STEP_MAINTENANCE_ON ) {
+					if( $has_maintenance_mode ) {
+						$results->add( $this->enable_maintenance_mode() );
+						$continue = $results->is_complete_success();
+					} else {
+						$results->add( true, __( 'Not using maintenance mode for the migration.', 'wpcf' ) );
+						$continue = true;
+					}
+					$keep_maintenance_mode = true;
+					$is_fatal_error = ! $continue;
+				} else {
+					$continue = $this->phase_dbdelta( $step_number, $migration_controller, $results, $next_phase );
+				}
 				break;
 			}
 
 			case self::PHASE_DEFINITION_MIGRATION: {
 				// Second step - (re)create relationship definitions.
 
-				$definition_migration_result = $migration_controller->migrate_relationship_definitions();
+				$adjust_translation_mode = (bool) toolset_getarr( $options, 'adjust_translation_mode' );
+				$definition_migration_result = $migration_controller->migrate_relationship_definitions( $adjust_translation_mode );
 				if ( $definition_migration_result->is_complete_success() ) {
+					$results->add( $definition_migration_result );
 					$results->add( true, __( 'Relationship definitions migrated.', 'wpcf' ) );
 				} else {
 					$results->add( $definition_migration_result );
@@ -180,12 +201,32 @@ class Toolset_Ajax_Handler_Migrate_To_M2M extends Toolset_Ajax_Handler_Abstract 
 
 		}
 
+		// Never leave the maintenance mode behind unless specifically instructed to do so
+		// (when there is an error because the maintenance mode is already active).
+		if( $has_maintenance_mode && ! $continue && ! $keep_maintenance_mode ) {
+			$results->add( $this->disable_maintenance_mode() );
+		}
+
+		$result_status = 'success';
+		if( ! $results->is_complete_success() ) {
+			// Something went wrong but we can still continue.
+			$result_status = 'warning';
+		}
+		if( $is_fatal_error ) {
+			// Something went wrong and the process cannot continue anymore,
+			$result_status = 'error';
+		}
+
 		$this->ajax_finish(
 			array(
 				'message' => $results->concat_messages( "\n> " ),
 				'continue' => $continue,
 				'previous_phase' => $current_phase,
+				'status' => $result_status,
+
+				// keeping this for backward compatibility - replaced by "status":
 				'is_complete_success' => $results->is_complete_success(),
+
 				'ajax_arguments' => array(
 					'step' => $step_number + 1,
 					'phase' => $next_phase,
@@ -194,7 +235,7 @@ class Toolset_Ajax_Handler_Migrate_To_M2M extends Toolset_Ajax_Handler_Abstract 
 					'options' => $options
 				)
 			),
-			true // the call is a success, it doesn't say anything about the actual operation
+			true
 		);
 	}
 
@@ -229,7 +270,7 @@ class Toolset_Ajax_Handler_Migrate_To_M2M extends Toolset_Ajax_Handler_Abstract 
 
 				$migration_controller->do_native_dbdelta();
 
-				$results->add( true, __( 'The toolset_associations table created.', 'wpcf' ) );
+				$results->add( true, __( 'The toolset_associations, toolset_relationships and toolset_post_type_sets tables have been created.', 'wpcf' ) );
 
 				$next_phase = self::PHASE_DEFINITION_MIGRATION;
 
@@ -239,6 +280,22 @@ class Toolset_Ajax_Handler_Migrate_To_M2M extends Toolset_Ajax_Handler_Abstract 
 		}
 
 		return false;
+	}
+
+
+	private function get_maintenance_mode_controller() {
+		$maintenance = new \OTGS\Toolset\Common\MaintenanceMode\Controller();
+		return $maintenance;
+	}
+
+
+	private function enable_maintenance_mode() {
+		return $this->get_maintenance_mode_controller()->enable( true, true, true );
+	}
+
+
+	private function disable_maintenance_mode() {
+		return $this->get_maintenance_mode_controller()->disable();
 	}
 
 }

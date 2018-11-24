@@ -95,7 +95,7 @@ class CRED_Select2_Utils {
 	}
 
 	/**
-	 * Tries to register a parent select field as select2
+	 * Tries to register a m2m relationship parent select field as select2
 	 * checking if is on frontend and the number of elements is valid
 	 *
 	 * @param string $html_form_id
@@ -106,7 +106,7 @@ class CRED_Select2_Utils {
 	 *
 	 * @return array
 	 */
-	public function try_register_parent_as_select2( $html_form_id, $field_name, $field, $max_results, $use_select2 ) {
+	public function try_register_relationship_parent_as_select2( $html_form_id, $field_name, $field, $max_results, $use_select2 ) {
 		$cred_select2_manager = CRED_Frontend_Select2_Manager::get_instance();
 
 		$is_real_admin = ( is_admin() && ! cred_is_ajax_call() );
@@ -126,6 +126,46 @@ class CRED_Select2_Utils {
 			//I need all potentials parents when i am in admin for translation elaborations
 			$potential_parents = $this->cred_field_utils->get_potential_parents( $field['data']['post_type'], $field['slug'], $field['wpml_context'] );
 		} else {
+			$select2_args = array( 'action' => $cred_select2_manager::SELECT2_RELATIONSHIP_PARENTS, 'parameter' => $field['data']['post_type'], 'field_settings' => $field );
+			$cred_select2_manager->register_field_to_select2_list( $html_form_id, $field_name, $select2_args );
+		}
+
+		return $potential_parents;
+	}
+
+	/**
+	 * Tries to register a parent select field as select2
+	 * checking if is on frontend and the number of elements is valid
+	 *
+	 * @param string $html_form_id
+	 * @param string $field_name
+	 * @param array $field
+	 * @param string $max_results
+	 * @param string|null $use_select2
+	 * @param array $forced_args
+	 *
+	 * @return array
+	 */
+	public function try_register_parent_as_select2( $html_form_id, $field_name, $field, $max_results, $use_select2, $forced_args = array() ) {
+		$cred_select2_manager = CRED_Frontend_Select2_Manager::get_instance();
+
+		$is_real_admin = ( is_admin() && ! cred_is_ajax_call() );
+
+		$potential_parents = array();
+		if ( ! $cred_select2_manager->is_valid_field_type_for_select2( $field['type'] ) ) {
+			return $potential_parents;
+		}
+
+		//If is_admin i need to get potential parents for WPML translations
+		if ( $is_real_admin
+			|| (
+				isset( $use_select2 )
+				&& $use_select2 == $cred_select2_manager::SELECT2_SHORTCODE_NEVER
+			)
+		) {
+			//I need all potentials parents when i am in admin for translation elaborations
+			$potential_parents = $this->cred_field_utils->get_potential_parents( $field['data']['post_type'], $field['slug'], $field['wpml_context'], -1, '', $forced_args );
+		} else {
 			$parents_count = $this->cred_field_utils->get_count_posts( $field['data']['post_type'] );
 			/**
 			 * cred_parent_minimal_options_count_for_select2_transformation
@@ -137,7 +177,7 @@ class CRED_Select2_Utils {
 			 * @param int $options_count
 			 */
 			$parent_minimal_options_count = (int) apply_filters( 'cred_parent_minimal_options_count_for_select2_transformation', 15 );
-			
+
 			$has_many_options = $parents_count > $parent_minimal_options_count;
 
 			$can_use_select2 = $cred_select2_manager->use_select2( $use_select2, $has_many_options );
@@ -145,7 +185,7 @@ class CRED_Select2_Utils {
 			//if there are not many options is not needed the select2
 			if ( ! $has_many_options ) {
 				//I need all potentials parents when i dont have select2 field
-				$potential_parents = $this->cred_field_utils->get_potential_parents( $field['data']['post_type'], $field['slug'], $field['wpml_context'] );
+				$potential_parents = $this->cred_field_utils->get_potential_parents( $field['data']['post_type'], $field['slug'], $field['wpml_context'], -1, '', $forced_args );
 
 				if ( $can_use_select2 ) {
 					$select2_args = array( 'parameter' => $potential_parents, 'field_settings' => $field );

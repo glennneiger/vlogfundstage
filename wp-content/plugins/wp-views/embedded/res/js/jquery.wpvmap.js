@@ -1,6 +1,6 @@
 /*
  *  Project: Plot Views results on a Google Map 
- *  Author:  OnTheGoSystems  http://wp-types.com/
+ *  Author:  OnTheGoSystems  https://toolset.com
  *  Version: Pre-release V1.0 - Updated 11/12/2013
  */
 /*
@@ -31,7 +31,7 @@
  * ***** More information *****
  * 
  * jQuery plugin template, based on - http://jqueryboilerplate.com/ - thanks guys!
- * Detailed documentation : http://wp-types.com/documentation/user-guides/map-wordpress-posts/
+ * Detailed documentation : https://toolset.com/documentation/user-guides/map-wordpress-posts/
  *
  */
  ;(function ( $, window, document, undefined ) {

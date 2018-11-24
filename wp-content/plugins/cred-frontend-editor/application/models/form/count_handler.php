@@ -60,6 +60,13 @@ class CRED_Form_Count_Handler {
 	}
 
 	/**
+	 * @param $value
+	 */
+	public function set_main_count( $value ) {
+		return $this->main_count = (int) $value;
+	}
+
+	/**
 	 * Increment the global main counter forms
 	 */
 	public function increment() {

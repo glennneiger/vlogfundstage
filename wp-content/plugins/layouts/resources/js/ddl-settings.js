@@ -186,6 +186,8 @@ DDLayout.LayoutsSettingsScreen = function( $ ) {
         self.handle_background_change();
         DDLayout.ParentLayoutsSettings.call(self, $);
         DDLayout.BootstrapColumnWidthSettings.call(self, $);
+        DDLayout.JSGlobalOptions.call( self, $ );
+        DDLayout.CSSGlobalOptions.call( self, $ );
 	};
 	
 	self.init();
@@ -298,6 +300,126 @@ DDLayout.BootstrapColumnWidthSettings = function($){
 
     self.handle_change = function(){
         $default_column.on('change', self.do_ajax);
+    };
+
+    self.init();
+};
+
+DDLayout.JSGlobalOptions = function( $){
+    var self = this,
+        option_name = DDL_Settings_JS.js_settings_option_name,
+        $input_element = $('input[name="' + option_name + '"]'),
+        current_value = DDL_Settings_JS.js_settings_value;
+
+    self.init = function(){
+        self.handle_change();
+    };
+
+
+    self.do_ajax = function(event){
+        var params = {
+            action: option_name,
+            'js_global_nonce' : DDL_Settings_JS.js_settings_nonce,
+            js_global : $('input[name="'+option_name+'"]:checked').val()
+        };
+
+        $( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );
+
+        WPV_Toolset.Utils.do_ajax_post(params, {
+            success:function( response ){
+
+                if( response.Data.error  ){
+
+                    $( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+
+                } else {
+
+                    $( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
+
+                    current_value = response.Data.value;
+                }
+
+            },
+            error:function(response){
+
+
+                $( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+
+            },
+            fail:function(response){
+                console.error( 'Fail', response );
+
+                $( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+            }
+        });
+    };
+
+    self.simplifyValuesToBeSent = function( originalValue ){
+        
+    };
+
+    self.handle_change = function(){
+        $input_element.on('change', self.do_ajax);
+    };
+
+    self.init();
+};
+
+DDLayout.CSSGlobalOptions = function( $){
+    var self = this,
+        option_name = DDL_Settings_JS.css_settings_option_name,
+        $input_element = $('input[name="' + option_name + '"]'),
+        current_value = DDL_Settings_JS.css_settings_value;
+
+    self.init = function(){
+        self.handle_change();
+    };
+
+
+    self.do_ajax = function(event){
+        var params = {
+            action: option_name,
+            'css_global_nonce' : DDL_Settings_JS.css_settings_nonce,
+            css_global : $('input[name="'+option_name+'"]:checked').val()
+        };
+
+        $( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );
+
+        WPV_Toolset.Utils.do_ajax_post(params, {
+            success:function( response ){
+
+                if( response.Data.error  ){
+
+                    $( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+
+                } else {
+
+                    $( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
+
+                    current_value = response.Data.value;
+                }
+
+            },
+            error:function(response){
+
+
+                $( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+
+            },
+            fail:function(response){
+                console.error( 'Fail', response );
+
+                $( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+            }
+        });
+    };
+
+    self.simplifyValuesToBeSent = function( originalValue ){
+
+    };
+
+    self.handle_change = function(){
+        $input_element.on('change', self.do_ajax);
     };
 
     self.init();

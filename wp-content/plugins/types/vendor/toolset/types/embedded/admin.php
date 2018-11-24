@@ -98,12 +98,16 @@ function wpcf_embedded_admin_init_hook() {
  *
  * @param type $post_type
  * @param type $post
+ *
+ * @since 2.2.23 Some plugins calls `add_meta_boxes` incorrectly, to prevent fatal errors it's better to avoid them and not showing Types meta boxes
  */
-function wpcf_admin_add_meta_boxes( $post_type, $post ) {
+function wpcf_admin_add_meta_boxes( $post_type, $post = null ) {
     require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields.php';
     require_once WPCF_EMBEDDED_INC_ABSPATH . '/fields-post.php';
 
-    wpcf_add_meta_boxes( $post_type, $post );
+    if ( $post ) {
+        wpcf_add_meta_boxes( $post_type, $post );
+    }
 }
 
 /**

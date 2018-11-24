@@ -87,6 +87,7 @@ class Toolset_Association_Query_Result_Transformation_Association_Instance
 	 * @param IToolset_Association_Query_Element_Selector $element_selector
 	 *
 	 * @return IToolset_Association
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 */
 	private function transform_with_wpml( $database_row, IToolset_Association_Query_Element_Selector $element_selector ) {
 
@@ -136,6 +137,9 @@ class Toolset_Association_Query_Result_Transformation_Association_Instance
 	 * @since 2.5.10
 	 */
 	public function request_element_selection( IToolset_Association_Query_Element_Selector $element_selector ) {
+		// We totally need the association and relationship ID:
+		$element_selector->request_association_and_relationship_in_results();
+
 		// Request all element IDs so that we can instantiate the association object.
 		foreach( Toolset_Relationship_Role::all() as $role ) {
 			$element_selector->request_element_in_results( $role );

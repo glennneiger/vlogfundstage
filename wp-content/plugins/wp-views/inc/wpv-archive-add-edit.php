@@ -161,9 +161,9 @@ function views_archive_redesign_html() {
 		</div> <!-- .wpv-query-section -->
 		
 		<div class="wpv-filter-section">
-			
+			<?php if( true !== wpv_is_views_lite() ):?>
 			<span class="wpv-section-title"><?php _e('The Filter section lets you set up a custom search, which lets visitors control the WordPress Archive results','wpv-views') ?></span>
-			
+			<?php endif;?>
 			<div class="js-wpv-metasection-message-container js-wpv-metasection-message-container-filter"></div>
 			
 			<?php 

@@ -4,8 +4,11 @@
 
 var WPViews = WPViews || {};
 
-WPViews.DistanceFilterGUI = function ( $ ) {
+WPViews.DistanceFilterFrontend = function ( $ ) {
 	var self = this;
+
+	const API_GOOGLE = 'google';
+	const API_AZURE  = 'azure';
 
     self.distanceValueSelector     = ".js-toolset-maps-distance-value";
     self.distanceUnitSelector      = ".js-toolset-maps-distance-unit";
@@ -45,12 +48,14 @@ WPViews.DistanceFilterGUI = function ( $ ) {
             $( self.distanceCenterLngSelector ).val(self.current_long);
 
 	        if( self.is_using_current_location ) {
-		        $( self.distanceCenterSelector )
-			        .val(self.getCurrentLatLng())
-					.trigger('change');
-	        } else {
-		        $( self.distanceCenterSelector ).blur();
-            }
+		        $( self.distanceCenterSelector ).val( self.getCurrentLatLng() );
+	        }
+
+	        // Trigger change event on other selector to start Ajax when using immediate update,
+	        // Because distanceCenterSelector is set to not react before proper values are filled in.
+	        // (Sending enter key pressed event to distanceCenterSelector doesn't work because geocomplete
+	        // library seems to eat it and Views never get it.)
+	        $( self.distanceValueSelector ).change();
         });
     };
 
@@ -99,7 +104,12 @@ WPViews.DistanceFilterGUI = function ( $ ) {
 	 * Enables extra functionality on custom search form - geocomplete and geolocation
 	 */
 	self.initFormFunctionality = function() {
-	    $( self.distanceCenterSelector ).geocomplete();
+		// Only init geocomplete if it's loaded (and that happens only if using Google API)
+		if ( $.fn.geocomplete ) {
+			$(self.distanceCenterSelector).geocomplete({types: []});
+		} else {
+			WPViews.mapsAddressAutocomplete.initField($(self.distanceCenterSelector));
+		}
 
 	    if ( navigator.geolocation  && self.isSecurePage() ) {
 		    $(self.userLocationSelector).show();
@@ -129,9 +139,7 @@ WPViews.DistanceFilterGUI = function ( $ ) {
             self.current_long = position.coords.longitude;
 
             $( document ).trigger('toolset_maps_views_distance_filter_user_location_acquired');
-        }
-
-        if(position.address_update) {
+        } else if (position.address_update) {
             self.current_lat  = position.location.latitude;
             self.current_long = position.location.longitude;
         }
@@ -198,5 +206,5 @@ WPViews.DistanceFilterGUI = function ( $ ) {
 };
 
 jQuery( document ).ready( function( $ ) {
-    WPViews.distance_filter_gui = new WPViews.DistanceFilterGUI( $ );
+    WPViews.distance_filter_frontend = new WPViews.DistanceFilterFrontend( $ );
 });

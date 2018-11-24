@@ -110,7 +110,9 @@ class Toolset_Association_Query_Element_Selector_Wpml
 		$icl_translations_for_original = $this->table_alias->generate( $icl_translations, true );
 		$icl_translations_for_translation = $this->table_alias->generate( $icl_translations, true );
 
-		$current_language = esc_sql( $this->wpml_service->get_current_language() );
+		// In most cases, this will be the current language, but there are special cases,
+		// like if displaying all languages - the get_translation_language() method may be overridden.
+		$translation_language = esc_sql( $this->get_translation_language() );
 
 		// Generate expressions with element IDs. The translated one will default to the original
 		// if no translation is available. This will be also extremely important for domains different
@@ -135,13 +137,24 @@ class Toolset_Association_Query_Element_Selector_Wpml
 			LEFT JOIN $icl_translations AS $icl_translations_for_translation
 				ON (
 					$icl_translations_for_original.trid = $icl_translations_for_translation.trid
-					AND $icl_translations_for_translation.language_code = '$current_language'
+					AND $icl_translations_for_translation.language_code = '$translation_language'
 				)";
 
 		$this->original_element_id_select_aliases[ $for_role->get_name() ] = $original_element_id_alias;
 		$this->original_element_id_values[ $for_role->get_name() ] = $original_element_id;
 		$this->translated_element_id_select_aliases[ $for_role->get_name() ] = $translated_element_id_alias;
 		$this->translated_element_id_values[ $for_role->get_name() ] = $translated_or_original_element_id;
+	}
+
+
+	/**
+	 * Get the language that will be used for the query results (besides the default language).
+	 *
+	 * @return string
+	 * @since 2.6.8
+	 */
+	protected function get_translation_language() {
+		return $this->wpml_service->get_current_language();
 	}
 
 
@@ -215,7 +228,7 @@ class Toolset_Association_Query_Element_Selector_Wpml
 	public function get_select_clauses() {
 		$this->initialize();
 
-		$requested_select_clauses = array();
+		$requested_select_clauses = $this->maybe_get_association_and_relationship();
 		foreach( $this->requested_roles as $role ) {
 			$requested_select_clauses[] = $this->select_clauses[ $role->get_name() ];
 		}

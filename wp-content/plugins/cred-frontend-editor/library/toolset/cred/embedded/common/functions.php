@@ -316,8 +316,8 @@ function has_cred_form() {
  * @param string $xml
  * @param array $options
  *     'overwrite_forms'=>(0|1)             // Overwrite existing forms
- *     'overwrite_settings'=>(0|1)          // Import and Overwrite CRED Settings
- *     'overwrite_custom_fields'=>(0|1)     // Import and Overwrite CRED Custom Fields
+ *     'overwrite_settings'=>(0|1)          // Import and Overwrite Toolset Forms Settings
+ *     'overwrite_custom_fields'=>(0|1)     // Import and Overwrite Toolset Forms Custom Fields
  *     'force_overwrite_post_name'=>array   // Skip all, overwrite only forms from array
  *     'force_skip_post_name'=>array        // Skip forms from array
  *     'force_duplicate_post_name'=>array   // Skip all, duplicate only from array
@@ -379,6 +379,10 @@ function cred_export_to_xml_string( $forms ) {
  * @return string
  */
 function cred_translate( $name, $string, $context = 'CRED_CRED' ) {
+	if ( ! apply_filters( 'toolset_is_wpml_active_and_configured', false ) ) {
+		return $string;
+	}
+
 	if ( ! function_exists( 'icl_t' ) ) {
 		return $string;
 	}
@@ -410,6 +414,10 @@ function cred_translate( $name, $string, $context = 'CRED_CRED' ) {
  * @param bool $allow_empty_value
  */
 function cred_translate_register_string( $context, $name, $value, $allow_empty_value = false ) {
+	if ( ! apply_filters( 'toolset_is_wpml_active_and_configured', false ) ) {
+		return;
+	}
+	
 	if ( strpos( $context, 'cred-form-' ) !== false ) {
 		$tmp = explode( "-", $context );
 		$form_id = $tmp[ count( $tmp ) - 1 ];
@@ -419,9 +427,13 @@ function cred_translate_register_string( $context, $name, $value, $allow_empty_v
 		}
 	}
 
-	if ( function_exists( 'icl_register_string' ) ) {
-		icl_register_string( $context, $name, stripslashes( $value ), $allow_empty_value );
-	}
+	do_action( 
+		'wpml_register_single_string', 
+		$context, 
+		$name, 
+		stripslashes( $value ),
+		$allow_empty_value
+	);
 }
 
 // stub wpml=string shortcode
@@ -495,7 +507,7 @@ function cred_re_enable_filters_for( $hook, $back ) {
 }
 
 /**
- * Init CRED
+ * Init Toolset Forms
  */
 function cred_start() {
 	CRED_Loader::load( 'CLASS/CRED' );
@@ -514,8 +526,8 @@ function cred_start() {
  * Checks if we have a real ajax call.
  *
  * We have 2 important note:
- * 1. this function must be declared in plugin.php of CRED
- * 2. contains also HTTP_X_REQUESTED_WITH because in CRED we still make external ajax calls
+ * 1. this function must be declared in plugin.php of Toolset Forms
+ * 2. contains also HTTP_X_REQUESTED_WITH because in Toolset Forms we still make external ajax calls
  *
  * @return boolean
  */

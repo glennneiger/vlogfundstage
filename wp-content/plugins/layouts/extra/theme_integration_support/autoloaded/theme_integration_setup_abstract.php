@@ -2,6 +2,7 @@
 
 /**
  * Abstract parent for the singleton that handles the final setup of Layouts and the integrated theme.
+ * This is used by Toolset Starter Theme to integrate transparently with Layouts
  */
 abstract class WPDDL_Theme_Integration_Setup_Abstract {
 
@@ -44,7 +45,7 @@ abstract class WPDDL_Theme_Integration_Setup_Abstract {
         $this->add_layout_row_types();
         $this->add_layouts_cells();
         $this->modify_theme_settings();
-        $this->enqueue_layouts_loader_js();
+	    add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_layouts_loader_js' ) );
         add_action( 'wp_ajax_ddl_load_default_layouts', array(&$this, 'ddl_load_default_layouts') );
         add_filter( 'toolset_filter_force_unset_shortcode_generator_option', array(&$this, 'force_unset_shortcode_generator_option_to_disable' ) );
         return true;
@@ -594,8 +595,14 @@ abstract class WPDDL_Theme_Integration_Setup_Abstract {
         }
     }
 
-    protected function enqueue_layouts_loader_js()
+	/**
+	 * A simple API to load Layouts from theme on demand
+	 */
+    public function enqueue_layouts_loader_js()
     {
+    	// add a button with class .js-ddl-layouts-loader-button using 'ddl-add-gui-buttons-in-listing-page-top' action and press it to load default layouts using this method
+
+    	if( !isset( $_GET['page'] ) || !$_GET['page'] === 'page=dd_layouts' ) return;
 
         $script_handle = 'layouts-theme-integration-layouts_loader';
 

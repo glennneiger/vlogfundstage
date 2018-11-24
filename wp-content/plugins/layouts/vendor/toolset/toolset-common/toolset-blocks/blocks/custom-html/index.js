@@ -17,7 +17,7 @@ const {
 
 const {
 	BlockControls,
-} = wp.blocks;
+} = wp.editor;
 
 const {
 	createElement,
@@ -38,27 +38,20 @@ addFilter(
 				) &&
 				'core/html' === props.name
 			) {
-				const updateContentAttributeAfterShortcodeInsertion = () => {
-					if (
-						'undefined' !== typeof window.currentBlockProps &&
-						null !== window.currentBlockProps
-					) {
-						window.currentBlockProps.setAttributes( { content: document.getElementById( 'toolset-extended-html-' + window.currentBlockProps.id ).value } );
-						window.currentBlockProps = null;
-					}
-				};
-
-				const fieldsAndViewsButton = <BlockControls key="toolset-controls">
+				const fieldsAndViewsButton = 'undefined' !== typeof window.WPViews && <BlockControls key="toolset-controls-views">
 					<div className={ classnames( 'components-toolbar' ) }>
 						<button
 							className={ classnames( 'components-button wpv-block-button' ) }
 							onClick={ ( e ) => {
-								window.currentBlockProps = props;
 								window.wpcfActiveEditor = 'toolset-extended-html-' + props.id;
-								// Add an id to the Custom HTML text area to use it when inserting the Fields and Views shortcode.
-								e.target.closest( '.editor-block-contextual-toolbar' ).nextSibling.querySelector( 'textarea' ).id = window.wpcfActiveEditor;
-								// Open the Fields and Views dialog
-								window.WPViews.shortcodes_gui.open_fields_and_views_dialog();
+
+								const customHtmlTextArea = e.target.closest( '.editor-block-contextual-toolbar' ).nextSibling.querySelector( 'textarea' );
+								if ( customHtmlTextArea ) {
+									// Add an id to the Custom HTML text area to use it when inserting the Fields and Views shortcode.
+									customHtmlTextArea.id = window.wpcfActiveEditor;
+									// Open the Fields and Views dialog
+									window.WPViews.shortcodes_gui.open_fields_and_views_dialog();
+								}
 							} }>
 							<i className={ classnames( 'icon-views-logo', 'fa', 'fa-wpv-custom', 'ont-icon-18', 'ont-color-gray' ) }></i>
 							<span> { __( 'Fields and Views' ) }</span>
@@ -66,9 +59,28 @@ addFilter(
 					</div>
 				</BlockControls>;
 
-				window.Toolset.hooks.addAction( 'wpv-action-wpv-shortcodes-gui-after-do-action', updateContentAttributeAfterShortcodeInsertion );
+				const credFormsButton = 'undefined' !== typeof window.CRED && <BlockControls key="toolset-controls-cred">
+					<div className={ classnames( 'components-toolbar' ) }>
+						<button
+							className={ classnames( 'components-button wpv-block-button' ) }
+							onClick={ ( e ) => {
+								window.wpcfActiveEditor = 'toolset-extended-html-' + props.id;
 
-				element = [ element, fieldsAndViewsButton ];
+								const customHtmlTextArea = e.target.closest( '.editor-block-contextual-toolbar' ).nextSibling.querySelector( 'textarea' );
+								if ( customHtmlTextArea ) {
+									// Add an id to the Custom HTML text area to use it when inserting the CRED forms shortcode.
+									customHtmlTextArea.id = window.wpcfActiveEditor;
+									// Open the CRED Forms dialog
+									window.Toolset.CRED.shortcodeGUI.openCredDialog();
+								}
+							} }>
+							<i className={ classnames( 'icon-cred-logo', 'fa', 'fa-wpv-custom', 'ont-icon-18', 'ont-color-gray' ) }></i>
+							<span> { __( 'Toolset Forms' ) }</span>
+						</button>
+					</div>
+				</BlockControls>;
+
+				element = [ element, fieldsAndViewsButton, credFormsButton ];
 			}
 			return element;
 		};

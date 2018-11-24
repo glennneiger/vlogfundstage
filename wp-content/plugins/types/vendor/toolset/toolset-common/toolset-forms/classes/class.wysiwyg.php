@@ -82,6 +82,14 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
         if ( true === toolset_getarr( $attributes, 'types-related-content' ) ) {
           $id .= '_' . rand( 10000, 99999 );
         }
+		
+		$editor_classnames = array( 'wpt-wysiwyg' );
+		
+		if ( function_exists( 'wp_enqueue_editor' ) ) {
+			// In WP 4.8 and above, enqueue the needed assets for dynamically initialize the editor
+			wp_enqueue_editor();
+		}
+		
         wp_editor( $this->getValue(), $id, array(
             'wpautop' => true, // use wpautop?
             'media_buttons' => $media_buttons, // show insert/upload button(s)
@@ -89,7 +97,7 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
             'textarea_rows' => get_option( 'default_post_edit_rows', 10 ), // rows="..."
             'tabindex' => '',
             'editor_css' => '', // intended for extra styles for both visual and HTML editors buttons, needs to include the <style> tags, can use "scoped".
-            'editor_class' => 'wpt-wysiwyg', // add extra class(es) to the editor textarea
+            'editor_class' => implode( ' ', $editor_classnames ), // add extra class(es) to the editor textarea
             'teeny' => false, // output the minimal editor config used in Press This
             'dfw' => false, // replace the default fullscreen with DFW (needs specific DOM elements and css)
             'tinymce' => true, // load TinyMCE, can be used to pass settings directly to TinyMCE using an array()

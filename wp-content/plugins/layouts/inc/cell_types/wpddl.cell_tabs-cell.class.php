@@ -296,9 +296,7 @@ class WPDD_layouts_layout_tabs{
         add_filter( 'ddl-cell_render_output_after_content', array(&$this, 'render_close'), 99, 2 );
         add_filter( 'ddl_render_row_start', array(&$this, 'start_render'), 99, 4 );
         add_filter( 'ddl_render_row_end', array(&$this, 'end_render'), 99, 4 );
-
 	    add_filter('toolset_add_registered_script', array( $this, 'register_tabs_scripts' ) );
-	    add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_tabs_scripts') );
     }
 
     public function register_tabs_scripts(){
@@ -307,9 +305,6 @@ class WPDD_layouts_layout_tabs{
 	    return $script;
     }
 
-    public function enqueue_tabs_scripts(){
-	    do_action( 'toolset_enqueue_scripts', array( 'ddl-tabs-scripts' ) );
-    }
 
     public function dd_layouts_register_layout_tabs_cell_factory($factories){
         $factories['tabs-cell'] = new WPDD_layout_tabs_cell_factory;
@@ -336,10 +331,12 @@ class WPDD_layouts_layout_tabs{
     }
 
     public function render_navigation( $output, $cell, $target ){
-
+            // make it dirty but only when tabs are rendered and NOT otherwise
+            // our wrapper takes care of checking this happens only once
+	        do_action( 'toolset_enqueue_scripts', array( 'ddl-tabs-scripts' ) );
             if( $cell && in_array( $cell->get_cell_type(), self::$supported ) ){
                 $output .= $cell->render_navigation( $target );
-                $output .= '<div class="tab-content">';
+                $output .= '<div class="tab-content ddl-tab-content">';
             }
 
         return $output;

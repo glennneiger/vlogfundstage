@@ -26,10 +26,23 @@ class CRED_Field_Command_Custom_Fields extends CRED_Field_Command_Base {
 		}
 		$field[ 'form_html_id' ] = $this->translate_field_factory->get_html_form_field_id( $field );
 
+		$preset_value = $this->value;
+
+		// Non-toolset fields: enforce the default value set on the field definition
+		// if the shortcode does not include a different value.
+		// Esclude checkbox fields or they will get checked by default, because the preset value
+		// will match the actual input value.
+		if (
+			'' === $preset_value
+			&& toolset_getarr( $field, 'cred_custom', false )
+			&& 'checkbox' != toolset_getarr( $field, 'type' )
+		) {
+			$preset_value = toolset_getarr( $field, 'default' );
+		}
 		$additional_attributes = array(
 			'class' => $this->filtered_attributes[ 'class' ],
 			'output' => $this->filtered_attributes[ 'output' ],
-			'preset_value' => $this->value,
+			'preset_value' => $preset_value,
 			'urlparam' => $this->filtered_attributes[ 'urlparam' ],
 		);
 

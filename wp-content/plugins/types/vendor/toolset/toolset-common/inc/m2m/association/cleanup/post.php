@@ -44,7 +44,7 @@ class Toolset_Association_Cleanup_Post extends Toolset_Wpdb_User {
 	const DELETE_POSTS_PER_BATCH = 25;
 
 
-	const IS_DELETING_FILTER = 'toolset_is_deleting_intermediary_post';
+	const IS_DELETING_FILTER = 'toolset_is_deleting_intermediary_post_purposefully';
 
 
 	/** @var Toolset_Element_Factory */
@@ -114,6 +114,12 @@ class Toolset_Association_Cleanup_Post extends Toolset_Wpdb_User {
 	 * @param int $post_id
 	 */
 	public function cleanup( $post_id ) {
+		/**
+		 * Filter that can be used to indicate that an intermediary post is deleted
+		 * purposefully, and that the association shouldn't be removed.
+		 *
+		 * @since 2.6.8
+		 */
 		$is_deleting_association = apply_filters( self::IS_DELETING_FILTER, false );
 
 		if( $is_deleting_association ) {
@@ -121,6 +127,9 @@ class Toolset_Association_Cleanup_Post extends Toolset_Wpdb_User {
 			// If we got here, it means that the association's intermediary post is about to
 			// be deleted and everything else is already handled either
 			// in Toolset_Association_Cleanup_Association, or within this class.
+			//
+			// Or there is a different situation where an intermediary post is being deleted
+			// but we want to preserve the association.
 			return;
 		}
 

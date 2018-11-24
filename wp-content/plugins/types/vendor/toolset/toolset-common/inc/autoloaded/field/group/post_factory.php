@@ -93,6 +93,7 @@ class Toolset_Field_Group_Post_Factory extends Toolset_Field_Group_Factory {
 				)
 			);
 
+			/** @var string[] $post_types */
 			$post_types = $post_type_query->get_results();
 
 			$this->post_type_assignment_cache = array();

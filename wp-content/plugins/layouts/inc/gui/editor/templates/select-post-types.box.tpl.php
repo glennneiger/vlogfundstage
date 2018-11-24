@@ -10,7 +10,7 @@
             <?php _e('What content will this layout be for?', 'ddl-layouts'); ?>
         </p> -->
 
-        <h2 class="js-change-layout-use-section-title change-layout-use-section-title-outer">
+        <h2 class="js-change-layout-use-section-title change-layout-use-section-title-outer" data-group="3">
 	        <span  class="change-layout-use-section-title js-collapse-group-individual" id="js-multiple-pages-section">
 		        <?php _e('Template for multiple pages:', 'ddl-layouts'); ?>
 	        </span>

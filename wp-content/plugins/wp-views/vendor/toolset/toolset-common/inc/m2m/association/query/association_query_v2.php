@@ -128,6 +128,9 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	private $cache_object;
 
 
+	private $result_transformation_factory;
+
+
 	/**
 	 * Toolset_Association_Query_V2 constructor.
 	 *
@@ -141,6 +144,8 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @param Toolset_Association_Query_Orderby_Factory|null $orderby_factory_di
 	 * @param Toolset_Association_Query_Element_Selector_Provider|null $element_selector_provider_di
 	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
+	 * @param Toolset_Association_Query_Cache|null $cache_object_di
+	 * @param Toolset_Association_Query_Result_Transformation_Factory|null $result_transformation_factory_di
 	 */
 	public function __construct(
 		wpdb $wpdb_di = null,
@@ -153,7 +158,8 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 		Toolset_Association_Query_Orderby_Factory $orderby_factory_di = null,
 		Toolset_Association_Query_Element_Selector_Provider $element_selector_provider_di = null,
 		Toolset_WPML_Compatibility $wpml_service_di = null,
-		Toolset_Association_Query_Cache $cache_object_di = null
+		Toolset_Association_Query_Cache $cache_object_di = null,
+		Toolset_Association_Query_Result_Transformation_Factory $result_transformation_factory_di = null
 	) {
 		parent::__construct( $wpdb_di );
 		$this->unique_table_alias = $unique_table_alias_di ?: new Toolset_Relationship_Database_Unique_Table_Alias();
@@ -166,6 +172,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 		$this->_definition_repository = $definition_repository_di;
 		$this->wpml_service = $wpml_service_di ?: Toolset_WPML_Compatibility::get_instance();
 		$this->cache_object = $cache_object_di ?: Toolset_Association_Query_Cache::get_instance();
+		$this->result_transformation_factory = $result_transformation_factory_di ?: new Toolset_Association_Query_Result_Transformation_Factory();
 	}
 
 
@@ -310,6 +317,11 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 
 			if( $cached_result_exists ) {
 				$this->clear_restrictions();
+
+				if( $this->need_found_rows ) {
+					$this->found_rows = (int) count( $cached_result );
+				}
+
 				return $cached_result;
 			}
 		}
@@ -787,7 +799,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 *
 	 * @param String $origin Origin.
 	 *
-	 * @return IToolset_Relationship_Query_Condition
+	 * @return IToolset_Association_Query_Condition
 	 */
 	public function has_origin( $origin ) {
 		return $this->condition_factory->has_origin( $origin, $this->join_manager );
@@ -880,7 +892,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_association_instances() {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Association_Instance();
+		$this->result_transformation = $this->result_transformation_factory->association_instance();
 		return $this;
 	}
 
@@ -891,7 +903,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_association_uids() {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Association_Uid();
+		$this->result_transformation = $this->result_transformation_factory->association_uids();
 		return $this;
 	}
 
@@ -903,7 +915,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_element_ids( IToolset_Relationship_Role $role ) {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Element_Id( $role );
+		$this->result_transformation = $this->result_transformation_factory->element_ids( $role );
 		return $this;
 	}
 
@@ -915,8 +927,23 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 	 * @return $this
 	 */
 	public function return_element_instances( IToolset_Relationship_Role $role ) {
-		$this->result_transformation = new Toolset_Association_Query_Result_Transformation_Element_Instance( $role );
+		$this->result_transformation = $this->result_transformation_factory->element_instances( $role );
 		return $this;
+	}
+
+
+	/**
+	 * Indicate that get_results() should return arrays with elements indexed by their role names.
+	 *
+	 * This needs further configuration, see Toolset_Association_Query_Result_Transformation_Element_Per_Role for
+	 * further details.
+	 *
+	 * @return Toolset_Association_Query_Result_Transformation_Element_Per_Role
+	 * @since 3.0.9
+	 */
+	public function return_per_role() {
+		$this->result_transformation = $this->result_transformation_factory->element_per_role( $this );
+		return $this->result_transformation;
 	}
 
 

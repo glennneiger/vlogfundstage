@@ -53,12 +53,12 @@
         <table class="form-table icl-account-setup">
             <tbody>
                 <tr class="form-field">
-                    <th scope="row"><?php _e('wp-types.com subscription email', 'wpv-views'); ?></th>
+                    <th scope="row"><?php _e('toolset.com subscription email', 'wpv-views'); ?></th>
                     <td><input name="sub[subscription_email]" type="text" value="<?php echo isset($_POST['sub']['subscription_email']) ? $_POST['sub']['subscription_email'] : 
                         isset($WPV_settings->subscription_email) ? $WPV_settings->subscription_email : ''; ?>" /></td>
                 </tr>
                 <tr class="form-field">
-                    <th scope="row"><?php _e('wp-types.com subscription key', 'wpv-views'); ?></th>
+                    <th scope="row"><?php _e('toolset.com subscription key', 'wpv-views'); ?></th>
                     <td><input name="sub[subscription_key]" type="password" value="<?php echo isset($_POST['sub']['subscription_key']) ? $_POST['sub']['subscription_key'] :
                         isset($WPV_settings->subscription_key) ? $WPV_settings->subscription_key : ''; ?>" /></td>
                 </tr>

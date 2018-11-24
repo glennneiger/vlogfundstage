@@ -210,7 +210,7 @@ DDLayout.EditTabsCell = function () {
 
     self.justified_callback = function(event){
 
-        if( jQuery(this).is(':checked') === false || self.navigation_style == 'tabs' ){
+        if( jQuery(this).is(':checked') === false ){
             return;
         }
 
@@ -219,7 +219,9 @@ DDLayout.EditTabsCell = function () {
             $stacked_wrap.hide();
         } else {
             self.justified = false;
-            $stacked_wrap.show();
+            if( self.navigation_style !== 'tabs' ){
+                $stacked_wrap.show();
+            }
         }
     };
 

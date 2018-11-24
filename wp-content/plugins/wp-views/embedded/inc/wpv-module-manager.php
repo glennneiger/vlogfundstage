@@ -545,6 +545,7 @@ function wpv_admin_export_selected_data( $items, $type = 'view', $mode = 'xml' )
 										if ( isset( $value['taxonomy_include_non_empty_decendants'] ) ) $hash_data['meta'][$meta_key]['taxonomy_include_non_empty_decendants'] = strval( $value['taxonomy_include_non_empty_decendants'] );
 										if ( isset( $value['taxonomy_pad_counts'] ) ) $hash_data['meta'][$meta_key]['taxonomy_pad_counts'] = strval( $value['taxonomy_pad_counts'] );
 										if ( isset( $value['post_type_dont_include_current_page'] ) ) $hash_data['meta'][$meta_key]['post_type_dont_include_current_page'] = strval( $value['post_type_dont_include_current_page'] );
+										if ( isset( $value['disable_view_wrapper'] ) ) $hash_data['meta'][$meta_key]['disable_view_wrapper'] = strval( $value['disable_view_wrapper'] );
 										if ( isset( $value['pagination']['preload_images'] ) ) $hash_data['meta'][$meta_key]['pagination']['preload_images'] = strval( $value['pagination']['preload_images'] );
 										if ( isset( $value['pagination']['cache_pages'] ) ) $hash_data['meta'][$meta_key]['pagination']['cache_pages'] = strval( $value['pagination']['cache_pages'] );
 										if ( isset( $value['pagination']['preload_pages'] ) ) $hash_data['meta'][$meta_key]['pagination']['preload_pages'] = strval( $value['pagination']['preload_pages'] );

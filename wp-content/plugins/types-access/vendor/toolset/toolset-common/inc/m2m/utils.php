@@ -28,4 +28,30 @@ class Toolset_Relationship_Utils {
 		return null;
 	}
 
+	/**
+	 * This method returns all relationships, which includes at least one translated post type
+	 *
+	 * @param Toolset_Relationship_Definition_Repository|null $relationship_definition_repository
+	 *
+	 * @return IToolset_Relationship_Definition[]
+	 */
+	public static function get_all_translated_relationships( Toolset_Relationship_Definition_Repository $relationship_definition_repository = null ) {
+		$relationships = $relationship_definition_repository
+			? $relationship_definition_repository->get_definitions()
+			: Toolset_Relationship_Definition_Repository::get_instance()->get_definitions();
+
+		// collect all relationships which include at least one translatable element
+		$relationships_with_translatable_type = array();
+
+		foreach( $relationships as $relationship ) {
+			if( $relationship->get_parent_type()->is_translatable()
+				|| $relationship->get_child_type()->is_translatable() ) {
+				// parent and/or child type is translatable
+				$relationships_with_translatable_type[] = $relationship;
+			}
+		}
+
+		// return collections
+		return $relationships_with_translatable_type;
+	}
 }

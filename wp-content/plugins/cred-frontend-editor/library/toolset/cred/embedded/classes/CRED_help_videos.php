@@ -10,10 +10,10 @@ class CRED_HelpVideos extends Toolset_HelpVideosFactoryAbstract{
         return  array(
             'layout_template' =>  array(
                 'name' => 'cred_form',
-                'url' => 'http://d7j863fr5jhrr.cloudfront.net/toolset-cred-front-end-forms.mp4',
+                'url' => 'https://www.youtube.com/watch?v=duAwiVf3iwM&yt:cc=on',
                 'screens' => array('cred-form'),
                 'element' => '.toolset-video-box-wrap',
-                'title' => __('Creating and displaying a CRED form', 'wp-cred'),
+                'title' => __('Creating and displaying a Toolset Form', 'wp-cred'),
                 'width' => '900px',
                 'height' => '506px',
                 'append_to' => '#post-body-content'

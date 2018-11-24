@@ -75,12 +75,12 @@ class JoinManager extends \Toolset_Wpdb_User {
 
 	public function hook() {
 		// The priority is later so that we can add all the JOINs necessary at once.
-		add_filter( 'posts_join', array( $this, 'add_join_clauses' ), 20 );
+		\add_filter( 'posts_join', array( $this, 'add_join_clauses' ), 20 );
 	}
 
 
 	public function unhook() {
-		remove_filter( 'posts_join', array( $this, 'add_join_clauses' ), 20 );
+		\remove_filter( 'posts_join', array( $this, 'add_join_clauses' ), 20 );
 	}
 
 
@@ -173,7 +173,7 @@ class JoinManager extends \Toolset_Wpdb_User {
 		$for_element_column = $this->target_role->other() . '_id';
 
 		$join .= $this->wpdb->prepare(
-			" LEFT JOIN {$association_table} AS toolset_associations ON ( 
+			" LEFT JOIN {$association_table} AS toolset_associations ON (
 				toolset_associations.relationship_id = %d
 				AND toolset_associations.{$target_element_column} = {$posts_table_name}.ID
 				AND toolset_associations.{$for_element_column} = %d
@@ -206,8 +206,8 @@ class JoinManager extends \Toolset_Wpdb_User {
 					AND default_lang_translation.element_id = default_lang_association.{$target_element_column}
 					AND default_lang_association.{$for_element_column} = %d
 				) ",
-			'post_%',
-			$this->relationship->get_row_id()
+			$this->relationship->get_row_id(),
+			$this->for_element->get_default_language_id()
 		);
 
 		return $join;

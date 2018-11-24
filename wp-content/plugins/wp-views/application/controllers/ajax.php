@@ -28,6 +28,16 @@ class WPV_Ajax extends Toolset_Ajax {
 	
 	const CALLBACK_GET_RELATIONSHIPS_DATA = 'get_relationships_data';
 
+	const CALLBACK_SCAN_VIEW_USAGE = 'scan_view_usage';
+
+	const CALLBACK_SAVE_VIEWS_PAGE_BUILDERS_FRONTEND_CONTENT_SETTINGS = 'save_views_page_builders_frontend_content_settings';
+
+	// View Editor settings update callbacks.
+	const CALLBACK_UPDATE_VIEW_WRAPPER_SECTION = 'view_wrapper_section_update';
+
+	//Layout wizard callbacks.
+	const CALLBACK_GENERATE_VIEW_LOOP_OUTPUT = 'generate_view_loop_output';
+
 
 	/**
 	 * Legacy nonce for query type view page
@@ -49,8 +59,16 @@ class WPV_Ajax extends Toolset_Ajax {
 		self::CALLBACK_FILTER_POST_RELATIONSHIP_DELETE,
 		self::CALLBACK_FILTER_RELATIONSHIP,
 		self::CALLBACK_UPDATE_CONTENT_SELECTION,
-		
-		self::CALLBACK_GET_RELATIONSHIPS_DATA
+
+		self::CALLBACK_GET_RELATIONSHIPS_DATA,
+
+		self::CALLBACK_SCAN_VIEW_USAGE,
+
+		self::CALLBACK_SAVE_VIEWS_PAGE_BUILDERS_FRONTEND_CONTENT_SETTINGS,
+
+		self::CALLBACK_UPDATE_VIEW_WRAPPER_SECTION,
+
+		self::CALLBACK_GENERATE_VIEW_LOOP_OUTPUT,
 	);
 	
 	

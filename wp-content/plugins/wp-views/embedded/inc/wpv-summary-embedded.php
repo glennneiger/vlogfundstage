@@ -27,15 +27,20 @@
 function wpv_get_query_type_summary( $view_settings, $context = 'listing' ) {
 	$view_settings = wpv_post_default_settings( $view_settings );
 	$return = '';
-	if ( 
-		! isset( $view_settings['query_type'] ) 
-		|| ( 
-			isset( $view_settings['query_type'] ) 
-			&& $view_settings['query_type'][0] == 'posts' 
-		) 
+	if (
+		! isset( $view_settings['query_type'] )
+		|| (
+			isset( $view_settings['query_type'] )
+			&& $view_settings['query_type'][0] == 'posts'
+		)
 	) {
 		$selected = isset( $view_settings['post_type'] ) ? $view_settings['post_type'] : array();
 		$post_types = get_post_types( array( 'public' => true ), 'objects' );
+		$rfg_post_types = array();
+		if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			do_action( 'toolset_do_m2m_full_init' );
+			$rfg_post_types = get_post_types( array( Toolset_Post_Type_From_Types::DEF_IS_REPEATING_FIELD_GROUP => true ), 'objects' );
+		}
 		$selected_post_types = sizeof( $selected );
 		switch ( $selected_post_types ) {
 			case 0:
@@ -46,8 +51,10 @@ function wpv_get_query_type_summary( $view_settings, $context = 'listing' ) {
 				}
 				break;
 			case 1:
-				if ( isset( $post_types[$selected[0]] ) ) {
-					$name = $post_types[$selected[0]]->labels->name;
+				if ( isset( $post_types[ $selected[0] ] ) ) {
+					$name = $post_types[ $selected[0] ]->labels->name;
+				} else if ( isset( $rfg_post_types[ $selected[0] ] ) ) {
+					$name = $rfg_post_types[ $selected[0] ]->labels->name;
 				} else {
 					$name = sprintf( __( '%s (missing post type)', 'wpv-views' ), $selected[0] );
 				}
@@ -59,8 +66,10 @@ function wpv_get_query_type_summary( $view_settings, $context = 'listing' ) {
 			default:
 				$name_array = array();
 				foreach ( $selected as $select_pt ) {
-					if ( isset( $post_types[$select_pt] ) ) {
+					if ( isset( $post_types[ $select_pt ] ) ) {
 						$name_array[] = $post_types[$select_pt]->labels->name;
+					} else if ( isset( $rfg_post_types[ $select_pt ] ) ) {
+						$name_array[] = $rfg_post_types[ $select_pt ]->labels->name;
 					} else {
 						$name_array[] = sprintf( __( '%s (missing post type)', 'wpv-views' ), $select_pt );
 					}
@@ -69,9 +78,9 @@ function wpv_get_query_type_summary( $view_settings, $context = 'listing' ) {
 				break;
 		}
 	}
-	if ( 
-		isset( $view_settings['query_type'] ) 
-		&& $view_settings['query_type'][0] == 'taxonomy' 
+	if (
+		isset( $view_settings['query_type'] )
+		&& $view_settings['query_type'][0] == 'taxonomy'
 	) {
 		$view_settings = wpv_taxonomy_default_settings( $view_settings );
 		$selected = $view_settings['taxonomy_type'];
@@ -96,9 +105,9 @@ function wpv_get_query_type_summary( $view_settings, $context = 'listing' ) {
 			}
 		}
 	}
-	if ( 
-		isset( $view_settings['query_type'] ) 
-		&& $view_settings['query_type'][0] == 'users' 
+	if (
+		isset( $view_settings['query_type'] )
+		&& $view_settings['query_type'][0] == 'users'
 	) {
 		$user_role = '';
 		if ( isset( $view_settings['roles_type'][0] ) ) {
@@ -136,12 +145,12 @@ function wpv_get_query_type_summary( $view_settings, $context = 'listing' ) {
 function wpv_get_ordering_summary( $view_settings, $context = 'listing' ) {
 	$view_settings = apply_filters( 'wpv_filter_wpv_get_sorting_defaults', $view_settings );
 	$return = '';
-	if ( 
-		! isset( $view_settings['query_type'] ) 
+	if (
+		! isset( $view_settings['query_type'] )
 		|| (
-			isset($view_settings['query_type'] ) 
-			&& $view_settings['query_type'][0] == 'posts' 
-		) 
+			isset($view_settings['query_type'] )
+			&& $view_settings['query_type'][0] == 'posts'
+		)
 	) {
 		switch( $view_settings['orderby'] ) {
 			case 'post_date':
@@ -175,9 +184,9 @@ function wpv_get_ordering_summary( $view_settings, $context = 'listing' ) {
 			$order = __( 'ascending', 'wpv-views' );
 		}
     }
-    if ( 
-		isset( $view_settings['query_type'] ) 
-		&& $view_settings['query_type'][0] == 'taxonomy' 
+    if (
+		isset( $view_settings['query_type'] )
+		&& $view_settings['query_type'][0] == 'taxonomy'
 	) {
 		$order_by = '';
 		switch( $view_settings['taxonomy_orderby'] ) {
@@ -202,9 +211,9 @@ function wpv_get_ordering_summary( $view_settings, $context = 'listing' ) {
 			$order = __( 'ascending', 'wpv-views' );
 		}
     }
-    if ( 
-		isset( $view_settings['query_type'] ) 
-		&& $view_settings['query_type'][0] == 'users' 
+    if (
+		isset( $view_settings['query_type'] )
+		&& $view_settings['query_type'][0] == 'users'
 	) {
 		$order_by = '';
 		switch( $view_settings['users_orderby'] ) {
@@ -267,12 +276,12 @@ function wpv_get_limit_offset_summary( $view_settings, $context = 'listing' ) {
 	$output = '';
 	$limit = 0;
 	$offset = 0;
-	if ( 
-		! isset( $view_settings['query_type'] ) 
+	if (
+		! isset( $view_settings['query_type'] )
 		|| (
-			isset($view_settings['query_type'] ) 
-			&& $view_settings['query_type'][0] == 'posts' 
-		) 
+			isset($view_settings['query_type'] )
+			&& $view_settings['query_type'][0] == 'posts'
+		)
 	) {
 		$limit = intval( $view_settings['limit'] );
 		$offset = intval( $view_settings['offset'] );
@@ -435,9 +444,9 @@ function wpv_get_filter_status_summary_txt( $view_settings, $short = false ) {
 
 /**
  * wpv_get_filter_sticky_summary_txt
- * 
+ *
  * Returns a summary of Sticky Posts Filter in a View
- * 
+ *
  * @param array $view_settings
  * @param bool $short
  */
@@ -493,13 +502,13 @@ function wpv_get_filter_post_author_summary_txt( $view_settings, $short = false 
 		case 'this_user':
 			if ( isset( $view_settings['author_id'] ) && $view_settings['author_id'] > 0 ) {
 				global $wpdb;
-				$selected_author = $wpdb->get_var( 
-					$wpdb->prepare( 
-						"SELECT display_name FROM {$wpdb->users} 
-						WHERE ID = %d 
-						LIMIT 1", 
-						$view_settings['author_id'] 
-					) 
+				$selected_author = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT display_name FROM {$wpdb->users}
+						WHERE ID = %d
+						LIMIT 1",
+						$view_settings['author_id']
+					)
 				);
 			} else {
 				$selected_author = 'None';
@@ -632,9 +641,9 @@ function wpv_get_filter_taxonomy_summary_txt( $view_settings ) {
 					$result .= __( ' AND ', 'wpv-views' );
 				}
 			}
-			
+
 			$result .= wpv_get_taxonomy_summary( $name, $view_settings, $view_settings[$save_name] );
-				
+
 		}
 	}
 	return $result;
@@ -686,7 +695,7 @@ function wpv_get_taxonomy_summary( $type, $view_settings, $category_selected ) {
 	if ( ! isset( $view_settings['taxonomy-' . $taxonomy . '-framework'] ) ) {
 		$view_settings['taxonomy-' . $taxonomy . '-framework'] = '';
 	}
-	
+
 	$cat_text = '';
 	$origin_text = '';
 	$operator_text = '';
@@ -800,6 +809,8 @@ function wpv_get_taxonomy_summary( $type, $view_settings, $category_selected ) {
 */
 
 function wpv_get_filter_post_relationship_summary_txt( $view_settings, $short = false ) {
+	$is_enabled_m2m = apply_filters( 'toolset_is_m2m_enabled', false );
+
 	if ( !isset( $view_settings['post_relationship_mode'] ) ) {
 		return;
 	} elseif ( is_array( $view_settings['post_relationship_mode'] ) ) {
@@ -815,60 +826,140 @@ function wpv_get_filter_post_relationship_summary_txt( $view_settings, $short = 
 		$view_settings['post_relationship_framework'] = '';
 	}
 	ob_start();
-	switch ( $view_settings['post_relationship_mode'] ) {
-		case 'current_page': // @deprecated in 1.12.1
-		case 'top_current_post':
-			_e( 'Select posts that are <strong>children</strong> of the <strong>Post where this View is shown</strong>.', 'wpv-views' );
-			break;
-		case 'parent_view': // @deprecated in 1.12.1
-		case 'current_post_or_parent_post_view':
-			_e( 'Select posts that are a <strong>children</strong> of the <strong>current post in the loop</strong>.', 'wpv-views' );
-			break;
-		case 'shortcode_attribute':
-			echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the shortcode attribute %s</strong>.', 'wpv-views' ), esc_html( $view_settings['post_relationship_shortcode_attribute'] ) );
-			echo '<br /><code>' . sprintf( __( ' eg. [wpv-view name="view-name" <strong>%s="123"</strong>]', 'wpv-views' ), $view_settings['post_relationship_shortcode_attribute'] ) . '</code>';
-			break;
-		case 'url_parameter':
-			echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the URL parameter %s</strong>.', 'wpv-views' ), esc_html( $view_settings['post_relationship_url_parameter'] ) );
-			echo '<br /><code>' . sprintf( __( ' eg. http://www.example.com/my-page/?<strong>%s=123</strong>', 'wpv-views' ), esc_html( $view_settings['post_relationship_url_parameter'] ) ) . '</code>';
-			break;
-		case 'this_page':
-			if ( 
-				isset( $view_settings['post_relationship_id'] ) 
-				&& $view_settings['post_relationship_id'] > 0
-			) {
-				$wpv_wpml_integration = WPV_WPML_Integration_Embedded::get_instance();
-				$view_settings['post_relationship_id'] = $wpv_wpml_integration->wpml_get_user_admin_language_post_id( $view_settings['post_relationship_id'] );
-				global $wpdb;
-				$selected_title = $wpdb->get_var( 
-					$wpdb->prepare( 
-						"SELECT post_title FROM {$wpdb->posts} 
-						WHERE ID = %d 
-						LIMIT 1", 
-						$view_settings['post_relationship_id'] 
-					) 
-				);
-			} else {
-				$selected_title = 'None';
-			}
-			echo sprintf( __( 'Select posts that are children of <strong>%s</strong>.', 'wpv-views' ), esc_html( $selected_title ) );
-			break;
-		case 'framework':
-			global $WP_Views_fapi;
-			if ( $WP_Views_fapi->framework_valid ) {
-				if ( isset( $view_settings['post_relationship_framework'] ) && '' != $view_settings['post_relationship_framework'] ) {
-					$post_relationship_framework = $view_settings['post_relationship_framework'];
-				} else {
-					$post_relationship_framework = __( 'None', 'wpv-views' );
+
+	if ( $is_enabled_m2m ) { // m2m enabled.
+		do_action( 'toolset_do_m2m_full_init' );
+		$relationship_repository = Toolset_Relationship_Definition_Repository::get_instance();
+		if ( toolset_getarr( $view_settings, 'post_relationship_slug', '' ) ) {
+			$definition = $relationship_repository->get_definition( $view_settings['post_relationship_slug'] );
+			$relationship_display_name = $definition ? $definition->get_display_name() : '';
+			$relationship_origin = $definition ? $definition->get_origin()->get_origin_keyword() : '';
+			
+			// translators: parent, child or both
+			$type_relationship_summary = sprintf( __( 'Select posts in a <strong>%s</strong> relationship ', 'wpv-views' ), $relationship_display_name );
+			
+			if ( Toolset_Relationship_Origin_Repeatable_Group::ORIGIN_KEYWORD === $relationship_origin ) {
+				$child_post_types = $definition->get_child_type()->get_types();
+				$child_post_type_object = get_post_type_object( $child_post_types[0] );
+				if ( null != $child_post_type_object ) {
+					$type_relationship_summary = sprintf( __( 'Select items from the <strong>%s</strong> group ', 'wpv-views' ), $child_post_type_object->labels->name );
 				}
-				echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with IDs is set by the Framework option "%s"</strong>', 'wpv-views' ), esc_html( $post_relationship_framework ) );
-			} else {
-				$WP_Views_fapi->framework_missing_message_for_filters();
 			}
-			break;
-		default:
-			_e( 'Oops! It seems there is a filter by post relationship that is missing some options', 'wpv-views' );
-			break;
+		} else {
+			$type_relationship_summary = __( 'Select posts in <strong>Any</strong> relationship ', 'wpv-views' );
+		}
+		switch ( $view_settings['post_relationship_mode'] ) {
+			case 'current_page': // @deprecated in 1.12.1
+			case 'top_current_post':
+				// translators: parent, child or both
+				echo __( $type_relationship_summary . 'that are <strong>related</strong> to the <strong>Post where this View is shown</strong>.', 'wpv-views' );
+				break;
+			case 'parent_view': // @deprecated in 1.12.1
+			case 'current_post_or_parent_post_view':
+				echo __( $type_relationship_summary . 'that are a <strong>related</strong> to the <strong>current post in the loop</strong>.', 'wpv-views' );
+				break;
+			case 'shortcode_attribute':
+				echo sprintf( __( $type_relationship_summary . 'that are <strong>related</strong> to the <strong>Post with ID set by the shortcode attribute %s</strong>.', 'wpv-views' ), esc_html( $view_settings['post_relationship_shortcode_attribute'] ) );
+				echo '<br /><code>' . sprintf( __( ' eg. [wpv-view name="view-name" <strong>%s="123"</strong>]', 'wpv-views' ), $view_settings['post_relationship_shortcode_attribute'] ) . '</code>';
+				break;
+			case 'url_parameter':
+				echo sprintf( __( $type_relationship_summary . 'that are <strong>related</strong> to the <strong>Post with ID set by the URL parameter %s</strong>.', 'wpv-views' ), esc_html( $view_settings['post_relationship_url_parameter'] ) );
+				echo '<br /><code>' . sprintf( __( ' eg. http://www.example.com/my-page/?<strong>%s=123</strong>', 'wpv-views' ), esc_html( $view_settings['post_relationship_url_parameter'] ) ) . '</code>';
+				break;
+			case 'this_page':
+				if (
+					isset( $view_settings['post_relationship_id'] )
+					&& $view_settings['post_relationship_id'] > 0
+				) {
+					$wpv_wpml_integration = WPV_WPML_Integration_Embedded::get_instance();
+					$view_settings['post_relationship_id'] = $wpv_wpml_integration->wpml_get_user_admin_language_post_id( $view_settings['post_relationship_id'] );
+					global $wpdb;
+					$selected_title = $wpdb->get_var(
+						$wpdb->prepare(
+							"SELECT post_title FROM {$wpdb->posts}
+							WHERE ID = %d
+							LIMIT 1",
+							$view_settings['post_relationship_id']
+						)
+					);
+				} else {
+					$selected_title = 'None';
+				}
+				echo sprintf( __( $type_relationship_summary . 'that are related to <strong>%s</strong>.', 'wpv-views' ), esc_html( $selected_title ) );
+				break;
+			case 'framework':
+				global $WP_Views_fapi;
+				if ( $WP_Views_fapi->framework_valid ) {
+					if ( isset( $view_settings['post_relationship_framework'] ) && '' != $view_settings['post_relationship_framework'] ) {
+						$post_relationship_framework = $view_settings['post_relationship_framework'];
+					} else {
+						$post_relationship_framework = __( 'None', 'wpv-views' );
+					}
+					echo sprintf( $type_relationship_summary . __( 'that are <strong>related</strong> to the <strong>Post with ID is set by the Framework option "%s"</strong>', 'wpv-views' ), esc_html( $post_relationship_framework ) );
+				} else {
+					$WP_Views_fapi->framework_missing_message_for_filters();
+				}
+				break;
+			default:
+				_e( 'Oops! It seems there is a filter by post relationship that is missing some options', 'wpv-views' );
+				break;
+		}
+	} else { // m2m not enabled.
+		switch ( $view_settings['post_relationship_mode'] ) {
+			case 'current_page': // @deprecated in 1.12.1
+			case 'top_current_post':
+				_e( 'Select posts that are <strong>children</strong> of the <strong>Post where this View is shown</strong>.', 'wpv-views' );
+				break;
+			case 'parent_view': // @deprecated in 1.12.1
+			case 'current_post_or_parent_post_view':
+				_e( 'Select posts that are a <strong>children</strong> of the <strong>current post in the loop</strong>.', 'wpv-views' );
+				break;
+			case 'shortcode_attribute':
+				echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the shortcode attribute %s</strong>.', 'wpv-views' ), esc_html( $view_settings['post_relationship_shortcode_attribute'] ) );
+				echo '<br /><code>' . sprintf( __( ' eg. [wpv-view name="view-name" <strong>%s="123"</strong>]', 'wpv-views' ), $view_settings['post_relationship_shortcode_attribute'] ) . '</code>';
+				break;
+			case 'url_parameter':
+				echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the URL parameter %s</strong>.', 'wpv-views' ), esc_html( $view_settings['post_relationship_url_parameter'] ) );
+				echo '<br /><code>' . sprintf( __( ' eg. http://www.example.com/my-page/?<strong>%s=123</strong>', 'wpv-views' ), esc_html( $view_settings['post_relationship_url_parameter'] ) ) . '</code>';
+				break;
+			case 'this_page':
+				if (
+					isset( $view_settings['post_relationship_id'] )
+					&& $view_settings['post_relationship_id'] > 0
+				) {
+					$wpv_wpml_integration = WPV_WPML_Integration_Embedded::get_instance();
+					$view_settings['post_relationship_id'] = $wpv_wpml_integration->wpml_get_user_admin_language_post_id( $view_settings['post_relationship_id'] );
+					global $wpdb;
+					$selected_title = $wpdb->get_var(
+						$wpdb->prepare(
+							"SELECT post_title FROM {$wpdb->posts}
+							WHERE ID = %d
+							LIMIT 1",
+							$view_settings['post_relationship_id']
+						)
+					);
+				} else {
+					$selected_title = 'None';
+				}
+				echo sprintf( __( 'Select posts that are children of <strong>%s</strong>.', 'wpv-views' ), esc_html( $selected_title ) );
+				break;
+			case 'framework':
+				global $WP_Views_fapi;
+				if ( $WP_Views_fapi->framework_valid ) {
+					if ( isset( $view_settings['post_relationship_framework'] ) && '' != $view_settings['post_relationship_framework'] ) {
+						$post_relationship_framework = $view_settings['post_relationship_framework'];
+					} else {
+						$post_relationship_framework = __( 'None', 'wpv-views' );
+					}
+					echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with IDs is set by the Framework option "%s"</strong>', 'wpv-views' ), esc_html( $post_relationship_framework ) );
+				} else {
+					$WP_Views_fapi->framework_missing_message_for_filters();
+				}
+				break;
+			default:
+				_e( 'Oops! It seems there is a filter by post relationship that is missing some options', 'wpv-views' );
+				break;
+		}
 	}
 	$data = ob_get_clean();
 	if ( $short ) {
@@ -889,8 +980,8 @@ function wpv_get_filter_post_relationship_summary_txt( $view_settings, $short = 
 
 function wpv_get_filter_post_type_summary_txt( $view_settings ) {
 	$return = '';
-	if ( 
-		! isset( $view_settings['post_type_filter'] ) 
+	if (
+		! isset( $view_settings['post_type_filter'] )
 		|| ! isset( $view_settings['post_type_filter']['mode'] )
 	) {
 		return $return;
@@ -1043,6 +1134,7 @@ function wpv_get_filter_post_id_summary_txt( $view_settings, $short = false ) {
  * @since unknown
  */
 function wpv_get_filter_post_parent_summary_txt( $view_settings, $short = false ) {
+	$is_enabled_m2m = apply_filters( 'toolset_is_m2m_enabled', false );
 	if ( ! isset( $view_settings['parent_mode'] ) ) {
 		return;
 	} elseif ( is_array( $view_settings['parent_mode'] ) ) {
@@ -1079,13 +1171,13 @@ function wpv_get_filter_post_parent_summary_txt( $view_settings, $short = false 
 				$wpv_wpml_integration = WPV_WPML_Integration_Embedded::get_instance();
 				$view_settings['parent_id'] = $wpv_wpml_integration->wpml_get_user_admin_language_post_id( $view_settings['parent_id'] );
 				global $wpdb;
-				$selected_title = $wpdb->get_var( 
-					$wpdb->prepare( 
-						"SELECT post_title FROM {$wpdb->posts} 
-						WHERE ID = %d 
-						LIMIT 1", 
-						$view_settings['parent_id'] 
-					) 
+				$selected_title = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT post_title FROM {$wpdb->posts}
+						WHERE ID = %d
+						LIMIT 1",
+						$view_settings['parent_id']
+					)
 				);
 			} else {
 				$selected_title = __( 'None', 'wpv-views' );
@@ -1104,25 +1196,37 @@ function wpv_get_filter_post_parent_summary_txt( $view_settings, $short = false 
 			}
 			break;
 		case 'shortcode_attribute':
-			echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the shortcode attribute %s</strong>.', 'wpv-views' ), esc_html( $view_settings['parent_shortcode_attribute'] ) );
+			if ( $is_enabled_m2m ) {
+				echo sprintf( __( 'Select posts that are <strong>related</strong> to the <strong>Post with ID set by the shortcode attribute %s</strong>.', 'wpv-views' ), esc_html( $view_settings['parent_shortcode_attribute'] ) );
+			} else {
+				echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the shortcode attribute %s</strong>.', 'wpv-views' ), esc_html( $view_settings['parent_shortcode_attribute'] ) );
+			}
 			echo '<br /><code>' . sprintf( __( ' eg. [wpv-view name="view-name" <strong>%s="123"</strong>]', 'wpv-views' ), esc_html( $view_settings['parent_shortcode_attribute'] ) ) . '</code>';
 			break;
 		case 'url_parameter':
-			echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the URL parameter %s</strong>.', 'wpv-views' ), esc_html( $view_settings['parent_url_parameter'] ) );
+			if ( $is_enabled_m2m ) {
+				echo sprintf( __( 'Select posts that are <strong>related</strong> to the <strong>Post with ID set by the URL parameter %s</strong>.', 'wpv-views' ), esc_html( $view_settings['parent_url_parameter'] ) );
+			} else {
+				echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with ID set by the URL parameter %s</strong>.', 'wpv-views' ), esc_html( $view_settings['parent_url_parameter'] ) );
+			}
 			echo '<br /><code>' . sprintf( __( ' eg. http://www.example.com/my-page/?<strong>%s=123</strong>', 'wpv-views' ), esc_html( $view_settings['parent_url_parameter'] ) ) . '</code>';
 			break;
 		case 'framework':
 			global $WP_Views_fapi;
 			if ( $WP_Views_fapi->framework_valid ) {
-				if ( 
-					isset( $view_settings['parent_framework'] ) 
-					&& '' != $view_settings['parent_framework'] 
+				if (
+					isset( $view_settings['parent_framework'] )
+					&& '' != $view_settings['parent_framework']
 				) {
 					$parent_framework = esc_html( $view_settings['parent_framework'] );
 				} else {
 					$parent_framework = __( 'None', 'wpv-views' );
 				}
-				echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with IDs set by the Framework option "%s"</strong>', 'wpv-views' ), $parent_framework );
+				if ( $is_enabled_m2m ) {
+					echo sprintf( __( 'Select posts that are <strong>related</strong> to the <strong>Post with IDs set by the Framework option "%s"</strong>', 'wpv-views' ), $parent_framework );
+				} else {
+					echo sprintf( __( 'Select posts that are <strong>children</strong> of the <strong>Post with IDs set by the Framework option "%s"</strong>', 'wpv-views' ), $parent_framework );
+				}
 			} else {
 				$WP_Views_fapi->framework_missing_message_for_filters();
 			}
@@ -1159,9 +1263,9 @@ function wpv_get_filter_taxonomy_parent_summary_txt( $view_settings ) {
 	} elseif ( is_array( $view_settings['taxonomy_parent_mode'] ) ) {
 		$view_settings['taxonomy_parent_mode'] = $view_settings['taxonomy_parent_mode'][0];
 	}
-	if ( 
-		isset( $view_settings['taxonomy_parent_id'] ) 
-		&& ! empty( $view_settings['taxonomy_parent_id'] ) 
+	if (
+		isset( $view_settings['taxonomy_parent_id'] )
+		&& ! empty( $view_settings['taxonomy_parent_id'] )
 	) {
 		// WordPress 4.2 compatibility - split terms
 		$candidate_term_id_splitted = wpv_compat_get_split_term( $view_settings['taxonomy_parent_id'], $view_settings['taxonomy_type'] );
@@ -1224,12 +1328,12 @@ function wpv_get_filter_post_search_summary_txt( $view_settings, $short = false 
 		$view_name = 'view-name';
 	}
 	$view_name = esc_html( $view_name );
-	
+
 	$post_search_content_options = WPV_Search_Frontend_Filter::get_post_search_content_options();
 	$post_search_content = isset( $post_search_content_options[ $view_settings['post_search_content'] ] ) ? $view_settings['post_search_content'] : 'full_content';
-	
+
 	$search_where = $post_search_content_options[ $post_search_content ]['summary'];
-	
+
 	$summary = '';
 	ob_start();
 	switch ( $view_settings['search_mode'] ) {
@@ -1278,8 +1382,8 @@ function wpv_get_filter_post_search_summary_txt( $view_settings, $short = false 
 * @since 1.8.0
 */
 function wpv_get_filter_post_date_summary_txt( $view_settings ) {
-	if ( 
-		! isset( $view_settings['date_filter'] ) 
+	if (
+		! isset( $view_settings['date_filter'] )
 		|| ! is_array( $view_settings['date_filter'] )
 		|| ! isset( $view_settings['date_filter']['date_conditions'] )
 		|| ! is_array( $view_settings['date_filter']['date_conditions'] )
@@ -1472,7 +1576,7 @@ function wpv_get_filter_taxonomy_term_summary_txt( $view_settings ) {
 			$adjusted_term_ids[] = $candidate_term_id;
 		}
 		$view_settings['taxonomy_terms'] = $adjusted_term_ids;
-		
+
 	}
 	ob_start();
 	switch ( $view_settings['taxonomy_terms_mode'] ) {
@@ -1482,9 +1586,9 @@ function wpv_get_filter_taxonomy_term_summary_txt( $view_settings ) {
 			$taxonomy = $view_settings['taxonomy_type'];
 			foreach ( $category_selected as $cat ) {
 				$term_check = term_exists( (int) $cat, $taxonomy );
-				if ( 
-					$term_check !== 0 
-					&& $term_check !== null 
+				if (
+					$term_check !== 0
+					&& $term_check !== null
 				) {
 					$term = get_term( $cat, $taxonomy );
 					if ( $cat_text != '' ) {
@@ -1505,29 +1609,29 @@ function wpv_get_filter_taxonomy_term_summary_txt( $view_settings ) {
 		case 'by_url':
 			$taxonomy_terms_url_parameter = __( '#undefined#', 'wpv-views' );
 			if (
-				isset( $view_settings['taxonomy_terms_url'] ) 
+				isset( $view_settings['taxonomy_terms_url'] )
 				&& '' != $view_settings['taxonomy_terms_url']
 			) {
-				$taxonomy_terms_url_parameter = $view_settings['taxonomy_terms_url'];	
+				$taxonomy_terms_url_parameter = $view_settings['taxonomy_terms_url'];
 			}
 			echo sprintf( __( 'Taxonomy term ID is set by the URL parameter <strong>"%s"</strong>', 'wpv-views' ), $taxonomy_terms_url_parameter );
 			break;
 		case 'shortcode':
 			$taxonomy_terms_shortcode_attr = __( '#undefined#', 'wpv-views' );
 			if (
-				isset( $view_settings['taxonomy_terms_shortcode'] ) 
+				isset( $view_settings['taxonomy_terms_shortcode'] )
 				&& '' != $view_settings['taxonomy_terms_shortcode']
 			) {
-				$taxonomy_terms_shortcode_attr = $view_settings['taxonomy_terms_shortcode'];	
+				$taxonomy_terms_shortcode_attr = $view_settings['taxonomy_terms_shortcode'];
 			}
 			echo sprintf( __( 'Taxonomy term ID is set by the shortcode attribute <strong>"%s"</strong>', 'wpv-views' ), $taxonomy_terms_shortcode_attr );
 			break;
 		case 'framework':
 			global $WP_Views_fapi;
 			if ( $WP_Views_fapi->framework_valid ) {
-				if ( 
-					isset( $view_settings['taxonomy_terms_framework'] ) 
-					&& '' != $view_settings['taxonomy_terms_framework'] 
+				if (
+					isset( $view_settings['taxonomy_terms_framework'] )
+					&& '' != $view_settings['taxonomy_terms_framework']
 				) {
 					$taxonomy_terms_framework = esc_html( $view_settings['taxonomy_terms_framework'] );
 				} else {
@@ -1586,9 +1690,9 @@ function wpv_get_filter_users_summary_txt( $view_settings, $short=false, $post_i
 	if ( isset( $_POST['id'] ) ) {
 		$_view_settings = $WP_Views->get_view_settings( intval( $_POST["id"] ) );
 	}
-    if ( 
-		! isset( $_view_settings ) 
-		&& ! empty( $post_id ) 
+    if (
+		! isset( $_view_settings )
+		&& ! empty( $post_id )
 	) {
         $_view_settings = $WP_Views->get_view_settings( $post_id );
     }
@@ -1604,9 +1708,9 @@ function wpv_get_filter_users_summary_txt( $view_settings, $short=false, $post_i
 	ob_start();
 	switch ( $view_settings['users_mode'] ) {
 		case 'this_user':
-			if ( 
-				isset( $view_settings['users_id'] ) 
-				&& $view_settings['users_id'] > 0 
+			if (
+				isset( $view_settings['users_id'] )
+				&& $view_settings['users_id'] > 0
 			) {
 				if ( $view_settings['users_query_in'] == 'include' ) {
 					echo sprintf( __( 'Select users <strong>(%s)</strong> who have role <strong>%s</strong>', 'wpv-views' ), esc_html( $_view_settings['users_name'] ), esc_html( $user_role ) );
@@ -1618,17 +1722,17 @@ function wpv_get_filter_users_summary_txt( $view_settings, $short=false, $post_i
 			}
 			break;
 		case 'by_url':
-			if ( 
-				isset( $view_settings['users_url'] ) 
-				&& '' != $view_settings['users_url'] 
+			if (
+				isset( $view_settings['users_url'] )
+				&& '' != $view_settings['users_url']
 			) {
 				$url_users = esc_html( $view_settings['users_url'] );
 			} else {
 				$url_users = '<i>' . __( 'None set', 'wpv-views' ) . '</i>';
 			}
-			if ( 
-				isset( $view_settings['users_url_type'] ) 
-				&& '' != $view_settings['users_url_type'] 
+			if (
+				isset( $view_settings['users_url_type'] )
+				&& '' != $view_settings['users_url_type']
 			) {
 				$url_users_type = esc_html( $view_settings['users_url_type'] );
 				switch ( $url_users_type ) {
@@ -1654,17 +1758,17 @@ function wpv_get_filter_users_summary_txt( $view_settings, $short=false, $post_i
 			}
 			break;
 		case 'shortcode':
-			if ( 
-				isset( $view_settings['users_shortcode'] ) 
-				&& '' != $view_settings['users_shortcode'] 
+			if (
+				isset( $view_settings['users_shortcode'] )
+				&& '' != $view_settings['users_shortcode']
 			) {
 				$auth_short = esc_html( $view_settings['users_shortcode'] );
 			} else {
 				$auth_short = __( 'None', 'wpv-views' );
 			}
-			if ( 
-				isset( $view_settings['users_shortcode_type'] ) 
-				&& '' != $view_settings['users_shortcode_type'] 
+			if (
+				isset( $view_settings['users_shortcode_type'] )
+				&& '' != $view_settings['users_shortcode_type']
 			) {
 				$shortcode_users_type = esc_html( $view_settings['users_shortcode_type'] );
 				switch ( $shortcode_users_type ) {
@@ -1691,17 +1795,17 @@ function wpv_get_filter_users_summary_txt( $view_settings, $short=false, $post_i
 		case 'framework':
 			global $WP_Views_fapi;
 			if ( $WP_Views_fapi->framework_valid ) {
-				if ( 
-					isset( $view_settings['users_framework'] ) 
-					&& '' != $view_settings['users_framework'] 
+				if (
+					isset( $view_settings['users_framework'] )
+					&& '' != $view_settings['users_framework']
 				) {
 					$auth_framework = esc_html( $view_settings['users_framework'] );
 				} else {
 					$auth_framework = __( 'None', 'wpv-views' );
 				}
-				if ( 
-					isset( $view_settings['users_framework_type'] ) 
-					&& '' != $view_settings['users_framework_type'] 
+				if (
+					isset( $view_settings['users_framework_type'] )
+					&& '' != $view_settings['users_framework_type']
 				) {
 					$auth_framework_type = esc_html( $view_settings['users_framework_type'] );
 				} else {
@@ -1764,16 +1868,16 @@ function wpv_get_filter_meta_field_summary_txt( $view_settings, $meta_type ) {
 	$result = '';
 	$count = 0;
 	foreach ( array_keys( $view_settings ) as $key ) {
-		if ( 
-			strpos( $key, $meta_type . '-field-' ) === 0 
-			&& strpos( $key, '_compare' ) === strlen( $key ) - strlen( '_compare' ) 
+		if (
+			strpos( $key, $meta_type . '-field-' ) === 0
+			&& strpos( $key, '_compare' ) === strlen( $key ) - strlen( '_compare' )
 		) {
 			$name = substr( $key, 0, strlen( $key ) - strlen( '_compare' ) );
 			$count++;
 			if ( $result != '' ) {
-				if ( 
-					isset( $view_settings[ $meta_type . '_fields_relationship' ] ) 
-					&& $view_settings[ $meta_type . '_fields_relationship' ] == 'OR' 
+				if (
+					isset( $view_settings[ $meta_type . '_fields_relationship' ] )
+					&& $view_settings[ $meta_type . '_fields_relationship' ] == 'OR'
 				) {
 					$result .= __( ' OR', 'wpv-views' );
 				} else {
@@ -1804,7 +1908,7 @@ function wpv_get_meta_field_summary( $type, $view_settings = array(), $meta_type
 	global $WP_Views_fapi;
 	$field_name = substr( $type, strlen( $meta_type . '-field-' ) );
 	$field_nicename = wpv_types_get_field_name( $field_name );
-	$compare = array( 
+	$compare = array(
 		'='				=> __( 'equal to', 'wpv-views' ),
 		'!='			=> __( 'different from', 'wpv-views' ),
 		'>'				=> __( 'greater than', 'wpv-views' ),
@@ -1818,8 +1922,8 @@ function wpv_get_meta_field_summary( $type, $view_settings = array(), $meta_type
 		'BETWEEN'		=> __( 'between', 'wpv-views' ),
 		'NOT BETWEEN'	=> __( 'not between', 'wpv-views' )
 	);
-	$types = array( 
-		'CHAR' 			=> __( 'string', 'wpv-views' ), 
+	$types = array(
+		'CHAR' 			=> __( 'string', 'wpv-views' ),
 		'NUMERIC'		=> __( 'number', 'wpv-views' ),
 		'BINARY'		=> __( 'boolean', 'wpv-views' ),
 		'DECIMAL'		=> 'DECIMAL',

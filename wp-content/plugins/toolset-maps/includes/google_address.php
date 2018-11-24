@@ -52,6 +52,7 @@ class Toolset_Addon_Maps_Types {
 		add_filter( 'toolset_filter_toolset_maps_get_types_usermeta_fields', array( $this, 'toolset_filter_toolset_maps_get_types_usermeta_fields' ) );
 		// Init
 		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'on_admin_enqueue_scripts' ), 20 );
 	}
 	
 	function init() {
@@ -66,6 +67,22 @@ class Toolset_Addon_Maps_Types {
 		add_action( 'updated_user_meta', array( $this, 'save_usermeta_coordinates' ), 10, 4 );
 		add_action( 'deleted_user_meta', array( $this, 'delete_usermeta_coordinates' ), 10, 4 );
 		
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public function on_admin_enqueue_scripts() {
+		// RFG fields are loaded by ajax JSON, so we can't add our JS then, and we don't know if there are address
+		// fields on the page before. So this is the best hook we have: if there is RFG JS enqueued, enqueue our JS.
+		if ( wp_script_is('types-repeatable-group') ) {
+			if ( apply_filters( 'toolset_maps_get_api_used', '' ) === Toolset_Addon_Maps_Common::API_GOOGLE ) {
+				wp_enqueue_script( 'toolset-google-map-editor-script' );
+			} else {
+				wp_enqueue_script( 'toolset-maps-address-autocomplete' );
+				Toolset_Addon_Maps_Common::maybe_enqueue_azure_css();
+			}
+		}
 	}
 
 	function google_address_register_field( $fields ) {
@@ -98,10 +115,9 @@ class Toolset_Addon_Maps_Types {
 			'menu_title'	=> __( 'Display', 'toolset-maps' ),
 			'title'			=> __( 'Display', 'toolset-maps' )
 		);
-		$extra_content			= '';
 		$extra_content_api_key	= '';
 		
-		$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_api_key', '' );
+		$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_server_side_api_key', '' );
 		if ( 
 			empty( $maps_api_key ) 
 			&& current_user_can( 'manage_options' ) 
@@ -114,7 +130,7 @@ class Toolset_Addon_Maps_Types {
 			);
 			$extra_content_api_key = sprintf(
 				__( '<p><strong>You wil need a Google Maps API key</strong> to display Toolset Maps address fields on a map. Find more information in %1$sour documentation%2$s.</p>', 'toolset-maps' ),
-				'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), 'https://wp-types.com/documentation/user-guides/display-on-google-maps/' ) . '" target="_blank">',
+				'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), TOOLSET_ADDON_MAPS_DOC_LINK ) . '" target="_blank">',
 				'</a>'
 			);
 		}
@@ -212,7 +228,7 @@ class Toolset_Addon_Maps_Types {
 						. '<p>'
 							. sprintf(
 								__( 'You need the %1$sViews plugin%2$s to display maps and add markers to them', 'toolset-maps' ),
-								'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'views' ), 'https://wp-types.com/home/toolset-components/' ) . '" target="_blank">',
+								'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'views' ), 'https://toolset.com/home/toolset-components/' ) . '" target="_blank">',
 								'</a>'
 							)
 						. '</p>'

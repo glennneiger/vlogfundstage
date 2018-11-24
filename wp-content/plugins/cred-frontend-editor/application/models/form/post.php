@@ -25,7 +25,8 @@ class CRED_Form_Post extends CRED_Form_Base {
 	 * In this case we need to change the current post to edit to the global one.
 	 */
 	function maybe_post_to_edit_is_the_global_one() {
-		$form_type = isset( $this->_formData->getFields()['form_settings']->form['type'] ) ? $this->_formData->getFields()['form_settings']->form['type'] : 'new';
+		$form_fields = $this->_formData->getFields();
+		$form_type = isset( $form_fields['form_settings']->form['type'] ) ? $form_fields['form_settings']->form['type'] : 'new';
 		if ( 'edit' == $form_type
 			&& ! $this->get_post_id()
 		) {
@@ -179,7 +180,13 @@ class CRED_Form_Post extends CRED_Form_Base {
 	 * @return mixed
 	 */
 	public function check_form_access( $form_type, $form_id, $post, &$fbHelper ) {
-		return $fbHelper->checkFormAccess( $form_type, $form_id, $post );
+		$post_to_check = ( 
+				is_object( $post )
+				&& isset( $post->post )
+			)
+			? $post->post
+			: false;
+        return apply_filters( 'toolset_forms_current_user_can_use_post_form', false, $form_id, $post_to_check );
 	}
 
 	public function set_authordata() {
@@ -211,7 +218,11 @@ class CRED_Form_Post extends CRED_Form_Base {
 		// get post inputs
 		if ( $form_type == "edit" ) {
 			$post_id = $this->get_post_id();
-		} elseif ( isset( $post_id ) && ! empty( $post_id ) && null !== $post_id && false !== $post_id && ! $this->_preview ) {
+		} elseif ( isset( $post_id )
+			&& ! empty( $post_id )
+			&& null !== $post_id
+			&& false !== $post_id
+			&& ! $this->_preview ) {
 			$post_id = intval( $post_id );
 		} else {
 			$post_id = false;
@@ -236,10 +247,18 @@ class CRED_Form_Post extends CRED_Form_Base {
 			$this->_postData = $post_data->get_post_data( $post_id );
 		}
 
-		if ( ! $this->_preview &&
-			! $formHelper->checkFormAccess( $form_type, $form_id, $this->_postData )
+		$post_to_check = ( 
+				is_object( $this->_postData )
+				&& isset( $this->_postData->post )
+			)
+			? $this->_postData->post
+			: false;
+
+		if (
+			! $this->_preview
+			&& ! apply_filters( 'toolset_forms_current_user_can_use_post_form', false, $form_id, $post_to_check )
 		) {
-			return $formHelper->error();
+			return new WP_Error( 'cred-permission', 'Permission denied' );
 		}
 
 		//Added by Ahmed Hussein, for issue where multiple cred forms in same page get same post ids
@@ -267,13 +286,13 @@ class CRED_Form_Post extends CRED_Form_Base {
 
 				global $wpdb;
 				$querystr = $wpdb->prepare(
-					"SELECT $wpdb->posts.ID 
-					FROM $wpdb->posts 
-					WHERE $wpdb->posts.post_status = 'auto-draft' 
-					AND $wpdb->posts.post_type = %s 
-					AND $wpdb->posts.post_title LIKE %s 
-					AND $wpdb->posts.post_author = %d 
-					ORDER by ID desc 
+					"SELECT $wpdb->posts.ID
+					FROM $wpdb->posts
+					WHERE $wpdb->posts.post_status = 'auto-draft'
+					AND $wpdb->posts.post_type = %s
+					AND $wpdb->posts.post_title LIKE %s
+					AND $wpdb->posts.post_author = %d
+					ORDER by ID desc
 					LIMIT 1",
 					array( $post_type, $unique_post_title, $user_id )
 				);
@@ -323,23 +342,20 @@ class CRED_Form_Post extends CRED_Form_Base {
 				$is_current_edit = true;
 			}
 
-			if ( $is_current_edit ) {
-				$post_type = $this->_postData->post->post_type;
-			}
-
 			if ( is_wp_error( $this->_postData ) ) {
 				return $this->_postData;
 			}
 
-			if ( ! $is_current_edit &&
-				$this->_postData->post->post_type != $post_type
+			if ( $is_current_edit
+				&& $this->_postData->post->post_type != $post_type
 			) {
-				return $formHelper->error( __( 'Form type and post type do not match', 'wp-cred' ) );
+				return new WP_Error( 'cred-error', __( 'Form type and post type do not match', 'wp-cred' ) );
 			}
 		}
 
 		return $post_id;
 	}
+
 
 	/**
 	 * build_form
@@ -435,9 +451,8 @@ class CRED_Form_Post extends CRED_Form_Base {
 		$_fields = $this->_formData->getFields();
 		$form_type = $_fields['form_settings']->form['type'];
 		$form_id = $this->_formData->getForm()->ID;
-		$form_count = CRED_StaticClass::$out['count'];
+		$form_count = CRED_Form_Count_Handler::get_instance()->get_main_count();
 		$post_type = $_fields['form_settings']->post['post_type'];
-		//$post_type=$this->_postType;
 
 		if ( $zebraForm->preview ) {
 			// add temporary content for form preview
@@ -560,17 +575,35 @@ class CRED_Form_Post extends CRED_Form_Base {
 			$fields = CRED_StaticClass::cf_sanitize_values_on_save( $fields );
 
 			if ( empty( $post->ID ) ) {
-				$new_post_id = $model->addPost( $post, array(
-					'fields' => $fields,
-					'info' => $fieldsInfo,
-					'removed' => $removed_fields,
-				), $taxonomies );
+				// TODO this seems never reached,
+				// even new post forms start with an autodraft
+				// so the post ID is set. I suspect we can shave a
+				// quitebbig chunk of codebase here...
+				// ... because none of the linked methods are ever called:
+				// - addPost
+				// - addFields
+				// - addTaxonomies
+				$new_post_id = $model->addPost( $post );
+				if ( !is_wp_error( $new_post_id ) ) {
+					$this->add_form_data( $new_post_id );
+					$model->addFields( $new_post_id, array(
+						'fields' => $fields,
+						'info' => $fieldsInfo,
+						'removed' => $removed_fields,
+					) );
+					$model->addTaxonomies( $new_post_id, $taxonomies );
+				}
 			} else {
-				$new_post_id = $model->updatePost( $post, array(
-					'fields' => $fields,
-					'info' => $fieldsInfo,
-					'removed' => $removed_fields,
-				), $taxonomies );
+				$new_post_id = $model->updatePost( $post );
+				if ( !is_wp_error( $new_post_id ) ) {
+					$this->add_form_data( $new_post_id );
+					$model->updateFields( $new_post_id, array(
+						'fields' => $fields,
+						'info' => $fieldsInfo,
+						'removed' => $removed_fields,
+					) );
+					$model->updateTaxonomies( $new_post_id, $post, $taxonomies );
+				}
 			}
 
 			if ( is_int( $new_post_id ) && $new_post_id > 0 ) {
@@ -623,4 +656,137 @@ class CRED_Form_Post extends CRED_Form_Base {
 		return $new_post_id;
 	}
 
+	/**
+	 * @param $post_id
+	 * @param null $attachedData
+	 *
+	 * @return mixed|void
+	 */
+	public function notify($post_id, $attachedData = null) {
+		$form = &$this->_formData;
+		$fields = $form->getFields();
+
+		// init notification manager if needed
+		if (
+			isset( $fields['notification']->enable )
+			&& $fields['notification']->enable
+			&& ! empty( $fields['notification']->notifications )
+		) {
+			// add extra placeholder codes
+			add_filter( 'cred_subject_notification_codes', array(&$this, 'extraSubjectNotificationCodes'), 10, 3 );
+			add_filter( 'cred_body_notification_codes', array(&$this, 'extraBodyNotificationCodes'), 10, 3 );
+
+			// add the post/user to notification management
+			$this->add_form_data( $post_id );
+			// send any notifications now if needed
+			CRED_Notification_Manager_Post::get_instance()->trigger_notifications( $post_id,
+				array(
+					'event' => 'form_submit',
+					'form_id' => $form->getForm()->ID,
+					'notification' => $fields['notification'],
+				), $attachedData );
+
+			// remove extra placeholder codes
+			remove_filter( 'cred_subject_notification_codes', array(&$this, 'extraSubjectNotificationCodes'), 10, 3 );
+			remove_filter( 'cred_body_notification_codes', array(&$this, 'extraBodyNotificationCodes'), 10, 3 );
+		}
+	}
+
+
+	/**
+	 * Adds form data to the post
+	 *
+	 * @param int $post_id Post ID.
+	 * @since 2.0.1
+	 */
+	public function add_form_data( $post_id ) {
+		$form = &$this->_formData;
+		$fields = $form->getFields();
+		// add the post/user to notification management
+		CRED_Notification_Manager_Post::get_instance()->add( $post_id, $form->getForm()->ID, $fields['notification']->notifications );
+	}
+
+
+	/**
+	 * @param $form
+	 * @param $fields
+	 * @param $model
+	 *
+	 * @return mixed
+	 */
+	protected function get_attached_data( $form, $fields, $model ) {
+		CRED_Notification_Manager_Post::get_instance()->set_current_attached_data( $form->getForm()->ID, $this->_post_id, $fields[ 'notification' ]->notifications );
+		$attachedData = $model->getAttachedData( $this->_post_id );
+
+		return $attachedData;
+	}
+
+	/**
+	 * Save if exist any parents, post_references and relationships association by post_id if exists and validate the form
+	 *
+	 * @param int $post_id
+	 * @param CRED_Rendering_Form $cred_form_rendering
+	 *
+	 * @return array
+	 * @since m2m
+	 */
+	public function save_any_relationships_by_id( $post_id, &$cred_form_rendering ) {
+		$results = array();
+		if ( ! CRED_Form_Relationship::get_instance()->is_m2m_enabled() ) {
+			return $results;
+		}
+
+		//Relationship Handling
+		if ( isset( CRED_StaticClass::$out[ 'fields' ][ 'relationships' ] )
+			&& ! empty( CRED_StaticClass::$out[ 'fields' ][ 'relationships' ] )
+		) {
+			$relationship_fields = CRED_StaticClass::$out[ 'fields' ][ 'relationships' ];
+			foreach ( $relationship_fields as $relationship_field ) {
+				//IF the relationship is really an element present in the cred form
+				if ( array_key_exists( $relationship_field[ 'key' ], CRED_StaticClass::$out[ 'form_fields' ] ) ) {
+					$results[ $relationship_field[ 'slug' ] ] = CRED_Form_Relationship::get_instance()->connect_to_post( $post_id, $relationship_field );
+				}
+			}
+		}
+
+		//Prf Relationship Handling
+		if ( isset( CRED_StaticClass::$out[ 'fields' ][ 'post_reference_fields' ] )
+			&& ! empty( CRED_StaticClass::$out[ 'fields' ][ 'post_reference_fields' ] )
+		) {
+			$post_reference_relationship_fields = CRED_StaticClass::$out[ 'fields' ][ 'post_reference_fields' ];
+			foreach ( $post_reference_relationship_fields as $post_reference_relationship_field ) {
+				//IF the Prf relationship is really an element present in the cred form
+				if ( array_key_exists( $post_reference_relationship_field[ 'key' ], CRED_StaticClass::$out[ 'form_fields' ] ) ) {
+					$results[ $post_reference_relationship_field[ 'slug' ] ] = CRED_Form_Relationship::get_instance()->connect_to_post( $post_id, $post_reference_relationship_field[ 'relationship' ] );
+				}
+			}
+		}
+
+		//Check for Legacy parent fields definition
+		if ( isset( CRED_StaticClass::$out[ 'fields' ][ 'parents' ] )
+			&& ! empty( CRED_StaticClass::$out[ 'fields' ][ 'parents' ] )
+		) {
+			$child_post_type = get_post_type( $post_id );
+			$parent_fields = CRED_StaticClass::$out[ 'fields' ][ 'parents' ];
+			foreach ( $parent_fields as $parent_field ) {
+				//IF the parents field is really an element present in the cred form
+				if ( array_key_exists( $parent_field[ 'slug' ], CRED_StaticClass::$out[ 'form_fields' ] ) ) {
+					$results[ $parent_field[ 'slug' ] ] = CRED_Form_Relationship::get_instance()->connect_to_post( $post_id, $parent_field[ 'relationship' ] );
+				}
+			}
+		}
+		if ( ! empty( $results ) ) {
+			foreach ( $results as $relationship_slug => $result ) {
+				if ( is_bool( $result )
+					&& $result === true
+				) {
+					continue;
+				}
+				// This is not going to actually render the error messages, but kep it for reference.
+				$cred_form_rendering->add_top_message( $result, $relationship_slug );
+			}
+		}
+		
+		return $results;
+	}
 }

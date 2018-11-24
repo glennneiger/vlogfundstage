@@ -127,7 +127,7 @@ class WPDD_GUI_EDITOR extends WPDD_Layouts_Editor{
 		return array(
 			'content' => (object) array(
 				'icon' => 'layouts-icons/content-layout.png',
-				'text' => $this->load_layout_box_content_template( 'content' ),
+				'text' => $this->load_layout_box_content_template( 'template' ),
 				'header' => __('This layout displays in \'the content\' area', 'ddl-layouts')
 			),
             'content_layout' => (object) array(
@@ -319,7 +319,7 @@ class WPDD_GUI_EDITOR extends WPDD_Layouts_Editor{
 
 		?>
 
-		<div class="where-used-ui js-where-used-ui dd-layouts-wrap">
+		<div class="where-used-ui js-where-used-ui">
 			<?php $this->add_select_post_types(); ?>
 		</div>
 
@@ -654,6 +654,7 @@ class WPDD_GUI_EDITOR extends WPDD_Layouts_Editor{
 					, 'layout_type_icons' => self::$layout_icons
                     , 'column_prefixes_data' => $this->get_framework_prefixes_data()
                     , 'column_prefix_default' => $this->settings->get_column_prefix()
+                    , 'WPDDL_VERSION' => WPDDL_VERSION
 				),
                 'DDL_OPN' => WPDD_LayoutsListing::change_layout_dialog_options_name()
 			)
@@ -672,10 +673,10 @@ class WPDD_GUI_EDITOR extends WPDD_Layouts_Editor{
             'bootstrap_dialog_title' => __( 'Select the Bootstrap column width', 'ddl-layouts' ),
             'save_no_close_view_iframe' => __( 'Save View', 'ddl-layouts'),
             'cred_create' => __( 'Do you really want to add a form for creating new posts in a template? Usually, it makes more sense to include forms that create new content in a page.', 'ddl-layouts'),
-			'cred_edit' => sprintf( __( 'You will need to link to this layout, to edit the current post or a post in a loop. %sInstructions%s', 'ddl-layouts'), '<a href="'.WPDDL_CRED_EDIT_FORMS.'">', '</a>' ),
-            'cred_edit_private' => sprintf( __( 'This form will edit the current page. Is this what you really want to do? %sLearn how to work with forms that edit the current post or a post in a loop.%s ', 'ddl-layouts'), '<a href="'.WPDDL_CRED_EDIT_FORMS.'">', '</a>' ),
+			'cred_edit' => sprintf( __( 'You will need to link to this layout, to edit the current post or a post in a loop. %sInstructions%s', 'ddl-layouts'), '<a href="'.WPDDL_CRED_EDIT_FORMS.'" target="_blank" >', '</a>' ),
+            'cred_edit_private' => sprintf( __( 'This form will edit the current page. Is this what you really want to do? %sLearn how to work with forms that edit the current post or a post in a loop.%s ', 'ddl-layouts'), '<a href="'.WPDDL_CRED_EDIT_FORMS.'" target="_blank" >', '</a>' ),
 			'cred_edit_user_private' => __( 'This form will edit the current user. ', 'ddl-layouts'),
-			'cred_edit_user' => sprintf( __( 'You will need to link to this layout, to edit the current user or a user in a loop. %sInstructions%s', 'ddl-layouts'), '<a href="'.WPDDL_CRED_EDIT_FORMS.'">', '</a>' ),
+			'cred_edit_user' => sprintf( __( 'You will need to link to this layout, to edit the current user or a user in a loop. %sInstructions%s', 'ddl-layouts'), '<a href="'.WPDDL_CRED_EDIT_FORMS.'" target="_blank">', '</a>' ),
 			'cred_create_user' =>  __( 'Do you really want to add a form for registering new users in a template? Usually, it makes more sense to include forms that create new users in a page. ', 'ddl-layouts'),
 		);
 
@@ -756,6 +757,36 @@ class WPDD_GUI_EDITOR extends WPDD_Layouts_Editor{
         echo ob_get_clean();
 
     }
+
+	/**
+	 * Determines if a Content Template is currently being edited.
+	 *
+	 * @return bool
+	 */
+	private function is_editing_ct() {
+		// The condition below is for the case where a Views Content Template is edited by the private layout Editor.
+		// In this case there is no need to display the preview button because, there is no post to preview it with.
+		if ( '' !== toolset_getget( 'source', '', array( 'ct-editor' ) ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines if an inline Content Template is currently being edited.
+	 *
+	 * @return bool
+	 */
+	private function is_editing_inline_ct() {
+		// The condition below is for the case where a Views Content Template is edited by the private layout Editor.
+		// In this case there is no need to display the preview button because, there is no post to preview it with.
+		if ( '' !== toolset_getget( 'source', '', array( 'views-editor' ) ) ) {
+			return true;
+		}
+
+		return false;
+	}
 
     private function track_help_video_watched(){
 	    $option = update_option( self::VIDEOS_OPTION_KEY . $this->get_current_user_id(), 'yes' );

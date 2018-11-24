@@ -46,7 +46,7 @@ class Toolset_Association_Query_Element_Selector_Default
 	 * @return string
 	 */
 	public function get_select_clauses() {
-		$results = array();
+		$results = $this->maybe_get_association_and_relationship();
 		foreach( $this->requested_roles as $role ) {
 			$results[] = $this->get_select_clause_for_role( $role );
 		}

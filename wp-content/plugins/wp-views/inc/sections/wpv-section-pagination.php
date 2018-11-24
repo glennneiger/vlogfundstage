@@ -20,10 +20,10 @@ class WPV_Editor_Pagination {
 	static function on_load() {
 		// Register the section in the screen options of the editor pages
 		add_filter( 'wpv_screen_options_editor_section_filter',		array( 'WPV_Editor_Pagination', 'wpv_screen_options_pagination' ), 10 );
-		add_filter( 'wpv_screen_options_wpa_editor_section_layout',	array( 'WPV_Editor_Pagination', 'wpv_screen_options_wpa_pagination' ), 10 );
+		add_filter( 'wpv_screen_options_wpa_editor_section_filter',	array( 'WPV_Editor_Pagination', 'wpv_screen_options_wpa_pagination' ), 10 );
 		// Register the section in the editor pages
 		add_action( 'wpv_action_view_editor_section_filter',		array( 'WPV_Editor_Pagination', 'wpv_add_view_pagination' ), 10, 2 );
-		add_action( 'wpv_action_wpa_editor_section_layout',			array( 'WPV_Editor_Pagination', 'wpv_add_archive_pagination' ), 10, 4 );
+		add_action( 'wpv_action_wpa_editor_section_filter',			array( 'WPV_Editor_Pagination', 'wpv_add_archive_pagination' ), 10, 3 );
 		// AJAX management
 		add_action( 'wp_ajax_wpv_update_pagination',				array( 'WPV_Editor_Pagination', 'wpv_update_pagination_callback' ) );
 		add_action( 'wp_ajax_wpv_update_archive_pagination',		array( 'WPV_Editor_Pagination', 'wpv_update_pagination_callback' ) );
@@ -61,7 +61,7 @@ class WPV_Editor_Pagination {
 	
 	static function wpv_screen_options_wpa_pagination( $sections ) {
 		$sections['pagination'] = array(
-			'name'		=> __( 'Pagination', 'wpv-views' ),
+			'name'		=> __( 'Pagination Settings', 'wpv-views' ),
 			'disabled'	=> true,
 		);
 		return $sections;
@@ -154,19 +154,19 @@ class WPV_Editor_Pagination {
 							?>
 						</li>
 						<li class="js-wpv-rollover-pagination-speed-container<?php if ( $view_settings['pagination']['type'] != 'rollover' ) { echo ' hidden'; } ?>">
-							<label><?php _e('Show each page for:', 'wpv-views')?></label>
-							<select name="wpv-pagination-speed" class="js-wpv-rollover-pagination-speed" autocomplete="off">
-								<?php 
-								if ( ! isset( $view_settings['pagination']['speed'] ) ) {
-									$view_settings['pagination']['speed'] = '5';
-								}
-								for ( $i = 1; $i < 20; $i++ ) {
-									?>
-									<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $view_settings['pagination']['speed'], (string) $i ); ?>><?php echo $i; ?></option>
-									<?php
-								}
-								?>
-							</select>&nbsp;<?php _e('seconds', 'wpv-views')?>
+							<?php
+							if ( ! isset( $view_settings['pagination']['speed'] ) ) {
+								$view_settings['pagination']['speed'] = '5';
+							}
+							?>
+							<label><?php esc_html_e( 'Show each page for:', 'wpv-views' )?></label>
+							<input type="number"
+							       name="wpv-pagination-speed"
+							       class="js-wpv-rollover-pagination-speed"
+							       size="5"
+							       value="<?php echo esc_attr( $view_settings['pagination']['speed'] ); ?>"
+							       autocomplete="off"
+							/> &nbsp;<?php esc_html_e( 'seconds', 'wpv-views' );?>
 						</li>
                         <li class="js-wpv-rollover-pagination-pause-on-hover-container<?php if ( $view_settings['pagination']['type'] != 'rollover' ) { echo ' hidden'; } ?>">
 	                        <?php $checked = ( isset( $view_settings['pagination']['pause_on_hover'] ) && $view_settings['pagination']['pause_on_hover'] ) ? ' checked="checked"' : '';?>
@@ -209,7 +209,7 @@ class WPV_Editor_Pagination {
 										$view_settings['pagination']['duration'] = 500;
 									}
 									?>
-									<input type="text" class="js-wpv-ajax-pagination-duration" value="<?php echo esc_attr( $view_settings['pagination']['duration'] ); ?>" size="5" autocomplete="off" />
+									<input type="number" class="js-wpv-ajax-pagination-duration" value="<?php echo esc_attr( $view_settings['pagination']['duration'] ); ?>" size="5" autocomplete="off" />
 								</label>
 								<?php _e('miliseconds', 'wpv-views'); ?>
 							</p>
@@ -373,376 +373,6 @@ class WPV_Editor_Pagination {
 					</ul>
 				</div>
 				<div class="js-wpv-toolset-messages"></div>
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				<!--
-				<form class="js-pagination-settings-form">
-					<?php
-					if ( ! isset( $view_settings['pagination'][0] ) ) {
-						$view_settings['pagination'][0] = 'disable';
-					}
-					if ( ! isset( $view_settings['pagination']['mode'] ) ) {
-						$view_settings['pagination']['mode'] = 'none';
-					}
-					?>
-					<input type="hidden" class="js-pagination-zero" name="pagination[]" value="<?php echo esc_attr( $view_settings['pagination'][0] ); ?>" autocomplete="off" />
-					<ul>
-						<li>
-							<input type="radio" id="wpv-settings-no-pagination" class="js-wpv-pagination-mode" name="pagination[mode]" value="none" <?php checked( $view_settings['pagination'][0], 'disable' ); ?> autocomplete="off" />
-							<label for="wpv-settings-no-pagination"><strong><?php _e('No pagination','wpv-views') ?></strong></label>
-							<span class="helper-text"><?php _e('All query results will display.','wpv-views') ?></span>
-						</li>
-						<li>
-							<?php $checked = ( $view_settings['pagination'][0]=='enable' && $view_settings['pagination']['mode']=='paged' ) ? ' checked="checked"' : ''; ?>
-							<input type="radio" id="wpv-settings-manual-pagination" class="js-wpv-pagination-mode" name="pagination[mode]" value="paged"<?php echo $checked; ?> autocomplete="off" />
-							<label for="wpv-settings-manual-pagination"><strong><?php _e( 'Pagination enabled with manual transition', 'wpv-views' ) ?></strong></label>
-							<span class="helper-text"><?php _e( 'The query results will display in pages, which visitors will switch.', 'wpv-views' ) ?></span>
-						</li>
-						<li>
-							<input type="radio" id="wpv-settings-ajax-pagination" class="js-wpv-pagination-mode" name="pagination[mode]" value="rollover" <?php checked( $view_settings['pagination']['mode'], 'rollover' ); ?> autocomplete="off" />
-							<label for="wpv-settings-ajax-pagination"><strong><?php _e( 'Pagination enabled with automatic transition', 'wpv-views' ) ?></strong></label>
-							<span class="helper-text"><?php _e( 'The query results will display in pages, which will switch automatically (good for sliders).', 'wpv-views' ) ?></span>
-						</li>
-					</ul>
-
-					<div class="wpv-advanced-setting wpv-pagination-options-box">
-
-						<h3 class="wpv-pagination-paged"><?php _e('Options for manual pagination','wpv-views'); ?></h3>
-						<ul class="wpv-pagination-paged">
-							<li>
-								<label><?php _e('Number of items per page:', 'wpv-views')?></label>
-								<select name="posts_per_page" autocomplete="off">
-									<?php if ( 
-										! isset( $view_settings['posts_per_page'] ) 
-										|| (
-											! apply_filters( 'wpv_filter_framework_has_valid_framework', false )
-											&& strpos( $view_settings['posts_per_page'], 'FRAME_KEY' ) !== false
-										)
-									) {
-										$view_settings['posts_per_page'] = '10';
-									}
-									foreach ( $posts_per_page_options as $index => $value ) {
-										?>
-										<option value="<?php echo esc_attr( $index ); ?>" <?php selected( $view_settings['posts_per_page'], $index, true ); ?>><?php echo $value; ?></option>
-										<?php
-									}
-									?>
-								</select>
-							</li>
-							<li>
-								<?php $checked = ( isset( $view_settings['ajax_pagination'][0] ) && $view_settings['ajax_pagination'][0] == 'disable') ? ' checked="checked"' : ''; ?>
-								<input type="radio" id="wpv-settings-ajax-pagination-disabled" class="js-wpv-ajax_pagination" value="disable" name="ajax_pagination[]"<?php echo $checked; ?> autocomplete="off" />
-								<label for="wpv-settings-ajax-pagination-disabled"><?php _e('Pagination updates the entire page', 'wpv-views'); ?></label>
-							</li>
-							<li>
-								<?php $checked = ( isset( $view_settings['ajax_pagination'][0] ) && $view_settings['ajax_pagination'][0] == 'enable') ? ' checked="checked"' : ''; ?>
-								<input type="radio" id="wpv-settings-ajax-pagination-enabled" class="js-wpv-ajax_pagination" value="enable" name="ajax_pagination[]"<?php echo $checked; ?> autocomplete="off" />
-								<label for="wpv-settings-ajax-pagination-enabled"><?php _e('Pagination updates only the view (use AJAX)', 'wpv-views'); ?></label>
-							</li>
-						</ul>
-
-						<ul class="wpv-pagination-paged-ajax" style="margin-bottom:0;">
-							<li>
-								<p>
-									<label><?php _e('Transition effect:', 'wpv-views')?></label>
-									<select id="wpv-settings-ajax-pagination-effect" name="ajax_pagination[style]" class="js-wpv-settings-ajax-pagination-effect" autocomplete="off">
-										<?php 
-										if ( ! isset( $view_settings['ajax_pagination']['style'] ) ) {
-											$view_settings['ajax_pagination']['style'] = 'fade';
-										} else if (
-											$view_settings['ajax_pagination']['style'] == 'fadefast' 
-											|| $view_settings['ajax_pagination']['style'] == 'fadeslow'
-										) {
-											$view_settings['ajax_pagination']['style'] = 'fade';
-										}
-										foreach ( $ajax_effects as $effect_slug => $effect_title ) {
-											?>
-											<option value="<?php echo esc_attr( $effect_slug ); ?>" <?php selected( $view_settings['ajax_pagination']['style'], $effect_slug ); ?>><?php echo esc_html( $effect_title ); ?></option>
-											<?php
-										} 
-										?>
-									</select>
-
-									<label>
-										<?php _e('with duration',  'wpv-views'); ?>
-										<?php 
-										if ( ! isset( $view_settings['ajax_pagination']['duration'] ) ) {
-											$view_settings['ajax_pagination']['duration'] = 500;
-										}
-										if ( $view_settings['ajax_pagination']['style'] == 'fadefast' ) {
-											$view_settings['ajax_pagination']['duration'] = 1;
-										}
-										if ( $view_settings['ajax_pagination']['style'] == 'fadeslow' ) {
-											$view_settings['ajax_pagination']['duration'] = 1500;
-										}
-										?>
-										<input type="text" class="transition-duration" name="ajax_pagination[duration]" value="<?php echo esc_attr( $view_settings['ajax_pagination']['duration'] ); ?>" size="5" autocomplete="off" />
-									</label>
-									<?php _e('miliseconds', 'wpv-views'); ?>
-									<span class="duration-error" style="color:red;display:none;">&larr; <?php _e('Please add a numeric value', 'wpv-views'); ?></span>
-								</p>
-								<p>
-									<button class="js-pagination-advanced button-secondary" type="button" data-closed="<?php echo esc_attr( __( 'Advanced options', 'wpv-views' ) ); ?>" data-opened="<?php echo esc_attr( __( 'Close advanced options', 'wpv-views' ) ); ?>" data-section="ajax_pagination" data-state="closed"><?php _e( 'Advanced options', 'wpv-views' ); ?></button>
-								</p>
-							</li>
-							<?php 
-							$global_enable_manage_history = apply_filters( 'wpv_filter_wpv_global_pagination_manage_history_status', true );
-							if ( $global_enable_manage_history ) {
-								?>
-								<li class="wpv-pagination-advanced hidden">
-									<?php 
-									$hide_on_infinite_scroll = '';
-									$show_on_infinite_scrol = ' style="display: none;"';
-									if ( $view_settings['ajax_pagination']['style'] == 'infinite' ) {
-										$hide_on_infinite_scroll = ' style="display: none;"';
-										$show_on_infinite_scrol = '';
-									}
-									?>
-									<div class="js-wpv-pagination-switch-history-management js-wpv-pagination-switch-on-infinite-scrolling-hide"<?php echo $hide_on_infinite_scroll; ?>>
-										<h4><?php _e( 'Browser history management', 'wpv-views' ); ?></h4>
-										<?php $checked = ( isset( $view_settings['pagination']['manage_history'] ) && ( $view_settings['pagination']['manage_history'] == 'on' ) ) ? ' checked="checked"' : '';?>
-										
-										<label>
-											<input type="checkbox" name="pagination[manage_history]" value="on"<?php echo $checked; ?> autocomplete="off" />
-											<?php _e('Update the URL of the page when paginating the View',  'wpv-views'); ?>
-										</label>
-									</div>
-									<div class="js-wpv-pagination-switch-infinite-scrolling-tolerance js-wpv-pagination-switch-on-infinite-scrolling-show"<?php echo $show_on_infinite_scrol; ?>>
-										<h4><?php _e( 'Infinite scrolling tolerance', 'wpv-views' ); ?></h4>									
-										<label>
-											<?php _e( 'Infinite scrolling tolerance, in pixels:', 'wpv-views' ); ?>
-											<input type="text" name="pagination[tolerance]" value="<?php echo ( isset( $view_settings['pagination']['tolerance'] ) ) ? $view_settings['pagination']['tolerance'] : ''; ?>" autocomplete="off" />
-										</label>
-									</div>
-								</li>
-								<?php
-								}
-							?>
-							<li class="wpv-pagination-advanced hidden">
-								<h4><?php _e( 'Cache and preload', 'wpv-views' ); ?></h4>
-								<?php $checked = ( isset( $view_settings['pagination']['preload_images'] ) && $view_settings['pagination']['preload_images'] ) ? ' checked="checked"' : '';?>
-								<label>
-									<input type="checkbox" name="pagination[preload_images]" value="1"<?php echo $checked; ?> autocomplete="off" />
-									<?php _e('Preload images before transition',  'wpv-views'); ?>
-								</label>
-							</li>
-						</ul>
-
-						<h3 class="wpv-pagination-rollover"><?php _e('Options for automatic pagination', 'wpv-views')?></h3>
-						<ul class="wpv-pagination-rollover" style="margin-bottom:0;">
-							<li>
-								<label for="rollover[posts_per_page]"><?php _e('Number of items per page:', 'wpv-views'); ?></label>
-								<select name="rollover[posts_per_page]" autocomplete="off">
-									<?php 
-									if ( 
-										! isset( $view_settings['rollover']['posts_per_page'] ) 
-										|| (
-											! apply_filters( 'wpv_filter_framework_has_valid_framework', false )
-											&& strpos( $view_settings['rollover']['posts_per_page'], 'FRAME_KEY' ) !== false
-										)
-									) {
-										$view_settings['rollover']['posts_per_page'] = '10';
-									}
-									foreach ( $posts_per_page_options as $index => $value ) {
-										?>
-										<option value="<?php echo esc_attr( $index ); ?>" <?php selected( $view_settings['rollover']['posts_per_page'], $index ); ?>><?php echo $value; ?></option>
-										<?php
-									}
-									?>
-								</select>
-							</li>
-							<li>
-								<label><?php _e('Show each page for:', 'wpv-views')?></label>
-								<select name="rollover[speed]" autocomplete="off">
-									<?php 
-									if ( ! isset( $view_settings['rollover']['speed'] ) ) {
-										$view_settings['rollover']['speed'] = '5';
-									}
-									for ( $i = 1; $i < 20; $i++ ) {
-										?>
-										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $view_settings['rollover']['speed'], (string) $i ); ?>><?php echo $i; ?></option>
-										<?php
-									}
-									?>
-								</select>&nbsp;<?php _e('seconds', 'wpv-views')?>
-							</li>
-							<li>
-								<label><?php _e('Transition effect:', 'wpv-views')?></label>
-								<select name="rollover[effect]" autocomplete="off">
-									<?php
-									if ( ! isset( $view_settings['rollover']['effect'] ) ) {
-										$view_settings['rollover']['effect'] = 'fade';
-									}
-									foreach ( $rollover_effects as $i => $title ) {
-										?>
-										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $view_settings['rollover']['effect'], (string) $i ); ?>><?php echo $title; ?></option>
-										<?php
-									}
-									?>
-								</select>
-								<label><?php _e('with duration',  'wpv-views'); ?></label>
-									<?php 
-									if ( ! isset( $view_settings['rollover']['duration'] ) ) {
-										$view_settings['rollover']['duration'] = 500;
-									}
-									?>
-									<input type="text" class="transition-duration" name="rollover[duration]" value="<?php echo esc_attr( $view_settings['rollover']['duration'] ); ?>" size="5" autocomplete="off" />
-								<?php _e('miliseconds', 'wpv-views'); ?>
-								<span class="duration-error" style="color:red;display:none;"><?php _e(' <- Please add a numeric value', 'wpv-views'); ?></span>
-								<p>
-									<button class="js-pagination-advanced button-secondary" type="button" data-closed="<?php _e( 'Advanced options', 'wpv-views' ) ?>" data-opened="<?php _e( 'Close advanced options', 'wpv-views' ) ?>" data-section="rollover" data-state="closed"><?php _e( 'Advanced options', 'wpv-views' ) ?></button>
-								</p>
-							</li>
-							<li class="wpv-pagination-advanced hidden">
-								<h4><?php _e( 'Cache and preload', 'wpv-views' ); ?></h4>
-								<?php $checked = ( isset( $view_settings['rollover']['preload_images'] ) && $view_settings['rollover']['preload_images'] ) ? ' checked="checked"' : '';?>
-								<label>
-									<input type="checkbox" name="rollover[preload_images]" value="1"<?php echo $checked; ?> autocomplete="off" />
-									<?php _e('Preload images before transition',  'wpv-views'); ?>
-								</label>
-							</li>
-						</ul>
-
-						<ul class="wpv-pagination-paged wpv-pagination-rollover wpv-pagination-shared wpv-pagination-advanced hidden" style="padding-bottom:10px;">
-							<li>
-								<?php $checked = ( isset( $view_settings['pagination']['cache_pages'] ) && $view_settings['pagination']['cache_pages'] ) ? ' checked="checked"' : '';?>
-								<p>
-									<label>
-										<input type="checkbox" name="pagination[cache_pages]" value="1"<?php echo $checked; ?> autocomplete="off" />
-										<?php _e('Cache pages',  'wpv-views'); ?>
-									</label>
-								</p>
-							</li>
-							<li>
-								<?php $checked = ( isset( $view_settings['pagination']['preload_pages'] ) && $view_settings['pagination']['preload_pages'] ) ? ' checked="checked"' : '';?>
-								<p>
-									<label>
-										<input type="checkbox" name="pagination[preload_pages]" value="1"<?php echo $checked; ?> autocomplete="off" />
-										<?php _e('Pre-load the next and previous pages - avoids loading delays when users move between pages',  'wpv-views'); ?>
-									</label>
-								</p>
-
-								<p>
-									<label><?php _e('Pages to pre-load: ',  'wpv-views'); ?></label>
-									<select name="pagination[pre_reach]" autocomplete="off">
-									<?php 
-										if ( ! isset( $view_settings['pagination']['pre_reach'] ) ) {
-											$view_settings['pagination']['pre_reach'] = 1;
-										}
-										for ( $i = 1; $i < 20; $i++ ) {
-											?>
-											<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $view_settings['pagination']['pre_reach'], $i ); ?>><?php echo $i; ?></option>
-											<?php
-										}
-										?>
-									</select>
-								</p>
-							</li>
-							<li>
-								<h4><?php _e('Spinners',  'wpv-views'); ?></h4>
-								<?php $checked = ( isset($view_settings['pagination']['spinner']) && $view_settings['pagination']['spinner'] == 'default' ) ? ' checked="checked"' : '';?>
-								<ul>
-									<li>
-										<label>
-											<input type="radio" class="js-wpv-pagination-spinner" name="pagination[spinner]" value="default"<?php echo $checked; ?> autocomplete="off" />
-											<?php _e('Spinner graphics from Views', 'wpv-views'); ?>
-										</label>
-										<ul id="wpv-spinner-default" class="wpv-spinner-selection wpv-mightlong-list wpv-setting-extra js-wpv-pagination-spinner-default">
-										<?php
-										if ( isset( $view_settings['pagination']['spinner_image'] ) ) {
-											$spinner_image = $view_settings['pagination']['spinner_image'];
-										} else {
-											$spinner_image = '';
-										}
-										$available_spinners = array();
-										$available_spinners = apply_filters( 'wpv_admin_available_spinners', $available_spinners );
-										foreach ( $available_spinners as $av_spinner ) {
-										?>
-											<li>
-												<label>
-													<input type="radio" name="pagination[spinner_image]" value="<?php echo esc_url( $av_spinner['url'] ); ?>" <?php checked( $spinner_image, $av_spinner['url'] ); ?> autocomplete="off" />
-													<img style="background-color: #FFFFFF;" src="<?php echo esc_url( $av_spinner['url'] ); ?>" title="<?php echo esc_attr( $av_spinner['title'] ); ?>" />
-												</label>
-											</li>
-										<?php } ?>
-										</ul>
-									</li>
-									<?php $checked = ( isset( $view_settings['pagination']['spinner'] ) && $view_settings['pagination']['spinner'] == 'uploaded' ) ? ' checked="checked"' : '';?>
-									<li>
-										<label>
-											<input type="radio" class="js-wpv-pagination-spinner" name="pagination[spinner]" value="uploaded"<?php echo $checked; ?> autocomplete="off" />
-											<?php _e('My custom spinner graphics', 'wpv-views'); ?>
-										</label>
-										<p id="wpv-spinner-uploaded" class="wpv-spinner-selection js-wpv-pagination-spinner-uploaded">
-											<input id="wpv-pagination-spinner-image" class="js-wpv-pagination-spinner-image" type="text" name="pagination[spinner_image_uploaded]" value="<?php echo isset( $view_settings['pagination']['spinner_image_uploaded'] ) ? esc_url( $view_settings['pagination']['spinner_image_uploaded'] ) : ''; ?>" autocomplete="off" />
-											<button class="button-secondary js-code-editor-toolbar-button js-wpv-media-manager" data-content="wpv-pagination-spinner-image" data-id="<?php echo esc_attr( $view_id ); ?>"><?php _e('Upload Image', 'wpv-views'); ?></button>
-											<?php 
-											$spinner_image_uploaded = '';
-											if ( isset( $view_settings['pagination']['spinner_image_uploaded'] ) && ! empty( $view_settings['pagination']['spinner_image_uploaded'] ) ) {
-												$spinner_image_uploaded = $view_settings['pagination']['spinner_image_uploaded'];
-											}
-											?>
-											<img id="wpv-pagination-spinner-image-preview" class="js-wpv-pagination-spinner-image-preview" src="<?php echo esc_url( $spinner_image_uploaded ); ?>" height="16"<?php if ( empty( $spinner_image_uploaded ) ) { echo ' style="display:none;"'; } ?> />
-										</p>
-									</li>
-									<li>
-									<?php $checked = ( isset( $view_settings['pagination']['spinner'] ) &&  $view_settings['pagination']['spinner'] == 'no' ) ? ' checked="checked"' : '';?>
-										<label>
-											<input type="radio" class="js-wpv-pagination-spinner" name="pagination[spinner]" value="no"<?php echo $checked; ?> autocomplete="off" />
-											<?php _e('No spinner graphics', 'wpv-views'); ?>
-										</label>
-									</li>
-								</ul>
-							</li>
-							<li>
-								<h4><?php _e('Callback function', 'wpv-views'); ?></h4>
-								<p><?php _e('Javascript function to execute after the pagination transition has been completed:', 'wpv-views'); ?></p>
-								<ul><?php // TODO add a callback to execute before the pagination starts ?>
-									<li>
-										<input id="wpv-pagination-callback-next" class="js-wpv-pagination-callback-next" type="text" name="pagination[callback_next]" value="<?php echo isset( $view_settings['pagination']['callback_next'] ) ? esc_attr( $view_settings['pagination']['callback_next'] ) : ''; ?>" autocomplete="off" />
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-
-				</form>
-				<div class="js-wpv-toolset-messages"></div>
-				-->
 			</div>
 			<span class="update-button-wrap auto-update js-wpv-update-action-wrap">
 				<span class="js-wpv-message-container"></span>
@@ -754,7 +384,7 @@ class WPV_Editor_Pagination {
 	<?php 
 	}
 
-	static function wpv_add_archive_pagination( $view_settings, $view_layout_settings, $view_id, $user_id ) {
+	static function wpv_add_archive_pagination( $view_settings, $view_id, $user_id ) {
 		$section_help_pointer	= WPV_Admin_Messages::edit_section_help_pointer( 'archive_pagination' );
 		
 		$ajax_effects			= apply_filters( 'wpv_filter_wpv_pagination_ajax_effects', self::$pagination_ajax_effects, $view_id );
@@ -773,7 +403,7 @@ class WPV_Editor_Pagination {
 		<div class="wpv-setting-container wpv-settings-pagination js-wpv-settings-pagination">
 			<div class="wpv-settings-header">
 				<h2>
-					<?php _e( 'Pagination', 'wpv-views' ) ?>
+					<?php _e( 'Pagination Settings', 'wpv-views' ) ?>
 					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
 						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
@@ -1055,7 +685,7 @@ class WPV_Editor_Pagination {
 		$new_settings['effect']			= ( isset( $settings['effect'] ) && ( isset( $ajax_effects[ $settings['effect'] ] ) || isset( $rollover_effects[ $settings['effect'] ] ) ) ) ? esc_attr( $settings['effect'] ) : 'fade';
 		$new_settings['duration']		= isset( $settings['duration'] ) ? (int) $settings['duration'] : 500;
 		$new_settings['pause_on_hover']	= ( isset( $settings['pause_on_hover'] ) && $settings['pause_on_hover'] == 'true' ) ? true : false;
-		$new_settings['speed']			= isset( $settings['speed'] ) ? (int) $settings['speed'] : 5;
+		$new_settings['speed']			= isset( $settings['speed'] ) && 0 < (int) $settings['speed'] ? (int) $settings['speed'] : 5;
 		$new_settings['manage_history']	= ( isset( $settings['manage_history'] ) && $settings['manage_history'] == 'true' ) ? 'on' : 'off';
 		$new_settings['tolerance']		= isset( $settings['tolerance'] ) ? (int) $settings['tolerance'] : '';
 		

@@ -381,7 +381,7 @@ if (typeof jQuery.fn.wpvToolsetHelp === 'undefined') {
 
             var $box = $('<div class="toolset-help ' + prms.classname + '"><div class="toolset-help-content"></div><div class="toolset-help-sidebar"></div></div>');
 
-            var $footer = $('<div class="toolset-help-footer"><button class="js-toolset-help-close js-toolset-help-close-forever button-secondary">' + wpv_help_box_texts.wpv_dont_show_it_again + '</button><button class="js-toolset-help-close js-toolset-help-close-once button-primary">' + wpv_help_box_texts.wpv_close + '</button></div>');
+            var $footer = $('<div class="toolset-help-footer"><button class="js-toolset-help-close js-toolset-help-close-forever button-secondary">' + toolset_utils_texts.wpv_dont_show_it_again + '</button><button class="js-toolset-help-close js-toolset-help-close-once button-primary">' + toolset_utils_texts.wpv_close + '</button></div>');
 
             if (prms.footer === true) {
                 $footer.appendTo($box);
@@ -1289,7 +1289,7 @@ WPV_Toolset.Utils.versionCompare = function (left, right) {
  * Get a query argument value from a URL.
  *
  * @param {string} name Argument name.
- * @param {string} url Source URL. Optional. If missing, current page URL will be used.
+ * @param {string} [url] Source URL. Optional. If missing, current page URL will be used.
  * @returns {string|null}
  * @since 2.1
  * @link http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
@@ -1374,7 +1374,7 @@ WPV_Toolset.Utils.Spinner = {
         return jQuery('<span class="spinner"></span>');
     },
     show: function (spinner, show) {
-        if (typeof(show) == 'undefined') {
+        if (typeof(show) === 'undefined') {
             show = true;
         }
 
@@ -1437,7 +1437,7 @@ WPV_Toolset.Utils.Ajax = {
      */
     call: function (data, successCallback, failCallback) {
 
-        if (typeof(failCallback) == 'undefined') {
+        if (typeof(failCallback) === 'undefined') {
             failCallback = successCallback;
         }
 

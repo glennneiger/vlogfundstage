@@ -624,6 +624,7 @@ function wpcf_pr_admin_has_pagination( $post, $post_type, $page, $prev, $next,
  *
  * @param type $parent_post_id
  * @return string
+ * @refactoring !! Every action involving this code is extremely time-consuming.
  */
 function wpcf_pr_admin_save_post_hook( $parent_post_id ) {
 

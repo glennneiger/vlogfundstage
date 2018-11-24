@@ -43,7 +43,6 @@ class WPToolset_Forms_Validation {
             'site_url' => get_site_url(),
             'form_id' => $formID,
             'use_ajax' => (!Toolset_Utils::is_real_admin() && isset( $formSET->form['use_ajax'] ) && $formSET->form['use_ajax'] == 1) ? true : false,
-            'operation_ok' => __( 'Operation completed successfully', 'wpv-views' ),
             'operation_ko' => __( 'There was an error while submitting the form', 'wpv-views' ),
             'delay_message' => __( 'You are being redirectd. Please Wait.', 'wpv-views' )
                 )

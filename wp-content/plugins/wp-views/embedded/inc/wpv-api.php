@@ -533,3 +533,17 @@ function is_wpv_content_template_assigned() {
 	}
 	return false;
 }
+/**
+ * wpv_is_views_lite
+ *
+ * Check if Views Lite version active
+ *
+ * @return bool
+ *
+ */
+function wpv_is_views_lite(){
+	if ( defined( 'WPV_LITE' ) ) {
+		return WPV_LITE;
+	}
+	return false;
+}

@@ -29,12 +29,19 @@ $available_editors = array(
 	),
 	'Toolset_User_Editors_Editor_Avada' => array(
 		'backend' => 'Toolset_User_Editors_Editor_Screen_Avada_Backend',
+		'frontend' => 'Toolset_User_Editors_Editor_Screen_Avada_Frontend',
 	),
 	'Toolset_User_Editors_Editor_Divi' => array(
 		'backend' => 'Toolset_User_Editors_Editor_Screen_Divi_Backend',
 		'frontend' => 'Toolset_User_Editors_Editor_Screen_Divi_Frontend',
 	),
 );
+
+if ( version_compare( WPV_VERSION, '2.6-b1', '>' ) ) {
+	$available_editors['Toolset_User_Editors_Editor_Gutenberg'] = array(
+		'backend' => 'Toolset_User_Editors_Editor_Screen_Gutenberg_Backend',
+	);
+}
 
 foreach ( $available_editors as $editor_main_class => $editor_screen_classes ) {
 	$editor = new $editor_main_class( $medium );

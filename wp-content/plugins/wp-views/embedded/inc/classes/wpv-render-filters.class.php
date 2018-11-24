@@ -204,7 +204,22 @@ function wpv_preprocess_foreach_shortcodes($content) {
 	// Back up current registered shortcodes and clear them all out
 	$orig_shortcode_tags = $shortcode_tags;
 	remove_all_shortcodes();			
-	add_shortcode( 'wpv-for-each', 'wpv_for_each_shortcode' );
+	
+	// Register the wpv-for-each shortcode only
+	$relationship_service = new Toolset_Relationship_Service();
+	$attr_item_chain = new Toolset_Shortcode_Attr_Item_M2M(
+		new Toolset_Shortcode_Attr_Item_Legacy(
+			new Toolset_Shortcode_Attr_Item_Id(),
+			$relationship_service
+		),
+		$relationship_service
+	);
+	$factory = new WPV_Shortcode_Factory( $attr_item_chain );
+	if ( $shortcode = $factory->get_shortcode( 'wpv-for-each') ) {
+		add_shortcode( 'wpv-for-each', array( $shortcode, 'render' ) );
+	};
+	
+	
 	$expression = "/\\[wpv-for-each.*?\\](.*?)\\[\\/wpv-for-each\\]/is";
 	$counts = preg_match_all( $expression, $content, $matches );
 	while ( $counts ) {

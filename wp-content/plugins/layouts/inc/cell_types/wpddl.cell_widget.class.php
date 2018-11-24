@@ -7,7 +7,7 @@ if( ddl_has_feature('widget-cell') === false ){
 }
 
 
-if (!class_exists('Layouts_cell_widget')) {
+if ( !class_exists( 'Layouts_cell_widget', false ) ) {
     class Layouts_cell_widget{
 
 
@@ -117,7 +117,7 @@ if (!class_exists('Layouts_cell_widget')) {
                 <li>
                     <label for="<?php the_ddl_name_attr('widget_type'); ?>"><?php _e('Widget type:', 'ddl-layouts' ); ?></label>
                     <select name="<?php the_ddl_name_attr('widget_type'); ?>" data-nonce="<?php echo wp_create_nonce( 'ddl-get-widget' ); ?>">
-                        <option value="" class="ddl-no-selection">--- <?php _e( 'Select Widegt Type', 'ddl-layouts' );?> ---</option>
+                        <option value="" class="ddl-no-selection">--- <?php _e( 'Select Widget Type', 'ddl-layouts' );?> ---</option>
                         <?php foreach($widgets as $widget): ?>
                                 <?php if(  !is_array($widget->widget_options['classname'] ) &&  !is_array( $widget->name ) ): ?>
                                         <option value="<?php echo $widget->widget_options['classname']; ?>"><?php echo $widget->name; ?></option>

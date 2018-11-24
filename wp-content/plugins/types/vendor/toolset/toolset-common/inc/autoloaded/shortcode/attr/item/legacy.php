@@ -64,6 +64,39 @@ class Toolset_Shortcode_Attr_Item_Legacy extends Toolset_Shortcode_Attr_Item_Id 
 
 			return $this->chain_link->get( $data );
 		}
+		
+		if( $role_slug == 'current_page' ) {
+			if ( is_single() || is_page() ) {
+				global $wp_query;
+				if ( isset( $wp_query->posts[0] ) ) {
+					$current_post = $wp_query->posts[0];
+					return $this->return_single_id( $current_post->ID );
+				}
+			}
+			
+			/**
+			 * Get the current top post.
+			 *
+			 * Some Toolset plugins might need to set the top current post under some scenarios,
+			 * like Toolset Views when doing AJAX pagination or AJAX custom search.
+			 * In those cases, they can use this filter to get the top current post they are setting
+			 * and override the ID to apply as the $current_page value.
+			 *
+			 * @not Toolset plugins should set this just in time, not globally, when needed, meaning AJAX calls or whatever.
+			 *
+			 * @param $top_post 	null
+			 *
+			 * @return $top_post 	null/WP_Post object 	The top current post, if set by any Toolset plugin.
+			 *
+			 * @since 2.3.0
+			 */
+			$top_current_post = apply_filters( 'toolset_filter_get_top_current_post', null );
+			if ( $top_current_post ) {
+				return $this->return_single_id( $top_current_post->ID );
+			}
+
+			return $this->chain_link->get( $data );
+		}
 
 		if( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
 			// m2m disabled

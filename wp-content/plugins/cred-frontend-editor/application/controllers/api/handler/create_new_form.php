@@ -87,6 +87,9 @@ class CRED_Api_Handler_Create_New_Form extends CRED_Api_Handler_Abstract impleme
 	 * @return null|object
 	 */
 	private function create_users_form( $name, $mode = 'new', $user_role = 'guest', $autogenerate_user = false, $autogenerate_password = true, $autogenerate_nickname = true ){
+		if ( ! class_exists( 'CredUserFormCreator' ) ) {
+			require_once CRED_ABSPATH . '/library/toolset/cred/embedded/classes/CredUserFormCreator.php';
+		}
 		$id = CredUserFormCreator::cred_create_form( $name, $mode, array( $user_role ), $autogenerate_user, $autogenerate_password, $autogenerate_nickname);
 
 		if( $id ){
@@ -101,6 +104,9 @@ class CRED_Api_Handler_Create_New_Form extends CRED_Api_Handler_Abstract impleme
 	}
 
 	private function create_post_form( $name, $mode = 'new', $post_type = 'post' ){
+		if ( ! class_exists( 'CredFormCreator' ) ) {
+			require_once CRED_ABSPATH . '/library/toolset/cred/embedded/classes/CredFormCreator.php';
+		}
 		$id = CredFormCreator::cred_create_form( $name, $mode, $post_type );
 
 		if( $id ){

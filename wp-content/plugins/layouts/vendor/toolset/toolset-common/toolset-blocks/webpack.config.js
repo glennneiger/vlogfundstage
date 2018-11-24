@@ -1,6 +1,8 @@
 const path = require( 'path' );
+// const webpack = require("webpack");
 const ExtractTextPlugin = require( 'extract-text-webpack-plugin' );
 const StyleLintPlugin = require('stylelint-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 // const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 // Const BrowserSyncPlugin = require( 'browser-sync-webpack-plugin' );
 
@@ -23,7 +25,10 @@ const extractConfig = {
         {
             loader: 'postcss-loader',
             options: {
-                plugins: [ require( 'autoprefixer' ) ]
+                plugins: [
+                    require( 'autoprefixer' ),
+                    // require( 'cssnano' ),
+                ]
             }
         },
         {
@@ -41,10 +46,9 @@ const extractConfig = {
 module.exports = {
     entry: {
         'view.block.editor': './blocks/view/index.js',
-        'view.block.frontend' : './blocks/view/frontend.js',
         'custom.html.block.editor': './blocks/custom-html/index.js',
 		'ct.block.editor': './blocks/ct/index.js',
-		'ct.block.frontend' : './blocks/ct/frontend.js',
+		'cred.form.block.editor': './blocks/cred-form/index.js',
     },
     output: {
         path: path.resolve( __dirname, 'assets' ),
@@ -58,7 +62,7 @@ module.exports = {
             {
                 enforce: 'pre',
                 test: /\.js$/,
-                exclude: /node_modules/,
+                exclude: /(node_modules|bower_components)/,
                 loader: 'eslint-loader',
                 options: {
                     emitWarning: true,
@@ -78,7 +82,7 @@ module.exports = {
             {
                 test: /editor\.s?css$/,
                 use: editBlocksCSSPlugin.extract( extractConfig )
-            }
+            },
         ]
     },
     plugins: [
@@ -86,8 +90,16 @@ module.exports = {
         editBlocksCSSPlugin,
         new StyleLintPlugin({
             syntax: 'scss'
-        })
+        }),
+		new CopyWebpackPlugin([
+			// third-party CSS
+			{ from: './node_modules/react-select/dist/react-select.css', to: './css/third-party'  },
+		]),
+        // new webpack.optimize.UglifyJsPlugin({
+		// 	include: /\.min\.js$/,
+		// }),
         // new UglifyJSPlugin({
+			// test: /\.min\.js($|\?)/i,
         //     uglifyOptions: {
         //         mangle: {
         //             // Dont mangle these

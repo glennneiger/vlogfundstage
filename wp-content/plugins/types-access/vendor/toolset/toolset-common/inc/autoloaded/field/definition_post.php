@@ -7,7 +7,7 @@
  * 
  * @since 2.0
  */
-final class Toolset_Field_Definition_Post extends Toolset_Field_Definition {
+class Toolset_Field_Definition_Post extends Toolset_Field_Definition {
 
 	/**
 	 * Get an accessor for a specific field instance.
@@ -84,4 +84,12 @@ final class Toolset_Field_Definition_Post extends Toolset_Field_Definition {
 		return new Toolset_Field_Instance_Post( $this, $element_id );
 	}
 
+
+	/**
+	 * @return string Domain where this field belongs to.
+	 * @since 2.5.8
+	 */
+	public function get_domain() {
+		return Toolset_Element_Domain::POSTS;
+	}
 }

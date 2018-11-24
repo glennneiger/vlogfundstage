@@ -1,11 +1,12 @@
 <?php 
 /*
   Plugin Name: Toolset WooCommerce Views
-  Plugin URI: http://wp-types.com/documentation/views-inside/woocommerce-views/
+  Plugin URI: https://toolset.com/documentation/views-inside/woocommerce-views/
   Description: Lets you add e-commerce functionality to any site, running any theme.
   Author: OnTheGoSystems
   Author URI: http://www.onthegosystems.com
-  Version: 2.7.6
+  Version: 2.7.7
+  WC tested up to: 3.3.0
  */
 
 
@@ -21,10 +22,10 @@ if(defined('WOOCOMMERCE_VIEWS_PATH')) return;
 
 define('WOOCOMMERCE_VIEWS_PATH', dirname(__FILE__) . '/Class_WooCommerce_Views.php');
 
-define('WC_VIEWS_VERSION', '2.7.6');
+define('WC_VIEWS_VERSION', '2.7.7');
 
 if (!defined('WPVDEMO_TOOLSET_DOMAIN')) {
-	define('WPVDEMO_TOOLSET_DOMAIN', 'wp-types.com');
+	define('WPVDEMO_TOOLSET_DOMAIN', 'toolset.com');
 }
 
 if(!class_exists('Class_WooCommerce_Views'))

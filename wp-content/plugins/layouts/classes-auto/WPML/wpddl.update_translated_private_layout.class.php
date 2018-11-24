@@ -2,7 +2,6 @@
 
 /**
  * Class WPDDL_Update_Translated_Private_layout
- * @deprecated
  */
 class WPDDL_Update_Translated_Private_Layout {
 
@@ -15,16 +14,11 @@ class WPDDL_Update_Translated_Private_Layout {
 		$this->private_layout = $private_layout;
 	}
 
-	/**
-	 * @deprecated
-	 */
 	public function add_hooks() {
-		//
+		add_action('ddl_update_translated_posts', array( $this, 'update_translated_layouts_when_original_is_updated' ), 10, 1);
 	}
 
-	/**
-	 * @deprecated
-	 */
+
 	public function update_translated_layouts_when_original_is_updated( $post_id ) {
 		$wpml_status = new WPDDL_WPML_Status();
 		if ( $wpml_status->is_string_translation_active() ) {

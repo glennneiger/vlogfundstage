@@ -235,7 +235,7 @@ function wpv_wordpress_archives_defaults( $settings = 'view_settings', $purpose 
 												'preload_pages'				=> true,
 												'pre_reach'					=> 1,
 												'spinner'					=> 'builtin',
-												'spinner_image'				=> WPV_URL . '/res/img/ajax-loader.gif',
+												'spinner_image'				=> WPV_URL_EMBEDDED . '/res/img/ajax-loader.gif',
 												'spinner_image_uploaded'	=> '',
 												'callback_next'				=> '',
 											),
@@ -326,8 +326,8 @@ function wpv_add_v_icon_to_codemirror( $editor_id ) {
 		// Add a basic button that will generate the dialog for posts, 
 		// and then force generating the dialog for taxonomy terms and users.
 		do_action( 'wpv_action_wpv_generate_fields_and_views_button', $editor_id, $fields_and_views_button_args );
-		do_action( 'wpv_action_wpv_generate_shortcodes_dialog', 'taxonomy' );
-		do_action( 'wpv_action_wpv_generate_shortcodes_dialog', 'users' );
+		do_action( 'wpv_action_wpv_require_shortcodes_dialog_target', 'taxonomy' );
+		do_action( 'wpv_action_wpv_require_shortcodes_dialog_target', 'users' );
 		
     } else if (
 		isset( $_GET['page'] )
@@ -412,6 +412,8 @@ function wpv_include_types_termmeta_fields( $menu ) {
 					'wp-types-term-group',
 					'wpcf-termmeta' 
 				);
+				// @since m2m wpcf_admin_fields_get_fields_by_group returns strings for repeatng fields groups
+				$fields = array_filter( $fields, 'is_array' );
 				if ( ! empty( $fields ) ) {
 					foreach ( $fields as $field_id => $field ) {
 						$menu[$group['name']][$field['name']] = array(
@@ -569,6 +571,8 @@ function wpv_layout_users_V( $menu ) {
 					'wp-types-user-group',
 					'wpcf-usermeta' 
 				);
+				// @since m2m wpcf_admin_fields_get_fields_by_group returns strings for repeatng fields groups
+				$fields = array_filter( $fields, 'is_array' );
 				if ( ! empty( $fields ) ) {
 					foreach ( $fields as $field_id => $field ) {
 						$menu[$group['name']][$field['name']] = array(

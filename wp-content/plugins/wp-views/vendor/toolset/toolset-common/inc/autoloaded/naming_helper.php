@@ -189,7 +189,7 @@ class Toolset_Naming_Helper {
 					$conflict = array(
 						'conflicting_id' => $slug,
 						'message' => sprintf(
-							__( 'The same value is already used in permalink rewrite rules for the custom post type "%s". Using it again can cause issues with permalinks.', 'wpcf' ),
+							__( 'The same value is already used in permalink rewrite rules for the custom post type "%s". Using it again can cause issues with permalinks.', 'wpv-views' ),
 							esc_html( $slug )
 						)
 					);
@@ -252,7 +252,7 @@ class Toolset_Naming_Helper {
 					$conflict = array(
 						'conflicting_id' => $slug,
 						'message' => sprintf(
-							__( 'The same value is already used in permalink rewrite rules for the taxonomy "%s". Using it again can cause issues with permalinks.', 'wpcf' ),
+							__( 'The same value is already used in permalink rewrite rules for the taxonomy "%s". Using it again can cause issues with permalinks.', 'wpv-views' ),
 							esc_html( $slug )
 						)
 					);
@@ -285,7 +285,7 @@ class Toolset_Naming_Helper {
 			$conflict = array(
 				'conflicting_id' => $value,
 				'message' => sprintf(
-					__( 'The post type slug "%s" is reserved by WordPress.', 'wpcf' ),
+					__( 'The post type slug "%s" is reserved by WordPress.', 'wpv-views' ),
 					esc_html( $value )
 				)
 			);
@@ -298,11 +298,11 @@ class Toolset_Naming_Helper {
 			get_post_types( array(), 'names' )
 		);
 
-		if( in_array( $value, $post_types ) ) {
+		if( in_array( $value, $post_types, true ) ) {
 			$conflict = array(
 				'conflicting_id' => $value,
 				'message' => sprintf(
-					__( 'The post type slug "%s" is already registered or defined by Types.', 'wpcf' ),
+					__( 'The post type slug "%s" is already registered or defined by Types.', 'wpv-views' ),
 					esc_html( $value )
 				)
 			);
@@ -322,7 +322,7 @@ class Toolset_Naming_Helper {
 			$conflict = array(
 				'conflicting_id' => $value,
 				'message' => sprintf(
-					__( 'The post type slug "%s" cannot be used because there is already a page by that name.', 'wpcf' ),
+					__( 'The post type slug "%s" cannot be used because there is already a page by that name.', 'wpv-views' ),
 					esc_html( $value )
 				)
 			);
@@ -355,7 +355,7 @@ class Toolset_Naming_Helper {
 				$conflict = array(
 					'conflicting_id' => $value,
 					'message' => sprintf(
-						__( 'The relationship slug "%s" is already being used.', 'wpcf' ),
+						__( 'The relationship slug "%s" is already being used.', 'wpv-views' ),
 						$value
 					)
 				);

@@ -72,13 +72,20 @@ function wpv_ct_editor_title_section( $ct )
         </div>
     </div>
 
-    <div id="edit-slug-box">
+    <div id="edit-slug-box" style="padding-left:0">
         <label for="slug">
             <?php _e( 'Slug of this Content Template', 'wpv-views' ); ?>
         </label>
         <!--suppress HtmlFormInputWithoutLabel -->
         <input id="wpv-slug" name="slug" type="text"
                data-bind="textInput: slugAccepted"/>
+		
+		<span data-bind="visible: showAddDescriptionButton">
+			&bull;
+            <button class="button-secondary" data-bind="click: showDescriptionField">
+                <?php _e('Add description', 'wpv-views'); ?>
+            </button>
+        </span>
 
         <?php
             if( $ct->can_be_trashed ) {
@@ -94,14 +101,6 @@ function wpv_ct_editor_title_section( $ct )
 
     </div>
 
-    <p>
-        <span data-bind="visible: showAddDescriptionButton">
-            <button class="button-secondary" data-bind="click: showDescriptionField">
-                <?php _e('Add description', 'wpv-views'); ?>
-            </button>
-        </span>
-    </p>
-
     <div class="wpv-description-container" data-bind="visible: isDescriptionVisible">
         <p>
             <label for="wpv-description">
@@ -115,7 +114,7 @@ function wpv_ct_editor_title_section( $ct )
         </p>
     </div>
 
-    <p class="update-button-wrap">
+    <p class="update-button-wrap" style="margin-bottom:0">
         <span class="js-wpv-message-container"></span>
         <span class="spinner ajax-loader" data-bind="spinnerActive: isTitleSectionUpdating"></span>
         <button data-bind="

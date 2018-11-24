@@ -23,6 +23,8 @@ DDLayout.Breadcrumbs = function(current_layout)
 
         jQuery(document).on('click', '.js-layout-parent-parent, .js-layout-parent', {}, self.click_handler);
 
+        jQuery( '.js-layouts-icon-wrap' ).mouseenter( self.showTooltipForIcon ).mouseleave( self.hideTooltipForIcon );
+
         var $icon = jQuery('.js-layouts-icon');
 
         jQuery( 'body' ).on( 'click', {icon:$icon}, self.document_click_handler);
@@ -45,6 +47,21 @@ DDLayout.Breadcrumbs = function(current_layout)
         Toolset.hooks.removeAction( 'ddl-parent-layout-settings-dialog-opens', self.settings_opens_callback);
 
         Toolset.hooks.removeFilter( 'ddl-icon-template-conditions-changed', self.handle_icon_change );
+    };
+
+    self.showTooltipForIcon = function () {
+        jQuery('.js-layouts-icon-wrap').pointer({
+            content: function () {
+                return '<h3>'+DDLayout_settings.DDL_JS.strings.layout_hierarchy_settings_tooltip+'</h3>';
+            },
+            pointerClass: 'wp-toolset-pointer wp-toolset-layouts-pointer ddl-only-header-pointer',
+            buttons: function () {
+                return null;
+            },
+        }).pointer('open');
+    };
+    self.hideTooltipForIcon = function () {
+        jQuery('.js-layouts-icon-wrap').pointer('close');
     };
 
     self.populate_parents_array = function () {

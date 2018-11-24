@@ -190,7 +190,13 @@ class WPDD_registered_cell extends WPDD_layout_cell {
 			
 			$content = $this->get_translated_content($target->get_context());
             $content['is_private_layout'] = $target->is_private_layout;
-			$ddl_fields_api->set_current_cell_content($content);
+
+            if( isset($this->cell_data['translatable_fields']) ){
+	            $ddl_fields_api->set_current_cell_content( $content, $this->cell_data['translatable_fields'], $target->get_context() );
+            } else {
+	            $ddl_fields_api->set_current_cell_content( $content );
+            }
+
 			$content = call_user_func($this->cell_data['cell-content-callback'], $content);
 		} else {
 			$content = '';

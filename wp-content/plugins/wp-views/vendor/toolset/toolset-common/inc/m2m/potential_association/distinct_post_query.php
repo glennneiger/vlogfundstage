@@ -1,5 +1,7 @@
 <?php
 
+use OTGS\Toolset\Common\M2M\PotentialAssociation as potentialAssociation;
+
 /**
  * Augments WP_Query to check whether posts are associated with a particular other element ID,
  * and dismisses those posts.
@@ -11,100 +13,13 @@
  *
  * @since m2m
  */
-class Toolset_Relationship_Distinct_Post_Query {
-
-	/** @var Toolset_Relationship_Definition */
-	private $relationship;
-
-	/** @var int */
-	private $for_element_id;
-
-	/** @var IToolset_Relationship_Role_Parent_Child */
-	private $target_role;
-
-	/** @var null|Toolset_Relationship_Table_Name */
-	private $_table_names;
-
-	/** @var null|wpdb */
-	private $_wpdb;
+class Toolset_Relationship_Distinct_Post_Query extends potentialAssociation\WpQueryAdjustment {
 
 
-	/**
-	 * Toolset_Relationship_Distinct_Post_Query constructor.
-	 *
-	 * @param Toolset_Relationship_Definition $relationship
-	 * @param IToolset_Relationship_Role_Parent_Child $target_role Target role of the relationships (future role of
-	 *     the posts that are being queried)
-	 * @param int $for_element_id ID of the element to check against.
-	 * @param Toolset_Relationship_Table_Name|null $table_names_di
-	 * @param wpdb|null $wpdb_di
-	 */
-	public function __construct(
-		Toolset_Relationship_Definition $relationship,
-		IToolset_Relationship_Role_Parent_Child $target_role,
-		$for_element_id,
-		Toolset_Relationship_Table_Name $table_names_di = null,
-		wpdb $wpdb_di = null
-	) {
-		$this->relationship = $relationship;
-		$this->for_element_id = $for_element_id;
-		$this->target_role = $target_role;
-
-		$this->_table_names = $table_names_di;
-		$this->_wpdb = $wpdb_di;
-	}
-
-
-	private function is_actionable() {
+	protected function is_actionable() {
 		return $this->relationship->is_distinct();
 	}
 
-
-	/**
-	 * Hooks to filters in order to add extra clauses to the MySQL query.
-	 */
-	public function before_query() {
-		if( ! $this->is_actionable() ) {
-			return;
-		}
-
-		add_filter( 'posts_join', array( $this, 'add_join_clauses' ) );
-
-		add_filter( 'posts_where', array( $this, 'add_where_clauses' ) );
-	}
-
-
-	/**
-	 * Cleanup - unhooks the filters added in before_query().
-	 */
-	public function after_query() {
-		if( ! $this->is_actionable() ) {
-			return;
-		}
-
-		remove_filter( 'posts_join', array( $this, 'add_join_clauses' ) );
-
-		remove_filter( 'posts_where', array( $this, 'add_where_clauses' ) );
-	}
-
-
-	private function get_table_names() {
-		if( null === $this->_table_names ) {
-			$this->_table_names = new Toolset_Relationship_Table_Name();
-		}
-
-		return $this->_table_names;
-	}
-
-
-	private function get_wpdb() {
-		if( null === $this->_wpdb ) {
-			global $wpdb;
-			$this->_wpdb = $wpdb;
-		}
-
-		return $this->_wpdb;
-	}
 
 
 	/**
@@ -115,25 +30,19 @@ class Toolset_Relationship_Distinct_Post_Query {
 	 *
 	 * Otherwise, those columns will be NULL, because we're doing a LEFT JOIN here.
 	 *
+	 * If WPML is active, we also do the same comparison for the default language version of the
+	 * queried post, if it exists.
+	 *
 	 * @param string $join
 	 *
 	 * @return string
 	 */
 	public function add_join_clauses( $join ) {
-		$association_table = $this->get_table_names()->association_table();
-		$posts_table_name = $this->get_wpdb()->posts;
-		$target_element_column = $this->target_role->get_name() . '_id';
-		$for_element_column = $this->target_role->other() . '_id';
+		$this->join_manager->register_join( potentialAssociation\JoinManager::JOIN_ASSOCIATIONS_TABLE );
 
-		$join .= $this->get_wpdb()->prepare(
-			" LEFT JOIN {$association_table} AS toolset_associations ON ( 
-				toolset_associations.relationship_id = %d
-				AND toolset_associations.{$target_element_column} = {$posts_table_name}.ID
-				AND toolset_associations.{$for_element_column} = %d    
-			) ",
-			$this->relationship->get_row_id(),
-			$this->for_element_id
-		);
+		if( $this->wpml_service->is_wpml_active_and_configured() ) {
+			$this->join_manager->register_join( potentialAssociation\JoinManager::JOIN_DEFAULT_LANG_ASSOCIATIONS );
+		}
 
 		return $join;
 	}
@@ -146,6 +55,9 @@ class Toolset_Relationship_Distinct_Post_Query {
 	 * column with $for_element: That means there's no association between the queried
 	 * post and $for_element, and we can offer the post as a result.
 	 *
+	 * If WPML is active, we also have to check that there's no default language translation
+	 * of the queried post that would be part of such an association.
+	 *
 	 * @param string $where
 	 *
 	 * @return string
@@ -153,6 +65,11 @@ class Toolset_Relationship_Distinct_Post_Query {
 	public function add_where_clauses( $where ) {
 		$for_element_column = $this->target_role->other() . '_id';
 		$where .= " AND ( toolset_associations.{$for_element_column} IS NULL ) ";
+
+		if( $this->wpml_service->is_wpml_active_and_configured() ) {
+			$where .= " AND ( default_lang_association.{$for_element_column} IS NULL ) ";
+		}
+
 		return $where;
 	}
 

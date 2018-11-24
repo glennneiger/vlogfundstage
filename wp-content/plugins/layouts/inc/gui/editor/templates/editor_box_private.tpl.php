@@ -1,6 +1,18 @@
+<?php
+	// When editing a Content Template with Layouts, the hierarchy settings should be hidden because there are no such settings
+	// for Content Templates.
+	$maybe_hidden_class_for_cts = $this->is_editing_ct() || $this->is_editing_inline_ct() ?
+		' hidden' :
+		'';
+
+	// When editing an inline Content Template with Layouts, the buttons "Close", "Previe" and "Save and Close" doesn't have
+	// a meaning of existence, so they need to be hidden.
+	$maybe_hidden_class_for_inline_cts = $this->is_editing_inline_ct() ? ' hidden' : '';
+
+?>
 <div class="dd-layouts-wrap">
     <?php $icon_object = $this->print_layout_icon();?>
-    <div id="iconwrap" class="js-layouts-icon-wrap">
+    <div id="iconwrap" class="<?php echo ! $this->is_editing_ct() && ! $this->is_editing_inline_ct() ? esc_attr( 'js-layouts-icon-wrap' ) : ''; ?>">
         <img src="<?php echo WPDDL_RES_RELPATH;?>/images/<?php echo esc_attr( $icon_object->icon );?>"  />
     </div>
 
@@ -8,10 +20,10 @@
 
         <div class="editor-toolbar editor-toolbar-private js-editor-toolbar">
             <div class="save-button-wrap">
-                <a class="button button-secondary button-large" id="js-private-layout-cancel-button"><?php _e( 'Close', 'ddl-layouts' ); ?></a>
-                <button class="button button-large button-secondary hide-if-no-js js-view-layout"><?php _e( 'Preview', 'ddl-layouts' ); ?></button>
+                <a class="button button-secondary button-large<?php echo esc_attr( $maybe_hidden_class_for_inline_cts ); ?>" id="js-private-layout-cancel-button"><?php _e( 'Close', 'ddl-layouts' ); ?></a>
+                <button class="button button-large button-secondary hide-if-no-js js-view-layout<?php echo esc_attr( $maybe_hidden_class_for_cts ); ?>"><?php _e( 'Preview', 'ddl-layouts' ); ?></button>
                 <button name="only_save_private_layout" class="button button-primary button-large" id="js-private-layout-only-save-button"><?php _e('Save','ddl-layouts'); ?></button>
-                <button name="save_private_layout" class="button button-primary button-large" id="js-private-layout-done-button"><?php _e('Save & Close','ddl-layouts'); ?></button>
+                <button name="save_private_layout" class="button button-primary button-large<?php echo esc_attr( $maybe_hidden_class_for_inline_cts ); ?>" id="js-private-layout-done-button"><?php _e('Save & Close','ddl-layouts'); ?></button>
             </div>
             <div class="undo_redo_private  js-hide-for-private-layout" >
                 <button class="js-undo-button button button-large hidden" value="Undo" name="undo"><i class="icon-undo fa fa-undo"></i></button>

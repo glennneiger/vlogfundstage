@@ -19,21 +19,21 @@ if (!isset($settings['dont_load_cred_css'])) {
         <label class='cred-label'>
             <input type="checkbox" autocomplete="off" class='cred-checkbox-invalid js-cred-bootstrap-styling-setting' name="cred_dont_load_bootstrap_cred_css" value="1"  <?php checked( $settings['dont_load_bootstrap_cred_css'], 1, true ); ?> />
             <span class='cred-checkbox-replace'></span>
-            <span><?php _e('Do not load CRED style sheets on front-end', 'wp-cred'); ?></span>
+            <span><?php _e('Do not load Forms stylesheets on front-end', 'wp-cred'); ?></span>
         </label>
     </p>
 	<p>
 		<label class='cred-label'>
 			<input type="checkbox" autocomplete="off" class='cred-checkbox-invalid js-cred-legacy-styling-setting' name="cred_dont_load_cred_css" value="0"  <?php checked( $settings['dont_load_cred_css'], 0, true ); ?> />
 			<span class='cred-checkbox-replace'></span>
-			<span><?php _e('Load CRED legacy style sheets on front-end', 'wp-cred'); ?></span>
+			<span><?php _e('Load Forms legacy stylesheets on front-end', 'wp-cred'); ?></span>
 		</label>
 		<span class="description wpcf-form-description wpcf-form-description-checkbox description-checkbox">
-		<?php _e( '<strong>Legacy</strong>: include the CRED styles needed for forms created before CRED 1.9', 'wp-cred' ); ?>
+		<?php _e( '<strong>Legacy</strong>: include the Forms styles needed for forms created before Toolset Forms 1.9', 'wp-cred' ); ?>
 		</span>
 	</p>
 	<?php
-	/* CRED 1.8.8 back compatibility */
+	/* Toolset Forms 1.8.8 back compatibility */
 	if ( isset( $settings['use_bootstrap'] ) )
 	{ ?>
 		<p>
@@ -42,10 +42,10 @@ if (!isset($settings['dont_load_cred_css'])) {
 					echo "checked='checked'";
 				} ?> />
                 <span class='cred-checkbox-replace'></span>
-                <span><?php _e( 'Include Bootstrap classnames in old CRED forms', 'wp-cred' ); ?></span>
+                <span><?php _e( 'Include Bootstrap classnames in old Forms forms', 'wp-cred' ); ?></span>
             </label>
 			<span class="description wpcf-form-description wpcf-form-description-checkbox description-checkbox">
-			<?php _e( '<strong>Legacy</strong>: include Bootstrap classnames in forms created before CRED 1.9', 'wp-cred' ); ?>
+			<?php _e( '<strong>Legacy</strong>: include Bootstrap classnames in forms created before Toolset Forms 1.9', 'wp-cred' ); ?>
 			</span>
 		</p>
 	<?php } ?>

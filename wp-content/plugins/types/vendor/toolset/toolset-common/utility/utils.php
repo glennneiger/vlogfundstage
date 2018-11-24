@@ -293,6 +293,90 @@ if ( ! class_exists( 'Toolset_Utils', false ) ) {
 			return null;
 		}
 
+
+		/**
+		 * Set a value in a nested array, creating the structure as needed.
+		 *
+		 * @param array &$array The array to be modified.
+		 * @param string[] $path Array of keys, each element means one level of nesting.
+		 * @param mixed $value The value to be assigned to the last level.
+		 *
+		 * Example:
+		 *
+		 * $result = Toolset_Utils::set_nested_value( $result, array( 'a', 'b', 'c' ), 'x' );
+		 *
+		 * Then $result would be:
+		 *
+		 * array(
+		 *     'a' => array(
+		 *         'b' => array(
+		 *             'c' => 'x'
+		 *         )
+		 *     )
+		 * );
+		 *
+		 * If there are any other elements set, they will not be touched.
+		 *
+		 * @return array
+		 */
+		public static function set_nested_value( &$array, $path, $value ) {
+			if ( ! is_array( $array ) || ! is_array( $path ) ) {
+				throw new InvalidArgumentException();
+			}
+
+			if ( empty( $path ) ) {
+				return $value;
+			}
+
+			$next_level = array_shift( $path );
+
+			if ( ! array_key_exists( $next_level, $array ) ) {
+				$array[ $next_level ] = array();
+			}
+
+			$array[ $next_level ] = self::set_nested_value( $array[ $next_level ], $path, $value );
+
+			return $array;
+		}
+
+
+		/**
+         * Safely resolve a lowercase callback name into a handler class name even if mb_convert_case() is not available.
+         *
+         * It will always work correctly with values that contain only alphabetic characters, numbers and underscores.
+         * But nothing else should be used in callback names anyway.
+         *
+         * Example: "types_ajax_m2m_action" will become "Types_Ajax_M2M_Action"
+         *
+		 * @param string $callback
+		 *
+		 * @return string Name of the handler class.
+         * @since 3.0
+		 */
+		public static function resolve_callback_class_name( $callback ) {
+
+		    // Use the native solution if available (which will happen in the vast majority of most cases).
+		    if( function_exists( 'mb_convert_case' ) && defined( 'MB_CASE_TITLE' ) ) {
+		        return mb_convert_case( $callback, MB_CASE_TITLE );
+            }
+
+            // mb_convert_case() works this way - it also capitalizes first letters after numbers
+			$name_parts = preg_split( "/_|[0-9]/", $callback );
+			$parts_ucfirst = array_map( function( $part ) { return ucfirst( $part ); }, $name_parts );
+
+			$result = '';
+			foreach( $parts_ucfirst as $part ) {
+				$result .= $part;
+				$delimiter_position = strlen( $result );
+
+				// Put back the delimiter (it could be a number or an underscore)
+				if( $delimiter_position < strlen( $callback ) ) {
+					$result .= $callback[ $delimiter_position ];
+				}
+			}
+
+			return $result;
+		}
 	}
 
 }

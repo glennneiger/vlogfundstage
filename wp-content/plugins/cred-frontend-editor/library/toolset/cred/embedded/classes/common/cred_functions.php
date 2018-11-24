@@ -144,14 +144,14 @@ function cred_embedded_html()
         //$cred = get_post($cred_id);
         $cred = get_post($cred_id, OBJECT, 'edit');
         if (null == $cred) {
-            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wpv-views') . '</p></div>');
+            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wp-cred') . '</p></div>');
         } elseif ('cred-form' != $cred->post_type) {
-            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wpv-views') . '</p></div>');
+            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wp-cred') . '</p></div>');
         } else {
 
-            CRED_Loader::loadAsset('STYLE/cred_codemirror_style_dev', 'cred_codemirror_style', false, CRED_CONCAT_ASSETS);
+            CRED_Loader::loadAsset('STYLE/cred_codemirror_style_dev', 'cred_codemirror_style', false, false);
             wp_enqueue_style('cred_codemirror_style');
-            CRED_Loader::loadAsset('SCRIPT/cred_codemirror_dev', 'cred_codemirror_dev', false, CRED_CONCAT_ASSETS);
+            CRED_Loader::loadAsset('SCRIPT/cred_codemirror_dev', 'cred_codemirror_dev', false, false);
             wp_enqueue_script('cred_codemirror_dev');
 
             $sm = CRED_Loader::get('MODEL/Settings');
@@ -167,14 +167,14 @@ function cred_embedded_html()
             $fields_all = $fields_model->getFields($cred->post_type);
 
             if ($settings->post['post_status'] == 'trash') {
-                wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __("You can\'t edit this CRED because it is in the Trash. Please restore it and try again.", 'wpv-views') . '</p></div>');
+                wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __("You can\'t edit this CRED because it is in the Trash. Please restore it and try again.", 'wp-cred') . '</p></div>');
             }
 
             $_button_getcred = '<a style="vertical-align: baseline; background: none repeat scroll 0 0 #f6921e;
     border-color: #ef6223;
     box-shadow: 0 1px 0 rgba(239, 239, 239, 0.5) inset, 0 1px 0 rgba(0, 0, 0, 0.15);
     color: #fff;
-    text-decoration: none;" class="button button-primary-toolset" title="get cred" target="_blank" href="https://wp-types.com/home/toolset-components/?utm_source=credplugin&utm_campaign=cred&utm_medium=embedded-cred-promotional-link&utm_term=Get%20CRED#cred">Get CRED</a>';
+    text-decoration: none;" class="button button-primary-toolset" title="get cred" target="_blank" href="https://toolset.com/home/toolset-components/?utm_source=credplugin&utm_campaign=cred&utm_medium=embedded-cred-promotional-link&utm_term=Get%20CRED#cred">Get CRED</a>';
             $_header = "You are viewing the read-only version of this CRED form. To edit it, you need to get CRED plugin. $_button_getcred";
             $_content = "CRED lets you build forms for editing any WordPress content on the site’s front-end. You can choose if the form creates or edits content and the type of content it will create or edit. The form is designed with simple HTML and shortcodes.";
 
@@ -314,7 +314,7 @@ function cred_embedded_html()
             <?php
         }
     } else {
-        wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a View that doesn&#8217;t exist. Perhaps it was deleted?', 'wpv-views') . '</p></div>');
+        wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a View that doesn&#8217;t exist. Perhaps it was deleted?', 'wp-cred') . '</p></div>');
     }
     ?>
 
@@ -332,14 +332,14 @@ function cred_user_embedded_html()
         //$cred = get_post($cred_id);
         $cred = get_post($cred_id, OBJECT, 'edit');
         if (null == $cred) {
-            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wpv-views') . '</p></div>');
+            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wp-cred') . '</p></div>');
         } elseif ('cred-user-form' != $cred->post_type) {
-            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wpv-views') . '</p></div>');
+            wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a CRED that doesn&#8217;t exist. Perhaps it was deleted?', 'wp-cred') . '</p></div>');
         } else {
 
-            CRED_Loader::loadAsset('STYLE/cred_codemirror_style_dev', 'cred_codemirror_style', false, CRED_CONCAT_ASSETS);
+            CRED_Loader::loadAsset('STYLE/cred_codemirror_style_dev', 'cred_codemirror_style', false, false);
             wp_enqueue_style('cred_codemirror_style');
-            CRED_Loader::loadAsset('SCRIPT/cred_codemirror_dev', 'cred_codemirror_dev', false, CRED_CONCAT_ASSETS);
+            CRED_Loader::loadAsset('SCRIPT/cred_codemirror_dev', 'cred_codemirror_dev', false, false);
             wp_enqueue_script('cred_codemirror_dev');
 
             $sm = CRED_Loader::get('MODEL/Settings');
@@ -355,14 +355,14 @@ function cred_user_embedded_html()
             $fields_all = $fields_model->getFields($cred->post_type);
 
             if ($settings->post['post_status'] == 'trash') {
-                wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __("You can\'t edit this CRED because it is in the Trash. Please restore it and try again.", 'wpv-views') . '</p></div>');
+                wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __("You can\'t edit this CRED because it is in the Trash. Please restore it and try again.", 'wp-cred') . '</p></div>');
             }
 
             $_button_getcred = '<a style="vertical-align: baseline; background: none repeat scroll 0 0 #f6921e;
     border-color: #ef6223;
     box-shadow: 0 1px 0 rgba(239, 239, 239, 0.5) inset, 0 1px 0 rgba(0, 0, 0, 0.15);
     color: #fff;
-    text-decoration: none;" class="button button-primary-toolset" title="get cred" target="_blank" href="https://wp-types.com/home/toolset-components/?utm_source=credplugin&utm_campaign=cred&utm_medium=embedded-cred-promotional-link&utm_term=Get%20CRED#cred">Get CRED</a>';
+    text-decoration: none;" class="button button-primary-toolset" title="get cred" target="_blank" href="https://toolset.com/home/toolset-components/?utm_source=credplugin&utm_campaign=cred&utm_medium=embedded-cred-promotional-link&utm_term=Get%20CRED#cred">Get CRED</a>';
             $_header = "You are viewing the read-only version of this CRED User form. To edit it, you need to get CRED plugin. $_button_getcred";
             $_content = "CRED lets you build forms for editing any WordPress content on the site’s front-end. You can choose if the form creates or edits content and the type of content it will create or edit. The form is designed with simple HTML and shortcodes.";
 
@@ -435,10 +435,7 @@ function cred_user_embedded_html()
                     break;
             }
 
-            //$settings_txt .= ($settings->form['hide_comments'] == 1) ? "<p>Comments are hidden</p>" : "";
-
-            $settings_post_txt = "";
-            //$settings_post_txt = "This User Form $act <b>$settings_post_type</b> and the status will be <b>" . trans_txt($settings_post_status) . "</b>" . $has_captcha;
+            $settings_txt .= ($settings->form['hide_comments'] == 1) ? "<p>Comments are hidden</p>" : "";
 
             $extra = $form_fields['extra'];
             $css = $extra->css;
@@ -500,7 +497,7 @@ function cred_user_embedded_html()
             <?php
         }
     } else {
-        wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a View that doesn&#8217;t exist. Perhaps it was deleted?', 'wpv-views') . '</p></div>');
+        wp_die('<div class="wpv-setting-container"><p class="toolset-alert toolset-alert-error">' . __('You attempted to edit a View that doesn&#8217;t exist. Perhaps it was deleted?', 'wp-cred') . '</p></div>');
     }
     ?>
 
@@ -531,17 +528,14 @@ add_action('wp_ajax_cred_delete_draft_users', 'cred_delete_draft_users_ajax');
 /**
  * Dismiss message AJAX.
  */
-function cred_delete_draft_users_ajax()
-{
-    if (isset($_GET['_wpnonce']) &&
-        wp_verify_nonce($_GET['_wpnonce'], 'cred-delete-draft-users')
-    ) {
-        if (!CRED_StaticClass::delete_all_draft_users())
-            echo "KO";
-        else
-            echo "OK";
-    }
-    die();
+function cred_delete_draft_users_ajax() {
+	if ( isset( $_GET[ '_wpnonce' ] ) &&
+		wp_verify_nonce( $_GET[ '_wpnonce' ], 'cred-delete-draft-users' )
+	) {
+		$result = ( class_exists( "CRED_User_Premium_Feature" ) ) ? CRED_User_Premium_Feature::get_instance()->delete_all_draft_users() : CRED_StaticClass::delete_all_draft_users();
+		echo $result ? 'OK' : 'KO';
+	}
+	wp_die();
 }
 
 //Disabling woocommerce signup setting on checkout if post is cred user form
@@ -552,8 +546,8 @@ function cred_user_form_checkout_change($checkout)
     if (isset(WC()->cart->cart_contents) && count(WC()->cart->cart_contents) > 0) {
         foreach (WC()->cart->cart_contents as $content) {
             if (isset($content['cred_meta']['cred_form_id'])) {
-                $ptype = get_post_type($content['cred_meta']['cred_form_id']);
-                if ($ptype == CRED_USER_FORMS_CUSTOM_POST_NAME) {
+                $post_type = get_post_type($content['cred_meta']['cred_form_id']);
+                if ($post_type == CRED_USER_FORMS_CUSTOM_POST_NAME) {
                     $checkout->enable_signup = false;
                     break;
                 }

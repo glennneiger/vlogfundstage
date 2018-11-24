@@ -59,9 +59,12 @@ var wptValidation = (function ($) {
             var _value = $(element).val();
 
             // check if dependency is met
+            // Last commits includes "required" parameter so this condition is not necessary.
+            /*
             if (!this.depend(param, element)) {
                 return "dependency-mismatch";
             }
+            */
             switch (element.nodeName.toLowerCase()) {
                 case 'select':
                     return _value && $.trim(_value).length > 0;
@@ -207,7 +210,10 @@ var wptValidation = (function ($) {
 
                 var currentFormId = formID.replace('#', '');
                 currentFormId = currentFormId.replace('-', '_');
-                var cred_settings = eval('cred_settings_' + currentFormId);
+				if ( ! _.has( window, 'cred_settings_' + currentFormId ) ) {
+					return;
+				}
+                var cred_settings = window[ 'cred_settings_' + currentFormId ];
 
                 if (wptValidationDebug) {
                     console.log("validation...");
@@ -296,10 +302,6 @@ var wptValidation = (function ($) {
         if (typeof jQuery('.wpt-suggest-taxonomy-term') && jQuery('.wpt-suggest-taxonomy-term').length) {
             jQuery('.wpt-suggest-taxonomy-term').hide();
         }
-
-        if (typeof credFrontEndViewModel !== 'undefined') {
-            credFrontEndViewModel.reloadTinyMCE();
-        }
     });
 
     function isIgnored($el) {
@@ -316,6 +318,7 @@ var wptValidation = (function ($) {
 
     function _applyRules(rules, selector, container) {
         var element = $(selector, $(container));
+
         if (element.length > 0) {
             if (isIgnored(element)) {
                 element.rules('remove');
@@ -342,6 +345,11 @@ var wptValidation = (function ($) {
     };
 
 })(jQuery);
+
+jQuery(document).on('toolset_ajax_fields_loaded', function (evt, data) {
+    wptValidation._initValidation('#' + data.form_id);
+    wptValidation.applyRules('#' + data.form_id);
+});
 
 //cred_form_ready will fire when a CRED form is ready, so we init it's validation rules then
 jQuery(document).on('cred_form_ready', function (evt, data) {

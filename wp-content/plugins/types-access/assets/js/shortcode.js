@@ -10,9 +10,9 @@
 var OTGAccess = OTGAccess || {};
 
 OTGAccess.ShortcodesGUI = function( $ ) {
-	
+
 	var self = this;
-	
+
 	/**
 	 * Store the action to perform when generating a shortcode.
 	 * - 'insert' will insert the shortcode into the active editor.
@@ -21,14 +21,14 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 	 * @since 2.3.0
 	 */
 	self.shortcode_gui_action					= 'insert';
-	
+
 	/**
 	 * Store the shortcode to insert on the auxiliar dialog.
 	 *
 	 * @since 2.3.0
 	 */
 	self.shortcode_to_insert_on_target_dialog	= '';
-	
+
 	/**
 	 * ----------------------
 	 * Dialogs defaults
@@ -37,21 +37,21 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 	self.shortcode_dialog						= null;
 	self.textarea_target_dialog					= null;
 	self.dialog_minWidth						= 870;
-	
+
 	/**
 	 * @since 2.3.0
 	 */
 	self.calculate_dialog_maxWidth = function() {
 		return ( $( window ).width() - 200 );
 	};
-	
+
 	/**
 	 * @since 2.3.0
 	 */
 	self.calculate_dialog_maxHeight = function() {
 		return ( $( window ).height() - 100 );
 	};
-	
+
 	/**
 	 * Init the admin bar button, if any.
 	 *
@@ -62,14 +62,14 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 			$( '.js-otg-access-shortcode-generator-node a' ).addClass( 'js-otg-access-shortcode-gui-in-adminbar' );
 		}
 	};
-	
+
 	/**
 	 * Initi dialogs
 	 *
 	 * @since 2.3.0
 	 */
 	self.init_dialogs = function() {
-		
+
 		self.shortcode_dialog = $( "#wpcf-access-shortcodes-dialog-tpl" ).dialog({
             autoOpen:	false,
             title:		otg_access_shortcodes_gui_texts.dialog_title,
@@ -112,7 +112,7 @@ OTGAccess.ShortcodesGUI = function( $ ) {
                 }
             ]
         });
-		
+
 		self.textarea_target_dialog = $( '#otg-access-shortcode-generator-target-dialog' ).dialog({
 			autoOpen:	false,
 			modal:		true,
@@ -149,9 +149,9 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 				$( this ).dialog( "close" );
 			}
 		});
-		
+
 	};
-	
+
 	/**
 	 * Adjusts the dialog button labels depending on self.shortcode_gui_action.
 	 *
@@ -171,14 +171,14 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 				break;
 		}
 	};
-	
+
 	/**
 	 * Init Toolset.hooks callbacks.
 	 *
 	 * @since 2.3.0
 	 */
 	self.init_hooks = function() {
-		
+
 		/**
 		 * otg-access-action-perform-shortcode-gui-action
 		 *
@@ -187,9 +187,9 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 		 * @since 2.3.0
 		 */
 		Toolset.hooks.addAction( 'otg-access-action-perform-shortcode-gui-action', self.perform_shortcode_gui_action );
-		
+
 	};
-	
+
 	/**
 	 * Calback for the otg-access-action-perform-shortcode-gui-action action.
 	 *
@@ -217,14 +217,14 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 		}
 		self.shortcode_gui_action = 'insert';
 	}
-	
+
 	/**
 	 * Craft the shortcode based on the dialog selected options.
 	 *
 	 * @since 2.3.0
 	 */
 	self.craft_shortcode = function() {
-		
+
 		var shortcode = '[toolset_access role="';
 		shortcode += $( '.js-wpcf-access-list-roles:checked' ).map( function () {
 			return $(this).val();
@@ -232,17 +232,17 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 		shortcode += ( $( 'input[name="wpcf-access-shortcode-operator"]:checked' ).length > 0 ) ? ' operator="' + $( 'input[name="wpcf-access-shortcode-operator"]:checked' ).val() + '"' : '';
 		shortcode += ( $( '.js-wpcf-access-shortcode-format' ).prop('checked') === true ) ? ' raw="true"' : '';
 		shortcode += ']' + $( '.js-wpcf-access-conditional-message' ).val() + '[/toolset_access]';
-		
+
 		Toolset.hooks.doAction( 'otg-access-action-perform-shortcode-gui-action', shortcode );
-		
+
 	};
-	
+
 	/**
 	 * ----------------------
 	 * Events
 	 * ----------------------
 	 */
-	
+
 	// Click on the Admin Bar entry for Access
 	$( document ).on( 'click','.js-otg-access-shortcode-gui-in-adminbar', function( e ) {
 		e.preventDefault();
@@ -261,7 +261,7 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 		//self.manage_shortcode_dialog_button_labels();
 		return false;
 	});
-	
+
 	// Click on the Access editor toolbar button
 	$( document ).on( 'click', '.js-wpcf-access-editor-button', function( e ) {
 		e.preventDefault();
@@ -281,7 +281,7 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 		//self.manage_shortcode_dialog_button_labels();
 		return false;
 	});
-	
+
 	// Dialog management: enable craft shortocde button only when one or more roles selected
 	$( document ).on( 'change', '.js-wpcf-access-list-roles', function () {
 		$( '.js-wpcf-access-craft-shortcode' )
@@ -295,13 +295,69 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 				.removeClass( 'button-secondary' );
 		}
 	});
-	
+
+	//--------------------------------
+    // Compatibility
+    //--------------------------------
+
+    /**
+     * Handle the event that is triggered by Fusion Builder when creating the WP editor instance.
+	 *
+	 * The event was added as per our request because Fusion Builder does not load the WP editor using
+	 * the native PHP function "wp_editor". It creates the WP editor instance on JS, so no PHP actions
+	 * to add custom media buttons like ours are available. It generates the media button plus the toolbar that
+	 * contains it as javascript objects that it appends to its own template. It offers no way of adding our custom
+	 * buttons to it.
+	 *
+	 * @param event			The actual event.
+	 * @param editorId		The id of the editor that is being created.
+     *
+     * @since 2.5.2
+     */
+    $( document ).on( 'fusionButtons', function( event, editorId ) {
+		self.addShortcodesButtonToDynamicEditor( editorId );
+    });
+
+	/**
+     * Handle the event that is triggered by Toolset Types and Forms when creating a WP editor instance.
+	 *
+	 * The event is fired when a WYSIWYG field is dynamically initialized.
+	 *
+	 * @param event			The actual event.
+	 * @param editorId		The id of the editor that is being created.
+     *
+     * @since 2.5.2
+     */
+	$( document ).on( 'toolset:types:wysiwygFieldInited toolset:forms:wysiwygFieldInited', function( event, editorId ) {
+		self.addShortcodesButtonToDynamicEditor( editorId );
+    });
+
+    /**
+	 * Add a shortcodes generator button dynamically to any native editor that contains a media toolbar, given its editor ID.
+     *
+     * @since 2.5.2
+     */
+    self.addShortcodesButtonToDynamicEditor = function( editor_id ) {
+        var $mediaButtons = $( '#wp-' + editor_id + '-media-buttons' ),
+            button = '<span'
+                + ' class="button js-wpcf-access-editor-button"'
+                + ' data-editor="' + editor_id + '">'
+                + '<i class="icon-access-logo fa fa-wpv-custom ont-icon-18 ont-color-gray"></i>'
+                + '<span class="button-label">' + otg_access_shortcodes_gui_texts.button_title + '</span>'
+                + '</span>',
+            $accessBbutton = $( button );
+
+		if ( $mediaButtons.find( '.js-wpcf-access-editor-button' ).length == 0 ) {
+			$accessBbutton.appendTo( $mediaButtons );
+		}
+    };
+
 	self.init = function() {
 		self.init_dialogs();
 		self.init_hooks();
 		self.init_admin_bar_button();
 	};
-	
+
 	self.init();
 
 };

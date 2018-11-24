@@ -15,7 +15,7 @@
 {% block content %}
 
     {% block adminNotice %}
-        <div id="message" data-bind="threeModeVisibility: messageVisibilityMode, attr: { class: 'notice is-dismissible ' + messageNagClass() }">
+        <div id="message" data-bind="threeModeVisibility: messageVisibilityMode, attr: { class: 'notice is-dismissible js-toolset-fadable ' + messageNagClass() }">
             <p data-bind="html: displayedMessage().text"></p>
             <button class="notice-dismiss" data-bind="click: removeDisplayedMessage"></button>
         </div>
@@ -160,16 +160,16 @@
 
 {% endblock %}
 
-{% macro columnHeader(displayName, isSortable, slug, classNames, sortType = 'alpha') %}
+{% macro columnHeader(displayName, isSortable, slug, classNames, sortType = 'alpha', tdDataBind = '') %}
     {% if isSortable == true %}
-        <td scope="col" class="manage-column {{ classNames }}">
+        <td scope="col" class="manage-column {{ classNames }}" data-bind="{{ tdDataBind }}">
             <a class="sort-column" data-bind="click: function() {onSort('{{ slug }}')}">
                 {{ displayName }}
                 <i data-bind="attr: { class: sortIconClass('{{ slug }}', '{{ sortType }}') }" ></i>
             </a>
         </td>
     {% else %}
-        <td scope="col" class="manage-column {{ classNames }}">
+        <td scope="col" class="manage-column {{ classNames }}" data-bind="{{ tdDataBind }}">
             {{ displayName }}
         </td>
     {% endif %}

@@ -102,4 +102,51 @@ interface Toolset_Admin_Notice_Interface {
 	 * @param bool $bool
 	 */
 	public function set_is_only_for_administrators( $bool );
+
+	/**
+	 * @param string $key
+	 */
+	public function set_similar_notices_key( $key );
+
+	/**
+	 * @return string
+	 */
+	public function get_similar_notices_key();
+
+
+	/**
+	 * @return string
+	 */
+	public function render_content();
+
+
+	/**
+	 * Add a callback that will be invoked just before rendering the notice.
+	 *
+	 * It can be used for enqueuing assets, etc.
+	 *
+	 * @param callable $callback
+	 * @return void
+	 * @since 2.8
+	 */
+	public function add_dependency_callback( $callback );
+
+
+	/**
+	 * Set a context variable that will be accessible when rendering the notice template.
+	 *
+	 * @param array $context
+	 *
+	 * @return void
+	 * @since 2.á
+	 */
+	public function set_template_context( $context );
+
+
+	/**
+	 * Get the context variable.
+	 *
+	 * @return array
+	 */
+	public function get_template_context();
 }

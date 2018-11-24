@@ -5,7 +5,7 @@ Access makes it easy to build membership and paid-content sites. You can choose 
 
 ## Installation
 
-1. Download from wp-types.com/account/downloads
+1. Download from toolset.com/account/downloads
 2. Upload to wp-content/plugins
 3, Activate from wp-admin/plugin.php page
 

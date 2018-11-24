@@ -104,6 +104,10 @@ ToolsetCommon.BootstrapCssComponentsQuickTags = function($){
         if( typeof $bootstrap_components !== 'object' ){
             return;
         }
+		
+		if ( _.isUndefined( QTags.getInstance( instance ) ) ) {
+			return;
+		}
 
         if ( typeof( QTags.getInstance( instance ).getButton( 'bs_component_show_hide_button' ) ) === 'undefined'  ) {
             QTags.addButton(

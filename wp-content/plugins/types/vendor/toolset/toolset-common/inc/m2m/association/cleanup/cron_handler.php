@@ -51,7 +51,4 @@ class Toolset_Association_Cleanup_Cron_Handler {
 		$event = $this->cleanup_factory->cron_event();
 		$this->cron->unschedule_event( $event );
 	}
-
-
-
 }

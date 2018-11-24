@@ -95,6 +95,8 @@ abstract class CRED_Shortcode_Form_Abstract {
 			
 			$this->get_frontend_form_flow()->form_end();
 		}
+
+		do_action( 'toolset_forms_enqueue_frontend_form_assets' );
 		
 		return $output;
 	}

@@ -107,22 +107,15 @@ class WPV_Meta_Frontend_Filter {
 				strpos( $key, 'custom-field-' ) === 0 
 				&& strpos( $key, '_compare' ) === strlen( $key ) - strlen( '_compare' )
 			) {
-				if ( empty( $meta_keys ) ) {
-					$meta_keys = apply_filters( 'wpv_filter_wpv_get_postmeta_keys', array() );
-				}
 				$name = substr( $key, 0, strlen( $key ) - strlen( '_compare' ) );
 				$name = substr( $name, strlen( 'custom-field-' ) );
 				$type = $view_settings['custom-field-' . $name . '_type'];
 				$compare = $view_settings['custom-field-' . $name . '_compare'];
 				$value = $view_settings['custom-field-' . $name . '_value'];
 				
-				// TODO add filter here: what happens when a meta_name contains a space AND an underscore?
-				// We need a final solution, I prefer to use a %%SPACE%% placeholder and avoid the above mapping (which we should keepfor backwards compatibility)
 				$meta_name = $name;
-				if ( ! in_array( $meta_name, $meta_keys ) ) { // this is needed for fields with keys containing spaces - we map those spaces to underscores when creating the filter
-					$meta_name = str_replace( '_', ' ', $meta_name );
-				}
-				
+
+				$meta_name = self::prevent_filtering_by_meta_keys_containing_spaces( $meta_name, $meta_keys );
 				
 				/**
 				* Filter wpv_filter_custom_field_filter_original_value
@@ -198,6 +191,7 @@ class WPV_Meta_Frontend_Filter {
 	}
 	
 	static function archive_filter_post_meta( $query, $archive_settings, $archive_id ) {
+		$meta_keys = array();
 		$meta_queries = array();
 		$postmeta_to_exclude = array();
 		if ( $query->get( 'wpv_dependency_query' ) ) {
@@ -216,6 +210,8 @@ class WPV_Meta_Frontend_Filter {
 				if ( in_array( $field, $postmeta_to_exclude ) ) {
 					continue;
 				}
+
+				$field = self::prevent_filtering_by_meta_keys_containing_spaces( $field, $meta_keys );
 				
 				/**
 				* Filter wpv_filter_custom_field_filter_original_value
@@ -287,6 +283,26 @@ class WPV_Meta_Frontend_Filter {
 			$meta_queries = apply_filters( 'wpv_filter_wpv_before_set_meta_query', $meta_queries );
 			$query->set( 'meta_query', $meta_queries );
 		}
+	}
+
+	static private function prevent_filtering_by_meta_keys_containing_spaces( $field, $meta_keys ) {
+		$global_views_settings = WPV_Settings::get_instance();
+
+		// Do not support filtering by meta keys containing a space
+		// unless specific support has been declared
+		if ( $global_views_settings->support_spaces_in_meta_filters ) {
+			if ( empty( $meta_keys ) ) {
+				$meta_keys = apply_filters( 'wpv_filter_wpv_get_postmeta_keys', array() );
+			}
+			if ( ! in_array( $field, $meta_keys ) ) {
+				$field = str_replace( '_', ' ', $field );
+			}
+			if ( ! in_array( $field, $meta_keys ) ) {
+				$field = str_replace( ' ', '.', $field );
+			}
+		}
+
+		return $field;
 	}
 	
 	/**
@@ -766,6 +782,11 @@ class WPV_Meta_Frontend_Filter {
 		global $no_parameter_found;
 		$aux_array = apply_filters( 'wpv_filter_wpv_get_rendered_views_ids', array() );
 		$view_name = get_post_field( 'post_name', end( $aux_array ) );
+
+		// Translate the value format if any
+		if ( ! empty( $atts['format'] ) ) {
+			$atts['format'] = wpv_translate( 'wpv_control_postmeta_format_' . esc_attr( $atts['url_param'] ), $atts['format'], false, 'View ' . $view_name );
+		}
 		
 		/*
 		 * Return early on some specific single-valued types that do not require counters or dependency at all.
@@ -927,13 +948,35 @@ class WPV_Meta_Frontend_Filter {
 					$select_args['multiple'] = 'multiple';
 					//$select_args['size'] = '10';
 				}
-				
-				$options_output = call_user_func_array( array( &$postmeta_walker, 'walk' ), array( $fields_to_walk, 0 ) );
+
+				$options_output = '';
+
+				if (
+					! empty( $atts['default_label'] )
+					&& 'select' === $type
+				) {
+					array_unshift(
+						$fields_to_walk,
+						self::get_default_field_object_for_postmeta( $atts['url_param'], $atts['default_label'], $argument_for_values['view_name'] )
+					);
+				}
+
+				$options_output .= call_user_func_array( array( &$postmeta_walker, 'walk' ), array( $fields_to_walk, 0 ) );
+
 				$return .= WPV_Frontend_Filter::get_select( $options_output, $select_args  );
 				return $return;
 				break;
 			case 'radio':
 			case 'radios':
+				if (
+					! empty( $atts['default_label'] )
+					&& 'radios' === $type
+				) {
+					array_unshift(
+						$fields_to_walk,
+						self::get_default_field_object_for_postmeta( $atts['url_param'], $atts['default_label'], $argument_for_values['view_name'] )
+					);
+				}
 				$postmeta_walker = new WPV_Walker_Postmeta_Radios( $walker_args );
 				$return .=  call_user_func_array( array( &$postmeta_walker, 'walk' ), array( $fields_to_walk, 0 ) );
 				return $return;
@@ -947,6 +990,28 @@ class WPV_Meta_Frontend_Filter {
 		
 		return;
 		
+	}
+
+	/**
+	 * Create the "default field" object for the cases of postmeta shown as "select" or "radio" fields.
+	 *
+	 * @param string $url_param
+	 * @param string $default_label
+	 * @param string $view_name
+	 *
+	 * @return object               The "default field" object.
+	 */
+	static function get_default_field_object_for_postmeta( $url_param, $default_label, $view_name ) {
+		$default_label = wpv_translate( $url_param . '_auto_fill_default', stripslashes( $default_label ), false, 'View ' . $view_name );
+
+		$default_field = (object) array(
+			'meta_key' => 'default',
+			'meta_value' => '',
+			'display_value' => $default_label,
+			'meta_parent' => '',
+		);
+
+		return $default_field;
 	}
 	
 	/**
@@ -1226,21 +1291,6 @@ class WPV_Meta_Frontend_Filter {
 		$fields_to_walk = array();
 		
 		if ( 'database' == $atts['source'] ) {
-			
-			if ( 
-				! empty( $atts['default_label'] ) 
-				|| in_array( $args['type'], array( 'select' ) )
-			) {
-				$default_label = str_replace( array( '%%COMMA%%', '\,' ), ',', $atts['default_label'] );
-				$default_label = wpv_translate( $atts['url_param'] . '_auto_fill_default', stripslashes( $default_label ), false, 'View ' . $args['view_name'] );
-				$field_option = new stdClass();
-				$field_option->meta_key = $args['toolset_field'];
-				$field_option->meta_value = '';
-				$field_option->display_value = $default_label;
-				$field_option->meta_parent = 0;
-				$fields_to_walk[] = $field_option;
-			}
-			
 			// @todo Types options need to be sorted too
 			switch ( $args['toolset_type'] ) {
 				case 'select':
@@ -1291,7 +1341,9 @@ class WPV_Meta_Frontend_Filter {
 					$values_to_prepare = array();
 					$values_to_prepare[] = $args['toolset_field'];
 					$wpdb_where = '';
-					if ( isset( $args['view_settings']['post_type'] )
+					if ( 
+						'normal' === toolset_getarr( $args['view_settings'], 'view-query-mode' ) 
+						&& isset( $args['view_settings']['post_type'] )
 						&& is_array( $args['view_settings']['post_type'] )
 						&& ! empty( $args['view_settings']['post_type'] )
 						&& ! in_array( 'any', $args['view_settings']['post_type'] ) 
@@ -1810,7 +1862,7 @@ class WPV_Meta_Frontend_Filter {
 							'type'			=> 'text',
 							'default'		=> '',
 							'description'	=> __( 'Date selected in the datepicker by default, as a timestamp. You can also use Toolset functions like NOW() or TODAY().', 'wpv-views' ),
-							'documentation'	=> '<a href="https://wp-types.com/documentation/user-guides/date-filters/" target="_blank">' .  __( 'Toolset date filters', 'wpv-views' ) . '</a>'
+							'documentation'	=> '<a href="https://toolset.com/documentation/user-guides/date-filters/" target="_blank">' .  __( 'Toolset date filters', 'wpv-views' ) . '</a>'
 						),
 						'title' => array(
 							'label'			=> __( 'Checkbox label', 'wpv-views'),

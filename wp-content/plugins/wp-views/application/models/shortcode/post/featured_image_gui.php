@@ -105,7 +105,7 @@ class WPV_Shortcode_Post_Featured_Image_GUI extends WPV_Shortcode_Base_GUI {
 							'label'		=> __( 'Proportion', 'wpv-views' ),
 							'type'		=> 'radio',
 							'options'	=> array(
-								'false'	=> __( 'Keep opriginal proportion', 'wpv-views' ),
+								'false'	=> __( 'Keep original proportion', 'wpv-views' ),
 								'true'	=> __( 'Crop to exact dimensions', 'wpv-views' )
 							),
 							'default' => 'false',

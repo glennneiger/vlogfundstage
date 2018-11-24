@@ -94,3 +94,24 @@ select#wpv-map-render-style_json {
     color: #b94a48;
     cursor: default;
 }
+
+/* Map styles section */
+#js-wpv-addon-maps-render-map-preview {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+}
+
+button.js-wpv-toolset-maps-delete-json-file {
+    display: none;
+}
+
+button#js-wpv-toolset-maps-add-map-style {
+    float: right;
+}
+
+/*Marker dialog: attributes forced inside attributes */
+/* This probably belongs to Toolset Common */
+.toolset-shortcode-gui-dialog-container .toolset-shortcode-gui-attribute-group .toolset-shortcode-gui-attribute-wrapper .toolset-shortcode-gui-attribute-wrapper {
+    margin-bottom: 10px;
+}

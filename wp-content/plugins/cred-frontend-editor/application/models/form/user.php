@@ -157,13 +157,19 @@ class CRED_Form_User extends CRED_Form_Base {
 	 *
 	 * @param type $form_type
 	 * @param type $form_id
-	 * @param type $post
+	 * @param type $user_data
 	 * @param type $fbHelper
 	 *
 	 * @return type
 	 */
-	public function check_form_access( $form_type, $form_id, $post, &$fbHelper ) {
-		return $fbHelper->checkUserFormAccess( $form_type, $form_id, $post );
+	public function check_form_access( $form_type, $form_id, $user_data, &$fbHelper ) {
+		$user_to_check = ( 
+				is_object( $user_data )
+				&& isset( $user_data->user )
+			)
+			? $user_data->user
+			: false;
+		return apply_filters( 'toolset_forms_current_user_can_use_user_form', false, $form_id, $user_to_check );
 	}
 
 	/**
@@ -200,7 +206,10 @@ class CRED_Form_User extends CRED_Form_Base {
 
 		//Pre-check access as guest in order to avoid creation of auto-draft
 		if ( $user_id <= 0 ) {
-			if ( ! $this->_preview && ! $formHelper->checkUserFormAccess( $form_type, $form_id ) ) {
+			if ( 
+				! $this->_preview
+				&& ! apply_filters( 'toolset_forms_current_user_can_use_user_form', false, $form_id )
+			) {
 				return $formHelper->error();
 			}
 		}
@@ -319,12 +328,16 @@ class CRED_Form_User extends CRED_Form_Base {
 				isset( $cred_commerce['enable'] ) &&
 				$cred_commerce['enable'] == 1
 			) {
-				$new_user_id = $model->addTemporaryUser( $user, $fields, $fieldsInfo, $removed_fields );
+				$new_user_id = CRED_User_Premium_Feature::get_instance()->add_temporary_user( $user, $fields, $fieldsInfo, $removed_fields );
 			} else {
 				if ( $form_type == 'edit' && isset( $user_id ) ) {
-					$new_user_id = $model->updateUser( $user, $fields, $fieldsInfo, $removed_fields );
+					$new_user_id = $model->updateUser( $user );
+					$this->add_form_data( $new_user_id );
+					$model->updateUserInfo( $new_user_id, $fields, $fieldsInfo, $removed_fields );
 				} else {
-					$new_user_id = $model->addUser( $user, $fields, $fieldsInfo, $removed_fields );
+					$new_user_id = $model->createUser( $user );
+					$this->add_form_data( $new_user_id );
+					$model->addUserInfo( $new_user_id, $fields, $fieldsInfo, $removed_fields );
 				}
 			}
 
@@ -476,7 +489,7 @@ class CRED_Form_User extends CRED_Form_Base {
 		$_fields = $this->_formData->getFields();
 		$form_type = $_fields['form_settings']->form['type'];
 		$form_id = $this->_formData->getForm()->ID;
-		$form_count = CRED_StaticClass::$out['count'];
+		$form_count = CRED_Form_Count_Handler::get_instance()->get_main_count();
 		$post_type = $_fields['form_settings']->post['post_type'];
 
 		if ( $zebraForm->preview ) {
@@ -519,4 +532,123 @@ class CRED_Form_User extends CRED_Form_Base {
 		$this->cache_css_and_js_assets($_fields['extra']);
 	}
 
+	/**
+	 * @param $form_type
+	 */
+	private function try_to_set_user_fields( $form_type ) {
+		if ( $form_type == CRED_USER_FORMS_CUSTOM_POST_NAME ) {
+			if ( ! isset( CRED_StaticClass::$_password_generated ) && isset( $_POST['user_pass'] ) ) {
+				CRED_StaticClass::$_password_generated = $_POST['user_pass'];
+			}
+			if ( ! isset( CRED_StaticClass::$_username_generated ) && isset( $_POST['user_login'] ) ) {
+				CRED_StaticClass::$_username_generated = sanitize_text_field( $_POST['user_login'] );
+			}
+			if ( ! isset( CRED_StaticClass::$_nickname_generated ) && isset( $_POST['nickname'] ) ) {
+				CRED_StaticClass::$_nickname_generated = sanitize_text_field( $_POST['nickname'] );
+			}
+		}
+	}
+
+	/**
+	 * @param $user_id
+	 * @param null $attachedData
+	 *
+	 * @return mixed|void
+	 */
+	public function notify($user_id, $attachedData = null) {
+		$form = &$this->_formData;
+		$fields = $form->getFields();
+
+		// init notification manager if needed
+		if (
+			isset( $fields['notification']->enable )
+			&& $fields['notification']->enable
+			&& ! empty( $fields['notification']->notifications )
+		) {
+			// add extra placeholder codes
+			add_filter( 'cred_subject_notification_codes', array(&$this, 'extraSubjectNotificationCodes'), 10, 3 );
+			add_filter( 'cred_body_notification_codes', array(&$this, 'extraBodyNotificationCodes'), 10, 3 );
+
+			$this->try_to_set_user_fields( $form->getForm()->post_type );
+
+			// add the post/user to notification management
+			$this->add_form_data( $user_id );
+			// send any notifications now if needed
+			CRED_Notification_Manager_User::get_instance()->trigger_notifications( $user_id,
+				array(
+					'event' => 'form_submit',
+					'form_id' => $form->getForm()->ID,
+					'notification' => $fields['notification'],
+				), $attachedData );
+
+			// remove extra placeholder codes
+			remove_filter( 'cred_subject_notification_codes', array(&$this, 'extraSubjectNotificationCodes'), 10, 3 );
+			remove_filter( 'cred_body_notification_codes', array(&$this, 'extraBodyNotificationCodes'), 10, 3 );
+		}
+	}
+
+
+	/**
+	 * Adds form data to the user
+	 *
+	 * @param int $user_id User ID.
+	 * @since 2.0.1
+	 */
+	public function add_form_data( $user_id ) {
+		$form = &$this->_formData;
+		$fields = $form->getFields();
+		// add the post/user to notification management
+		CRED_Notification_Manager_User::get_instance()->add( $user_id, $form->getForm()->ID, $fields['notification']->notifications );
+	}
+
+	/**
+	 * @param $form
+	 * @param $fields
+	 * @param $model
+	 *
+	 * @return mixed
+	 */
+	protected function get_attached_data( $form, $fields, $model ) {
+		CRED_Notification_Manager_User::get_instance()->set_current_attached_data( $form->getForm()->ID, $this->_post_id, $fields[ 'notification' ]->notifications );
+		$attachedData = $model->getAttachedData( $this->_post_id );
+
+		return $attachedData;
+	}
+
+	/**
+	 * Managing of existing relationship association by user_id if exists and validate the form
+	 *
+	 * @param int $user_id
+	 * @param $cred_form_rendering
+	 *
+	 * @return array
+	 */
+
+	public function save_any_relationships_by_id( $user_id, &$cred_form_rendering ) {
+		$results = array();
+
+		//Relationship Handling
+		if ( isset( CRED_StaticClass::$out[ 'fields' ][ 'relationships' ] )
+			&& ! empty( CRED_StaticClass::$out[ 'fields' ][ 'relationships' ] )
+		) {
+			$relationship_fields = CRED_StaticClass::$out[ 'fields' ][ 'relationships' ];
+			foreach ( $relationship_fields as $relationship_field ) {
+				$results[ $relationship_field[ 'slug' ] ] = CRED_Form_Relationship::get_instance()->connect_to_user( $user_id, $relationship_field );
+			}
+		}
+
+		if ( ! empty( $results ) ) {
+			foreach ( $results as $relationship_slug => $result ) {
+				if ( is_bool( $result )
+					&& $result === true
+				) {
+					continue;
+				}
+				// This is not going to actually render the error messages, but kep it for reference.
+				$cred_form_rendering->add_top_message($result, $relationship_slug);
+			}
+		}
+		
+		return $results;
+	}
 }

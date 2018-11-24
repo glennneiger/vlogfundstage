@@ -37,19 +37,61 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 	}
 
 	/**
-	 * @param int $meta_id
+	 * @param null $meta_id Not used.
 	 * @param int $post_id
 	 * @param string $meta_key
 	 * @param string $_meta_value
 	 */
-	public function updated_meta( $meta_id, $post_id, $meta_key, $_meta_value ) {
+	public function updated_meta( $meta_id, $post_id, $meta_key, $_meta_value = null ) {
 		switch ( $meta_key ) {
 			case '_edit_lock':
 			case '_toolset_edit_last':
+			case '_encloseme':
 				break;
 			default:
-				$this->check_for_notifications( $post_id, get_post( $post_id ) );
+				$this->check_for_notifications( $post_id, get_post( $post_id ), 'meta_modified' );
 				break;
+		}
+	}
+
+
+	/**
+	 * Post title and content updates triggers checking notifications
+	 *
+	 * @param int $post_id Post ID.
+	 * @param array $post_data Post data to be updated.
+	 */
+	public function check_for_notifications_for_title_and_content( $post_id, $post_data ) {
+		$current_post_data = get_post( $post_id );
+		$model = $this->get_current_model();
+
+		$attached_data = $model->getAttachedData( $post_id );
+		if ( ! $attached_data ) {
+			return;
+		}
+		$do_checking = false;
+		$title_has_changed = $current_post_data->post_title !== $post_data['post_title'];
+		$content_has_changed = $current_post_data->post_content !== $post_data['post_content'];
+		foreach ( $attached_data as $form_id => $data ) {
+			$notifications = $model->getFormCustomField( $form_id, 'notification' );
+			foreach ( $notifications->notifications as $notification ) {
+				foreach ( $notification['event']['condition'] as $condition ) {
+					$condition_title = 'post_title' === $condition['field'] &&
+						(
+							( $condition['only_if_changed'] && $title_has_changed )
+							|| ! $condition['only_if_changed']
+						);
+					$condition_content = 'post_content' === $condition['field'] &&
+						(
+							( $condition['only_if_changed'] && $content_has_changed )
+							|| ! $condition['only_if_changed']
+						);
+					$do_checking |= ( $condition_title || $condition_content );
+				}
+			}
+		}
+		if ( $do_checking ) {
+			$this->check_for_notifications( $post_id, $current_post_data, 'meta_modified' );
 		}
 	}
 
@@ -70,8 +112,11 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 	/**
 	 * @param int $post_id
 	 * @param object $post
+	 * @param string $event_type Event type.
+	 *
+	 * @since 2.0.1 Added `$event_type` parameter
 	 */
-	public function check_for_notifications( $post_id, $post ) {
+	public function check_for_notifications( $post_id, $post, $event_type = null ) {
 		if ( isset( $post )
 			&& $post->post_type == CRED_FORMS_CUSTOM_POST_NAME ) {
 			return;
@@ -85,17 +130,28 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 		}
 
 		$notification = false;
+		$fields_updated = $model->getPostFields( $post_id );
 		foreach ( $attachedData as $form_id => $data ) {
 			$notification = $model->getFormCustomField( $form_id, 'notification' );
+			$snapshot_unfolded = $this->unfold( $attachedData[ $form_id ]['current']['snapshot'] );
+			foreach ( $snapshot_unfolded as $field_slug => $field_hash ) {
+				$snapshot_unfolded[ $field_slug ] = isset( $fields_updated[ $field_slug ] ) ? $fields_updated[ $field_slug ] : '';
+			}
+			$attachedData[ $form_id ]['current']['snapshot'] = $this->fold( $this->do_hash( $snapshot_unfolded ) );
 			break;
 		}
 
 		if ( $notification ) {
-			$this->trigger_notifications( $post_id, array(
+			$data = array(
 				'notification' => $notification,
 				'form_id' => $form_id,
 				'post' => $post,
-			) );
+			);
+			// This method is called form several hooks or methods, it makes notification to be checked twice if `event` is not set.
+			if ( $event_type ) {
+				$data['event'] = $event_type;
+			}
+			$this->trigger_notifications( $post_id, $data, $attachedData );
 		}
 
 		// keep up-to-date with notification settings for form and post field values
@@ -235,7 +291,6 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 		if ( ! isset( $object ) ) {
 			return;
 		}
-
 		if ( empty( $attached_data ) ) {
 			$attached_data = $model->getAttachedData( $post_id );
 		}
@@ -302,7 +357,7 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 			) {
 				$notifications_to_send[] = $single_notification;
 			} else {
-				if ( isset( $single_notification[ 'event' ] ) ) {
+				if ( isset( $single_notification[ 'event' ] ) && $is_correct_notification_event_type ) {
 					$condition_fields = array();
 					$notification_condition_fields = array();
 					if ( isset( $single_notification[ 'event' ][ 'condition' ] )
@@ -314,7 +369,8 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 						$notification_condition_fields = $model->get_object_fields( $post_id, $condition_fields );
 					}
 
-					$send_notification = $this->evaluate_conditions( $single_notification, $notification_condition_fields, $snapshot );
+					$single_notification['form_id'] = $form_id;
+					$send_notification = $this->evaluate_conditions( $single_notification, $notification_condition_fields, $snapshot, $post_id );
 
 					if ( $send_notification ) {
 						$notifications_to_send[] = $single_notification;
@@ -324,7 +380,7 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 		}
 
 		if ( ! empty( $notifications_to_send ) ) {
-			$this->send_notifications( $post_id, $form_id, $notifications_to_send );
+			$this->enqueue_notifications( $post_id, $form_id, $notifications_to_send );
 		}
 	}
 
@@ -364,7 +420,7 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 		$object_placeholders = array_merge( $this->get_placeholders_user_array( $user ), $this->get_placeholders_post_array( $post_id, $title, $form_title, $now, $link, $admin_edit_link ) );
 		// placeholder codes, allow to add custom
 		$data_body = $this->get_data_body_applying_filters( $post_id, $form_id, $object_placeholders );
-		
+
 		$send_notification_result = true;
 		foreach ( $notificationsToSent as $notification_counter => $notification ) {
 
@@ -475,12 +531,12 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 				require_once WPCF_EMBEDDED_ABSPATH . '/frontend.php';
 			}
 
-			// parse shortcodes if necessary relative to $post_id
-			$subject = $this->render_with_post( $subject, $post_id, false );
+			// parse shortcodes if necessary
+			$subject = do_shortcode( $subject );
 			$subject = stripslashes( $subject );
 
-			// parse shortcodes/rich text if necessary relative to $post_id
-			$body = $this->render_with_post( $body, $post_id );
+			// pseudo the_content filter
+			$body = apply_filters( \OTGS\Toolset\Common\BasicFormatting::FILTER_NAME, $body );
 			$body = stripslashes( $body );
 
 			$mailer->setSubject( $subject );
@@ -523,11 +579,12 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 	 * @return bool
 	 */
 	protected function try_add_author_to_recipients( $post_id, $form_id, $notification, &$recipients ) {
-		if ( isset( $notification[ 'to' ][ 'author' ] )
+		if ( 
+			isset( $notification[ 'to' ][ 'author' ] )
 			&& 'author' == $notification[ 'to' ][ 'author' ]
+			&& $post_id
 		) {
-			$author_post_id = isset( $_POST[ 'form_' . $form_id . '_referrer_post_id' ] ) ? $_POST[ 'form_' . $form_id . '_referrer_post_id' ] : 0;
-			$author_post = ( 0 == $author_post_id && $post_id ) ? get_post( $post_id ) : get_post( $author_post_id );
+			$author_post = get_post( $post_id );
 			$author_id = $author_post->post_author;
 
 			if ( $author_id ) {
@@ -667,5 +724,18 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * Triggers expiration notifications
+	 *
+	 * @param int $post_id Post ID.
+	 * @param int $form_id Form ID.
+	 * @param array $notifications List of CRED notifications.
+	 */
+	public function trigger_expiration_notifications( $post_id, $form_id, $notifications ) {
+		$this->enqueue_notifications( $post_id, $form_id, $notifications );
+		$this->check_for_notifications( $post_id, get_post( $post_id ), 'expiration_date' );
 	}
 }

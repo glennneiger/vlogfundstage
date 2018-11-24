@@ -3,7 +3,7 @@ global $wpddlayout;
 ?>
 
 <div class="js-change-wrap-box">
-    <h2>
+    <h2 class="js-change-layout-use-section-title change-layout-use-section-title-outer" data-group="2">
         <span  class="change-layout-use-section-title js-collapse-group-individual">
             <?php _e('Individual pages:', 'ddl-layouts'); ?>
         </span>
@@ -15,7 +15,7 @@ global $wpddlayout;
     <div class="notice inline notice-warning notice-alt notice_without_margine">
         <p>
             <?php _e('A better way to create a layout for a single page is to edit that page and click on the button  "Content Layout Editor".','dd-layouts');?><br>
-            <a href="https://wp-types.com/documentation/user-guides/using-layouts-as-a-page-builder-content-layouts/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=layout-assignment-dialog&utm_term=learn-about-designing-individual-pages-with-Layouts" target="_blank">
+            <a href="https://toolset.com/documentation/user-guides/using-layouts-as-a-page-builder-content-layouts/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=layout-assignment-dialog&utm_term=learn-about-designing-individual-pages-with-Layouts" target="_blank">
                 <?php printf(__( 'Learn about designing individual pages with Layouts %s', 'dd-layouts' ), '<i class="fa fa-external-link" aria-hidden="true"></i>');?>
             </a>
         </p>

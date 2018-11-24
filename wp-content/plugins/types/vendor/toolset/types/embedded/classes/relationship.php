@@ -217,6 +217,10 @@ class WPCF_Relationship
      */
     function save_child( $parent_id, $child_id, $save_fields = array() )
     {
+    	// this function modifies $_POST
+	    // we need to make sure to revoke all changes to $_POST at the end (types-1644)
+    	$POST_backup = $_POST;
+
         $parent = get_post( intval( $parent_id ) );
         $child = get_post( intval( $child_id ) );
         $post_data = array();
@@ -304,14 +308,13 @@ class WPCF_Relationship
 
         $updated_id = wp_update_post( $post_data );
 
-	    remove_filter( 'types_updating_child_post', '__return_true' );
-
         if ( isset($temp_post_data) ) {
             $_POST = $temp_post_data;
             unset($temp_post_data);
         }
 
         if ( empty( $updated_id ) ) {
+	        remove_filter( 'types_updating_child_post', '__return_true' );
             return new WP_Error( 'relationship-update-post-failed', 'Updating post failed' );
         }
 
@@ -410,6 +413,11 @@ class WPCF_Relationship
         clean_post_cache( $child->ID );
         // Added because of caching meta 1.5.4
         wp_cache_flush();
+
+	    remove_filter( 'types_updating_child_post', '__return_true' );
+
+	    // re-apply original $_POST data
+		$_POST = $POST_backup;
 
         return true;
     }

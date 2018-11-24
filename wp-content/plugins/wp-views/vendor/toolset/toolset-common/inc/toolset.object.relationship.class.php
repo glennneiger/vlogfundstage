@@ -66,6 +66,11 @@ if ( ! class_exists( 'Toolset_Object_Relationship', false ) ) {
 				return;
 			}
 			
+			// In empty WPAs, we fake a loop with a faked post with no post type
+			if ( empty( $post_object->post_type ) ) {
+				return;
+			}
+			
 			$this->post_relationship_depth = ( $this->post_relationship_depth + 1 );
 
 			if ( 

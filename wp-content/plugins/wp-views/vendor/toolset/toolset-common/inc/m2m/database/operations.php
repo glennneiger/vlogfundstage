@@ -6,7 +6,7 @@
  * Throughout m2m API, only these classes should directly touch the database:
  *
  * - Toolset_Relationship_Database_Operations
- * - Toolset_Relationship_Migration
+ * - Toolset_Relationship_Migration_Controller
  * - Toolset_Relationship_Driver
  * - Toolset_Relationship_Translation_View_Management
  * - Toolset_Association_Query
@@ -20,7 +20,7 @@ class Toolset_Relationship_Database_Operations {
 	 *
 	 * @since m2m
 	 */
-	const MAXIMUM_RELATIONSHIP_SLUG_LENGTH = 255;
+	const MAXIMUM_RELATIONSHIP_SLUG_LENGTH = 190;
 
 
 	/**
@@ -51,7 +51,6 @@ class Toolset_Relationship_Database_Operations {
 			$this->wpdb = $wpdb_di;
 		}
 		$this->table_name = ( null === $table_name_di ? new Toolset_Relationship_Table_Name() : $table_name_di );
-
 	}
 
 
@@ -85,6 +84,7 @@ class Toolset_Relationship_Database_Operations {
 	 *
 	 * @return IToolset_Association|Toolset_Result
 	 * @since m2m
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 */
 	public static function create_association( $relationship_definition_source, $parent_source, $child_source, $intermediary_id, $instantiate = true ) {
 
@@ -93,7 +93,7 @@ class Toolset_Relationship_Database_Operations {
 		if ( ! $relationship_definition instanceof Toolset_Relationship_Definition ) {
 			throw new InvalidArgumentException(
 				sprintf(
-					__( 'Relationship definition "%s" doesn\'t exist.', 'wpcf' ),
+					__( 'Relationship definition "%s" doesn\'t exist.', 'wpv-views' ),
 					is_string( $relationship_definition_source ) ? $relationship_definition_source : print_r( $relationship_definition_source, true )
 				)
 			);
@@ -156,14 +156,16 @@ class Toolset_Relationship_Database_Operations {
 	 * Practically that means creating the wp_toolset_associations table.
 	 *
 	 * @since m2m
-	 *
-	 * TODO is it possible to reliably detect dbDelta failure?
+	 * @return Toolset_Result_Set
 	 */
 	public function do_native_dbdelta() {
-		$this->create_associations_table();
-		$this->create_relationship_table();
-		$this->create_type_set_table();
-		return true;
+		$results = new Toolset_Result_Set();
+
+		$results->add( $this->create_associations_table() );
+		$results->add( $this->create_relationship_table() );
+		$results->add( $this->create_type_set_table() );
+
+		return $results;
 	}
 
 
@@ -207,32 +209,65 @@ class Toolset_Relationship_Database_Operations {
 	 * Note: It is assumed that the table doesn't exist.
 	 *
 	 * @since m2m
+	 * @return Toolset_Result
 	 */
 	private function create_associations_table() {
 
-		$association_table_name = Toolset_Relationship_Table_Name::associations();
+		$association_table_name = $this->table_name->association_table();
 
 		if ( $this->table_exists( $association_table_name ) ) {
-			return;
+			return new Toolset_Result( true );
 		}
 
 		// Note that dbDelta is very sensitive about details, almost nothing here is arbitrary.
 		$query = "CREATE TABLE {$association_table_name} (
 				id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    			relationship_id bigint(20) UNSIGNED NOT NULL, 
-			    parent_id bigint(20) UNSIGNED NOT NULL,
-			    child_id bigint(20) UNSIGNED NOT NULL,
-			    intermediary_id bigint(20) UNSIGNED NOT NULL,
-			    trid bigint(20) UNSIGNED NOT NULL,
-			    lang varchar(7) NOT NULL DEFAULT '',
-			    translation_type enum('original','translation','none') NOT NULL DEFAULT 'none',
-			    PRIMARY KEY  id (id),
-			    KEY relationship_id (relationship_id),
+				relationship_id bigint(20) UNSIGNED NOT NULL,
+				parent_id bigint(20) UNSIGNED NOT NULL,
+				child_id bigint(20) UNSIGNED NOT NULL,
+				intermediary_id bigint(20) UNSIGNED NOT NULL,
+				PRIMARY KEY  id (id),
+				KEY relationship_id (relationship_id),
 				KEY parent_id (parent_id, relationship_id),
-				KEY child_id (child_id, relationship_id)			    
+				KEY child_id (child_id, relationship_id)
 			) " . $this->get_charset_collate() . ";";
 
+		return $this->do_dbdelta_and_return( $query, $association_table_name );
+	}
+
+
+	/**
+	 * @param string $query
+	 * @param string $table_to_check
+	 *
+	 * @return Toolset_Result
+	 * @since 3.0.2
+	 */
+	private function do_dbdelta_and_return( $query, $table_to_check ) {
 		self::dbdelta( $query );
+		$wpdb_error = $this->wpdb->last_error;
+
+		if( ! $this->table_exists( $table_to_check ) ) {
+			return new Toolset_Result(
+				false,
+				sprintf(
+					__( 'Unable to create table %s due to a MySQL Error: %s', 'wpv-views' ),
+					$table_to_check,
+					$wpdb_error
+				)
+			);
+		} elseif( ! empty( $wpdb_error ) ) {
+			return new Toolset_Result(
+				false,
+				sprintf(
+					__( 'MySQL error when creating table %s: %s', 'wpv-views' ),
+					$table_to_check,
+					$wpdb_error
+				)
+			);
+		}
+
+		return new Toolset_Result( true );
 	}
 
 
@@ -242,98 +277,79 @@ class Toolset_Relationship_Database_Operations {
 	 * Note: It is assumed that the table doesn't exist.
 	 *
 	 * @since m2m
+	 * @return Toolset_Result
 	 */
 	private function create_relationship_table() {
 
 		$table_name = $this->table_name->relationship_table();
 
 		if ( $this->table_exists( $table_name ) ) {
-			return;
+			return new Toolset_Result( true );
 		}
 
 		// Note that dbDelta is very sensitive about details, almost nothing here is arbitrary.
 		$query = "CREATE TABLE {$table_name} (
-				id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    			slug varchar(" . self::MAXIMUM_RELATIONSHIP_SLUG_LENGTH . ") NOT NULL DEFAULT '',
-    			display_name_plural varchar(255) NOT NULL DEFAULT '',
-    			display_name_singular varchar(255) NOT NULL DEFAULT '',
-    			driver varchar(50) NOT NULL DEFAULT '',
-    			parent_domain varchar(20) NOT NULL DEFAULT '', 
-    			parent_types bigint(20) UNSIGNED NOT NULL DEFAULT 0,
-    			child_domain varchar(20) NOT NULL DEFAULT '',
-    			child_types bigint(20) UNSIGNED NOT NULL DEFAULT 0,
-    			intermediary_type varchar(20) NOT NULL DEFAULT '',
-    			ownership enum('parent', 'child', 'none') NOT NULL DEFAULT 'none',
-    			cardinality_parent_max int(10) NOT NULL DEFAULT -1,
-    			cardinality_parent_min int(10) NOT NULL DEFAULT 0,
-    			cardinality_child_max int(10) NOT NULL DEFAULT -1,
-    			cardinality_child_min int(10) NOT NULL DEFAULT 0,
-    			is_distinct tinyint(1) NOT NULL DEFAULT 0,
-    			scope longtext NOT NULL DEFAULT '',
-    			origin varchar(50) NOT NULL DEFAULT '',
-    			role_name_parent varchar(255) NOT NULL DEFAULT '',
-    			role_name_child varchar(255) NOT NULL DEFAULT '',
-    			role_name_intermediary varchar(255) NOT NULL DEFAULT '',
-    			needs_legacy_support tinyint(1) NOT NULL DEFAULT 0,
-    			is_active tinyint(1) NOT NULL DEFAULT 0,
-			    PRIMARY KEY  id (id),
-			    KEY slug (slug),
-				KEY is_active (is_active),
-			    KEY needs_legacy_support (needs_legacy_support),
-			    KEY parent_type (parent_domain, parent_types),
-			    KEY child_type (child_domain, child_types)		    
-			) " . $this->get_charset_collate() . ";";
+			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			slug varchar(" . self::MAXIMUM_RELATIONSHIP_SLUG_LENGTH . ") NOT NULL DEFAULT '',
+			display_name_plural varchar(255) NOT NULL DEFAULT '',
+			display_name_singular varchar(255) NOT NULL DEFAULT '',
+			driver varchar(50) NOT NULL DEFAULT '',
+			parent_domain varchar(20) NOT NULL DEFAULT '',
+			parent_types bigint(20) UNSIGNED NOT NULL DEFAULT 0,
+			child_domain varchar(20) NOT NULL DEFAULT '',
+			child_types bigint(20) UNSIGNED NOT NULL DEFAULT 0,
+			intermediary_type varchar(20) NOT NULL DEFAULT '',
+			ownership varchar(8) NOT NULL DEFAULT 'none',
+			cardinality_parent_max int(10) NOT NULL DEFAULT -1,
+			cardinality_parent_min int(10) NOT NULL DEFAULT 0,
+			cardinality_child_max int(10) NOT NULL DEFAULT -1,
+			cardinality_child_min int(10) NOT NULL DEFAULT 0,
+			is_distinct tinyint(1) NOT NULL DEFAULT 0,
+			scope longtext NOT NULL DEFAULT '',
+			origin varchar(50) NOT NULL DEFAULT '',
+			role_name_parent varchar(255) NOT NULL DEFAULT '',
+			role_name_child varchar(255) NOT NULL DEFAULT '',
+			role_name_intermediary varchar(255) NOT NULL DEFAULT '',
+			role_label_parent_singular VARCHAR(255) NOT NULL DEFAULT '',
+			role_label_child_singular VARCHAR(255) NOT NULL DEFAULT '',
+			role_label_parent_plural VARCHAR(255) NOT NULL DEFAULT '',
+			role_label_child_plural VARCHAR(255) NOT NULL DEFAULT '',
+			needs_legacy_support tinyint(1) NOT NULL DEFAULT 0,
+			is_active tinyint(1) NOT NULL DEFAULT 0,
+			PRIMARY KEY  id (id),
+			KEY slug (slug),
+			KEY is_active (is_active),
+			KEY needs_legacy_support (needs_legacy_support),
+			KEY parent_type (parent_domain, parent_types),
+			KEY child_type (child_domain, child_types)
+		) " . $this->get_charset_collate() . ";";
 
-		self::dbdelta( $query );
-
-	}
-
-
-	private function create_type_set_table() {
-		$table_name = $this->table_name->type_set_table();
-		if ( $this->table_exists( $table_name ) ) {
-			return;
-		}
-
-		// Note that dbDelta is very sensitive about details, almost nothing here is arbitrary.
-		$query = "CREATE TABLE {$table_name} (
-				id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    			set_id bigint(20) UNSIGNED NOT NULL DEFAULT 0,
-    			type varchar(20) NOT NULL DEFAULT '',
-    			PRIMARY KEY  id (id),
-			    KEY set_id (set_id),
-			    KEY type (type)
-			) " . $this->get_charset_collate() . ";";
-
-		self::dbdelta( $query );
+		return $this->do_dbdelta_and_return( $query, $table_name );
 	}
 
 
 	/**
-	 * Get the next unused value for trid (translation ID, grouping different translations of
-	 * one association together).
-	 *
-	 * Assumes that this method will be always called before inserting a new trid, and that
-	 * the returned trid is always used.
-	 *
-	 * @return int
+	 * @return Toolset_Result
 	 */
-	public static function get_next_trid() {
-		static $next_trid = 0;
-
-		if ( 0 === $next_trid ) {
-			global $wpdb;
-			$associations_table = Toolset_Relationship_Table_Name::associations();
-			$last_trid = $wpdb->get_var( "SELECT MAX(trid) FROM {$associations_table}" );
-
-			// It will be incremented and becomes unique in the next step
-			$next_trid = $last_trid;
+	private function create_type_set_table() {
+		$table_name = $this->table_name->type_set_table();
+		if ( $this->table_exists( $table_name ) ) {
+			return new Toolset_Result( true );
 		}
 
-		$next_trid++;
+		// Note that dbDelta is very sensitive about details, almost nothing here is arbitrary.
+		$query = "CREATE TABLE {$table_name} (
+			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			set_id bigint(20) UNSIGNED NOT NULL DEFAULT 0,
+			type varchar(20) NOT NULL DEFAULT '',
+			PRIMARY KEY  id (id),
+			KEY set_id (set_id),
+			KEY type (type)
+		) " . $this->get_charset_collate() . ";";
 
-		return $next_trid;
+		return $this->do_dbdelta_and_return( $query, $table_name );
 	}
+
 
 
 	/**
@@ -368,12 +384,12 @@ class Toolset_Relationship_Database_Operations {
 		$message = (
 		$is_success
 			? sprintf(
-			__( 'The association table has been updated with the new relationship slug "%s". %d rows have been updated.', 'wpcf' ),
+			__( 'The association table has been updated with the new relationship slug "%s". %d rows have been updated.', 'wpv-views' ),
 			$new_definition->get_slug(),
 			$rows_updated
 		)
 			: sprintf(
-			__( 'There has been an error when updating the assocation table with the new relationship slug: %s', 'wpcf' ),
+			__( 'There has been an error when updating the association table with the new relationship slug: %s', 'wpv-views' ),
 			$this->wpdb->last_error
 		)
 		);
@@ -402,12 +418,12 @@ class Toolset_Relationship_Database_Operations {
 		if( false === $result ) {
 			return new Toolset_Result_Updated(
 				false, 0,
-				sprintf( __( 'Database error when deleting associations: "%s"', 'wpcf' ), $this->wpdb->last_error )
+				sprintf( __( 'Database error when deleting associations: "%s"', 'wpv-views' ), $this->wpdb->last_error )
 			);
 		} else {
 			return new Toolset_Result_Updated(
 				true, $result,
-				sprintf( __( 'Deleted all associations for the relationship #%d', 'wpcf'), $relationship_row_id )
+				sprintf( __( 'Deleted all associations for the relationship #%d', 'wpv-views'), $relationship_row_id )
 			);
 		}
 	}
@@ -429,31 +445,35 @@ class Toolset_Relationship_Database_Operations {
 		$child_types_table_alias = 'child_types_table'
 	) {
 		return "
-		  	$relationships_table_alias.id AS id, 
-		  	$relationships_table_alias.slug AS slug, 
-		  	$relationships_table_alias.display_name_plural AS display_name_plural,
-		  	$relationships_table_alias.display_name_singular AS display_name_singular,
-		  	$relationships_table_alias.driver AS driver, 
-		  	$relationships_table_alias.parent_domain AS parent_domain, 
-		  	$relationships_table_alias.child_domain AS child_domain, 
-		  	$relationships_table_alias.intermediary_type AS intermediary_type,
-		  	$relationships_table_alias.ownership AS ownership,  
-		  	$relationships_table_alias.cardinality_parent_max AS cardinality_parent_max,
-		  	$relationships_table_alias.cardinality_parent_min AS cardinality_parent_min, 
-		  	$relationships_table_alias.cardinality_child_max AS cardinality_child_max,
-		  	$relationships_table_alias.cardinality_child_min AS cardinality_child_min,
-		  	$relationships_table_alias.is_distinct AS is_distinct,
-		  	$relationships_table_alias.scope AS scope,
-		  	$relationships_table_alias.origin AS origin,
-		  	$relationships_table_alias.role_name_parent AS role_name_parent,
-		  	$relationships_table_alias.role_name_child AS role_name_child,
-		  	$relationships_table_alias.role_name_intermediary AS role_name_intermediary,
-		  	$relationships_table_alias.needs_legacy_support AS needs_legacy_support,
-		  	$relationships_table_alias.is_active AS is_active,
-		  	$relationships_table_alias.parent_types AS parent_types_set_id,
-		  	$relationships_table_alias.child_types AS child_types_set_id,
-		  	GROUP_CONCAT(DISTINCT $parent_types_table_alias.type) AS parent_types, 
-		  	GROUP_CONCAT(DISTINCT $child_types_table_alias.type) AS child_types";
+			$relationships_table_alias.id AS id,
+			$relationships_table_alias.slug AS slug,
+			$relationships_table_alias.display_name_plural AS display_name_plural,
+			$relationships_table_alias.display_name_singular AS display_name_singular,
+			$relationships_table_alias.driver AS driver,
+			$relationships_table_alias.parent_domain AS parent_domain,
+			$relationships_table_alias.child_domain AS child_domain,
+			$relationships_table_alias.intermediary_type AS intermediary_type,
+			$relationships_table_alias.ownership AS ownership,
+			$relationships_table_alias.cardinality_parent_max AS cardinality_parent_max,
+			$relationships_table_alias.cardinality_parent_min AS cardinality_parent_min,
+			$relationships_table_alias.cardinality_child_max AS cardinality_child_max,
+			$relationships_table_alias.cardinality_child_min AS cardinality_child_min,
+			$relationships_table_alias.is_distinct AS is_distinct,
+			$relationships_table_alias.scope AS scope,
+			$relationships_table_alias.origin AS origin,
+			$relationships_table_alias.role_name_parent AS role_name_parent,
+			$relationships_table_alias.role_name_child AS role_name_child,
+			$relationships_table_alias.role_name_intermediary AS role_name_intermediary,
+			$relationships_table_alias.role_label_parent_singular AS role_label_parent_singular,
+			$relationships_table_alias.role_label_child_singular AS role_label_child_singular,
+			$relationships_table_alias.role_label_parent_plural AS role_label_parent_plural,
+			$relationships_table_alias.role_label_child_plural AS role_label_child_plural,
+			$relationships_table_alias.needs_legacy_support AS needs_legacy_support,
+			$relationships_table_alias.is_active AS is_active,
+			$relationships_table_alias.parent_types AS parent_types_set_id,
+			$relationships_table_alias.child_types AS child_types_set_id,
+			GROUP_CONCAT(DISTINCT $parent_types_table_alias.type) AS parent_types,
+			GROUP_CONCAT(DISTINCT $child_types_table_alias.type) AS child_types";
 	}
 
 
@@ -475,9 +495,9 @@ class Toolset_Relationship_Database_Operations {
 		$child_types_table_alias = 'child_types_table'
 	) {
 		return "
-			JOIN {$type_set_table_name} AS {$parent_types_table_alias} 
+			JOIN {$type_set_table_name} AS {$parent_types_table_alias}
 				ON ({$relationships_table_alias}.parent_types = {$parent_types_table_alias}.set_id )
-			JOIN {$type_set_table_name} AS {$child_types_table_alias} 
+			JOIN {$type_set_table_name} AS {$child_types_table_alias}
 				ON ({$relationships_table_alias}.child_types = {$child_types_table_alias}.set_id )";
 	}
 
@@ -502,10 +522,10 @@ class Toolset_Relationship_Database_Operations {
 		// The query is so complex because it needs to bring in data from the type set tables. But
 		// those two joins are very cheap because we don't expect many records here.
 		$query = "
-		  SELECT {$this->get_standard_relationships_select_clause()}
-		  FROM {$relationship_table} AS relationships 
-    	  	{$this->get_standard_relationships_join_clause( $type_set_table )}
-		  GROUP BY {$this->get_standards_relationship_group_by_clause()}";
+			SELECT {$this->get_standard_relationships_select_clause()}
+			FROM {$relationship_table} AS relationships
+				{$this->get_standard_relationships_join_clause( $type_set_table )}
+			GROUP BY {$this->get_standards_relationship_group_by_clause()}";
 
 		$rows = toolset_ensarr( $this->wpdb->get_results( $query ) );
 		return $rows;
@@ -533,16 +553,104 @@ class Toolset_Relationship_Database_Operations {
 
 		$message = $is_success
 			? sprintf(
-				__( 'The type_sets table has been updated with the new type "%s". %d rows have been updated.', 'wpcf' ),
+				__( 'The type_sets table has been updated with the new type "%s". %d rows have been updated.', 'wpv-views' ),
 				$new_type,
 				$rows_updated
 			)
 			: sprintf(
-				__( 'There has been an error when updating the type_sets table with the new type "%s": %s', 'wpcf' ),
+				__( 'There has been an error when updating the type_sets table with the new type "%s": %s', 'wpv-views' ),
 				$new_type,
 				$this->wpdb->last_error
 			);
 
 		return new Toolset_Result( $is_success, $message );
+	}
+
+
+	/**
+	 * Queries all post's associations and delete them.
+	 *
+	 * That should trigger deleting the intermediary posts and owned elements.
+	 *
+	 * @param IToolset_Element $element
+	 * @deprecated Should be unused since 2.5.10. Replaced by Toolset_Association_Cleanup_Post.
+	 */
+	public function delete_associations_involving_element( $element ) {
+
+		trigger_error(
+			'Toolset_Relationship_Database_Operations::delete_associations_involving_element() is deprecated and should not be used anymore.',
+			E_USER_NOTICE
+		);
+
+		$query_parent = new Toolset_Association_Query( array(
+			Toolset_Association_Query::QUERY_PARENT_DOMAIN => $element->get_domain(),
+			Toolset_Association_Query::QUERY_PARENT_ID => $element->get_id(),
+			Toolset_Association_Query::OPTION_RETURN => Toolset_Association_Query::RETURN_ASSOCIATIONS
+		) );
+
+		$associations = $query_parent->get_results();
+
+		$query_child = new Toolset_Association_Query( array(
+			Toolset_Association_Query::QUERY_PARENT_DOMAIN => $element->get_domain(),
+			Toolset_Association_Query::QUERY_PARENT_ID => $element->get_id(),
+			Toolset_Association_Query::OPTION_RETURN => Toolset_Association_Query::RETURN_ASSOCIATIONS
+		) );
+
+		/** @var Toolset_Association[] $associations */
+		$associations = array_merge( $associations, $query_child->get_results() );
+
+		foreach( $associations as $association ) {
+			$definition = $association->get_definition();
+			$driver = $definition->get_driver();
+			$driver->delete_association( $association );
+		}
+
+	}
+
+
+	/**
+	 * Updates association intermediary post
+	 *
+	 * @param int $association_id Association trID
+	 * @param int $intermediary_id New intermediary ID
+	 * @since m2m
+	 */
+	public function update_association_intermediary_id( $association_id, $intermediary_id ) {
+		$this->wpdb->update(
+			$this->table_name->association_table(),
+			array(
+				'intermediary_id' => $intermediary_id,
+			),
+			array(
+				'id' => $association_id,
+			),
+			array( '%d' )
+		);
+	}
+
+
+	/**
+	 * Returns the maximun number of associations of a relationship for a parent id and a child id
+	 *
+	 * @param int    $relationship_id Relationship ID.
+	 * @param string $role_name Role name.
+	 * @return int
+	 * @throws InvalidArgumentException In case of error.
+	 */
+	public function count_max_associations( $relationship_id, $role_name ) {
+		if ( ! in_array( $role_name, Toolset_Relationship_Role::parent_child_role_names() ) ) {
+			throw new InvalidArgumentException( 'Wrong role name' );
+		}
+		$associations_table = Toolset_Relationship_Table_Name::associations();
+		$count = $this->wpdb->get_var(
+			$this->wpdb->prepare(
+				"SELECT max(n) count
+					FROM (
+						SELECT count(*) n
+							FROM {$associations_table}
+							WHERE relationship_id = %d
+							GROUP BY {$role_name}_id
+					) count", $relationship_id ) );
+		return (int) $count;
 	}
 }

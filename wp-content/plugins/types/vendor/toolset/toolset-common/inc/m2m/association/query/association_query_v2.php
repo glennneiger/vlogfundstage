@@ -49,7 +49,7 @@
  *
  * @since 2.5.8
  */
-class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset_Query {
+class Toolset_Association_Query_V2 extends Toolset_Wpdb_User {
 
 
 	/** @var IToolset_Association_Query_Condition[] */
@@ -115,6 +115,12 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 	/** @var IToolset_Association_Query_Restriction[] */
 	private $restrictions = array();
 
+	/** @var string|null */
+	private $translation_language;
+
+	/** @var Toolset_WPML_Compatibility */
+	private $wpml_service;
+
 
 	/**
 	 * Toolset_Association_Query_V2 constructor.
@@ -128,6 +134,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 	 * @param Toolset_Association_Query_Table_Join_Manager|null $join_manager_di
 	 * @param Toolset_Association_Query_Orderby_Factory|null $orderby_factory_di
 	 * @param Toolset_Association_Query_Element_Selector_Provider|null $element_selector_provider_di
+	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
 	 */
 	public function __construct(
 		wpdb $wpdb_di = null,
@@ -138,7 +145,8 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 		Toolset_Relationship_Definition_Repository $definition_repository_di = null,
 		Toolset_Association_Query_Table_Join_Manager $join_manager_di = null,
 		Toolset_Association_Query_Orderby_Factory $orderby_factory_di = null,
-		Toolset_Association_Query_Element_Selector_Provider $element_selector_provider_di = null
+		Toolset_Association_Query_Element_Selector_Provider $element_selector_provider_di = null,
+		Toolset_WPML_Compatibility $wpml_service_di = null
 	) {
 		parent::__construct( $wpdb_di );
 		$this->unique_table_alias = $unique_table_alias_di ?: new Toolset_Relationship_Database_Unique_Table_Alias();
@@ -149,6 +157,7 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 		$this->orderby_factory = $orderby_factory_di ?: new Toolset_Association_Query_Orderby_Factory();
 		$this->element_selector_provider = $element_selector_provider_di ?: new Toolset_Association_Query_Element_Selector_Provider();
 		$this->_definition_repository = $definition_repository_di;
+		$this->wpml_service = $wpml_service_di ?: Toolset_WPML_Compatibility::get_instance();
 	}
 
 
@@ -273,6 +282,9 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 			$this->return_association_instances();
 		}
 
+		// Sometimes it's not as straightforward as "get current language"
+		$this->determine_translation_language();
+
 		$this->apply_restrictions();
 
 		// We do this only after restrictions have been applied.
@@ -356,6 +368,10 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 	}
 
 
+	public function not( IToolset_Association_Query_Condition $condition ) {
+		return $this->condition_factory->not( $condition );
+	}
+
 	/**
 	 * Query by a row ID of a relationship definition.
 	 *
@@ -364,6 +380,16 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 	 */
 	public function relationship_id( $relationship_id ) {
 		return $this->condition_factory->relationship_id( $relationship_id );
+	}
+
+	/**
+	 * Query by a row intermediary_id of a relationship definition.
+	 *
+	 * @param int $relationship_id
+	 * @return IToolset_Association_Query_Condition
+	 */
+	public function intermediary_id( $relationship_id ) {
+		return $this->condition_factory->intermediary_id( $relationship_id );
 	}
 
 
@@ -444,6 +470,8 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 	 *     as stored in the association table. Default is false.
 	 * @param bool $translate_provided_id If true, this will try to translate the element ID (if
 	 *     applicable on the domain) and use the translated one in the final condition. Default is true.
+	 * @param bool $set_its_translation_language If true, the query may try to use the element's language
+	 *     to determine the desired language of the results (see determine_translation_language() for details)
 	 *
 	 * @return Toolset_Association_Query_Condition_Element_Id_And_Domain
 	 * @since 2.5.10
@@ -453,8 +481,13 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 		$domain,
 		IToolset_Relationship_Role $for_role,
 		$query_original_element = false,
-		$translate_provided_id = true
+		$translate_provided_id = true,
+		$set_its_translation_language = true
 	) {
+		if( $set_its_translation_language ) {
+			$this->set_translation_language_by_element_id_and_domain( $element_id, $domain );
+		}
+
 		return $this->condition_factory->element_id_and_domain(
 			$element_id,
 			$domain,
@@ -475,6 +508,8 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 	 *     as stored in the association table. Default is false.
 	 * @param bool $translate_provided_id If true, this will try to translate the element ID (if
 	 *     applicable on the domain) and use the translated one in the final condition. Default is true.
+	 * @param bool $set_its_translation_language If true, the query may try to use the element's language
+	 *     to determine the desired language of the results (see determine_translation_language() for details)
 	 *
 	 * @return IToolset_Association_Query_Condition
 	 */
@@ -482,14 +517,18 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 		IToolset_Element $element,
 		IToolset_Relationship_Role $for_role = null,
 		$query_original_element = false,
-		$translate_provided_id = true
+		$translate_provided_id = true,
+		$set_its_translation_language = true
 	) {
+		if( $set_its_translation_language ) {
+			$this->set_translation_language_by_element_id_and_domain( $element->get_id(), $element->get_domain() );
+		}
 
 		if( null === $for_role ) {
 			$conditions = array();
 			foreach( Toolset_Relationship_Role::all() as $role ) {
 				$conditions[] = $this->element(
-					$element, $role, $query_original_element, $translate_provided_id
+					$element, $role, $query_original_element, $translate_provided_id, false
 				);
 			}
 			return $this->do_or( $conditions );
@@ -683,6 +722,28 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 		return $this->condition_factory->has_domain_and_type(
 			$domain, $type, $for_role, $this->join_manager, $this->unique_table_alias
 		);
+	}
+
+
+	/**
+	 * Condition that a relationship has a certain origin.
+	 *
+	 * @param String $origin Origin.
+	 *
+	 * @return IToolset_Relationship_Query_Condition
+	 */
+	public function has_origin( $origin ) {
+		return $this->condition_factory->has_origin( $origin, $this->join_manager );
+	}
+
+
+	/**
+	 * Condition that the association has an intermediary id.
+	 *
+	 * @return IToolset_Relationship_Query_Condition
+	 */
+	public function has_intermediary_id() {
+		return $this->condition_factory->has_intermediary_id();
 	}
 
 
@@ -974,6 +1035,92 @@ class Toolset_Association_Query_V2 extends Toolset_Wpdb_User implements IToolset
 		foreach( $this->restrictions as $restriction ) {
 			$restriction->clear();
 		}
+	}
+
+
+	/**
+	 * Make sure that the elements in results will never get translated.
+	 *
+	 * @since 2.6.4
+	 * @return $this
+	 */
+	public function dont_translate_results() {
+		$this->element_selector_provider->attempt_translating_elements( false );
+		return $this;
+	}
+
+
+	/**
+	 * Set the preferred translation language.
+	 *
+	 * See determine_translation_language() for details.
+	 *
+	 * @param string $lang_code Valid language code.
+	 *
+	 * @return $this
+	 */
+	public function set_translation_language( $lang_code ) {
+		if( ! is_string( $lang_code ) ) {
+			throw new InvalidArgumentException();
+		}
+
+		$this->translation_language = $lang_code;
+
+		return $this;
+	}
+
+
+	/**
+	 * Set the preferred translation language from a given element ID and domain.
+	 *
+	 * See determine_translation_language() for details.
+	 *
+	 * @param int $element_id ID of the element to take the language from.
+	 * @param string $domain Element domain.
+	 *
+	 * @return $this
+	 * @since 2.6.8
+	 */
+	public function set_translation_language_by_element_id_and_domain( $element_id, $domain ) {
+		if( Toolset_Element_Domain::POSTS !== $domain ) {
+			// no language information there
+			return $this;
+		}
+
+		$post_language = $this->wpml_service->get_post_language( $element_id );
+		if( ! empty( $post_language ) ) {
+			$this->set_translation_language( $post_language );
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Determine an alternative to the translation language (what language version of the results should be chosen).
+	 *
+	 * This will be used only if applicable - if WPML is active and the current language is set to "All languages",
+	 * in which case we're forced to pick one.
+	 *
+	 * If we have a valid lang code, we'll pass it to the element selector. Otherwise, it will use the default language.
+	 *
+	 * @since 2.6.8
+	 */
+	private function determine_translation_language() {
+		if( ! $this->wpml_service->is_wpml_active_and_configured() ) {
+			return;
+		}
+
+		if( ! $this->wpml_service->is_showing_all_languages() ) {
+			return;
+		}
+
+		if( null === $this->translation_language ) {
+			// Here, we may try to determine the language by some other means.
+			return;
+		}
+
+		$this->element_selector_provider->set_translation_language( $this->translation_language );
 	}
 
 

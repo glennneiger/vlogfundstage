@@ -306,6 +306,12 @@ class WPV_Admin_Messages {
 					'content' => __("You can filter the View query by status, custom fields, taxonomy, users fields and even text search depending on the content that you are going to load. Click on 'Add a filter' and then select the filter type. A View may have as many filters as you like.", 'wpv-views')
 				);
 				break;
+			case 'view_wrapper':
+				$return = array(
+					'title' => __( 'View Wrapper', 'wpv-views' ),
+					'content' => __( 'Normally, the View has a wrapper DIV which includes IDs and classes required for AJAX updates and pagination. If you want to show the View inline with text, you can disable this DIV, but you will not be able to use some of the functionality that Views offer.', 'wpv-views' ),
+				);
+				break;
 			case 'filter_the_archive_results':
 				$return = array(
 					'title' => __('Query Filter', 'wpv-views'),
@@ -321,19 +327,13 @@ class WPV_Admin_Messages {
 			case 'archive_pagination':
 				$return = array(
 					'title' => __('Pagination settings', 'wpv-views'),
-					'content' => __("You can set pagination for this WordPress Archive, or disable it to display all items on the same page. Remember to add pagination controls in the Loop Output Editor.", 'wpv-views')
+					'content' => __("You can set pagination for this WordPress Archive, or disable it to display all items on the same page. Remember to add pagination controls in the Loop Editor.", 'wpv-views')
 				);
 				break;
 			case 'filters_html_css_js':
 				$return = array(
-					'title' => __('Filter', 'wpv-views'),
-					'content' => __("In this section you can add pagination controls, slider controls and custom searches. If you have enabled pagination, you need to insert the pagination controls here. They are used for both paged results and sliders. For custom searches, insert 'filter' elements. The output of this section is displayed via the [wpv-filter-meta-html] shortcode in the Filter and Loop Output Integration section.", 'wpv-views')
-				);
-				break;
-			case 'filters_archive_html_css_js':
-				$return = array(
-					'title' => __('Filter', 'wpv-views'),
-					'content' => __("In this section you can add custom searches. For custom searches, insert 'filter' elements. The output of this section is displayed via the [wpv-filter-meta-html] shortcode in the Filter and Loop Output Integration section.", 'wpv-views')
+					'title' => __('Search and Pagination', 'wpv-views'),
+					'content' => __("In this section you can add pagination controls, slider controls and custom searches. If you have enabled pagination, you need to insert the pagination controls here. They are used for both paged results and sliders. For custom searches, insert 'filter' elements. The output of this section is displayed via the [wpv-filter-meta-html] shortcode in the Output section.", 'wpv-views')
 				);
 				break;
 			case 'parametric_search':
@@ -375,14 +375,14 @@ class WPV_Admin_Messages {
 				break;
 			case 'complete_output':
 				$return = array(
-					'title' => __('Filter and Loop Output Integration', 'wpv-views'),
-					'content' => __( 'This editor lets you control how the Filter and Loop Output sections of this View are displayed. The [wpv-filter-meta-html] shortcode displays the output of the Filter section. The [wpv-layout-meta-html] shortcode displays the output of the Loop Output section. You can add your HTML and fields to rearrange and style the output.', 'wpv-views' )
+					'title' => __('Output Integration', 'wpv-views'),
+					'content' => __( 'This editor lets you control how the Search and Pagination, and Loop sections of this View are displayed. The [wpv-filter-meta-html] shortcode displays the output of the Search and Pagination section. The [wpv-layout-meta-html] shortcode displays the output of the Loop section. You can add your HTML and fields to rearrange and style the output.', 'wpv-views' )
 				);
 				break;
 			case 'complete_output_archive':
 				$return = array(
-					'title' => __('Filter and Loop Output Integration', 'wpv-views'),
-					'content' => __( 'This editor lets you control how the Filter and Loop Output sections of this WordPress Archives are displayed. The [wpv-filter-meta-html] shortcode displays the output of the Filter section. The [wpv-layout-meta-html] shortcode displays the output of the Loop Output section. You can add your HTML and fields to rearrange and style the output.', 'wpv-views' )
+					'title' => __('Output Integration', 'wpv-views'),
+					'content' => __( 'This editor lets you control how the Search and Pagination, and Loop sections of this WordPress Archives are displayed. The [wpv-filter-meta-html] shortcode displays the output of the Search and Pagination section. The [wpv-layout-meta-html] shortcode displays the output of the Loop section. You can add your HTML and fields to rearrange and style the output.', 'wpv-views' )
 				);
 				break;
 			case 'loops_selection':
@@ -426,7 +426,7 @@ class WPV_Admin_Messages {
 	* @since 1.12
 	*/
 	
-	static function get_documentation_promotional_link( $args = array(), $url = 'https://wp-types.com/home/toolset-components/' ) {
+	static function get_documentation_promotional_link( $args = array(), $url = 'https://toolset.com/home/toolset-components/' ) {
 		if ( isset( $args['query'] ) ) {
 			$url = esc_url( add_query_arg( $args['query'], $url ) );
 		}
@@ -486,7 +486,7 @@ function wpv_get_view_introduction_data() {
 						. __('The Query section lets you choose the content to load.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
 						. __('A basic query selects all items of a chosen type.', 'wpv-views') . '</p>'
 						. '<ul><li>' . __('You can refine the selection by adding filters.', 'wpv-views') . '</li>'
-						. '<li>' . __('At the bottom of this page you will find the Loop Output section, where you control the output.', 'wpv-views') . '</li></ul>',
+						. '<li>' . __('At the bottom of this page you will find the Loop section, where you control the output.', 'wpv-views') . '</li></ul>',
 		'close'			=> 'true',
 		'hidden'		=> 'true',
 		'classname'		=> 'js-metasection-help-query js-for-view-purpose-all'
@@ -498,7 +498,7 @@ function wpv_get_view_introduction_data() {
 						. __('A basic query selects all items of a chosen type.', 'wpv-views') . '</p>'
 						. '<ul><li>' . __('You can refine the selection by adding filters.', 'wpv-views') . '</li>'
 						. '<li>' . __('The Front-end Filter section includes the pagination controls, allowing visitors to choose which results page to show.', 'wpv-views') . '</li>'
-						. '<li>' . __('At the bottom of this page you will find the Loop Output section, where you control the output.', 'wpv-views') . '</li></ul>',
+						. '<li>' . __('At the bottom of this page you will find the Loop section, where you control the output.', 'wpv-views') . '</li></ul>',
 		'tutorial-button-text'	=> htmlentities( __('Creating paginated listings with Views', 'wpv-views'), ENT_QUOTES ),
 		'tutorial-button-url'	=> WPV_LINK_CREATE_PAGINATED_LISTINGS,
 		'close'			=> 'true',
@@ -525,7 +525,7 @@ function wpv_get_view_introduction_data() {
 						. '<ol><li>' . __('Select which content to load in the \'Content Selection\' section.', 'wpv-views') . '</li>'
 						. '<li>' . __('Add filter input to the Filter section.', 'wpv-views') . '</li>'
 						. '<li>' . __('Select advanced search options in the \'Custom Search Settings\' section.', 'wpv-views') . '</li>'
-						. '<li>' . __('Design the search results in the Loop Output section.', 'wpv-views') . '</li>'
+						. '<li>' . __('Design the search results in the Loop section.', 'wpv-views') . '</li>'
 						. '<li class="js-layouts-search-help" style="display:none">' . __('Select if you want the form, the results or both displayed in the Layouts cell.', 'wpv-views') . '</li></ol>'
 						. '<p>' . __('Remember to click on Update after you complete each section and before you continue to the next section.', 'wpv-views') . '</p>',
 		'tutorial-button-text'	=> htmlentities( __('Creating custom searches with Views', 'wpv-views'), ENT_QUOTES ),
@@ -541,7 +541,7 @@ function wpv_get_view_introduction_data() {
 						. __('A basic query selects all items of a chosen type.', 'wpv-views') . '</p>'
 						. '<ul><li>' . __('You can refine the selection by adding filters.','wpv-views') . '</li>'
 						. '<li>' . __('The Front-end filter section lets you add pagination, slider controls and custom search to the View.', 'wpv-views') . '</li>'
-						. '<li>' .  __('At the bottom of this page you will find the Loop Output section, where you control the output.', 'wpv-views') . '</li></ul>',
+						. '<li>' .  __('At the bottom of this page you will find the Loop section, where you control the output.', 'wpv-views') . '</li></ul>',
 		'close'			=> 'true',
 		'hidden'		=> 'true',
 		'classname'		=> 'js-metasection-help-query js-for-view-purpose-full'
@@ -633,19 +633,34 @@ function wpv_get_view_filter_introduction_data() {
 */
 
 function wpv_get_view_layout_introduction_data() {
-	$result = array(
-		'text'			=> '<h3>' . __('How to Design the Output','wpv-views') . '</h3>'
-					. '<p>' . __('The Loop Output HTML editor lets you style the output of the View.', 'wpv-views') . '</p>'
+
+    $result = array(
+		'text'			=> '<h3>' . __('How to Design the Loop','wpv-views') . '</h3>'
+					. '<p>' . __('The Loop HTML editor lets you style the loop of the View.', 'wpv-views') . '</p>'
 					. '<p>' . __('The content between the <strong>&lt;wpv-loop&gt;</strong> and <strong>&lt;/wpv-loop&gt;</strong> tags will repeat for every item in the View loop.') . '</p>'
-					. '<p>' . __('To get started easily, click on the <strong>Loop Wizard</strong>. You will select the loop output style and the fields to display. Then, edit by adding you own HTML markup, media and additional fields.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
+					. '<p>' . __('To get started easily, click on the <strong>Loop Wizard</strong>. You will select the loop style and the fields to display. Then, edit by adding you own HTML markup, media and additional fields.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
 						. sprintf( __('Learn more by reading the %sViews Loop documentation%s.', 'wpv-views'), '<a href="' . WPV_LINK_LOOP_DOCUMENTATION . '" target="_blank">', '</a>' ) . '</p>'
-						. '<p>' . __('The <strong>Filter and Loop Output Integration</strong> section lets you control the order of the <strong>Filter</strong> and <strong>Loop Output</strong> sections and to add your HTML between these two sections.', 'wpv-views') . '</p>'
+						. '<p>' . __('The <strong>Output Integration</strong> section lets you control the order of the <strong>Search and Pagination</strong> and <strong>Loop</strong> sections and to add your HTML between these two sections.', 'wpv-views') . '</p>'
 						. ' <input id="wpv-layout-hint-dismiss" type="hidden" class="js-wpv-layout-hint-dismiss" data-nonce="' . wp_create_nonce( 'wpv_view_layout_hint_dismiss_nonce')  . '" /> ',
 		'close'			=> 'true',
 		'hidden'		=> 'true',
 		'classname'		=> 'js-metasection-help-layout js-for-view-purpose-all js-for-view-purpose-pagination js-for-view-purpose-slider js-for-view-purpose-parametric js-for-view-purpose-full',
 	);
-	return $result;
+
+
+	$result_views_lite = array(
+		'text'			=> '<h3>' . __('How to Design the Loop','wpv-views') . '</h3>'
+		                     . '<p>' . __('The Loop HTML editor lets you style the loop of the View.', 'wpv-views') . '</p>'
+		                     . '<p>' . __('The content between the <strong>&lt;wpv-loop&gt;</strong> and <strong>&lt;/wpv-loop&gt;</strong> tags will repeat for every item in the View loop.') . '</p>'
+		                     . '<p>' . __('To get started easily, click on the <strong>Loop Wizard</strong>. You will select the loop style and the fields to display. Then, edit by adding you own HTML markup, media and additional fields.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
+		                     . sprintf( __('Learn more by reading the %sViews Loop documentation%s.', 'wpv-views'), '<a href="' . WPV_LINK_LOOP_DOCUMENTATION . '" target="_blank">', '</a>' ) . '</p>'
+		                     . ' <input id="wpv-layout-hint-dismiss" type="hidden" class="js-wpv-layout-hint-dismiss" data-nonce="' . wp_create_nonce( 'wpv_view_layout_hint_dismiss_nonce')  . '" /> ',
+		'close'			=> 'true',
+		'hidden'		=> 'true',
+		'classname'		=> 'js-metasection-help-layout js-for-view-purpose-all js-for-view-purpose-pagination js-for-view-purpose-slider js-for-view-purpose-parametric js-for-view-purpose-full',
+	);
+
+	return ( ! wpv_is_views_lite() ) ? $result : $result_views_lite;
 }
 
 /**
@@ -738,7 +753,7 @@ function wpv_get_embedded_promotional_box( $type = 'view' ) {
 		),
 		'anchor'	=> 'views'
 	);
-	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://wp-types.com/home/toolset-components/' );
+	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://toolset.com/home/toolset-components/' );
 	$data = array(
 		'text'			=> '<p>' . sprintf( __('You are viewing the read-only version of this %s.', 'wpv-views'), $target )
 						. WPV_MESSAGE_SPACE_CHAR
@@ -765,7 +780,7 @@ function wpv_get_embedded_view_introduction_data() {
 		),
 		'anchor'	=> 'views'
 	);
-	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://wp-types.com/home/toolset-components/' );
+	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://toolset.com/home/toolset-components/' );
 	$promotional = '<p class="toolset-promotional">' . __( 'You are viewing the read-only version of this View. To edit it, you need to get Views plugin.', 'wpv-views' )
 				. '&nbsp;&nbsp;&nbsp;<a href="' . $promo_link . '" title="" class="button button-primary-toolset" target="_blank">' . __( 'Get Views', 'wpv-views' ) . '</a>'
 				. '</p>';
@@ -774,7 +789,7 @@ function wpv_get_embedded_view_introduction_data() {
 						. __('The Query section lets you choose the content to load.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
 						. __('A basic query selects all items of a chosen type.', 'wpv-views') . '</p>'
 						. '<ul><li>' . __('You can refine the selection by adding filters.', 'wpv-views') . '</li>'
-						. '<li>' . __('At the bottom of this page you will find the Loop Output section, where you control the output.', 'wpv-views') . '</li></ul>',
+						. '<li>' . __('At the bottom of this page you will find the Loop section, where you control the output.', 'wpv-views') . '</li></ul>',
 		'close'			=> 'false',
 		'hidden'		=> 'true',
 		'classname'		=> 'js-metasection-help-query js-for-view-purpose-all'
@@ -786,7 +801,7 @@ function wpv_get_embedded_view_introduction_data() {
 						. __('A basic query selects all items of a chosen type.', 'wpv-views') . '</p>'
 						. '<ul><li>' . __('You can refine the selection by adding filters.', 'wpv-views') . '</li>'
 						. '<li>' . __('The Front-end Filter section includes the pagination controls, allowing visitors to choose which results page to show.', 'wpv-views') . '</li>'
-						. '<li>' . __('At the bottom of this page you will find the Loop Output section, where you control the output.', 'wpv-views') . '</li></ul>',
+						. '<li>' . __('At the bottom of this page you will find the Loop section, where you control the output.', 'wpv-views') . '</li></ul>',
 		'tutorial-button-text'	=> htmlentities( __('Creating paginated listings with Views', 'wpv-views'), ENT_QUOTES ),
 		'tutorial-button-url'	=> WPV_LINK_CREATE_PAGINATED_LISTINGS,
 		'close'			=> 'false',
@@ -813,7 +828,7 @@ function wpv_get_embedded_view_introduction_data() {
 						. '<ol><li>' . __('Select which content to load in the \'Content Selection\' section.', 'wpv-views') . '</li>'
 						. '<li>' . __('Add filter input to the Filter section.', 'wpv-views') . '</li>'
 						. '<li>' . __('Select advanced search options in the \'Custom Search Settings\' section.', 'wpv-views') . '</li>'
-						. '<li>' . __('Design the search results in the Loop Output section.', 'wpv-views') . '</li></ol>'
+						. '<li>' . __('Design the search results in the Loop section.', 'wpv-views') . '</li></ol>'
 						. '<p>' . __('Remember to click on Update after you complete each section and before you continue to the next section.', 'wpv-views') . '</p>',
 		'tutorial-button-text'	=> htmlentities( __('Creating custom searches with Views', 'wpv-views'), ENT_QUOTES ),
 		'tutorial-button-url'	=> WPV_LINK_CREATE_PARAMETRIC_SEARCH,
@@ -828,7 +843,7 @@ function wpv_get_embedded_view_introduction_data() {
 						. __('A basic query selects all items of a chosen type.', 'wpv-views') . '</p>'
 						. '<ul><li>' . __('You can refine the selection by adding filters.','wpv-views') . '</li>'
 						. '<li>' . __('The Front-end filter section lets you add pagination, slider controls and custom search to the View.', 'wpv-views') . '</li>'
-						. '<li>' .  __('At the bottom of this page you will find the Loop Output section, where you control the output.', 'wpv-views') . '</li></ul>',
+						. '<li>' .  __('At the bottom of this page you will find the Loop section, where you control the output.', 'wpv-views') . '</li></ul>',
 		'close'			=> 'false',
 		'hidden'		=> 'true',
 		'classname'		=> 'js-metasection-help-query js-for-view-purpose-full'
@@ -861,7 +876,7 @@ function wpv_get_embedded_wordpress_archive_introduction_data() {
 		),
 		'anchor'	=> 'views'
 	);
-	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://wp-types.com/home/toolset-components/' );
+	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://toolset.com/home/toolset-components/' );
 	$promotional = '<p class="toolset-promotional">' . __( 'You are viewing the read-only version of this WordPress Archive. To edit it, you need to get Views plugin.', 'wpv-views' )
 				. '&nbsp;&nbsp;&nbsp;<a href="' . $promo_link . '" title="" class="button-primary button-primary-toolset">' . __( 'Get Views', 'wpv-views' ) . '</a>'
 				. '</p>';
@@ -886,7 +901,7 @@ function wpv_get_embedded_layouts_loop_introduction_data() {
 		),
 		'anchor'	=> 'views'
 	);
-	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://wp-types.com/home/toolset-components/' );
+	$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://toolset.com/home/toolset-components/' );
 	$promotional = '<p class="toolset-promotional">' . __( 'You are viewing the read-only version of this WordPress Archive. To edit it, you need to get Views plugin.', 'wpv-views' )
 				. '&nbsp;&nbsp;&nbsp;<a href="' . $promo_link . '" title="" class="button-primary button-primary-toolset">' . __( 'Get Views', 'wpv-views' ) . '</a>'
 				. '</p>';
@@ -1073,6 +1088,8 @@ function wpv_insert_form_workflow_help_boxes( $post ) {
 								. '<p>' . sprintf( __('This page should display the results of the custom search provided by the View <strong>%s</strong>.', 'wpv-views'), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 								. sprintf( __( 'You can copy and paste this shortcode wherever you want to display the results: %s', 'wpv-views' ), $view_shortcode ) . '</p>'
 								. '<p>' . sprintf( __( 'Also, you can click in the <strong>Views</strong> button and select <strong>%s</strong> in the <em>View</em> section.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
+								. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>'
+								. '<p>' . sprintf( __( 'Finally, if you use a page builder, activate it on this page, create a <strong>Toolset View</strong> widget/module/block and select <strong>%s</strong> in the <em>View</em> selection control.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 								. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>',
 				'close'			=> 'true',
 				'hidden'		=> 'true',
@@ -1119,6 +1136,8 @@ function wpv_insert_form_workflow_help_boxes( $post ) {
 												. '<p>' . sprintf( __('This page should display the results of the custom search provided by the View <strong>%s</strong>.', 'wpv-views'), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 												. sprintf( __( 'You can copy and paste this shortcode wherever you want to display the results: %s', 'wpv-views' ), $view_shortcode ) . '</p>'
 												. '<p>' . sprintf( __( 'Also, you can click in the <strong>Views</strong> button and select <strong>%s</strong> in the <em>View</em> section.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
+												. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>'
+												. '<p>' . sprintf( __( 'Finally, if you use a page builder, activate it on this page, create a <strong>Toolset View</strong> widget/module/block and select <strong>%s</strong> in the <em>View</em> selection control.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 												. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>',
 								'close'			=> 'true',
 								'hidden'		=> 'false',
@@ -1177,6 +1196,8 @@ function wpv_insert_form_workflow_help_boxes( $post ) {
 												. '<p>' . sprintf( __('This page should display the results of the custom search provided by the View <strong>%s</strong> used in a %s.', 'wpv-views'), $view_name, $orig_label ) . WPV_MESSAGE_SPACE_CHAR
 												. sprintf( __( 'You can copy and paste this shortcode wherever you want to display the results: %s', 'wpv-views' ), $view_shortcode ) . '</p>'
 												. '<p>' . sprintf( __( 'Also, you can click in the <strong>Views</strong> button and select <strong>%s</strong> in the <em>View</em> section.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
+												. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>'
+												. '<p>' . sprintf( __( 'Finally, if you use a page builder, activate it on this page, create a <strong>Toolset View</strong> widget/module/block and select <strong>%s</strong> in the <em>View</em> selection control.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 												. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>',
 								'close'			=> 'true',
 								'hidden'		=> 'false',
@@ -1204,6 +1225,8 @@ function wpv_insert_form_workflow_help_boxes( $post ) {
 									. '<p>' . sprintf( __('This page should display the results of the custom search provided by the View <strong>%s</strong>.', 'wpv-views'), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 									. sprintf( __( 'You can copy and paste this shortcode wherever you want to display the results: %s', 'wpv-views' ), $view_shortcode ) . '</p>'
 									. '<p>' . sprintf( __( 'Also, you can click in the <strong>Views</strong> button and select <strong>%s</strong> in the <em>View</em> section.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
+									. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>'
+									. '<p>' . sprintf( __( 'Finally, if you use a page builder, activate it on this page, create a <strong>Toolset View</strong> widget/module/block and select <strong>%s</strong> in the <em>View</em> selection control.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 									. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>',
 					'close'			=> 'true',
 					'hidden'		=> 'true',
@@ -1230,6 +1253,8 @@ function wpv_insert_form_workflow_help_boxes( $post ) {
 										. '<p>' . sprintf( __('This page should display the results of the custom search provided by the View <strong>%s</strong>.', 'wpv-views'), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 										. sprintf( __( 'You can copy and paste this shortcode wherever you want to display the results: %s', 'wpv-views' ), $view_shortcode ) . '</p>'
 										. '<p>' . sprintf( __( 'Also, you can click in the <strong>Views</strong> button and select <strong>%s</strong> in the <em>View</em> section.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
+										. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>'
+										. '<p>' . sprintf( __( 'Finally, if you use a page builder, activate it on this page, create a <strong>Toolset View</strong> widget/module/block and select <strong>%s</strong> in the <em>View</em> selection control.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 										. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>',
 						'close'			=> 'true',
 						'hidden'		=> 'true',
@@ -1244,6 +1269,8 @@ function wpv_insert_form_workflow_help_boxes( $post ) {
 										. '<p>' . sprintf( __('This page should display the results of the custom search provided by the View <strong>%s</strong>.', 'wpv-views'), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 										. sprintf( __( 'You can copy and paste this shortcode wherever you want to display the results: %s', 'wpv-views' ), $view_shortcode ) . '</p>'
 										. '<p>' . sprintf( __( 'Also, you can click in the <strong>Views</strong> button and select <strong>%s</strong> in the <em>View</em> section.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
+										. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>'
+										. '<p>' . sprintf( __( 'Finally, if you use a page builder, activate it on this page, create a <strong>Toolset View</strong> widget/module/block and select <strong>%s</strong> in the <em>View</em> selection control.', 'wpv-views' ), $view_name ) . WPV_MESSAGE_SPACE_CHAR
 										. __( 'Then, select the option to display just the results for the custom search.', 'wpv-views' ) . '</p>',
 						'close'			=> 'true',
 						'hidden'		=> 'false',
@@ -1455,7 +1482,7 @@ function wpv_views_instructions_section_data( $section = '' ) {
 				'table' => array(
 					array(
 						'element' => '<span class="wpv-code wpv-code-shortcode">[wpv-layout-start]<br />[wpv-layout-end]</span>',
-						'description' => __( 'Wrapper for the Loop Output section.', 'wpv-views' )
+						'description' => __( 'Wrapper for the Loop section.', 'wpv-views' )
 							. WPV_MESSAGE_SPACE_CHAR
 							. __( 'These shortcodes are added by default and you should keep them.', 'wpv-views' )
 							. WPV_MESSAGE_SPACE_CHAR
@@ -1482,8 +1509,8 @@ function wpv_views_instructions_section_data( $section = '' ) {
 						. __( 'You can target specific positions in the loop, add zebra styling or add extra markup in the middle of the results.', 'wpv-views' )
 						. WPV_MESSAGE_SPACE_CHAR
 						. sprintf(
-							__( 'For documentation, see: %1$sLoop parameters in the Loop Output%2$s.', 'wpv-views' ),
-							'<a href="https://wp-types.com/documentation/user-guides/digging-into-view-outputs/#vmeta-wpv-loop-parameters" title="' . __( 'Loop parameters in the Loop Output', 'wpv-views' ) . '">',
+							__( 'For documentation, see: %1$sLoop parameters in the Loop%2$s.', 'wpv-views' ),
+							'<a href="https://toolset.com/documentation/user-guides/digging-into-view-outputs/#vmeta-wpv-loop-parameters" title="' . __( 'Loop parameters in the Loop', 'wpv-views' ) . '">',
 							'</a>'
 						)
 					),
@@ -1495,7 +1522,7 @@ function wpv_views_instructions_section_data( $section = '' ) {
 						. WPV_MESSAGE_SPACE_CHAR
 						. sprintf(
 							__( 'For documentation, see: %sConditional HTML output in Views%s.', 'wpv-views' ),
-							'<a href="http://wp-types.com/documentation/user-guides/conditional-html-output-in-views/" title="' . __( 'Conditional output in Views', 'wpv-views' ) . '">',
+							'<a href="https://toolset.com/documentation/user-guides/conditional-html-output-in-views/" title="' . __( 'Conditional output in Views', 'wpv-views' ) . '">',
 							'</a>'
 						)
 					),
@@ -1515,7 +1542,7 @@ function wpv_views_instructions_section_data( $section = '' ) {
 					),
 					array(
 						'element' => '<span class="wpv-code wpv-code-shortcode">[wpv-layout-meta-html]</span>',
-						'description' => __( 'The entire Loop Output section.', 'wpv-views' )
+						'description' => __( 'The entire Loop section.', 'wpv-views' )
 					)
 				),
 				'content_extra' => ''
@@ -1620,7 +1647,7 @@ function wpv_formatting_help_layout() {
 							. __('Recommended if you are new to Views.', 'wpv-views') . '</dd>'
 						. '<dt>' . __('Fields and Views', 'wpv-views') . '</dt><dd>' . __('Add fields and nested Views to the output.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
 							. __('Good for building your own unique loops.', 'wpv-views') . '</dd>'
-						. '<dt>' . __('Content Template', 'wpv-views') . '</dt><dd>' . __('Add complete blocks into the Loop Output using Content Templates.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
+						. '<dt>' . __('Content Template', 'wpv-views') . '</dt><dd>' . __('Add complete blocks into the Loop using Content Templates.', 'wpv-views') . WPV_MESSAGE_SPACE_CHAR
 							. __('This method makes it easy to achieve complex loop designs.', 'wpv-views') . '</dd>'
 						. '<dt>' . __('Pagination controls', 'wpv-views') . '</dt><dd>' . __('Add controls to move between different result pages', 'wpv-views') . '</dd>'
 						. $cred_intro
@@ -1630,7 +1657,7 @@ function wpv_formatting_help_layout() {
 						. '</p><p>'
 						. sprintf(
 								__( 'Full documentation is found in the %1$sViews shortcodes%2$s page.', 'wpv-views' ),
-								'<a href="http://wp-types.com/documentation/user-guides/views-shortcodes/" title="' . __( 'Views shortcodes documentation', 'wpv-views' ) . '">',
+								'<a href="https://toolset.com/documentation/user-guides/views-shortcodes/" title="' . __( 'Views shortcodes documentation', 'wpv-views' ) . '">',
 								'</a>'
 							)
 						. '</p>',
@@ -1717,7 +1744,7 @@ function wpv_formatting_help_combined_output() {
 		'toggled_intro' => '<p>'
 						. __( 'When you display this in the frontend, the content of this box gets displayed.', 'wpv-views' )
 						. WPV_MESSAGE_SPACE_CHAR
-						. __( 'Normally, it includes a shortcode for the <strong>Filter</strong> section and another shortcode for the <strong>Loop Output</strong> section, so they will display one after the other.', 'wpv-views' )
+						. __( 'Normally, it includes a shortcode for the <strong>Filter</strong> section and another shortcode for the <strong>Loop</strong> section, so they will display one after the other.', 'wpv-views' )
 						. WPV_MESSAGE_SPACE_CHAR
 						. __( 'You can add HTML for styling and switch the order of those two sections.', 'wpv-views' )
 						. '</p>',
@@ -1867,55 +1894,60 @@ function render_view_pointers( $args, $dismissed_pointers ) {
 }
 
 function render_wpa_pointers( $args, $dismissed_pointers ) {
-	
-	$view_settings					= $args['settings'];
-	$view_settings_stored			= $args['settings_stored'];
-	$view_layout_settings			= $args['layout_settings'];
-	$view_layout_settings_stored	= $args['layout_settings_stored'];
-	$view_id						= $args['id'];
-	$user_id						= $args['user_id'];
-	
-	?>
-	<div id="js-wpv-wpa-hidden-pointers-container" class="popup-window-container">
-		<?php
-		/**
-		* Screen Options pointer
-		*
-		* SHown only when the WPA does not have a stored purpose.
-		*/
-		if ( 
-			! isset( $view_settings_stored['view_purpose'] ) 
-			|| $view_settings_stored['view_purpose'] == 'all'
-		) {
-			$dismissed_classname = '';
-			if ( isset( $dismissed_pointers['set-wpa-purpose'] ) ) {
-				$dismissed_classname = ' js-wpv-pointer-dismissed';
-			}
-			?>
-			<div class="js-wpv-set-wpa-purpose-pointer<?php echo $dismissed_classname; ?>">
-				<h3><?php _e( 'Screen Options', 'wpv-views' ); ?></h3>
-				<p>
-					<?php
-					echo __( 'Did you know that you can add a custom search to this Archive?', 'wpv-views' );
-					?>
-				</p>
-				<p>
-					<?php
-					echo __( 'Open the Screen Options and set the WordPress Archive purpose to display it as a custom search.', 'wpv-views' );
-					?>
-				</p>
-				<p>
-					<label>
-						<input type="checkbox" class="js-wpv-dismiss-pointer" data-pointer="set-wpa-purpose" id="wpv-dismiss-set-wpa-purpose-pointer" />
-						<?php _e( 'Don\'t show this again', 'wpv-views' ); ?>
-					</label>
-				</p>
-			</div>
-			<?php
-		}
-		?>
-	</div>
-	<?php
+
+    $view_settings               = $args['settings'];
+    $view_settings_stored        = $args['settings_stored'];
+    $view_layout_settings        = $args['layout_settings'];
+    $view_layout_settings_stored = $args['layout_settings_stored'];
+    $view_id                     = $args['id'];
+    $user_id                     = $args['user_id'];
+
+    ?>
+    <div id="js-wpv-wpa-hidden-pointers-container" class="popup-window-container">
+        <?php
+        /**
+         * Screen Options pointer
+         *
+         * SHown only when the WPA does not have a stored purpose.
+         */
+        if (
+	        (
+		        ! isset( $view_settings_stored['view_purpose'] )
+		        || $view_settings_stored['view_purpose'] == 'all'
+	        )
+	        && ! wpv_is_views_lite() // Show only for full Views
+        ) {
+            $dismissed_classname = '';
+            if ( isset( $dismissed_pointers['set-wpa-purpose'] ) ) {
+                $dismissed_classname = ' js-wpv-pointer-dismissed';
+            }
+            ?>
+            <div class="js-wpv-set-wpa-purpose-pointer<?php echo $dismissed_classname; ?>">
+                <h3><?php _e( 'Screen Options', 'wpv-views' ); ?></h3>
+                <p>
+                    <?php
+                    echo __( 'Did you know that you can add a custom search to this Archive?', 'wpv-views' );
+                    ?>
+                </p>
+                <p>
+                    <?php
+                    echo __( 'Open the Screen Options and set the WordPress Archive purpose to display it as a custom search.', 'wpv-views' );
+                    ?>
+                </p>
+                <p>
+                    <label>
+                        <input type="checkbox" class="js-wpv-dismiss-pointer" data-pointer="set-wpa-purpose"
+                               id="wpv-dismiss-set-wpa-purpose-pointer"/>
+                        <?php _e( 'Don\'t show this again', 'wpv-views' ); ?>
+                    </label>
+                </p>
+            </div>
+            <?php
+        }
+        ?>
+    </div>
+    <?php
+
 }
 
 function render_shared_pointers( $args, $dismissed_pointers ) {
@@ -1950,7 +1982,7 @@ function render_shared_pointers( $args, $dismissed_pointers ) {
 		
 		?>
 		<div class="js-wpv-inserted-layout-loop-pointer<?php echo $dismissed_classname; ?>">
-			<h3><?php _e( 'Fields updated in the Loop Output', 'wpv-views' ); ?></h3>
+			<h3><?php _e( 'Fields updated in the Loop', 'wpv-views' ); ?></h3>
 			<p>
 				<?php
 					_e( 'The Loop Wizard just updated the editor with the fields that you added.', 'wpv-views' );
@@ -1982,7 +2014,7 @@ function render_shared_pointers( $args, $dismissed_pointers ) {
 				<?php
 					_e( 'The Loop Wizard just updated the editor and created a Content Template.', 'wpv-views' );
 					echo WPV_MESSAGE_SPACE_CHAR;
-					_e( 'The HTML box includes the Loop Output and the Content Template contains the fields that you added.', 'wpv-views' );
+					_e( 'The HTML box includes the Loop and the Content Template contains the fields that you added.', 'wpv-views' );
 					echo WPV_MESSAGE_SPACE_CHAR;
 					_e( 'You can change the appearance by adding HTML and CSS.', 'wpv-views' );
 				?>
@@ -1994,6 +2026,19 @@ function render_shared_pointers( $args, $dismissed_pointers ) {
 				</label>
 			</p>
 		</div>
+		<?php
+		$context = array(
+			'dismissed_pointers' => $dismissed_pointers,
+		);
+
+		$template_repository = WPV_Output_Template_Repository::get_instance();
+		$renderer = Toolset_Renderer::get_instance();
+		$renderer->render(
+			$template_repository->get( WPV_Output_Template_Repository::VIEWS_EDITOR_VIEW_WRAPPER_DISABLE_FOR_SEPARATORS_LIST ),
+			$context
+		);
+
+		?>
 	</div>
 	<?php
 }
@@ -2054,7 +2099,7 @@ function render_view_dialogs( $args, $dismissed_dialogs ) {
 						echo esc_html( __( 'Pagination works better if the activated theme or plugins include Bootstrap.', 'wpv-views' ) );
 						echo WPV_MESSAGE_SPACE_CHAR;
 						echo
-							'<a href="https://wp-types.com/documentation/user-guides/views-pagination/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
+							'<a href="https://toolset.com/documentation/user-guides/views-pagination/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
 							. esc_html( __( 'Check the documentation', 'wpv-views' ) )
 							. '</a>';
 						?>
@@ -2179,7 +2224,7 @@ function render_view_dialogs( $args, $dismissed_dialogs ) {
 								<p style="border-top:solid 1px #dedede;padding-top:5px;">
 									<?php
 									echo 
-										'<a href="https://wp-types.com/documentation/user-guides/views-pagination/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
+										'<a href="https://toolset.com/documentation/user-guides/views-pagination/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-view-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
 										. __( 'Check the documentation', 'wpv-views' )
 										. '</a>';
 									?>
@@ -2339,7 +2384,7 @@ function render_wpa_dialogs( $args, $dismissed_dialogs ) {
 						echo esc_html( __( 'Pagination works better if the activated theme or plugins include Bootstrap.', 'wpv-views' ) );
 						echo WPV_MESSAGE_SPACE_CHAR;
 						echo
-							'<a href="https://wp-types.com/documentation/user-guides/custom-pagination-for-wordpress-archives/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-wordpress-archive-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
+							'<a href="https://toolset.com/documentation/user-guides/custom-pagination-for-wordpress-archives/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-wordpress-archive-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
 							. esc_html( __( 'Check the documentation', 'wpv-views' ) )
 							. '</a>';
 						?>
@@ -2508,7 +2553,7 @@ function render_wpa_dialogs( $args, $dismissed_dialogs ) {
 								<p style="border-top:solid 1px #dedede;padding-top:5px;">
 									<?php
 									echo 
-										'<a href="https://wp-types.com/documentation/user-guides/custom-pagination-for-wordpress-archives/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-wordpress-archive-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
+										'<a href="https://toolset.com/documentation/user-guides/custom-pagination-for-wordpress-archives/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-wordpress-archive-pagination-controls-dialog&utm_term=Check the documentation" title="' . esc_attr( __( 'Documentation for pagination links', 'wpv-views' ) ) . '" target="blank">'
 										. __( 'Check the documentation', 'wpv-views' )
 										. '</a>';
 									?>

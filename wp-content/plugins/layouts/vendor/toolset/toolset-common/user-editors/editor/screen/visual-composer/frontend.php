@@ -14,6 +14,11 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Frontend
 		if( array_key_exists( 'action', $_POST ) && $_POST['action'] == 'vc_edit_form' ) {
 			add_filter( 'wpv_filter_dialog_for_editors_requires_post', '__return_false' );
 		}
+
+		// This filters the content of the Visual Composer WP Text Widget module before the global post switched from the
+		// current post in the loop to the top current post. The switch happens because the module calls the "the_widget()"
+		// method which ultimately calls WP_Widget_Text::widget.
+		add_filter( 'vc_wp_text_widget_shortcode', 'wpv_do_shortcode' );
 	}
 
 	/**

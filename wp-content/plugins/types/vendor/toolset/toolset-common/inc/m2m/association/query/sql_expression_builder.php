@@ -109,12 +109,11 @@ class Toolset_Association_Query_Sql_Expression_Builder {
 		$limit = (int) $limit;
 		$offset = (int) $offset;
 
+		$maybe_distinct = $element_selector->maybe_get_distinct_modifier();
+
 		// Make sure we glue the pieces together well and leave no extra comma at the end
 		// in case $select_elements is empty.
-		$final_select_elements = array(
-			'associations.id AS id',
-			'associations.relationship_id AS relationship_id'
-		);
+		$final_select_elements = array();
 		$select_elements_trimmed = trim( $select_elements );
 		if( ! empty( $select_elements_trimmed ) ) {
 			$final_select_elements[] = $select_elements;
@@ -123,7 +122,7 @@ class Toolset_Association_Query_Sql_Expression_Builder {
 
 		// We rely on all the moving parts which are supposed to have provided properly escaped strings.
 		$query = "
-			SELECT
+			SELECT {$maybe_distinct}
 				{$sql_found_rows} 		
 				{$final_select_elements}				
 			FROM {$associations_table} AS associations {$join_clause} 

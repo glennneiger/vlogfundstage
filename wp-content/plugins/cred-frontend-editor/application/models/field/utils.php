@@ -38,8 +38,8 @@ class CRED_Field_Utils {
 	 * @return WP_Post
 	 */
 	public function get_parent_by_post_id( $post_id ) {
-		$src_lang = isset( $_REQUEST['source_lang'] ) ? sanitize_text_field( $_REQUEST['source_lang'] ) : apply_filters( 'wpml_current_language', null );
-		$lang = isset( $_REQUEST['lang'] ) ? sanitize_text_field( $_REQUEST['lang'] ) : $src_lang;
+		$src_lang = isset( $_REQUEST[ 'source_lang' ] ) ? sanitize_text_field( $_REQUEST[ 'source_lang' ] ) : apply_filters( 'wpml_current_language', null );
+		$lang = isset( $_REQUEST[ 'lang' ] ) ? sanitize_text_field( $_REQUEST[ 'lang' ] ) : $src_lang;
 
 		do_action( 'wpml_switch_language', $lang );
 
@@ -48,15 +48,16 @@ class CRED_Field_Utils {
 
 	/**
 	 * Retrieves the number of posts using WPML integration if exists
-	 * This function can return null because it is handled from the caller in order to get a possible query integration error
+	 * This function can return null because it is handled from the caller in order to get a possible query integration
+	 * error
 	 *
 	 * @param string $post_type
 	 *
 	 * @return int|null
 	 */
 	public function get_count_posts( $post_type ) {
-		$src_lang = isset( $_REQUEST['source_lang'] ) ? sanitize_text_field( $_REQUEST['source_lang'] ) : apply_filters( 'wpml_current_language', null );
-		$lang = isset( $_REQUEST['lang'] ) ? sanitize_text_field( $_REQUEST['lang'] ) : $src_lang;
+		$src_lang = isset( $_REQUEST[ 'source_lang' ] ) ? sanitize_text_field( $_REQUEST[ 'source_lang' ] ) : apply_filters( 'wpml_current_language', null );
+		$lang = isset( $_REQUEST[ 'lang' ] ) ? sanitize_text_field( $_REQUEST[ 'lang' ] ) : $src_lang;
 
 		//TODO: trying to use wpml_switch_language action hook and wp_count_posts function
 		//do_action( 'wpml_switch_language', $lang );
@@ -96,8 +97,8 @@ class CRED_Field_Utils {
 	 * @return WP_Post[]
 	 */
 	public function get_posts_by_post_type( $post_type, $limit = - 1 ) {
-		$src_lang = isset( $_REQUEST['source_lang'] ) ? sanitize_text_field( $_REQUEST['source_lang'] ) : apply_filters( 'wpml_current_language', null );
-		$lang = isset( $_REQUEST['lang'] ) ? sanitize_text_field( $_REQUEST['lang'] ) : $src_lang;
+		$src_lang = isset( $_REQUEST[ 'source_lang' ] ) ? sanitize_text_field( $_REQUEST[ 'source_lang' ] ) : apply_filters( 'wpml_current_language', null );
+		$lang = isset( $_REQUEST[ 'lang' ] ) ? sanitize_text_field( $_REQUEST[ 'lang' ] ) : $src_lang;
 
 		do_action( 'wpml_switch_language', $lang );
 
@@ -114,17 +115,18 @@ class CRED_Field_Utils {
 
 	/**
 	 * Retrieves potential parents referred to a specific post_type that include
-	 * WPML translation
+	 * WPML translation. This function can be called directly or as ajax callback.
 	 *
-	 * @param string $post_type
+	 * @param $post_type
 	 * @param string $wpml_name
 	 * @param string $wpml_context
 	 * @param int $limit
 	 * @param string $query
+	 * @param array $forced_args
 	 *
-	 * @return WP_Post[]
+	 * @return mixed|void|WP_Post[]
 	 */
-	public function get_potential_parents( $post_type, $wpml_name = '', $wpml_context = '', $limit = - 1, $query = '' ) {
+	public function get_potential_parents( $post_type, $wpml_name = '', $wpml_context = '', $limit = - 1, $query = '', $forced_args = array() ) {
 		/**
 		 * cred_get_potential_parents_post_status
 		 *
@@ -136,22 +138,32 @@ class CRED_Field_Utils {
 		 */
 		$post_status = apply_filters( 'cred_get_potential_parents_post_status', array( 'publish', 'private' ) );
 
-		$src_lang = isset( $_REQUEST['source_lang'] ) ? sanitize_text_field( $_REQUEST['source_lang'] ) : apply_filters( 'wpml_current_language', null );
-		$lang = isset( $_REQUEST['lang'] ) ? sanitize_text_field( $_REQUEST['lang'] ) : $src_lang;
+		$src_lang = isset( $_REQUEST[ 'source_lang' ] ) ? sanitize_text_field( $_REQUEST[ 'source_lang' ] ) : apply_filters( 'wpml_current_language', null );
+		$lang = isset( $_REQUEST[ 'lang' ] ) ? sanitize_text_field( $_REQUEST[ 'lang' ] ) : $src_lang;
 
 		do_action( 'wpml_switch_language', $lang );
 
 		$args = array(
-			'posts_per_page' => $limit,
-			'nopaging' => true,
 			'orderby' => 'ID',
 			'order' => 'DESC',
 			'post_type' => $post_type,
 			'post_status' => $post_status,
 			'suppress_filters' => false,
 		);
+		if ( $limit >= 0 ) {
+			$args[ 'posts_per_page' ] = $limit;
+		} else {
+			$args[ 'posts_per_page' ] = -1;
+		}
 		if (!empty($query)) {
-			$args['s'] = $query;
+			$args[ 's' ] = $query;
+		}
+		
+		$maybe_forced_args = array( 'orderby', 'order', 'author', 'post__in' );
+		foreach ( $maybe_forced_args as $maybe_arg ) {
+			if ( isset( $forced_args[ $maybe_arg ] ) ) {
+				$args[ $maybe_arg ] = $forced_args[ $maybe_arg ];
+			}
 		}
 
 		$parents = $this->query_posts_by_title->get_posts( $args );
@@ -193,23 +205,24 @@ class CRED_Field_Utils {
 		 */
 		$post_status = apply_filters( 'cred_get_potential_posts_post_status', array( 'publish', 'private' ) );
 
-		$src_lang = isset( $_REQUEST['source_lang'] ) ? sanitize_text_field( $_REQUEST['source_lang'] ) : apply_filters( 'wpml_current_language', null );
-		$lang = isset( $_REQUEST['lang'] ) ? sanitize_text_field( $_REQUEST['lang'] ) : $src_lang;
+		$src_lang = isset( $_REQUEST[ 'source_lang' ] ) ? sanitize_text_field( $_REQUEST[ 'source_lang' ] ) : apply_filters( 'wpml_current_language', null );
+		$lang = isset( $_REQUEST[ 'lang' ] ) ? sanitize_text_field( $_REQUEST[ 'lang' ] ) : $src_lang;
 
 		do_action( 'wpml_switch_language', $lang );
 
 		$args = array(
-			'posts_per_page' => $limit,
-			'nopaging' => true,
+			'nopaging' => false,
 			'orderby' => 'ID',
 			'order' => 'DESC',
 			'post_type' => $post_type,
 			'post_status' => $post_status,
 			'suppress_filters' => false,
 		);
-
+		if ( $limit >= 0 ) {
+			$args[ 'posts_per_page' ] = $limit;
+		}
 		if ( ! empty( $query ) ) {
-			$args['s'] = $query;
+			$args[ 's' ] = $query;
 		}
 
 		$posts = $this->query_posts_by_title->get_posts( $args );
@@ -217,4 +230,35 @@ class CRED_Field_Utils {
 		return $posts;
 	}
 
+	/**
+	 * Callback related to posts_where filter in order to force search to post_title only
+	 *
+	 * @param $search
+	 * @param $wp_query
+	 *
+	 * @return array|string
+	 */
+	public function __search_by_title_only( $search, &$wp_query ) {
+		if ( ! empty( $search )
+			&& ! empty( $wp_query->query_vars[ 'search_terms' ] )
+		) {
+			global $wpdb;
+
+			$query = $wp_query->query_vars;
+			$char = ! empty( $query[ 'exact' ] ) ? '' : '%';
+			$search = array();
+
+			foreach ( ( array ) $query[ 'search_terms' ] as $term ) {
+				$search[] = $wpdb->prepare( "$wpdb->posts.post_title LIKE %s", $char . cred_wrap_esc_like( $term ) . $char );
+			}
+
+			if ( ! is_user_logged_in() ) {
+				$search[] = "$wpdb->posts.post_password = ''";
+			}
+
+			$search = ' AND ' . implode( ' AND ', $search );
+		}
+
+		return $search;
+	}
 }

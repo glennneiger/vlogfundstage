@@ -9,13 +9,13 @@ class CRED_Translate_Recaptcha_Command extends CRED_Translate_Field_Command_Base
 		$this->field_attributes = array(
 			'error_message' => $this->cred_translate_field_factory->_formHelper->getLocalisedMessage( 'enter_valid_captcha' ),
 			'show_link' => $this->cred_translate_field_factory->_formHelper->getLocalisedMessage( 'show_captcha' ),
-			'no_keys' => __( 'Enter your ReCaptcha keys at the CRED Settings page in order for ReCaptcha API to work', 'wp-cred' ),
+			'no_keys' => __( 'Enter your ReCaptcha keys in the Forms tab of the Toolset Settings page in order for ReCaptcha API to work', 'wp-cred' ),
 		);
 		if ( false !== $globals['RECAPTCHA'] ) {
 			$this->field_attributes['public_key'] = $globals['RECAPTCHA']['public_key'];
 			$this->field_attributes['private_key'] = $globals['RECAPTCHA']['private_key'];
 		}
-		if ( 1 == CRED_StaticClass::$out['count'] ) {
+		if ( 1 === CRED_Form_Count_Handler::get_instance()->get_main_count() ) {
 			$this->field_attributes['open'] = true;
 		}
 

@@ -34,8 +34,18 @@ class Toolset_Association_Query_Condition_Relationship_Id extends Toolset_Associ
 	 *     used in WHERE ( $condition1 ) AND ( $condition2 ) AND ( $condition3 ) ...
 	 */
 	public function get_where_clause() {
-		return sprintf( 'associations.relationship_id = %d', $this->relationship_id );
+		return sprintf( 'associations.relationship_id %s %d', $this->get_operator(), $this->relationship_id );
 	}
 
+
+	/**
+	 * Returns condition operator
+	 *
+	 * @return string
+	 * @since m2m
+	 */
+	protected function get_operator() {
+		return '=';
+	}
 
 }

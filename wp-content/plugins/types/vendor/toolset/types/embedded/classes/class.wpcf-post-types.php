@@ -38,7 +38,7 @@ class WPCF_Post_Types
     /**
      * Check has some custom fields to display.
      *
-     * Check post type for custom fields to display on custom post edit 
+     * Check post type for custom fields to display on custom post edit
      * screen.
      *
      * @since 1.7
@@ -83,8 +83,8 @@ class WPCF_Post_Types
          */
         if (
             $query->is_main_query()
-            && ( $orderby = $query->get( 'orderby' ) ) 
-            && ( $post_type = $query->get( 'post_type' ) ) 
+            && ( $orderby = $query->get( 'orderby' ) )
+            && ( $post_type = $query->get( 'post_type' ) )
         ) {
             $custom_post_types = wpcf_get_active_custom_types();
             /**
@@ -257,9 +257,9 @@ class WPCF_Post_Types
                 /**
                  * Width of image.
                  *
-                 * Filter allow to change default image size displayed on 
-                 * admin etry list for custom field type image. Default is 
-                 * 100px - you can change it to any proper CSS width 
+                 * Filter allow to change default image size displayed on
+                 * admin etry list for custom field type image. Default is
+                 * 100px - you can change it to any proper CSS width
                  * definition.
                  *
                  * @since 1.7
@@ -283,6 +283,9 @@ class WPCF_Post_Types
                 require_once WPTOOLSET_FORMS_ABSPATH . '/classes/class.date.php';
                 $value = WPToolset_Field_Date::timetodate($value);
                 break;
+            default:
+                require_once WPCF_EMBEDDED_ABSPATH . '/frontend.php';
+                $value = types_render_field( $field['id'] );
             }
         }
         if ( is_string($value ) ) {
@@ -322,7 +325,7 @@ class WPCF_Post_Types
     public function add_archive_checkbox( $posts, $args, $post_type )
     {
 		if (
-			is_array( $post_type ) 
+			is_array( $post_type )
 			&& isset( $post_type['args'] )
 		) {
 			$post_type_object = $post_type['args'];

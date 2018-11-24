@@ -122,7 +122,7 @@ class WP_Views {
 	function before_init() {
 		
 		$toolset_common_bootstrap = Toolset_Common_Bootstrap::getInstance();
-		$toolset_common_sections = array( 'toolset_visual_editor', 'toolset_user_editor' );
+		$toolset_common_sections = array( 'toolset_visual_editor', 'toolset_user_editor', 'toolset_blocks' );
 		$toolset_common_bootstrap->load_sections( $toolset_common_sections );
 		
 		$this->wpv_editor_addon	= new WPV_Editor_addon(
@@ -244,6 +244,7 @@ class WP_Views {
 		add_shortcode( 'wpv-form-view', array( $this, 'short_tag_wpv_view_form' ) );
 		
 		add_filter( 'wpv_filter_wpv_view_shortcode_output', array( $this, 'remove_html_comments_from_shortcode_output' ) );
+		add_filter( 'wpv_filter_wpv_view_shortcode_output', array( $this, 'trim_empty_characters_from_shortcode_output' ), 10, 2 );
 		
 		// Clear the WPV_Settings nstance when switching to another blog
 		add_action( 'switch_blog', array( $this, 'wpv_clear_settings_instance' ) );
@@ -473,7 +474,7 @@ class WP_Views {
 			),
 			'anchor'	=> 'views'
 		);
-		$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://wp-types.com/home/toolset-components/' );
+		$promo_link = WPV_Admin_Messages::get_documentation_promotional_link( $promo_link_args, 'https://toolset.com/home/toolset-components/' );
 		$sections['wpv-views'] = array(
 			'slug'		=> 'wpv-views',
 			'title'		=> __( 'Views', 'wpv-views' ),
@@ -632,11 +633,11 @@ class WP_Views {
         // Update Views cache if applicable
         if ( $is_cacheable ) {
             
-            // Update Views Loop Output Content Cache
+            // Update Views Loop Content Cache
             $trasient = 'wpv_transient_view_'.$cache_id;
             $is_stored = set_transient( $trasient, $out, DAY_IN_SECONDS );
             
-            // Update Views Loop Output Index
+            // Update Views Loop Index
             if( $is_stored === true ) {
                 $cached_output_index = get_option( 'wpv_transient_view_index', array() );
                 $cached_output_index[$cache_id] = true;
@@ -645,7 +646,7 @@ class WP_Views {
         }
 		
 		$out = apply_filters( 'wpv_filter_wpv_view_shortcode_output', $out, $id );
-        
+
 		return $out;
 
 	}
@@ -1212,6 +1213,42 @@ class WP_Views {
 	function remove_html_comments_from_shortcode_output( $out ) {
 		$out = str_replace('<!-- wpv-loop-start -->', '', $out);
 		$out = str_replace('<!-- wpv-loop-end -->', '', $out);
+		return $out;
+	}
+
+	/**
+	 * Removes "new line", "return" and "tab" characters from the shortcode output when the selected layout output is
+	 * "List with separators" and when the user has chosen to remove the wrapping element of the View.
+	 *
+	 * This is a callback for the "wpv_filter_wpv_view_shortcode_output " filter.
+	 *
+	 * @param string   $out The shortcode output.
+	 * @param int|null $id  The ID of the View.
+	 *
+	 * @return string  The final shortcode output.
+	 *
+	 * @since 2.6.4
+	 */
+	public function trim_empty_characters_from_shortcode_output( $out, $id ) {
+		if (
+			// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+			//** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+			! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true, $id ) &&
+			/**
+			 * wpv_filter_wpv_is_separators_list_layout_selected
+			 *
+			 * Checks if the list with separators is selected as the View layout.
+			 *
+			 * @param bool     $is_separators_list_layout_selected
+			 * @param null|int $view_id                            The ID of the View to check.
+			 *
+			 * @since 2.6.4
+			 */
+			apply_filters( 'wpv_filter_wpv_is_separators_list_layout_selected', false, $id )
+		) {
+			$out = str_replace( array( "\n", "\r", "\t" ), '', $out );
+		}
+
 		return $out;
 	}
    
@@ -2242,6 +2279,12 @@ class WP_Views {
 						if ( isset( $item_indexes[ $index ] ) ) {
 							// First, set numeric templates
 							$selected_index = $index;
+						} elseif (
+							(int) $index === $items_count &&
+							isset( $item_indexes['last'] )
+						) {
+							// Then, set the template for the last element
+							$selected_index = 'last';
 						} else {
 							// Else, set specific templates based on cases
 							$index_data = array(
@@ -3627,7 +3670,7 @@ class WP_Views {
         $js_for_css_out = "jQuery( document ).ready( function( $ ) {\n"
             . "\tvar extra_css = $( \"#views-extra-css\" ) ? $( \"#views-extra-css\" ).text() : null;"
             . "\tif( extra_css ) {"
-            . "\t\t$( 'head' ).append( '<style style=\"text/css\" media=\"screen\">' + extra_css + '</style>' );\n"
+            . "\t\t$( 'head' ).append( '<style>' + extra_css + '</style>' );\n"
             . "\t\t$( \"#views-extra-css\" ).remove();"
             . "\t}"
             . "\n"
@@ -3762,7 +3805,12 @@ class WP_Views {
 
 		// Shortcodes GUI script
 		global $pagenow, $post;
-		wp_register_script( 'views-shortcodes-gui-script', WPV_URL_EMBEDDED . '/res/js/views_shortcodes_gui.js', array( 'jquery', 'suggest', 'jquery-ui-dialog', 'jquery-ui-tabs', 'views-utils-script', 'quicktags', 'shortcode', 'icl_editor-script', 'underscore', 'toolset-event-manager', 'toolset-shortcode' ), WPV_VERSION );
+		wp_register_script( 
+			'views-shortcodes-gui-script', 
+			WPV_URL_EMBEDDED . '/res/js/views_shortcodes_gui.js', 
+			array( 'views-utils-script', 'quicktags', 'toolset-shortcode' ), 
+			WPV_VERSION 
+		);
 		$shortcodes_gui_translations = array(
 			'wpv_insert_shortcode'						=> __( 'Insert shortcode', 'wpv-views'),
 			'wpv_create_shortcode'						=> __( 'Create shortcode', 'wpv-views' ),
@@ -3798,7 +3846,8 @@ class WP_Views {
 			'integrated_inputs'							=> array(),
             'wpv_editor_callback_nonce'        			=> wp_create_nonce('wpv_editor_callback'),
 			'ajaxurl'									=> wpv_get_views_ajaxurl(),
-			'pagenow'									=> $pagenow
+			'pagenow'									=> $pagenow,
+			'get_page' => toolset_getget( 'page' )
 		);
 		
 		$views_shortcodes_gui_data = apply_filters( 'wpv_filter_wpv_shortcodes_gui_data', array() );
@@ -3846,10 +3895,6 @@ class WP_Views {
 		/* ---------------------------- /*
 		/* BACKEND STYLES
 		/* ---------------------------- */
-		
-		// Notifications styles
-		// @todo notifications seems to be spread, needs to go to common after a diff
-		wp_register_style( 'views-notifications-css', WPV_URL_EMBEDDED . '/res/css/notifications.css', array(), WPV_VERSION );
 			
 		// Dialogs styles
 		// @todo maybe move to common too
@@ -3862,10 +3907,14 @@ class WP_Views {
 		// 		- wp-pointer
 		// 		- font-awesome
 		// 		- toolset-colorbox
-		// 		- views-notifications-css
 		// 		- views-admin-dialogs-css
 		// @todo make this also dependant of the common 'editor_addon_menu' and 'editor_addon_menu_scroll'
-		wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array( 'wp-pointer', 'font-awesome', 'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css', 'views-notifications-css', 'views-admin-dialogs-css' ), WPV_VERSION );
+		wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array( 
+			'wp-pointer', 'font-awesome', 
+			'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css', 
+			Toolset_Assets_Manager::STYLE_NOTIFICATIONS,
+			'views-admin-dialogs-css' 
+		), WPV_VERSION );
 			
 		/* ---------------------------- /*
 		/* FRONTEND SCRIPTS
@@ -4207,11 +4256,22 @@ function wpv_views_plugin_action_links( $links, $plugin_file ) {
 function wpv_views_plugin_plugin_row_meta( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 	$this_plugin = basename( WPV_PATH ) . '/wp-views.php';
 	if ( $plugin_file == $this_plugin ) {
-//		$plugin_meta[] = sprintf(
-//				'<a href="%s" target="_blank">%s</a>',
-//				'https://wp-types.com/version/views-2-5-1/?utm_source=viewsplugin&utm_campaign=views&utm_medium=release-notes-plugin-row&utm_term=Views 2.5.1 release notes',
-//				__( 'Views 2.5.1 release notes', 'wpv-views' )
-//			);
+
+	    // TODO: Refactoring - move these links as constants inside constants.php
+	    if( wpv_is_views_lite() ){
+		    $plugin_meta[] = sprintf(
+			    '<a href="%s" target="_blank">%s</a>',
+			    'https://wpml.org/version/views-lite-2-6-4-2/',
+			    __( 'Views Lite 2.6.4.2 release notes', 'wpv-views' )
+		    );
+        } else {
+		    $plugin_meta[] = sprintf(
+			    '<a href="%s" target="_blank">%s</a>',
+			    'https://toolset.com/version/views-2-6-4-2/?utm_source=viewsplugin&utm_campaign=views&utm_medium=release-notes-plugin-row&utm_term=Views 2.6.4.1 release notes',
+			    __( 'Views 2.6.4.2 release notes', 'wpv-views' )
+		    );
+        }
+
 	}
 	return $plugin_meta;
 }

@@ -67,18 +67,6 @@ abstract class Toolset_Element implements IToolset_Element {
 
 
 	/**
-	 * @return string One of the Toolset_Field_Utils::get_domains() values.
-	 */
-	public abstract function get_domain();
-
-
-	/**
-	 * @return int ID of the underlying object.
-	 */
-	public abstract function get_id();
-
-
-	/**
 	 * Load custom fields of the element if they're not loaded yet.
 	 *
 	 * @return void

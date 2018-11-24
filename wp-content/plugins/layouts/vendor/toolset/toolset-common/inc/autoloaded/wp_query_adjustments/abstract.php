@@ -106,24 +106,6 @@ abstract class Toolset_Wp_Query_Adjustments extends Toolset_Wpdb_User {
 
 
 	/**
-	 * Get the table join manager object attached to the WP_Query instance or create and attach a new one.
-	 *
-	 * @param WP_Query $query
-	 *
-	 * @return Toolset_Wp_Query_Adjustments_Table_Join_Manager
-	 */
-	protected function get_table_join_manager( WP_Query $query ) {
-		// This is a dirty hack but still cleanest considering we need to use this object
-		// in different callbacks from WP_Query.
-		$property_name = 'toolset_join_manager';
-		if( ! property_exists( $query, $property_name ) ) {
-			$query->{$property_name} = new Toolset_Wp_Query_Adjustments_Table_Join_Manager();
-		}
-		return $query->{$property_name};
-	}
-
-
-	/**
 	 * Turn the relationship query argument into an array of conditions.
 	 *
 	 * @param array $query_args

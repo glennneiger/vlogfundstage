@@ -23,7 +23,7 @@ DDLayout.LayoutsToolsetSupport.prototype.operate_extra_controls = function( $roo
     };
 
     _.defer(function(){
-        jQuery( 'select.js-toolset-chosen-select-iframe', jQuery('#'+$root) ).toolset_chosen_multiple( chosen_args, _.union(classes, array_with_classes) , array_with_classes );
+        jQuery( 'select.js-toolset-chosen-select-iframe', jQuery('#'+$root) ).toolset_chosen_multiple_css_classes( chosen_args, _.union(classes, array_with_classes) , array_with_classes );
 
     });
 

@@ -53,8 +53,14 @@
 if ( !class_exists('WPToolset_Forms_Conditional') ){  
 class WPToolset_Forms_Conditional {
 
-    private $__formID;
+    protected $__formID;
     protected $_collected = array(), $_triggers = array(), $_fields = array(), $_custom_triggers = array(), $_custom_fields = array();
+
+	/**
+	 * State scripts are loaded
+	 * @var bool
+	 */
+    protected static $scripts_loaded = false;
 
     /**
      * Register and enqueue scripts and actions.
@@ -63,13 +69,8 @@ class WPToolset_Forms_Conditional {
      */
     public function __construct($formID) {
         $this->__formID = trim($formID, '#');
-        // Register and enqueue
-        wp_register_script('wptoolset-form-conditional', WPTOOLSET_FORMS_RELPATH . '/js/conditional.js', array('jquery', 'jquery-effects-scale'), WPTOOLSET_FORMS_VERSION, true);
-        wp_enqueue_script('wptoolset-form-conditional');
-        $js_data = array(
-            'ajaxurl' => admin_url('admin-ajax.php', null),
-        );
-        wp_localize_script('wptoolset-form-conditional', 'wptConditional', $js_data);
+
+        self::load_scripts();
 
         wp_enqueue_script('wptoolset-parser');
         $js_data = array(
@@ -94,7 +95,28 @@ class WPToolset_Forms_Conditional {
         add_filter('toolset_field_additional_classes', array($this, 'actionFieldClass'), 10, 2);
     }
 
-    /**
+	/**
+	 * Loads the conditional script and makes sure that it's only initiated once.
+	 */
+	public static function load_scripts() {
+		if( self::$scripts_loaded ) {
+			// already loaded
+			return;
+		}
+		// Register and enqueue
+		wp_register_script('wptoolset-form-conditional', WPTOOLSET_FORMS_RELPATH . '/js/conditional.js', array('jquery', 'jquery-effects-scale'), WPTOOLSET_FORMS_VERSION, true);
+		wp_enqueue_script('wptoolset-form-conditional');
+		$js_data = array(
+			'ajaxurl' => admin_url('admin-ajax.php', null),
+		);
+		wp_localize_script('wptoolset-form-conditional', 'wptConditional', $js_data);
+
+		// store state
+		self::$scripts_loaded = true;
+	}
+
+
+	/**
      * Collects data.
      *
      * Called from form_factory.
@@ -478,9 +500,13 @@ class WPToolset_Forms_Conditional {
      */
     public function actionFieldClass($classes, $config) {
         if (
-                !empty($config['conditional']) && array_key_exists('conditions', $config['conditional']) && !self::evaluate($config['conditional'])
+                !empty($config['conditional']) && array_key_exists('conditions', $config['conditional'])
         ) {
-            $classes .= ' wpt-hidden js-wpt-remove-on-submit js-wpt-validation-ignore';
+        	$classes .= ' js-toolset-conditional';
+
+        	if( !self::evaluate($config['conditional']) ) {
+		        $classes .= ' wpt-hidden js-wpt-remove-on-submit js-wpt-validation-ignore';
+	        }
         }
 		return $classes;
     }

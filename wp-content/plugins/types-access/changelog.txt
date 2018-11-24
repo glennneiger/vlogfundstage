@@ -1,3 +1,20 @@
+2.5.2
+* Better API to include or exclude the Access button on editors.
+* Improved compatibility with the Forms setting to include or exclude Toolset buttons on WYSIWYG fields.
+
+2.5.1
+* Fixed a fatal error when removing a custom role that was assigned to users
+
+2.5
+* Fixed conflict with YOAST when rendering layouts custom errors
+* Fixed conflict with KingComposer when loading styles for Access Control page
+* Fixed a conflict with Elementor plugin when rendering a Content Template custom error
+* Fixed an issue with media edit link permissions when WPML is active
+* Fixed an issue when setting read permissions for custom post types
+
+2.4.4
+* Rename Toolset CRED to Toolset Forms in GUI
+
 2.4.3.5
 * Added compatibility with beta versions of Views and Types
 
@@ -185,7 +202,7 @@
 * Fixed a problem where the assignment of specific userвЂ™s permissions wasnвЂ™t working for custom groups.
 * Fixed a problem of PHP notice being thrown because the $raw attribute was missing for the Access shortcode.
 * Fixed a problem where headings for Post and User Meta Fields groups were being shown in Access admin page even when no actual groups existed. 
-* Fixed a problem where WYSIWYG field created with Advanced Custom Fields plugin wasnвЂ™t working correctly when Access plugin was activate: http://wp-types.com/forums/topic/advanced-custom-fiels-access-plugin-bug-with-wysiwyg-editor/
+* Fixed a problem where WYSIWYG field created with Advanced Custom Fields plugin wasnвЂ™t working correctly when Access plugin was activate: http://toolset.com/forums/topic/advanced-custom-fiels-access-plugin-bug-with-wysiwyg-editor/
 
 1.2.2
 * Improved function for load custom read errors

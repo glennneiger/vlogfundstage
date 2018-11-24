@@ -163,7 +163,7 @@ if ( ! class_exists( 'Toolset_Menu', false ) ) {
                 <ul>
                     <li>
                         <?php printf(
-                            '<a target="_blank" href="http://wp-types.com/documentation/user-guides/"><strong>%s</strong></a>'.__( ' - everything you need to know about using Toolset', 'wpv-views' ),
+                            '<a target="_blank" href="https://toolset.com/documentation/user-guides/"><strong>%s</strong></a>'.__( ' - everything you need to know about using Toolset', 'wpv-views' ),
                             __( 'User Guides', 'wpv-views')
                         ); ?>
                     </li>
@@ -175,7 +175,7 @@ if ( ! class_exists( 'Toolset_Menu', false ) ) {
                     </li>
                     <li>
                         <?php printf(
-                            '<a target="_blank" href="http://wp-types.com/forums/forum/support-2/"><strong>%s</strong></a>'.__( ' - online help by support staff', 'wpv-views' ),
+                            '<a target="_blank" href="https://toolset.com/forums/forum/support-2/"><strong>%s</strong></a>'.__( ' - online help by support staff', 'wpv-views' ),
                             __( 'Support forum', 'wpv-views' )
                         ); ?>
                     </li>

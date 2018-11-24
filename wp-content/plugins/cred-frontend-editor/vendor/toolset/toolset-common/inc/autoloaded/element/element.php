@@ -54,99 +54,16 @@ abstract class Toolset_Element implements IToolset_Element {
 	 *
 	 * @param string $domain Valid element domain as defined in Toolset_Field_Utils.
 	 * @param mixed $object_source Source of the underlying object that will be recognized by the specific element class.
-	 *     It also recognizes translation sets (array of sources, indexed by language code) for posts.
 	 *
 	 * @return IToolset_Element
 	 * @since m2m
 	 * @deprecated Use Toolset_Element_Factory::get_element() instead.
 	 */
 	public static function get_instance( $domain, $object_source ) {
-
-		switch( $domain ) {
-
-			/*case Toolset_Field_Utils::DOMAIN_POSTS:
-
-				if( $object_source instanceof IToolset_Post ) {
-					// todo handle Toolset_Post where we should be returning Toolset_Post_Translation_Set
-					return $object_source;
-
-				}
-
-				if( Toolset_WPML_Compatibility::get_instance()->is_wpml_active_and_configured() ) {
-
-					// If we got a post object and we know it's not translatable, we don't need to bother.
-					//
-					// Without the post object (when we get only an ID, for example), we won't bother for performance reasons.
-					if( $object_source instanceof WP_Post && ! Toolset_Wpml_Utils::is_post_type_translatable( $object_source->post_type ) ) {
-						return self::get_untranslated_instance( $domain, $object_source );
-					}
-
-					if( ! is_array( $object_source ) ) {
-						$object_source = array( $object_source );
-					}
-
-					$translated_posts = array();
-
-					// Get a Toolset_Post for each translation
-					foreach( $object_source as $language_code => $post_id ) {
-
-						if( ! is_string( $language_code ) || empty( $language_code ) ) {
-							// no (known) language here
-							$language_code = null;
-						}
-
-						$post = Toolset_Post::get_instance( $post_id, $language_code );
-
-						$translated_posts[ $post->get_language() ] = $post;
-					}
-
-					return new Toolset_Post_Translation_Set( $translated_posts );
-
-				}
-
-				// No WPML, simply return the post object.
-				return self::get_untranslated_instance( $domain, $object_source );*/
-
-
-			default:
-				return self::get_untranslated_instance( $domain, $object_source );
-		}
+		$factory = new Toolset_Element_Factory();
+		return $factory->get_element( $domain, $object_source );
 	}
 
-
-	/**
-	 * Get an element instance without attempting translation.
-	 *
-	 * Use with care. Normally you should never need this one and stick with get_instance().
-	 *
-	 * @param string $domain Valid element domain as defined in Toolset_Field_Utils.
-	 * @param mixed $object_source Source of the underlying object that will be recognized by the specific element class.
-	 *
-	 * @return IToolset_Element
-	 */
-	public static function get_untranslated_instance( $domain, $object_source ) {
-		switch( $domain ) {
-			case Toolset_Field_Utils::DOMAIN_POSTS:
-				return Toolset_Post::get_instance( $object_source );
-			case Toolset_Field_Utils::DOMAIN_TERMS:
-			case Toolset_Field_Utils::DOMAIN_USERS:
-				throw new RuntimeException( 'Not implemented.' );
-			default:
-				throw new InvalidArgumentException( 'Invalid domain name.' );
-		}
-	}
-
-
-	/**
-	 * @return string One of the Toolset_Field_Utils::get_domains() values.
-	 */
-	public abstract function get_domain();
-
-
-	/**
-	 * @return int ID of the underlying object.
-	 */
-	public abstract function get_id();
 
 
 	/**
@@ -320,6 +237,32 @@ abstract class Toolset_Element implements IToolset_Element {
 	 */
 	public function is_translatable() {
 		return false;
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param string $language_code
+	 * @param bool $exact_match_only
+	 *
+	 * @return IToolset_Element|null
+	 */
+	public function translate( $language_code, $exact_match_only = false ) {
+		// We can afford this even for posts. If WPML is active at all, all posts will be
+		// instantiated as translation sets.
+		return $this;
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return int
+	 * @since 2.5.10
+	 */
+	public function get_default_language_id() {
+		return $this->get_id();
 	}
 
 }

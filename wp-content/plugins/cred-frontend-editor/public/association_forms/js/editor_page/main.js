@@ -1,8 +1,12 @@
+/**
+ * Manage the association form edit page.
+ * 
+ * @since m2m
+ * @package CRED
+ */
 var Toolset = Toolset || {};
 
-if ( typeof Toolset.CRED === "undefined" ) {
-    Toolset.CRED = {};
-}
+Toolset.CRED = Toolset.CRED || {};
 
 // the head.js object
 Toolset.CRED.head = Toolset.CRED.head || head;
@@ -71,6 +75,7 @@ Toolset.CRED.AssociationFormsEditor.Class = function( $ ) {
     self.beforeInit = function() {
         var modelData = self.getModelData();
         //noinspection JSUnresolvedVariable
+        Toolset.CRED.AssociationFormsEditor.toolsetFormsVersion = modelData.toolsetFormsVersion;
         Toolset.CRED.AssociationFormsEditor.jsPath = modelData.jsIncludePath;
         Toolset.CRED.AssociationFormsEditor.jsEditorPath = modelData.jsEditorIncludePath;
         Toolset.CRED.AssociationFormsEditor.action = modelData.action;
@@ -131,11 +136,14 @@ Toolset.CRED.AssociationFormsEditor.Class = function( $ ) {
         self.buildCodeMirror();
         self.refreshContentEditor();
         self.addQtButtons();
-		self.addBootstrapGridButton();
-		self.addHooks();
+        self.addHooks();
+        _.defer( function() {
+            self.addBootstrapGridButton();
+        });
     };
 
     self.buildCodeMirror = function(){
+        CodeMirror.defineMode( self.editorMode, codemirror_shortcodes_overlay );
         WPV_Toolset.CodeMirror_instance[self.editorSelector] = icl_editor.codemirror(
             self.editorSelector,
             true,
@@ -190,12 +198,12 @@ Toolset.CRED.AssociationFormsEditor.Class = function( $ ) {
     self.loadDependencies = function( nextStep ) {
         // Continue after loading the view of the listing table.
         Toolset.CRED.head.load(
-            Toolset.CRED.AssociationFormsEditor.jsPath + '/dialogs/DeleteForm.js',
-            Toolset.CRED.AssociationFormsEditor.jsPath + '/AssociationFormActions.js',
-            Toolset.CRED.AssociationFormsEditor.jsPath + '/models/AssociationFormModel.js',
-            Toolset.CRED.AssociationFormsEditor.jsEditorPath + '/AssociationForm_ExtraEditors.js',
-            Toolset.CRED.AssociationFormsEditor.jsEditorPath + '/AssociationFormViewModel.js',
-            Toolset.CRED.AssociationFormsEditor.jsEditorPath + '/AssociationFormCreateEdit.js',
+            Toolset.CRED.AssociationFormsEditor.jsPath + '/dialogs/DeleteForm.js?ver=' + Toolset.CRED.AssociationFormsEditor.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsEditor.jsPath + '/AssociationFormActions.js?ver=' + Toolset.CRED.AssociationFormsEditor.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsEditor.jsPath + '/models/AssociationFormModel.js?ver=' + Toolset.CRED.AssociationFormsEditor.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsEditor.jsEditorPath + '/AssociationForm_ExtraEditors.js?ver=' + Toolset.CRED.AssociationFormsEditor.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsEditor.jsEditorPath + '/AssociationFormViewModel.js?ver=' + Toolset.CRED.AssociationFormsEditor.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsEditor.jsEditorPath + '/AssociationFormCreateEdit.js?ver=' + Toolset.CRED.AssociationFormsEditor.toolsetFormsVersion,
             nextStep
         );
     };

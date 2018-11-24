@@ -28,16 +28,18 @@ class Toolset_Field_Group_Post_Factory extends Toolset_Field_Group_Factory {
 	 *
 	 * @param int|string|WP_Post $field_group Post ID of the field group, it's name or a WP_Post object.
 	 *
+	 * @param bool $force_query_by_name
+	 *
 	 * @return null|Toolset_Field_Group_Post Field group or null if it can't be loaded.
 	 */
-	public static function load( $field_group ) {
+	public static function load( $field_group, $force_query_by_name = false ) {
 		// we cannot use self::get_instance here, because of low PHP requirements and missing get_called_class function
 		// we have a fallback class for get_called_class but that scans files by debug_backtrace and return 'self'
 		//   instead of Toolset_Field_Group_Post_Factory like the original get_called_class() function does
 		// ends in an error because of parents (abstract) $var = new self();
 
 		/** @noinspection PhpIncompatibleReturnTypeInspection Because this will always be a post field group. */
-		return Toolset_Field_Group_Post_Factory::get_instance()->load_field_group( $field_group );
+		return Toolset_Field_Group_Post_Factory::get_instance()->load_field_group( $field_group, $force_query_by_name );
 	}
 
 
@@ -93,6 +95,7 @@ class Toolset_Field_Group_Post_Factory extends Toolset_Field_Group_Factory {
 				)
 			);
 
+			/** @var string[] $post_types */
 			$post_types = $post_type_query->get_results();
 
 			$this->post_type_assignment_cache = array();

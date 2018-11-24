@@ -6,7 +6,7 @@ $disabled = '';?>
  <?php
  if( count($loops) > 0 ):?>
 <div class="js-change-wrap-box">
- <h2 class="js-change-layout-use-section-title change-layout-use-section-title-outer"><span  class="change-layout-use-section-title js-collapse-group-individual"><?php _e('Others:', 'ddl-layouts'); ?></span>
+ <h2 class="js-change-layout-use-section-title change-layout-use-section-title-outer" data-group="4"><span  class="change-layout-use-section-title js-collapse-group-individual"><?php _e('Others:', 'ddl-layouts'); ?></span>
      <i class="fa fa-caret-down js-collapse-group-in-dialog change-layout-use-section-title-icon-collapse"></i></h2>
 
  <ul class="hidden post-types-list-in-layout-editor js-post-types-list-in-layout-editor js-change-layout-use-section change-layout-use-section">

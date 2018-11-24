@@ -85,6 +85,16 @@ final class WPV_Api {
 			 * @since m2m
 			 */
 			'get_available_content_templates' => array( 'args' => 1 ),
+
+			/**
+			 * wpv_is_views_lite
+			 *
+			 * Returns a value of the WPV_LITE constant
+			 *
+			 * @return bool
+			 * @since Views Lite
+			 */
+			'is_views_lite' => array( 'args' => 1 ),
 		);
 	}
 

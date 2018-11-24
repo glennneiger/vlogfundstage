@@ -106,6 +106,8 @@ DDLayout.CredUserCell = function ($)
 
         $('.js-ddl-create-cred-form').hide();
         $('.js-ddl-edit-cred-link').hide();
+        $('.js-ddl-create-cred-relationship-form').hide();
+        $('.js-ddl-edit-cred-relationship-link').hide();
 
         var button_create = $('#ddl-default-edit .js-ddl-create-cred-user-form');
         $(button_create).insertAfter($(after));

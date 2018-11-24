@@ -45,11 +45,21 @@ abstract class WPDD_layout_text_based_cell extends WPDD_layout_cell {
 
 				foreach ( $strings as $string ) {
 
+					if( isset( $string['name'] ) ){
+						$name = $string['name'];
+					} else {
+						$name = $this->get_string_name_for_wpml_string( $unique_id, $string['string'] );
+					}
+
+					if( isset( $string['context'] ) ){
+						$context['name'] = $string['context'];
+					}
+
 					do_action( 'wpml_register_string',
 						$string['string'],
-						$this->get_string_name_for_wpml_string( $unique_id, $string['string'] ),
+						$name,
 						$context,
-						$this->get_name() . ' - wpml-string',
+						$this->get_name() . ' ' . $name,
 						'VISUAL' );
 
 				}

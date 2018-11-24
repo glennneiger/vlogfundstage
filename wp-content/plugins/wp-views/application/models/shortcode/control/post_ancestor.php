@@ -218,10 +218,36 @@ class WPV_Shortcode_Control_Post_Ancestor {
 			$aux_array = apply_filters( 'wpv_filter_wpv_get_rendered_views_ids', array() );
 			$view_name = get_post_field( 'post_name', end( $aux_array ) );
 			$this->user_atts['default_label'] = wpv_translate( 
-				$this->ancestor_data['type'] . '_default_label', 
+				$this->ancestor_data['type'] . '_default_label',
 				$this->user_atts['default_label'], 
 				false, 
 				'View ' . $view_name 
+			);
+
+			$this->user_atts['default_label'] = wpv_translate(
+				$this->ancestor_data['type'] . '@' . $this->ancestor_data['relationship'] . '.' . $this->ancestor_data['role'] . '_default_label',
+				$this->user_atts['default_label'],
+				false,
+				'View ' . $view_name
+			);
+		}
+
+		// Format
+		if ( ! empty( $this->user_atts['format'] ) ) {
+			$aux_array = apply_filters( 'wpv_filter_wpv_get_rendered_views_ids', array() );
+			$view_name = get_post_field( 'post_name', end( $aux_array ) );
+			$this->user_atts['format'] = wpv_translate(
+				$this->ancestor_data['type'] . '_format',
+				$this->user_atts['format'],
+				false,
+				'View ' . $view_name
+			);
+
+			$this->user_atts['format'] = wpv_translate(
+				$this->ancestor_data['type'] . '@' . $this->ancestor_data['relationship'] . '.' . $this->ancestor_data['role'] . '_format',
+				$this->user_atts['format'],
+				false,
+				'View ' . $view_name
 			);
 		}
 		

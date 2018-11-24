@@ -33,7 +33,7 @@ class WPDDL_Templates_Settings{
         add_filter('ddl-get_template_default_message', array(&$this, 'get_default_message') );
         add_filter( 'ddl-default-template-option-checked', array(&$this, 'is_checked'), 10, 2 );
         add_action('wp_ajax_'.self::DEFAULT_OPTION, array(&$this, 'ajax_callback'));
-        add_filter( 'template_include', array( $this, 'get_default_template' ), 11, 1 );
+        add_filter( 'template_include', array( $this, 'get_default_template' ), 102, 1 );
         add_filter( 'template_include', array( $this, 'template_include' ), 108, 1 );
     }
 
@@ -75,16 +75,16 @@ class WPDDL_Templates_Settings{
 
         $toolsetAdminBar = Toolset_Admin_Bar_Menu::get_instance();
         $context = $toolsetAdminBar->get_context();
+		
+		if ( ! $context ) {
+            return null;
+        }
 
         // Get type {post types, taxonomies, wordpress archives slugs, 404} and class {page, archive}
         list( $type, $my_class ) = explode( '|', $context );
 
         $menu_title = $toolsetAdminBar->get_title( 'layouts', true, $type, $my_class, null );
         $post_id = null;
-
-        if ( ! $context ) {
-            return null;
-        }
 
         $assign_layout_link = wp_nonce_url( admin_url( sprintf( 'admin.php?page=dd_layouts_create_auto&type=%s&class=%s&post=%s', $type, $my_class, $post_id ) ), 'create_auto' );
         return array( "menu_link" => $assign_layout_link, "menu_title" => $menu_title );

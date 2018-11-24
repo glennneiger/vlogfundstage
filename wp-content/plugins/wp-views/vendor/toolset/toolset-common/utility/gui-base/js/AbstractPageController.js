@@ -17,6 +17,11 @@ Toolset.Gui.AbstractPage = function() {
 
     var self = this;
 
+
+    // Apply mixins which can be also used in a stand-alone fashion otherwise.
+    Toolset.Gui.Mixins.CreateDialog.call(self);
+    Toolset.Gui.Mixins.KnockoutExtensions.call(self);
+
     /**
      * Log all arguments to console if debugging is turned on.
      *
@@ -58,11 +63,13 @@ Toolset.Gui.AbstractPage = function() {
     self.getModelData = function(selector) {
 
         if(!_.has(this, 'modelData')) {
-            if(typeof(selector) == 'undefined') {
+            if(typeof(selector) === 'undefined') {
                 selector = '#toolset_model_data';
             }
 
-            self.modelData = jQuery.parseJSON(WPV_Toolset.Utils.editor_decode64(jQuery(selector).html()));
+            self.modelData = jQuery( selector ).length
+                ? jQuery.parseJSON(WPV_Toolset.Utils.editor_decode64(jQuery(selector).html()))
+                : false;
         }
 
         return self.modelData;
@@ -131,271 +138,60 @@ Toolset.Gui.AbstractPage = function() {
 
         var modelData = self.getModelData();
 
-        if( _.has(modelData, 'templates') && _.isObject(_.property('templates')(modelData))) {
-
-            self.templates = new function() {
-
-                var templates = this;
-
-                templates.raw = _.property('templates')(modelData);
-
-                /**
-                 * @param {string} templateName
-                 * @returns {string} Raw template content.
-                 */
-                templates.getRawTemplate = function(templateName) {
-                    if(_.has(templates.raw, templateName)) {
-                        return templates.raw[templateName];
-                    } else {
-                        self.log('Template "' + templateName + '" not found.');
-                        return '';
-                    }
-                };
-
-                templates.compiledUnderscoreTemplates = {};
-
-                /**
-                 * @param {string} templateName
-                 * @returns {function} Compiled underscore template
-                 */
-                templates.getUnderscoreTemplate = function(templateName) {
-                    if(!_.has(templates.compiledUnderscoreTemplates, templateName)) {
-                        templates.compiledUnderscoreTemplates[templateName] = _.template(templates.getRawTemplate(templateName));
-                    }
-                    return templates.compiledUnderscoreTemplates[templateName];
-                };
-
-
-                /**
-                 * Compile an underscore template (with using cache) and render it.
-                 *
-                 * @param {string} templateName
-                 * @param {object} context Underscore context for rendering the template.
-                 * @returns {string} Rendered markup.
-                 */
-                templates.renderUnderscore = function(templateName, context) {
-                    var compiled = templates.getUnderscoreTemplate(templateName);
-                    return compiled(context);
-                };
-
-            };
+        if( ! _.has(modelData, 'templates') || ! _.isObject(_.property('templates')(modelData))) {
+            modelData.templates = {};
         }
-    };
 
-    /**
-     * Initialize custom Knockout bindings and other modifications.
-     *
-     * @since 2.2
-     */
-    self.initKnockout = function() {
+        self.templates = new function() {
 
-        var $ = jQuery;
+            var templates = this;
 
-        // Taken from http://knockoutjs.com/examples/animatedTransitions.html
-        // Here's a custom Knockout binding that makes elements shown/hidden via jQuery's fadeIn()/fadeOut() methods
-        ko.bindingHandlers.fadeVisible = {
-            init: function(element, valueAccessor) {
-                // Initially set the element to be instantly visible/hidden depending on the value
-                var value = valueAccessor();
-                $(element).toggle(ko.unwrap(value)); // Use "unwrapObservable" so we can handle values that may or may not be observable
-            },
-            update: function(element, valueAccessor) {
-                // Whenever the value subsequently changes, slowly fade the element in or out
-                var value = valueAccessor();
-                ko.unwrap(value) ? $(element).fadeIn() : $(element).fadeOut();
-            }
-        };
+            templates.raw = _.property('templates')(modelData);
 
-
-        var applyDisplayMode = function(displayMode, element, immediately) {
-            switch(displayMode) {
-                case 'show':
-                    element.css('visibility', 'visible');
-                    if(immediately) {
-                        element.show();
-                    } else {
-                        element.slideDown().css('display', 'none').fadeIn();
-                    }
-                    break;
-                case 'hide':
-                    element.css('visibility', 'hidden');
-                    if(immediately) {
-                        element.show();
-                    } else {
-                        element.slideDown();
-                    }
-                    break;
-                case 'remove':
-                    if(immediately) {
-                        element.hide();
-                    } else {
-                        element.slideUp().fadeOut();
-                    }
-                    element.css('visibility', 'hidden');
-                    break;
-            }
-        };
-
-
-        /**
-         * Binding for displaying an element in three modes:
-         *
-         * - 'show' will simply display the element
-         * - 'hide' will hide it, but leave the free space for another message to be displayed soon
-         * - 'remove' will hide it completely
-         *
-         * Show/remove values use animations.
-         *
-         * @since 2.2
-         */
-        ko.bindingHandlers.threeModeVisibility = {
-            init: function(element, valueAccessor) {
-                var displayMode = ko.unwrap(valueAccessor());
-                applyDisplayMode(displayMode, $(element), true);
-            },
-            update: function(element, valueAccessor) {
-                var displayMode = ko.unwrap(valueAccessor());
-                applyDisplayMode(displayMode, $(element), false);
-            }
-        };
-
-
-        var disablePrimary = function(element, valueAccessor) {
-            var isDisabled = ko.unwrap(valueAccessor());
-            if(isDisabled) {
-                $(element).prop('disabled', true).removeClass('button-primary');
-            } else {
-                $(element).prop('disabled', false).addClass('button-primary');
-            }
-        };
-
-        /**
-         * Disable primary button and update its class.
-         *
-         * @since 2.2
-         */
-        ko.bindingHandlers.disablePrimary = {
-            init: disablePrimary,
-            update: disablePrimary
-        };
-
-
-        var redButton = function(element, valueAccessor) {
-            var isRed = ko.unwrap(valueAccessor());
-            if(isRed) {
-                jQuery(element).addClass('toolset-red-button');
-            } else {
-                jQuery(element).removeClass('toolset-red-button');
-            }
-        };
-
-
-        /**
-         * Add or remove a class that makes a button red.
-         *
-         * @since 2.0
-         */
-        ko.bindingHandlers.redButton = {
-            init: redButton,
-            update: redButton
-        };
-
-
-        // Update textarea's value and scroll it to the bottom.
-        var valueScroll = function(element, valueAccessor) {
-            var value = ko.unwrap(valueAccessor());
-            var textarea = $(element);
-
-            textarea.val(value);
-            textarea.scrollTop(textarea[0].scrollHeight);
-        };
-
-        ko.bindingHandlers.valueScroll = {
-            init: valueScroll,
-            update: valueScroll
-        };
-
-
-        /**
-         * Set the readonly attribute value.
-         *
-         * @type {{update: ko.bindingHandlers.readOnly.update}}
-         * @since m2m
-         */
-        ko.bindingHandlers.readOnly = {
-            update: function(element, valueAccessor) {
-                var value = ko.utils.unwrapObservable(valueAccessor());
-                if (value) {
-                    element.setAttribute("readonly", true);
-                }  else {
-                    element.removeAttribute("readonly");
+            /**
+             * @param {string} templateName
+             * @returns {string} Raw template content.
+             */
+            templates.getRawTemplate = function(templateName) {
+                if(_.has(templates.raw, templateName)) {
+                    return templates.raw[templateName];
+                } else if( templateName === 'messageMultiple' ) {
+                    // Only template used in all page controllers. If we have more of them, a more generic solution is preferred.
+                    return "<%= (typeof(mainMessage) != 'undefined' && 0 < mainMessage.length ? '<p>' + mainMessage + '</p>' : '' ) %><ol><% _.each(messages, function(message) { print('<li>' + message + '</li>'); }); %></ol>";
+                } else {
+                    self.log('Template "' + templateName + '" not found.');
+                    return '';
                 }
-            }
-        }
-
-				/**
-         * New computed type that allows to force the reading on the observable
-         *
-         * Check this {@link https://stackoverflow.com/questions/13769481/force-a-computed-property-function-to-run/29960082#29960082|Stackoveflow} example
-         * @since m2m
-         */
-        ko.notifyingWritableComputed = function(options, context) {
-            var _notifyTrigger = ko.observable(0);
-            var originalRead = options.read;
-            var originalWrite = options.write;
-
-            // intercept 'read' function provided in options
-            options.read = function() {
-                // read the dummy observable, which if updated will
-                // force subscribers to receive the new value
-                _notifyTrigger();
-                return originalRead();
             };
 
-            // intercept 'write' function
-            options.write = function(v) {
-                // run logic provided by user
-                originalWrite(v);
+            templates.compiledUnderscoreTemplates = {};
 
-                // force reevaluation of the notifyingWritableComputed
-                // after we have called the original write logic
-                _notifyTrigger(_notifyTrigger() + 1);
+            /**
+             * @param {string} templateName
+             * @returns {function} Compiled underscore template
+             */
+            templates.getUnderscoreTemplate = function(templateName) {
+                if(!_.has(templates.compiledUnderscoreTemplates, templateName)) {
+                    templates.compiledUnderscoreTemplates[templateName] = _.template(templates.getRawTemplate(templateName));
+                }
+                return templates.compiledUnderscoreTemplates[templateName];
             };
 
-            // just create computed as normal with all the standard parameters
-            return ko.computed(options, context);
-        }
+
+            /**
+             * Compile an underscore template (with using cache) and render it.
+             *
+             * @param {string} templateName
+             * @param {object} context Underscore context for rendering the template.
+             * @returns {string} Rendered markup.
+             */
+            templates.renderUnderscore = function(templateName, context) {
+                var compiled = templates.getUnderscoreTemplate(templateName);
+                return compiled(context);
+            };
+
+        };
     };
-
-
-    /**
-     * Create a Toolset dialog.
-     *
-     * For details, see https://git.onthegosystems.com/toolset/toolset-common/wikis/best-practices/dialogs.
-     *
-     * @param {string} dialogId Id of the HTML element holding the dialog template.
-     * @param {string} title Dialog title to be displayed
-     * @param {*} templateContext Context for the dialog (underscore) template.
-     * @param buttons Button definitions according to jQuery UI Dialogs.
-     * @param [options] Further options that will be passed directly.
-     * @returns {{DDLayout.DialogView}} A dialog object.
-     * @since 2.1
-     */
-    self.createDialog = function(dialogId, title, templateContext, buttons, options) {
-
-        var dialogDuplicate = DDLayout.DialogView.extend({});
-
-        var dialog = new dialogDuplicate(_.defaults(options || {}, {
-            title: title,
-            selector: '#' + dialogId,
-            template_object: templateContext,
-            buttons: buttons,
-            width: 600
-        }));
-
-        return dialog;
-    };
-
 
     /**
      * This will be called before the first step of controller initialization.

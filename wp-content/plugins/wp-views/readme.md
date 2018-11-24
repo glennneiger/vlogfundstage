@@ -10,6 +10,6 @@ With Views, adding filtering, limits, pagination and advanced AJAX effects all t
 
 ## Installation
 
-1. Download from wp-types.com/account/download.
+1. Download from https://toolset.com/account/download.
 2. Upload to wp-content/plugins/ folder
 3. Activate through wp-admin/plugin.php page.

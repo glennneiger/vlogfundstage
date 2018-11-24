@@ -105,7 +105,13 @@ DDLayout.models.abstract.Element = Backbone.Model.extend({
         }
         else if( attributes == 'name' ){
             if(options){
-                options = this instanceof DDLayout.models.cells.Layout ? _.escape(options) : DDLayout.models.abstract.Element._strip_tags_and_preserve_text( options );
+                // Since Views 2.7.0 the sanitization of the View, the Content Template or the Wordpress Archive is handled
+                // by Wordpress itself as it's done for native posts. So, for the cases of the Views cells (View,
+                // Content Template or Wordpress Archive) the cell name is returned un-escaped.
+                var viewsCells = [ 'views-content-grid-cell', 'post-loop-views-cell', 'cell-content-template' ];
+                if ( ! _.includes( viewsCells, this.attributes.cell_type ) ) {
+                    options = this instanceof DDLayout.models.cells.Layout ? _.escape(options) : DDLayout.models.abstract.Element._strip_tags_and_preserve_text( options );
+                }
             }
         }
         else if( attributes === 'additionalCssClasses' && options && _.isString( options )  )
@@ -126,10 +132,18 @@ DDLayout.models.abstract.Element = Backbone.Model.extend({
                 options = WPV_Toolset.Utils._strip_scripts( options );
                 options = WPV_Toolset.Utils._strip_tags_and_preserve_text( options );
             }
-        } else if( attributes === 'content' && options &&  _.isObject(options) && options.hasOwnProperty('content') ){
-
-            options.content = WPV_Toolset.Utils._strip_scripts( options.content );
-
+        }  else if( attributes === 'content' && options &&  _.isObject(options) ){
+            options = _.mapObject( options, function(val, key) {
+                if( _.isString( val ) ){
+                    val = WPV_Toolset.Utils._strip_scripts( val );
+                    // if we are dealing with Element.content.content property do not strip other tags (WYSIWYG / HTML Editor content)
+                    if( 'content' !== key ){
+                        // preserve special chars and do not convert to entities
+                        val = _.unescape( WPV_Toolset.Utils._strip_tags_and_preserve_text( val ) );
+                    }
+                }
+                return val;
+            });
         }
 
         if( _.isString( options ) ){

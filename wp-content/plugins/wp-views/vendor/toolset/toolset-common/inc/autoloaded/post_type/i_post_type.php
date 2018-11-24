@@ -98,4 +98,56 @@ interface IToolset_Post_Type {
 	 */
 	public function allows_field_group( Toolset_Field_Group $field_group );
 
+
+	/**
+	 * Check if the post type is translatable by WPML.
+	 *
+	 * @return bool
+	 * @since 2.5.10
+	 */
+	public function is_translatable();
+
+
+	/**
+	 * Check if the post type is translatable and has the "display as translated" mode.
+	 *
+	 * @return bool
+	 * @since 2.5.10
+	 */
+	public function is_in_display_as_translated_mode();
+
+
+	/**
+	 * Check if the post type can be used in a relationship.
+	 *
+	 * @return Toolset_Result
+	 * @since 2.5.10
+	 */
+	public function can_be_used_in_relationship();
+
+
+	/**
+	 * Check if the post type can be used in a many-to-many relationship as an intermediary post.
+	 *
+	 * @param bool $skip_check_for_existing_intermediary
+	 *
+	 * @param bool $skip_check_for_relationship_involvment
+	 *
+	 * @return Toolset_Result
+	 */
+	public function can_be_used_as_intermediary(
+		$skip_check_for_existing_intermediary = false,
+		$skip_check_for_relationship_involvment = false
+	);
+
+
+	/**
+	 * Check if the post type is already used in an existing relationship.
+	 *
+	 * Needs m2m.
+	 *
+	 * @return bool
+	 * @since 2.5.11
+	 */
+	public function is_involved_in_relationship();
 }

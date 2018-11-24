@@ -13,28 +13,24 @@
  * @since 1.9
  */
 class CRED_Asset_Manager {
-	
-	const CRED_FORM_SETTINGS_BOX = 'cred_form_settings_box';
 
-	/**
-	 * @deprecated 1.9.3 moved to CRED_File_Ajax_Upload_Manager
-	 */
+	const CRED_FORM_SETTINGS_BOX = 'cred_form_settings_box';
+	const CRED_ACTION_AJAX_UPLOAD = 'cred_frontend_ajax_upload_submit';
+	const CRED_AJAX_FILE_UPLOADER = 'cred-frontend-ajax-file-uploader';
 	const CREDFILE = 'wpt-field-credfile';
 
-	/**
-	 * @deprecated 1.9.3 moved to CRED_File_Ajax_Upload_Manager
-	 */
-	const AJAX_FILE_UPLOADER = 'my_ajax_file_uploader';
+	const SCRIPT_CODEMIRROR_SHORTCODES_MODE = 'cred_codemirror_shortcodes';
+
+	const SCRIPT_EDITOR_PROTOTYPE = 'cred_editor_prototype';
 
 	private static $instance;
 
 	private function __construct() {
-		
 		add_action( 'init', array( $this, 'register_assets' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_cred_button_assets' ), 1 );
 
+		add_action( 'toolset_forms_enqueue_frontend_form_assets', array( $this, 'enqueue_frontend_assets_on_demand' ) );
 	}
-
 	
 	public function register_assets() {
 		$this->register_cred_scripts();
@@ -73,13 +69,12 @@ class CRED_Asset_Manager {
 		wp_register_script(self::CRED_FORM_SETTINGS_BOX, $this->get_admin_assets_url('js/cred_form_settings_box.js'), array('jquery','cred_gui','toolset_select2'), CRED_FE_VERSION);
 
 		wp_register_script( 'cred_console_polyfill', $this->get_admin_assets_url( 'common/js/console_polyfill.js' ), array(), CRED_FE_VERSION );
-		wp_register_script( 'cred_template_script', $this->get_admin_assets_url( 'common/js/gui.js' ), array( 'jquery', 'jquery-ui-sortable', 'jquery-ui-dialog', 'wp-pointer' ), CRED_FE_VERSION );
 		wp_register_script( 'cred_extra', $this->get_admin_assets_url( 'common/js/extra.js' ), array( 'jquery', 'jquery-effects-scale', 'toolset-event-manager' ), CRED_FE_VERSION );
 		wp_register_script( 'cred_utils', $this->get_admin_assets_url( 'common/js/utils.js' ), array( 'jquery', 'cred_extra' ), CRED_FE_VERSION );
-		wp_register_script( 'cred_gui', $this->get_admin_assets_url( 'common/js/gui.js' ), array( 'jquery', 'jquery-ui-dialog', 'wp-pointer' ), CRED_FE_VERSION );
+		wp_register_script( 'cred_gui', $this->get_admin_assets_url( 'common/js/gui.js' ), array( 'jquery', 'jquery-ui-sortable', 'jquery-ui-dialog', 'wp-pointer' ), CRED_FE_VERSION );
 		wp_register_script( 'cred_mvc', $this->get_admin_assets_url( 'common/js/mvc.js' ), array( 'jquery', 'icl_editor-script' ), CRED_FE_VERSION );
-		wp_register_script( 'cred_codemirror_shortcodes', $this->get_admin_assets_url( 'third-party/codemirror_shortcodes.js' ), array( 'jquery', 'toolset-codemirror-script' ), CRED_FE_VERSION );
-		wp_register_script( 'cred_cred_dev', $this->get_admin_assets_url( 'js/cred.js' ), array( 'jquery', 'underscore', 'cred_console_polyfill', 'toolset-meta-html-codemirror-xml-script', 'toolset-codemirror-script', 'toolset-meta-html-codemirror-css-script', 'cred_codemirror_shortcodes', 'cred_extra', 'cred_utils', 'cred_gui', 'cred_mvc', 'jquery-ui-sortable', 'toolset-utils', 'toolset-event-manager' ), CRED_FE_VERSION );
+		wp_register_script( self::SCRIPT_CODEMIRROR_SHORTCODES_MODE, $this->get_admin_assets_url( 'third-party/codemirror_shortcodes.js' ), array( 'jquery', Toolset_Assets_Manager::SCRIPT_CODEMIRROR ), CRED_FE_VERSION );
+		wp_register_script( 'cred_cred_dev', $this->get_admin_assets_url( 'js/cred.js' ), array( 'jquery', 'underscore', 'cred_console_polyfill', 'toolset-meta-html-codemirror-xml-script', 'toolset-codemirror-script', 'toolset-meta-html-codemirror-css-script', self::SCRIPT_CODEMIRROR_SHORTCODES_MODE, 'cred_extra', 'cred_utils', 'cred_gui', 'cred_mvc', 'jquery-ui-sortable', 'toolset-utils', 'toolset-event-manager' ), CRED_FE_VERSION );
 		wp_register_script( 'cred_cred_nocodemirror_dev', $this->get_admin_assets_url( 'js/cred.js' ), array( 'jquery', 'underscore', 'cred_console_polyfill', 'cred_extra', 'cred_utils', 'cred_gui', 'cred_mvc', 'jquery-ui-sortable', 'toolset-utils', 'toolset-event-manager' ), CRED_FE_VERSION );
 		wp_register_script( 'cred_cred_post_dev', $this->get_admin_assets_url( 'js/post.js' ), array( 'jquery', 'cred_console_polyfill', 'cred_extra', 'cred_utils', 'cred_gui', 'toolset-event-manager', 'cred_cred_dev', 'cred_settings' ), CRED_FE_VERSION );
 		wp_register_script( 'cred_cred_nocodemirror', $this->get_admin_assets_url( 'js/cred.js' ), array( 'jquery', 'underscore', 'jquery-ui-dialog', 'wp-pointer', 'jquery-effects-scale', 'cred_extra', 'cred_utils', 'cred_gui', 'cred_mvc', 'jquery-ui-sortable', 'toolset-utils', 'toolset-event-manager' ), CRED_FE_VERSION );
@@ -87,6 +82,9 @@ class CRED_Asset_Manager {
 		wp_register_script( 'cred_settings', $this->get_admin_assets_url( 'js/settings.js' ), array( 'jquery', 'underscore', 'jquery-ui-dialog', 'jquery-ui-tabs', 'toolset-settings' ), CRED_FE_VERSION );
 
 		wp_localize_script( 'cred_settings', 'cred_settings', array(
+			'is_m2m_enabled' => apply_filters( 'toolset_is_m2m_enabled', false ),
+			'is_wizard_enabled' => $this->get_wizard_setting(),
+			'rfg_post_types' => $this->get_rfg_post_types(),
 			'_current_page' => CRED_Helper::getCurrentPostType(),
 			'_cred_wpnonce' => wp_create_nonce( '_cred_wpnonce' ),
 			'autogenerate_username_scaffold' => isset( CRED_Helper::$current_form_fields ) ? CRED_Helper::$current_form_fields['form_settings']->form['autogenerate_username_scaffold'] : 0,
@@ -103,7 +101,109 @@ class CRED_Asset_Manager {
 			// help
 			'help' => CRED_CRED::$help,
 			'locale' => $this->get_locale_array(),
+			'wizard_instructions_post_content' => $this->get_wizard_instructions_template( 'post' ),
+			'wizard_instructions_user_content' => $this->get_wizard_instructions_template( 'user' ),
 		) );
+
+		wp_register_script(
+			self::SCRIPT_EDITOR_PROTOTYPE,
+			CRED_ABSURL . '/public/js/editor.prototype.js',
+			array(
+				'jquery',
+				'underscore',
+				'quicktags',
+				Toolset_Assets_Manager::SCRIPT_TOOLSET_EVENT_MANAGER,
+				Toolset_Assets_Manager::SCRIPT_TOOLSET_SHORTCODE,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_CSS,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_HTMLMIXED,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_JS,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_OVERLAY,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_UTILS_HINT,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_UTILS_HINT_CSS,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_UTILS_PANEL,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_UTILS_SEARCH,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_UTILS_SEARCH_CURSOR,
+				Toolset_Assets_Manager::SCRIPT_CODEMIRROR_XML,
+				Toolset_Assets_Manager::SCRIPT_ICL_EDITOR,
+				Toolset_Assets_Manager::SCRIPT_ICL_MEDIA_MANAGER,
+				Toolset_Assets_Manager::SCRIPT_KNOCKOUT,
+				Toolset_Assets_Manager::SCRIPT_UTILS,
+				Toolset_Assets_Manager::SCRIPT_SELECT2,
+				CRED_Asset_Manager::SCRIPT_CODEMIRROR_SHORTCODES_MODE
+			),
+			CRED_FE_VERSION
+		);
+
+		wp_register_script(
+			'cred-frontend-js',
+			$this->get_asset_url( 'js/frontend.js' ),
+			array( 'jquery', 'knockout', 'underscore', Toolset_Assets_Manager::SCRIPT_TOOLSET_EVENT_MANAGER ),
+			CRED_FE_VERSION,
+			true
+		);
+		wp_localize_script( 'cred-frontend-js', 'cred_frontend_settings', array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+		));
+
+		wp_register_script(
+			'cred-select2-frontend-js',
+			$this->get_asset_url( 'js/select2_frontend.js' ),
+			array( 'jquery', Toolset_Assets_Manager::SCRIPT_SELECT2 ),
+			CRED_FE_VERSION,
+			true
+		);
+
+		wp_localize_script( 'cred-select2-frontend-js', 'cred_select2_frontend_settings',
+			array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'select2_fields_list' => array(),
+				'cred_lang' => apply_filters( 'wpml_current_language', '' )
+			)
+		);
+	}
+	
+	private function get_rfg_post_types() {
+		$rfg_post_types = array();
+
+		if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			return $rfg_post_types;
+		}
+
+		do_action( 'toolset_do_m2m_full_init' );
+
+		$rfg_post_types = get_post_types( array( Toolset_Post_Type_From_Types::DEF_IS_REPEATING_FIELD_GROUP => true ), 'names' );
+
+		return $rfg_post_types;
+	}
+
+	/**
+	 * @return bool|string
+	 */
+	private function get_wizard_setting() {
+		$sm = CRED_Loader::get( 'MODEL/Settings' );
+		$settings = $sm->getSettings();
+
+		return ( isset( $settings[ 'wizard' ] ) ) ? $settings[ 'wizard' ] : false;
+	}
+
+	/**
+	 * Get Wizard Summary Template
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	private function get_wizard_instructions_template( $type_form ) {
+		$template_file_path = CRED_ABSPATH . "/library/toolset/cred/embedded/views/templates/wizard-instructions-{$type_form}.php";
+		ob_start();
+		if ( file_exists( $template_file_path ) ) {
+			include( $template_file_path );
+			$out = ob_get_clean();
+
+			return esc_html( $out );
+		} else {
+			return __( "Wizard template file {$template_file_path} not found", 'wp-cred' );
+		}
 	}
 
 	/**
@@ -120,12 +220,11 @@ class CRED_Asset_Manager {
 			'syntax_button_title' => __( 'Syntax', 'wp-cred' ),
 			'text_button_title' => __( 'Text', 'wp-cred' ),
 			'title_explain_text' => __( 'Set the title for this new form.', 'wp-cred' ),
-			'content_explain_text' => __( 'Build the form using HTML and CRED shortcodes. Click on the <strong>Auto-Generate Form</strong> button to create the form with default fields. Use the <strong>Add User/Post Fields</strong> button to add fields that belong to this post type, or <strong>Add Generic Fields</strong> to add any other inputs.', 'wp-cred' ),
-			'next_text' => __( 'Next', 'wp-cred' ),
-			'prev_text' => __( 'Previous', 'wp-cred' ),
+			'next_text' => __( 'Continue >', 'wp-cred' ),
+			'prev_text' => __( '< Previous', 'wp-cred' ),
 			'finish_text' => __( 'Finish', 'wp-cred' ),
-			'quit_wizard_text' => __( 'Exit Wizard Mode', 'wp-cred' ),
-			'quit_wizard_confirm_text' => sprintf( __( 'Do you want to disable the Wizard for this form only, or disable the Wizard for all future forms as well? <br /><br /><span style="font-style:italic">(You can re-enable the Wizard at the %s Settings Page if you change your mind)</span>', 'wp-cred' ), CRED_NAME ),
+			'quit_wizard_text' => __( 'Exit Wizard', 'wp-cred' ),
+			'quit_wizard_confirm_text' => __( 'Do you want to disable the Wizard for this form only, or disable the Wizard for all future forms as well? <br /><br /><span style="font-style:italic">(You can re-enable the Wizard at the Forms tab of the Toolset Settings page if you change your mind)</span>', 'wp-cred' ),
 			'quit_wizard_all_forms' => __( 'All forms', 'wp-cred' ),
 			'quit_wizard_this_form' => __( 'This form', 'wp-cred' ),
 			'cancel_text' => __( 'Cancel', 'wp-cred' ),
@@ -134,9 +233,9 @@ class CRED_Asset_Manager {
 			'post_status_missing' => __( 'You must select a Post Status for the form', 'wp-cred' ),
 			'post_action_missing' => __( 'You must select a Form Action for the form', 'wp-cred' ),
 			'ok_text' => __( 'OK', 'wp-cred' ),
-			'step_1_title' => __( 'Title', 'wp-cred' ),
-			'step_2_title' => __( 'Settings', 'wp-cred' ),
-			'step_3_title' => __( 'Post Type', 'wp-cred' ),
+			'step_1_title' => __( 'Instructions', 'wp-cred' ),
+			'step_2_title' => __( 'Title', 'wp-cred' ),
+			'step_3_title' => __( 'Settings', 'wp-cred' ),
 			'step_4_title' => __( 'Build Form', 'wp-cred' ),
 			'step_5_title' => __( 'E-mail Notifications', 'wp-cred' ),
 			'submit_but' => __( 'Update', 'wp-cred' ),
@@ -148,6 +247,8 @@ class CRED_Asset_Manager {
 			'custom_fields' => __( 'Custom Fields', 'wp-cred' ),
 			'taxonomy_fields' => __( 'Taxonomies', 'wp-cred' ),
 			'parent_fields' => __( 'Parents', 'wp-cred' ),
+			'hierarchical_parent_fields' => __( 'Parents (hierarchical)', 'wp-cred' ),
+			'relationship_fields' => __( 'Relationship', 'wp-cred' ),
 			'extra_fields' => __( 'Extra Fields', 'wp-cred' ),
 			'form_types_not_set' => __( 'Form Type or Post Type is not set!' ),
 			'set_form_title' => __( 'Please set the form Title', 'wp-cred' ),
@@ -173,9 +274,8 @@ class CRED_Asset_Manager {
 			'invalid_title' => __( 'Title should contain only letters, numbers and underscores/dashes', 'wp-cred' ),
 			'invalid_notification_sender_email' => __( 'Notifications sender E-mail must be a valid E-mail address', 'wp-cred' ),
 			'form_user_not_set' => __( 'Form User Fields not set!' ),
-			'invalid_user_role' => __( 'First, please select the role for the user that this form will create.', 'wp-cred' ),
-			'invalid_form_type' => __( 'Form Type option cannot be empty.', 'wp-cred' ),
 			'logged_in_user_shortcodes_warning' => __( 'Both `User Login Name` and `User Display Name` codes, work only on notifications triggered by a form submission.', 'wp-cred' ),
+			'form_created_using_wizard' => __( 'Form has been succesfully saved with ID ', 'wp-cred' ),
 		);
 	}
 
@@ -188,6 +288,10 @@ class CRED_Asset_Manager {
 		wp_register_style( 'cred_template_style', $this->get_admin_assets_url( 'css/gfields.css' ), array( 'wp-admin', 'colors-fresh', 'font-awesome', 'cred_cred_style_nocodemirror_dev' ), CRED_FE_VERSION );
 		wp_register_style( 'cred_cred_style_dev', $this->get_admin_assets_url( 'css/cred.css' ), array( 'font-awesome', 'toolset-meta-html-codemirror-css-hint-css', 'toolset-meta-html-codemirror-css', 'wp-jquery-ui-dialog', 'wp-pointer' ), CRED_FE_VERSION );
 		wp_register_style( 'cred_cred_style_nocodemirror_dev', $this->get_admin_assets_url( 'css/cred.css' ), array( 'font-awesome', 'wp-jquery-ui-dialog', 'wp-pointer' ), CRED_FE_VERSION );
+		
+		wp_register_style( 'cred_wizard_general_style', $this->get_admin_assets_url( 'css/wizard-general.css' ), array(
+			'cred_cred_style_dev',
+		), CRED_FE_VERSION );
 	}
 
 	public static function get_instance() {
@@ -199,18 +303,37 @@ class CRED_Asset_Manager {
 	}
 
 	/**
+	 * Return is progress bar disabled for file upload fields by the filter 'cred_file_upload_disable_progress_bar'
+	 *
+	 * @return bool
+	 */
+	public function is_progress_bar_disabled() {
+		/**
+		 * cred_file_upload_disable_progress_bar
+		 *
+		 * Allows to override the decision whether the file upload & progress bar should be displayed
+		 * we have this new feature since version 1.3.6.3 so current filter by default should be set to false
+		 *
+		 * @param bool $disable true to disable, false to enable.
+		 *
+		 * @since 1.3.6.3
+		 */
+		return (bool) apply_filters( 'cred_file_upload_disable_progress_bar', false );
+	}
+
+	/**
 	 * Enqueue all assets needed for the frontend file upload field.
 	 *
-	 * @param $is_progress_bar_disabled
-	 *
-	 * @since 1.9
-	 * @deprecated 1.9.3 use CRED_File_Ajax_Upload_Manager::enqueue_file_upload_assets()
+	 * @since 1.9.3
 	 */
-	public function enqueue_file_upload_assets( $is_progress_bar_disabled ) {
-		wp_register_script( self::CREDFILE, $this->get_asset_url( 'js/credfile.js' ), array( 'wptoolset-forms' ), WPTOOLSET_FORMS_VERSION, true );
+	public function enqueue_file_upload_assets() {
+		wp_register_script( self::CREDFILE, $this->get_asset_url( 'js/credfile.js' ), array(
+			'wptoolset-forms',
+			'wptoolset-form-jquery-validation',
+		), WPTOOLSET_FORMS_VERSION, true );
 		wp_enqueue_script( self::CREDFILE );
 
-		if ( $is_progress_bar_disabled ) {
+		if ( $this->is_progress_bar_disabled() ) {
 			// Nothing else is needed
 			return;
 		}
@@ -222,7 +345,6 @@ class CRED_Asset_Manager {
 		wp_enqueue_script( 'jquery-ui-core' );
 		wp_enqueue_script( 'jquery-ui-widget' );
 		wp_enqueue_script( 'jquery-ui-progressbar' );
-
 		wp_enqueue_script( 'load-image-all-script', "$base_url/load-image.all.min.js", array( 'jquery' ), '', true );
 		wp_enqueue_script( 'jquery-iframe-transport-script', "$base_url/jquery.iframe-transport.js", array( 'jquery' ), '', true );
 		wp_enqueue_script( 'jquery-fileupload-script', "$base_url/jquery.fileupload.js", array( 'jquery' ), '', true );
@@ -233,27 +355,49 @@ class CRED_Asset_Manager {
 		wp_enqueue_script( 'jquery-fileupload-validate-script', "$base_url/jquery.fileupload-validate.js", array( 'jquery' ), '', true );
 		wp_enqueue_script( 'jquery-fileupload-ui-script', "$base_url/jquery.fileupload-ui.js", array( 'jquery' ), '', true );
 		wp_enqueue_script( 'jquery-fileupload-jquery-ui-script', "$base_url/jquery.fileupload-jquery-ui.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( self::AJAX_FILE_UPLOADER, "$base_url/file_upload.js", array( 'jquery' ) );
 
+		$max_upload_size = wp_max_upload_size();
+
+		wp_enqueue_script( self::CRED_AJAX_FILE_UPLOADER, "$base_url/file_upload.js", array( 'jquery' ) );
+		wp_localize_script( self::CRED_AJAX_FILE_UPLOADER, 'settings',
+			array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'action' => self::CRED_ACTION_AJAX_UPLOAD,
+				'media_settings' => Toolset_Utils::get_image_sizes( 'thumbnail' ),
+				'delete_confirm_text' => __( 'Are you sure to delete this file ?', 'wp-cred' ),
+				'delete_alert_text' => __( 'Generic Error in deleting file', 'wp-cred' ),
+				'delete_text' => __( 'delete', 'wp-cred' ),
+				'failed_upload_too_large_file_alert_text' => __( 'The file you uploaded is too large. You can upload files up to ', 'wp-cred' ),
+				'failed_upload_generic_alert_text' => __( 'There was an error uploading your file.', 'wp-cred' ),
+				'max_upload_size' => $max_upload_size,
+				'human_readable_max_upload_size' => size_format( $max_upload_size, 2 ),
+				'nonce' => wp_create_nonce( 'ajax_nonce' ),
+			)
+		);
 	}
 
 	/**
-	 * Adds all assets needed for the frontend form display/submit to the scripts queue
+	 * Adds all assets needed for the frontend form display/submit.
+	 * 
+	 * Note that we only add styles here: scripts are loaded on demand, in the footer.
 	 *
 	 * @since 1.9
 	 */
-	public function _enqueue_frontend_assets(){
-		//Enqueue front-end css
+	public function enqueue_required_frontend_assets() {
+		//Enqueue front-end styles
 		wp_enqueue_style( 'dashicons' );
-		//Enqueue front-end script
-		wp_enqueue_script('cred-frontend-js', $this->get_asset_url( 'js/frontend.js' ), array('jquery', 'knockout', 'underscore', 'toolset-event-manager'), CRED_FE_VERSION, true);
-		wp_localize_script('cred-frontend-js', 'cred_frontend_settings', array(
-			'ajaxurl' => admin_url('admin-ajax.php'),
-		));
-		//Enqueue front-end select2 css
 		wp_enqueue_style( 'toolset-select2-css' );
-		//Enqueue front-end select2 js
-		wp_enqueue_script( 'cred-select2-frontend-js', $this->get_asset_url( 'js/select2_frontend.js' ), array( 'jquery', 'toolset_select2' ), CRED_FE_VERSION, true );
+	}
+
+	/**
+	 * Enqueue the assets needed for frontend forms, on demand.
+	 *
+	 * @since 2.1.1
+	 */
+	public function enqueue_frontend_assets_on_demand() {
+		//Enqueue front-end scripts
+		wp_enqueue_script( 'cred-frontend-js' );
+		wp_enqueue_script( 'cred-select2-frontend-js' );
 	}
 
 	/**
@@ -275,7 +419,7 @@ class CRED_Asset_Manager {
 	 * @since 1.9
 	 */
 	public function enqueue_frontend_assets() {
-		add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_frontend_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_required_frontend_assets' ) );
 	}
 
 	/**

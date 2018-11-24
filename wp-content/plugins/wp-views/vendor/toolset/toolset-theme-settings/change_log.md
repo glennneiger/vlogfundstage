@@ -1,3 +1,10 @@
+Version 1.3.1
+- Fixed bug with displaying theme settings on layout assigned to post type without any posts
+
+Version 1.3.0
+- Ensured compatibility with Redux framework
+- Fixed bug of option file not loaded when cache record is truncated rather than dropped
+
 Version 1.2.0
 - Avoid errors with fake child themes.
 - Fix PHP warning in pages created with Avada Builder.

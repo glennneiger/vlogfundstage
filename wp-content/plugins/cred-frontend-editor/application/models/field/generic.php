@@ -27,6 +27,7 @@ class CRED_Generic_Field extends CRED_Generic_Field_Abstract {
                 ), $this->_atts);
 
         $content = $this->_content;
+        $content = ( null === $content ) ? '{}': $content;
 	    $use_select2 = ( isset( $filtered_attributes['use_select2'] ) ) ? $filtered_attributes['use_select2'] : null;
 	    $placeholder = ( isset( $filtered_attributes['placeholder'] ) ) ? $filtered_attributes['placeholder'] : null;
 
@@ -45,7 +46,19 @@ class CRED_Generic_Field extends CRED_Generic_Field_Abstract {
 		    || empty( $field_data ) /* probably JSON decode error */
 	    ) {
 		    return ''; //ignore not valid json
-	    }
+        }
+        
+        $field_data_defaults = array(
+            'required' => 0,
+            'validate_format' => 0,
+            'checked' => 0,
+            'default' => '',
+            'label' => '',
+            'persist' => 0,
+            //'generic_type' => '',// No need to add this as a default since we check whether isset or not
+            'options' => array()// Each entry is an array( 'value' => '', 'label' => '' ), or just one entry with the shortcode that provides this
+        );
+        $field_data = wp_parse_args( $field_data, $field_data_defaults );
 
         $formHelper = $this->_formHelper;
 
@@ -86,6 +99,13 @@ class CRED_Generic_Field extends CRED_Generic_Field_Abstract {
             case 'checkboxes':
                 $field['data']['options'] = array();
                 foreach ($field_data['options'] as $ii => $option) {
+                    if (
+                        ! is_array( $option )
+                        || ! array_key_exists( 'value', $option )
+                        || ! array_key_exists( 'label', $option )
+                    ) {
+                        continue;
+                    }
                     $option_id = $option['value'];
                     $field['data']['options'][$option_id] = array(
                         'title' => $option['label'],
@@ -127,6 +147,13 @@ class CRED_Generic_Field extends CRED_Generic_Field_Abstract {
                 $field['data']['options'] = array();
                 $default_option = 'no-default';
                 foreach ($field_data['options'] as $ii => $option) {
+                    if (
+                        ! is_array( $option )
+                        || ! array_key_exists( 'value', $option )
+                        || ! array_key_exists( 'label', $option )
+                    ) {
+                        continue;
+                    }
                     $option_id = $option['value'];
 
                     $field['data']['options'][$option_id] = array(
@@ -146,6 +173,13 @@ class CRED_Generic_Field extends CRED_Generic_Field_Abstract {
                 $field['data']['options'] = array();
                 $default_option = array();
                 foreach ($field_data['options'] as $ii => $option) {
+                    if (
+                        ! is_array( $option )
+                        || ! array_key_exists( 'value', $option )
+                        || ! array_key_exists( 'label', $option )
+                    ) {
+                        continue;
+                    }
                     $option_id = $option['value'];
                     $field['data']['options'][$option_id] = array(
                         'title' => $option['label'],

@@ -10,32 +10,33 @@ if ( ! function_exists( "cred_get_object_form" ) ) {
 	/**
 	 * cred_get_object_form
 	 *
-	 * @param mixed $form
+	 * @param mixed $form Form slug, title or ID
 	 * @param string $type (CRED_FORMS_CUSTOM_POST_NAME|CRED_USER_FORMS_CUSTOM_POST_NAME)
 	 *
-	 * @return array|bool|null|WP_Post
+	 * @return bool|WP_Post
 	 */
 	function cred_get_object_form( $form, $type ) {
-		if ( is_string( $form ) && ! is_numeric( $form ) ) {
-			$result = get_page_by_path( html_entity_decode( $form ), OBJECT, $type );
-			if ( $result && is_object( $result ) && isset( $result->ID ) ) {
+		// Check whether the passed value matches a form slug
+		$result = get_page_by_path( html_entity_decode( $form ), OBJECT, $type );
+		if ( $result instanceof WP_Post ) {
+			return $result;
+		}
+
+		// Check whether the passed value matches a form title
+		$result = get_page_by_title( html_entity_decode( $form ), OBJECT, $type );
+		if ( $result instanceof WP_Post ) {
+			return $result;
+		}
+
+		// Check whether the passed value matches a form ID
+		if ( is_numeric( $form ) ) {
+			$result = get_post( $form );
+			if ( $result instanceof WP_Post ) {
 				return $result;
-			} else {
-				$result = get_page_by_title( html_entity_decode( $form ), OBJECT, $type );
-				if ( $result && is_object( $result ) && isset( $result->ID ) ) {
-					return $result;
-				}
-			}
-		} else {
-			if ( is_numeric( $form ) ) {
-				$result = get_post( $form );
-				if ( $result && is_object( $result ) && isset( $result->ID ) ) {
-					return $result;
-				} else {
-					return false;
-				}
 			}
 		}
+
+		return false;
 	}
 
 }

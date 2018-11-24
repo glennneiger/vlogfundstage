@@ -1,10 +1,9 @@
 var CREDFormSettingsBox = CREDFormSettingsBox || {};
 
 /**
- * Set of methods that rule the template CRED Post Form Settings Box.
+ * Set of methods that rule the template Toolset Post Form Settings Box.
  *
- * In particular they rule the action related the "After user submits this form"
- * and the option "custom_post" with label "Go To a specific post..."
+ * In particular they rule the option "custom_post" with label "Go To a specific post..."
  *
  * This setting option includes 2 select boxes that will be transformed in select2
  * if have many options to show.
@@ -13,10 +12,7 @@ CREDFormSettingsBox.init = function () {
     var self = this;
 
     self.cred_first_loading = true;
-
-    self.form_type = cred_form_settings_box.form_type;
-
-    self.default_redirect_custom_post_min_posts_count_for_select2 = cred_form_settings_box.default_redirect_custom_post_min_posts_count_for_select2;
+    self.form_type = cred_form_settings_box.form_type;    self.default_redirect_custom_post_min_posts_count_for_select2 = cred_form_settings_box.default_redirect_custom_post_min_posts_count_for_select2;
     self.$wp_main_submit = jQuery('input[name="save"]', '#publishing-action');
     self.$action_custom_post = jQuery('#cred_form_action_custom_post', '#after_visitors_submit_this_form');
     self.$action_custom_post_loader = jQuery('#cred_form_action_ajax_loader', '#after_visitors_submit_this_form');
@@ -262,6 +258,10 @@ CREDFormSettingsBox.init = function () {
         self.$cred_form_type.on("click", function () {
             self.roleSwitch();
         });
+
+        if (cred_form_settings_box.fix_settings_action) {
+            jQuery("select[name='_cred[form][action]']").val('form');
+        }
     }
 
     self.getPostsCountByPostType();
@@ -270,13 +270,4 @@ CREDFormSettingsBox.init = function () {
 
 jQuery(document).ready(function () {
     var credFormSettingsBox = new CREDFormSettingsBox.init();
-
-    (function (window, $, undefined) {
-        $(function () {
-            try {
-                $('#credformactionmessage').val($('#credformactionmessage').text());
-            } catch (e) {
-            }
-        });
-    })(window, jQuery);
 });

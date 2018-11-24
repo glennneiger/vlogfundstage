@@ -4,12 +4,12 @@ final class CRED_Forms_Controller extends CRED_Abstract_Controller {
 
     public function testNotification() {
         if (
-                isset($_POST['cred_form_id']) &&
+                isset($_POST['cred_test_notification_form_id']) &&
                 isset($_POST['cred_test_notification_data'])
         //&& verify nonce
         ) {
             $notification = $_POST['cred_test_notification_data'];
-            $form_id = intval($_POST['cred_form_id']);
+            $form_id = intval($_POST['cred_test_notification_form_id']);
 
             $results = CRED_Notification_Manager::get_instance()->sendTestNotification($form_id, $notification);
             echo json_encode($results);
@@ -82,37 +82,6 @@ final class CRED_Forms_Controller extends CRED_Abstract_Controller {
         $fm->updateFormCustomField($form_id, $field, $value);
 
         echo json_encode(true);
-        die();
-    }
-
-    public function getPostFields($get, $post) {
-        if (!current_user_can(CRED_CAPABILITY))
-            wp_die();
-
-        if (!isset($post['_wpnonce']) || !wp_verify_nonce($post['_wpnonce'], '_cred_wpnonce')) {
-            echo "wpnonce error";
-            die();
-        }
-
-        if (!isset($post['post_type']))
-            die();
-
-        //https://icanlocalize.basecamphq.com/projects/7393061-toolset/todo_items/196173458/comments
-        //Security Fix
-        $post_type = sanitize_text_field($post['post_type']);
-
-        $fields_model = CRED_Loader::get('MODEL/Fields');
-        $fields_all = $fields_model->getFields($post_type);
-
-        $settings_model = CRED_Loader::get('MODEL/Settings');
-        $settings = $settings_model->getSettings();
-        $publickey = $settings['recaptcha']['public_key'];
-        $privatekey = $settings['recaptcha']['private_key'];
-
-        $fields_all['extra_fields']['recaptcha']['public_key'] = $publickey;
-        $fields_all['extra_fields']['recaptcha']['private_key'] = $privatekey;
-
-        echo json_encode($fields_all);
         die();
     }
 
@@ -204,43 +173,6 @@ final class CRED_Forms_Controller extends CRED_Abstract_Controller {
                 die();
             }
         }
-        die();
-    }
-
-    /**
-     * getUserFields
-     * @param type $get
-     * @param type $post
-     */
-    public function getUserFields($get, $post) {
-        if (!current_user_can(CRED_CAPABILITY))
-            wp_die();
-
-        if (!isset($post['_wpnonce']) || !wp_verify_nonce($post['_wpnonce'], '_cred_wpnonce')) {
-            echo "wpnonce error";
-            die();
-        }
-
-        $autogenerate = array(
-            'username' => isset($post['ag_uname']) ? $post['ag_uname'] : 1,
-            'nickname' => isset($post['ag_nname']) ? $post['ag_nname'] : 1,
-            'password' => isset($post['ag_pass']) ? $post['ag_pass'] : 1);
-
-        $role = isset($post['role']) ? $post['role'] : "";
-        $type_form = isset($post['type_form']) ? $post['type_form'] : "";
-
-        $fields_model = CRED_Loader::get('MODEL/UserFields');
-        $fields_all = $fields_model->getFields($autogenerate, $role, $type_form);
-
-        $settings_model = CRED_Loader::get('MODEL/Settings');
-        $settings = $settings_model->getSettings();
-        $publickey = $settings['recaptcha']['public_key'];
-        $privatekey = $settings['recaptcha']['private_key'];
-
-        $fields_all['extra_fields']['recaptcha']['public_key'] = $publickey;
-        $fields_all['extra_fields']['recaptcha']['private_key'] = $privatekey;
-
-        echo json_encode($fields_all);
         die();
     }
 

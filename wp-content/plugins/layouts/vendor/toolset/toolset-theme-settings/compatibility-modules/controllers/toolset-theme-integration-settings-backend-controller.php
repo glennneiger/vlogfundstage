@@ -115,6 +115,22 @@ class Toolset_Theme_Integration_Settings_Back_End_Controller extends Toolset_The
 		}
 		return false;
 	}
+	
+	private function get_settings_section_summary( $resource ) {
+		ob_start();
+		?>
+		<span class="js-toolset-theme-settings-toggle-settings" style="display:block;cursor:pointer;background:#cdcdcd;padding:5px 10px;margin:10px 0;">
+			<i class="fa fa-caret-down" aria-hidden="true"></i> 
+			<?php echo sprintf(
+				__( '%s settings for this %s', 'wpv-views' ),
+				'<strong>' . $this->active_theme->Name . '</strong>',
+				$resource
+			);
+			?>
+		</span>
+		<?php
+		return ob_get_clean();
+	}
 
 	/**
 	 * @since 2.5
@@ -125,9 +141,12 @@ class Toolset_Theme_Integration_Settings_Back_End_Controller extends Toolset_The
 		$collections_raw = $this->collections->get_collections();
 		$collections = $this->reformat_collections_for_gui( $collections_raw, 'single' );
 
+		$content = $this->get_settings_section_summary( __( 'Content Template', 'wpv-views' ) );
+		$content .= '<div class="js-toolset-theme-settings-toggling-settings" style="display:none">';
 		ob_start();
 		require_once (TOOLSET_THEME_SETTINGS_PATH.'/compatibility-modules/templates/toolset-theme-integration-settings-ct.tpl.php');
-		$content = ob_get_clean();
+		$content .= ob_get_clean();
+		$content .= '</div>';
 		wpv_ct_editor_render_section( __( 'Theme Options ', 'wpv-views' ) . $this->render_help_tip(), 'js-wpv-theme-options-section', $content );
 	}
 

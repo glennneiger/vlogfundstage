@@ -14,17 +14,22 @@ class Toolset_Blocks {
 			return;
 		}
 
-		// Load Toolset View Gutenberg Block
-		$view_block = new Toolset_Blocks_View();
-		$view_block->init_hooks();
+		$toolset_blocks = array(
+			Toolset_Blocks_View::BLOCK_NAME,
+			Toolset_Blocks_Content_Template::BLOCK_NAME,
+			Toolset_Blocks_CRED_Form::BLOCK_NAME,
+			Toolset_Blocks_Custom_HTML::BLOCK_NAME,
+		);
 
-		// Load Toolset View Gutenberg Block
-		$ct_block = new Toolset_Blocks_Content_Template();
-		$ct_block->init_hooks();
+		$factory = new Toolset_Gutenberg_Block_Factory();
+		$helper = new Toolset_Gutenberg_Block_REST_Helper();
 
-		// Load Toolset Custom HTML core Gutenberg Block extension
-		$custom_html_block = new Toolset_Blocks_Custom_HTML();
-		$custom_html_block->init_hooks();
+		foreach ( $toolset_blocks as $toolset_block_name ) {
+			$block = $factory->get_block( $toolset_block_name );
+			if ( $block ) {
+				$block->init_hooks();
+			};
+		}
 	}
 
 	public function is_gutenberg_active() {
@@ -33,9 +38,23 @@ class Toolset_Blocks {
 	}
 
 	public function is_toolset_ready_for_gutenberg() {
-		if ( version_compare( WPV_VERSION, '2.6-b1', '>' ) ) {
-			return true;
+		$views_compatibility = false;
+		$cred_compatibility = false;
+
+		if (
+			defined( 'WPV_VERSION' ) &&
+			version_compare( WPV_VERSION, '2.6', '>=' )
+		) {
+			$views_compatibility = true;
 		}
-		return false;
+
+		if (
+			defined( 'CRED_FE_VERSION' ) &&
+			version_compare( CRED_FE_VERSION, '2.0', '>=' )
+		) {
+			$cred_compatibility = true;
+		}
+
+		return $views_compatibility || $cred_compatibility;
 	}
 }

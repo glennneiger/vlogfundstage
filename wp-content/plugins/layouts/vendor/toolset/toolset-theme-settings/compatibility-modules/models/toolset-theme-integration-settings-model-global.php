@@ -3,6 +3,7 @@
 class Toolset_Theme_Integration_Settings_Model_global extends Toolset_Theme_Integration_Settings_Model_Abstract{
 
 	public $global_key = '';
+	public $redux_global_key = '';
 
 	/**
 	 * Toolset_Theme_Integration_Settings_Model_global constructor.
@@ -81,5 +82,9 @@ class Toolset_Theme_Integration_Settings_Model_global extends Toolset_Theme_Inte
 		}
 
 		return update_option( $this->gobal_key, $options );
+	}
+
+	public function get_redux_global_key(){
+		return $this->redux_global_key;
 	}
 }

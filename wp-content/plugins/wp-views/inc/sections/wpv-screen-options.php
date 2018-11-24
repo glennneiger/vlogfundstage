@@ -38,8 +38,11 @@ class WPV_Editor_Screen_Options{
 							'parametric'	=> __('Display the results using a custom search', 'wpv-views'),
 							'full'			=> __('Full custom display mode', 'wpv-views')
 						);
+						// Disabled options ins selector
+						$disabled_items = apply_filters('wpv_views_screen_options_purpose_selector_disabled_items', array());
+
 						foreach ( $purpose_options as $opt => $opt_name ) { ?>
-							<option <?php selected( $view_settings['view_purpose'], $opt ); ?> value="<?php echo esc_attr( $opt ); ?>"><?php echo $opt_name; ?></option>
+							<option <?php selected( $view_settings['view_purpose'], $opt ); ?> <?php disabled( in_array( $opt, $disabled_items ), true, true );?> value="<?php echo esc_attr( $opt ); ?>"><?php echo $opt_name; ?></option>
 						<?php } ?>
 					</select>
 					<input type="hidden" data-nonce="<?php echo wp_create_nonce( 'wpv_view_show_hide_nonce' ); ?>" class="js-wpv-show-hide-update" autocomplete="off" />
@@ -151,7 +154,7 @@ class WPV_Editor_Screen_Options{
 					if ( ! empty( $sections ) ) {
 					?>
 					<div class="wpv-screen-options-metasection wpv-screen-options-metasection-layout js-wpv-screen-options-metasection" data-metasection="wpv-layout-section">
-						<h6><?php _e( 'Loop Output section', 'wpv-views' ); ?></h6>
+						<h6><?php _e( 'Loop section', 'wpv-views' ); ?></h6>
 						<p class="js-wpv-screen-pref">
 							<?php
 							$state = isset( $view_settings['metasections-hep-show-hide']['wpv-layout-help'] ) ? $view_settings['metasections-hep-show-hide']['wpv-layout-help'] : 'on';
@@ -166,7 +169,7 @@ class WPV_Editor_Screen_Options{
 									<?php checked( 'on', $state ); ?> 
 									autocomplete="off" 
 								/>
-								<?php echo __( 'Display generic help for the Loop Output section', 'wpv-views'); ?>
+								<?php echo __( 'Display generic help for the Loop section', 'wpv-views'); ?>
 							</label>
 						</p>
 						<?php
@@ -223,8 +226,11 @@ class WPV_Editor_Screen_Options{
 							'all'			=> __('Display the basic archive', 'wpv-views'),
 							'parametric'	=> __('Display the archive as a custom search', 'wpv-views'),
 						);
+						// disabled items in selector
+						$disabled_items = apply_filters('wpv_views_archive_screen_options_purpose_selector_disabled_items', array());
+
 						foreach ( $purpose_options as $opt => $opt_name ) { ?>
-							<option <?php selected( $view_settings['view_purpose'], $opt ); ?> value="<?php echo esc_attr( $opt ); ?>"><?php echo $opt_name; ?></option>
+							<option <?php selected( $view_settings['view_purpose'], $opt ); ?> <?php disabled( in_array( $opt, $disabled_items ), true, true );?> value="<?php echo esc_attr( $opt ); ?>"><?php echo $opt_name; ?></option>
 						<?php } ?>
 					</select>
 				</div>

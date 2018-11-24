@@ -76,9 +76,9 @@ Toolset.Gui.TroubleshootingPage = function($) {
                 vm.buttonClass = ko.pureComputed(function() {
                     if(vm.canProceed()) {
                         if(vm.isDangerous) {
-                            return 'button-primary toolset-red-button';
+                            return 'button button-primary toolset-red-button';
                         } else {
-                            return 'toolset-red-button';
+                            return 'button button-primary';
                         }
                     } else {
                         return 'button-secondary';
@@ -91,7 +91,7 @@ Toolset.Gui.TroubleshootingPage = function($) {
 
 
                 vm.isOutputEmpty = ko.computed(function() {
-                    return (0 == vm.output().length);
+                    return (0 === vm.output().length);
                 });
 
 
@@ -194,6 +194,7 @@ Toolset.Gui.TroubleshootingPage = function($) {
                     success: function (originalResponse) {
                         var response = WPV_Toolset.Utils.Ajax.parseResponse(originalResponse);
 
+                        // noinspection JSUnusedAssignment
                         self.debug('AJAX response', actionData, originalResponse);
 
                         if (response.success) {

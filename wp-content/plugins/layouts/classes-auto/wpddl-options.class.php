@@ -9,6 +9,8 @@ class WPDDL_Options{
     private $layouts_options = array();
     const PARENTS_OPTIONS = 'parents_options';
 	const COLUMN_PREFIX = 'column_prefix';
+	const JS_GLOBAL = 'js_global';
+	const CSS_GLOBAL = 'css_global';
 
     /**
      * WPDDL_Options constructor.
@@ -27,7 +29,9 @@ class WPDDL_Options{
     private function set_up(){
         $this->layouts_options_array = array(
             self::PARENTS_OPTIONS,
-	        self::COLUMN_PREFIX
+	        self::COLUMN_PREFIX,
+	        self::JS_GLOBAL,
+	        self::CSS_GLOBAL
         );
     }
 

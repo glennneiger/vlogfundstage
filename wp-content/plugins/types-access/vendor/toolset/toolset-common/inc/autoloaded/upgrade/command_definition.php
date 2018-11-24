@@ -52,7 +52,7 @@ class Toolset_Upgrade_Command_Definition {
 	 * @return bool
 	 */
 	public function should_run( $from_version, /** @noinspection PhpUnusedParameterInspection */ $to_version ) {
-		return ( $from_version < $this->upgrade_version );
+		return ( $from_version < $this->upgrade_version && $this->upgrade_version <= $to_version );
 	}
 
 

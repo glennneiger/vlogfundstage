@@ -10,7 +10,7 @@
  *
  * @since m2m
  */
-class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
+class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements IToolset_Post_Type_From_Types {
 
 	/** @var string Post type slug */
 	private $slug;
@@ -50,6 +50,11 @@ class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
 
 	const DEF_PUBLIC = 'public';
 
+	const DEF_DISABLED = 'disabled';
+
+	// Do not rename this value, it's hardcoded in Types (because of timing issues).
+	const DEF_NEEDS_FLUSH_REWRITE_RULES = '_needs_flush_rewrite_rules';
+
 
 	/**
 	 * Toolset_Post_Type_From_Types constructor.
@@ -59,11 +64,18 @@ class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
 	 * @param IToolset_Post_Type_Registered|null $registered_post_type If the post type is registered on the site,
 	 *     this must not be null.
 	 * @param Toolset_Constants|null $constants_di
+	 * @param Toolset_WPML_Compatibility|null $wpml_compatibility_di
+	 * @param null|Toolset_Relationship_Query_Factory $relationship_definition_query_factory_di
 	 */
 	public function __construct(
-		$slug, $definition, IToolset_Post_Type_Registered $registered_post_type = null,
-		Toolset_Constants $constants_di = null
+		$slug, $definition,
+		IToolset_Post_Type_Registered $registered_post_type = null,
+		Toolset_Constants $constants_di = null,
+		Toolset_WPML_Compatibility $wpml_compatibility_di = null,
+		$relationship_definition_query_factory_di = null
 	) {
+		parent::__construct( $wpml_compatibility_di, $relationship_definition_query_factory_di );
+
 		$this->slug = $slug;
 
 		/**
@@ -317,6 +329,19 @@ class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
 
 
 	/**
+	 * @param IToolset_Post_Type_Registered $registered_post_type
+	 * @since 2.6.3
+	 */
+	public function set_registered_post_type( IToolset_Post_Type_Registered $registered_post_type ) {
+		if( $registered_post_type->get_slug() !== $this->get_slug() ) {
+			throw new InvalidArgumentException();
+		}
+
+		$this->registered_post_type = $registered_post_type;
+	}
+
+
+	/**
 	 * @inheritdoc
 	 * @return bool
 	 */
@@ -426,9 +451,17 @@ class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
 	 * @return bool
 	 */
 	public function is_public() {
-		return (
-			'public' === toolset_getarr( $this->definition, self::DEF_PUBLIC, 'hidden', array( 'hidden', 'public' ) )
-		);
+		$is_public = toolset_getarr( $this->definition, self::DEF_PUBLIC, false );
+
+		if( $is_public === 'hidden' ) {
+			return false;
+		}
+
+		if( $is_public === 'public' ) {
+			return true;
+		}
+
+		return $is_public;
 	}
 
 
@@ -438,9 +471,42 @@ class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
 	 * @param bool $value
 	 */
 	public function set_is_public( $value ) {
-		$this->definition[ self::DEF_PUBLIC ] = ( $value ? 'public' : 'hidden' );
+		$is_public = (bool) $value;
+		$this->definition[ self::DEF_PUBLIC ] = $is_public;
+
+		// as we ALWAYS define all options on get_default_definition(), the 'public' option
+		// is useless on it's own and we have to explicit define the values `public` controls.
+		// https://codex.wordpress.org/Function_Reference/register_post_type#public
+		$this->definition[ 'exclude_from_search' ] = ! $is_public;
+		$this->definition[ 'publicly_queryable'] = $is_public;
+		$this->definition[ 'show_in_nav_menus'] = $is_public;
+		$this->definition[ 'show_ui'] = $is_public;
 	}
 
+
+	/**
+	 * @inheritdoc
+	 * @return bool
+	 */
+	public function is_disabled() {
+		return (
+			'1' === toolset_getarr( $this->definition, self::DEF_DISABLED, '', array( '1', '' ) )
+		);
+	}
+
+
+	/**
+	 * Set the 'disabled' option of the post type.
+	 *
+	 * @param bool $value
+	 */
+	public function set_is_disabled( $value ) {
+		if( $value ){
+			$this->definition[ self::DEF_DISABLED ] = '1';
+		} else {
+			unset( $this->definition[ self::DEF_DISABLED ] );
+		}
+	}
 
 	/**
 	 * Set the flag indicating whether this post type acts as a repeating field group.
@@ -449,6 +515,9 @@ class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
 	 */
 	public function set_is_repeating_field_group( $value ) {
 		$this->set_flag_to_definition( self::DEF_IS_REPEATING_FIELD_GROUP, (bool) $value );
+		if ( $value ) {
+			$this->definition['supports'] = array( 'post_title' => 1, 'author' => 1, 'custom-fields' => 1 );
+		}
 		$this->set_is_public( false );
 	}
 
@@ -485,5 +554,39 @@ class Toolset_Post_Type_From_Types implements IToolset_Post_Type_From_Types {
 		}
 
 		return true;
+	}
+
+
+	/**
+	 * Check if the post type can be used in a many-to-many relationship as an intermediary post.
+	 *
+	 * @param bool $skip_check_for_existing_intermediary
+	 * @param bool $skip_check_for_relationship_involvment
+	 *
+	 * @return Toolset_Result
+	 */
+	public function can_be_used_as_intermediary( $skip_check_for_existing_intermediary = false, $skip_check_for_relationship_involvment = false ) {
+		if( ! $skip_check_for_existing_intermediary && $this->is_intermediary() ) {
+			return new Toolset_Result(
+				false, sprintf( __( 'The post type "%s" cannot be used as intermediary in another relationship, because it is already used as one.', 'wpv-views'), $this->get_slug() )
+			);
+		}
+		if( ! $skip_check_for_relationship_involvment && $this->is_involved_in_relationship() ) {
+			return new Toolset_Result(
+				false, sprintf( __( 'The post type "%s" cannot be used as intermediary in a relationship, because it is already involved in another relationship.', 'wpv-views'), $this->get_slug() )
+			);
+		}
+		if( $this->is_builtin() ) {
+			return new Toolset_Result(
+				false, sprintf( __( 'The post type "%s" cannot be used as intermediary in a relationship, because it is a built-in post type.', 'wpv-views'), $this->get_slug() )
+			);
+		}
+		if( $this->is_repeating_field_group() ) {
+			return new Toolset_Result(
+				false, sprintf( __( 'The post type "%s" cannot be used as intermediary in a relationship, because it represents a repeatable field group.', 'wpv-views'), $this->get_slug() )
+			);
+		}
+
+		return new Toolset_Result( true );
 	}
 }

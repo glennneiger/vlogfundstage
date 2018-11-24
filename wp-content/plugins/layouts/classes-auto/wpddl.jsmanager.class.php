@@ -3,16 +3,41 @@ class WPDD_Layouts_JsManager{
 
 	private static $instance;
 	public $options_manager;
-    private $layout_for_render = 0;
+	private $js_global_option_manager;
 	const API_QUERY_STRING = 'ddl_layouts_js_api';
 	const INITIAL_JS = '/*Layouts js goes here*/';
 	const JS_TEMP_DIR = '/ddl-layouts-tmp';
+	const GLOBAL_YES = 'yes';
 
 	//Since we have single js file for all layouts our class is singleton, the instance is called statically with: WPDD_Layouts_JsManager::getInstance()
-	private function __construct( )
+	private function __construct( WPDDL_Options_Manager $js_global_option_manager = null, WPDDL_Options_Manager $options_manager = null )
 	{
-		$this->options_manager = new WPDDL_Options_Manager( WPDDL_JS_OPTIONS );
+		$this->js_global_option_manager = $this->set_global_options_manager( $js_global_option_manager );
+		$this->options_manager = $this->set_options_manager( $options_manager );
+		$this->add_hooks();
+	}
 
+	private function set_options_manager( WPDDL_Options_Manager $options_manager = null ){
+		if( ! $options_manager ){
+			$this->options_manager   = new WPDDL_Options_Manager( WPDDL_JS_OPTIONS );
+		} else{
+			$this->options_manager = $options_manager;
+		}
+
+		return $this->options_manager;
+	}
+
+	private function set_global_options_manager( WPDDL_Options_Manager $options_manager = null ){
+		if( ! $options_manager ){
+			$this->js_global_option_manager   = new WPDDL_Options_Manager( WPDDL_Options::JS_GLOBAL );
+		} else{
+			$this->js_global_option_manager = $options_manager;
+		}
+
+		return $this->js_global_option_manager;
+	}
+
+	public function add_hooks(){
 		//add the rewrite rule to load css fallback
 		add_action( 'permalink_structure_changed', array(&$this, 'ddl_layouts_js_init_internal'), 2 );
 
@@ -23,10 +48,25 @@ class WPDD_Layouts_JsManager{
 		}
 		else
 		{
-			add_filter('get_layout_id_for_render', array($this,'wpddl_frontend_header_init'), 999, 2);
-			add_filter('get_header', array($this,'wpddl_frontend_header_init_for_content_layouts'));
+			if( $this->get_js_global() === self::GLOBAL_YES ){
+				add_action('wp_enqueue_scripts', array($this,'handle_layout_js_fe'));
+			} else {
+				add_filter('get_layout_id_for_render', array($this,'wpddl_frontend_header_init'), 999, 2);
+				add_action('wp_enqueue_scripts', array($this,'wpddl_frontend_header_init_for_content_layouts'));
+			}
+
 			add_action('template_redirect', array($this, 'layout_script_router'));
+			add_action( 'ddl-loaded-js-file-content', array( $this, 'clean_up_old_js_files' ), 10, 1 );
 		}
+	}
+
+	public function get_js_global(){
+		$option = $this->get_js_global_option_manager();
+		return $option->get_options( WPDDL_Options::JS_GLOBAL );
+	}
+
+	public function get_js_global_option_manager( ){
+		return $this->js_global_option_manager;
 	}
 
     public function wpddl_frontend_header_init($id, $layout)
@@ -108,6 +148,8 @@ class WPDD_Layouts_JsManager{
 					wp_enqueue_script('wp_ddl_layout_fe_js' );
 				}
 
+				do_action( 'ddl-loaded-js-file-content', $file_name );
+
  			}
 
 			if ( !$file_ok && $this->is_using_permalinks() ) {
@@ -118,6 +160,40 @@ class WPDD_Layouts_JsManager{
                 wp_enqueue_script('wp_ddl_layout_fe_js' );
 			}
 		}
+
+	}
+
+	function clean_up_old_js_files( $exclude_file ){
+
+		$dir_str = $this->js_dir();
+		$dir     = opendir( $dir_str );
+
+		while ( ( $file_name = readdir( $dir ) ) !== false ) {
+
+			$currentFile = $dir_str . DIRECTORY_SEPARATOR . $file_name;
+
+			if ( is_file( $currentFile ) && $exclude_file !== $currentFile ) {
+
+				$info = pathinfo( $currentFile );
+				/**
+				 * http://php.net/manual/en/function.pathinfo.php#refsect1-function.pathinfo-returnvalues
+				 * It will only return 'extension' if the file has an extension
+				 */
+				if ( isset( $info['extension'] ) ) {
+
+					/**
+					 * This file has extension, validate
+					 * Only allows CSS files.
+					 */
+
+					$the_extension= $info['extension'];
+					if( 'js' === $the_extension  ){
+						unlink( $currentFile );
+					}
+				}
+			}
+		}
+		closedir( $dir );
 
 	}
 
@@ -143,7 +219,7 @@ class WPDD_Layouts_JsManager{
 
 	function save_js_settings() {
 
-		if( $_POST && $_POST['action'] == 'ddl_layout_save_js_settings' )
+		if( isset( $_POST['action'] ) &&  $_POST['action'] == 'ddl_layout_save_js_settings' )
 		{
             if( user_can_edit_layouts() === false ){
                 die( WPDD_Utils::ajax_caps_fail( __METHOD__ ) );
@@ -224,14 +300,21 @@ class WPDD_Layouts_JsManager{
 		return $wp_rewrite->using_permalinks();
 	}
 
-	public static function getInstance( )
+	public static function getInstance( WPDDL_Options_Manager $js_global_option_manager = null, WPDDL_Options_Manager $options_manager = null )
 	{
 		if (!self::$instance)
 		{
-			self::$instance = new WPDD_Layouts_JsManager();
+			self::$instance = new WPDD_Layouts_JsManager( $js_global_option_manager, $options_manager );
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * For unit testing, forces the object to be contructed again
+	 */
+	public static function tearDown(){
+		self::$instance = null;
 	}
 	
 	function layout_script_router() {

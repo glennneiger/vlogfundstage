@@ -73,7 +73,22 @@ class Toolset_Post_Type_Repository {
 
 		$this->post_types = $this->load_all_post_types();
 
+		if( ! did_action( 'init' ) ) {
+			// Run immediately after CPTs have been registered by Types.
+			//
+			// This is necessary if the post type repository gets initialized too early
+			// and does the initial loading before CPTs in Types are registered (at init:10 or earlier).
+			add_action( 'init', array( $this, 'finish_loading_registered_post_types' ), 11 );
+		}
+
 		$this->is_initialized = true;
+	}
+
+	/**
+	 * Reloads all post types to the repository
+	 */
+	public function refresh_all_post_types() {
+		$this->post_types = $this->load_all_post_types();
 	}
 
 	/**
@@ -89,6 +104,33 @@ class Toolset_Post_Type_Repository {
 		}
 
 		return $post_types;
+	}
+
+
+	/**
+	 * Load registered post types again and add them where they are missing:
+	 *
+	 * - if the CPT is defined in Types, add it to the IToolset_Post_Type_From_Types object (which will
+	 *   let the CPT object know that it's registered (== active))
+	 * - if the CPT is not from Types but hasn't been stored in the repository at all, add it.
+	 *
+	 * @since 2.6.3
+	 */
+	public function finish_loading_registered_post_types() {
+		$post_types = $this->load_registered_post_types();
+
+		foreach( $post_types as $registered_post_type ) {
+			// The post type was newly registered, just add it to the repository.
+			if( ! array_key_exists( $registered_post_type->get_slug(), $this->post_types ) ) {
+				$this->post_types[ $registered_post_type->get_slug() ] = $registered_post_type;
+			}
+
+			/** @var IToolset_Post_Type_From_Types|IToolset_Post_Type $stored_post_type */
+			$stored_post_type = $this->post_types[ $registered_post_type->get_slug() ];
+			if( $stored_post_type->is_from_types() ) {
+				$stored_post_type->set_registered_post_type( $registered_post_type );
+			}
+		}
 	}
 
 	/**
@@ -127,7 +169,7 @@ class Toolset_Post_Type_Repository {
 	 */
 	private function load_post_types_from_types( $registered_post_types ) {
 
-		$custom_types = get_option( self::POST_TYPES_OPTION_NAME, array() );
+		$custom_types = toolset_ensarr( get_option( self::POST_TYPES_OPTION_NAME, array() ) );
 
 		$results = $registered_post_types;
 		foreach ( $custom_types as $slug => $definition ) {

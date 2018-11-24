@@ -90,6 +90,7 @@ DDLayout.StopUsingLayoutsManager = function($, $button ){
 
         event.preventDefault();
 
+        if( ! +DDL_Private_layout.user_can_delete_private ) return;
 
         $(".switch-html").trigger('click');
 

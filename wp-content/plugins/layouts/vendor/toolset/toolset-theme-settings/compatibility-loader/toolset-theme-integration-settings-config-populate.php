@@ -31,7 +31,7 @@ class Toolset_Theme_Integration_Settings_Config_Populate {
 	public function run( $selected_settings = null ) {
 
 		$settings = $this->get_toolset_config();
-
+		// little fix if option record is not dropped but truncated
 		if ( empty( $settings ) ) {
 			return null;
 		}
@@ -81,7 +81,7 @@ class Toolset_Theme_Integration_Settings_Config_Populate {
 	private function get_toolset_config() {
 		$settings = get_option( TOOLSET_THEME_SETTINGS_CACHE_OPTION, null );
 		
-		if ( is_null( $settings ) ) {
+		if ( empty( $settings ) ) {
 			$settings = $this->update_manager->run();
 		}
 		

@@ -5,15 +5,6 @@ require_once "CRED_Generic_Response.php";
 require_once "common/cred_functions.php";
 
 /**
- *
- * $HeadURL: https://www.onthegosystems.com/misc_svn/crud/trunk_new/embedded/classes/CRED.php $
- * $LastChangedDate: 2015-03-31 12:39:37 +0200 (mar, 31 mar 2015) $
- * $LastChangedRevision: 32729 $
- * $LastChangedBy: francesco $
- *
- */
-
-/**
  * Main Class
  *
  * Main class of the plugin
@@ -36,8 +27,8 @@ final class CRED_CRED {
 
         //add_filter('get_items_with_flag', array(__CLASS__, "item_filter"), 10, 1);
         // plugin init
-        // NOTE: Early Init, in order to catch up with early hooks by 3rd party plugins (eg CRED Commerce)
-        // IMPORTANT NOTE: Now the priority must be set in order to be next to types and be carefull to cred commerce
+        // NOTE: Early Init, in order to catch up with early hooks by 3rd party plugins (eg Toolset Forms Commerce)
+        // IMPORTANT NOTE: Now the priority must be set in order to be next to types and be carefull to Toolset Forms Commerce
         add_action( 'init', array(__CLASS__, '_init_'), 1 );
 
         // try to catch user shortcodes (defined by [...]) and solve shortcodes inside shortcodes
@@ -73,13 +64,11 @@ final class CRED_CRED {
     public static function _init_() {
         global $wp_version, $post;
 
-	    CRED_Notification_Manager::get_instance();
-
         // load textdomain
-        new Toolset_Localization( 'wp-cred', CRED_LOCALE_PATH, 'wp-cred-%s' );
+        new Toolset_Localization( 'wp-cred', CRED_ABSPATH . '/library/toolset/cred/embedded/locale', 'wp-cred-%s' );
 
         // load help settings (once)
-        self::$help = CRED_Loader::getVar( CRED_INI_PATH . "/help.ini.php" );
+        self::$help = CRED_Loader::getVar( CRED_ABSPATH . "/library/toolset/cred/embedded/classes/ini/help.ini.php" );
         // set up models and db settings
         CRED_Helper::prepareDB();
         // needed by others
@@ -87,10 +76,6 @@ final class CRED_CRED {
         //self::$settingsPage = admin_url('admin.php') . '?page=CRED_Settings';
         // localize forms, support for WPML
         CRED_Helper::localizeForms();
-        // setup custom capabilities
-        CRED_Helper::setupCustomCaps();
-        // setup custom user caps
-        CRED_Helper::setupCustomUserCaps();
         // setup extra admin hooks for other plugins
         CRED_Helper::setupExtraHooks();
 
@@ -131,8 +116,7 @@ final class CRED_CRED {
         CRED_Router::addRoutes( 'cred', array(
             'Forms' => 0, // Forms controller
             'Posts' => 0, // Posts controller
-            'Settings' => 0, // Settings controller
-            'Generic_Fields' => 0  // Generic Fields controller
+            'Settings' => 0 // Settings controller
         ) );
         /* CRED_Router::addPages('cred', array(
           )); */
@@ -158,13 +142,13 @@ final class CRED_CRED {
             $cap = 'manage_options';
             // DEVCYCLE this should not be in the tools.php menu at all
             add_submenu_page(
-                    'admin.php', __( 'Embedded CRED', 'wp-cred' ), __( 'Embedded CRED', 'wp-cred' ), CRED_CAPABILITY, 'cred-embedded', 'cred_embedded_html' );
+                    'admin.php', __( 'Embedded CRED', 'wp-cred' ), __( 'Embedded Toolset Forms', 'wp-cred' ), CRED_CAPABILITY, 'cred-embedded', 'cred_embedded_html' );
         }
         if ( isset( $_GET['page'] ) && 'cred-user-embedded' == $_GET['page'] ) {
             $cap = 'manage_options';
             // DEVCYCLE this should not be in the tools.php menu at all
             add_submenu_page(
-                    'admin.php', __( 'User Embedded CRED', 'wp-cred' ), __( 'User Embedded CRED', 'wp-cred' ), CRED_CAPABILITY, 'cred-user-embedded', 'cred_user_embedded_html' );
+                    'admin.php', __( 'User Embedded CRED', 'wp-cred' ), __( 'User Embedded Toolset Forms', 'wp-cred' ), CRED_CAPABILITY, 'cred-user-embedded', 'cred_user_embedded_html' );
         }
     }
 
@@ -180,120 +164,6 @@ final class CRED_CRED {
                 ) &&
                 class_exists( "G1_Theme_Admin" ) )
             remove_action( 'media_buttons', array(G1_Theme_Admin(), 'extend_gallery_settings') );
-        /**
-         * ###############################
-         */
-        // add media buttons for cred forms at editor
-        add_action( 'media_buttons', array(__CLASS__, 'addFormsButton'), 20 );
-    }
-
-    // function to handle the media buttons associated to forms, like  Scaffold,Insert Shortcode, etc..
-    public static function addFormsButton( $context ) {
-
-        if ( !apply_filters( 'toolset_editor_add_form_buttons', true ) ) {
-            return;
-        }
-
-        global $wp_version, $post;
-        //static $add_only_once=0;
-
-        if ( !isset( $post ) || empty( $post ) || !isset( $post->post_type ) ) {
-            return '';
-        }
-
-        if ( $post->post_type == CRED_FORMS_CUSTOM_POST_NAME ) {
-
-            $out = '';
-            if ( 'content' == $context ) {
-                $addon_buttons = array();
-                $shortcode_but = '';
-                $shortcode_but = CRED_Loader::tpl( 'insert-field-shortcode-button', array(
-                            'help' => self::$help,
-                            'help_target' => self::$help_link_target
-                        ) );
-
-                $shortcode2_but = '';
-                $fields_model = CRED_Loader::get( 'MODEL/Fields' );
-                $shortcode2_but = CRED_Loader::tpl( 'insert-generic-field-shortcode-button', array(
-                            'gfields' => $fields_model->getTypesDefaultFields(),
-                            'help' => self::$help,
-                            'help_target' => self::$help_link_target
-                        ) );
-
-
-                $forms_model = CRED_Loader::get( 'MODEL/Forms' );
-                $settings = $forms_model->getFormCustomField( $post->ID, 'form_settings' );
-                $scaffold_but = '';
-                $scaffold_but = CRED_Loader::tpl( 'scaffold-button', array(
-                            'include_captcha_scaffold' => isset( $settings->form['include_captcha_scaffold'] ) ? $settings->form['include_captcha_scaffold'] : false,
-                            'include_wpml_scaffold' => isset( $settings->form['include_wpml_scaffold'] ) ? $settings->form['include_wpml_scaffold'] : false,
-                            'help' => self::$help,
-                            'help_target' => self::$help_link_target
-                        ) );
-
-                $preview_but = '';
-
-                $addon_buttons['scaffold'] = $scaffold_but;
-                $addon_buttons['post_fields'] = $shortcode_but;
-                $addon_buttons['generic_fields'] = $shortcode2_but;
-                $addon_buttons['preview'] = $preview_but;
-
-
-                $addon_buttons = apply_filters( 'cred_wpml_glue_generate_insert_button_block', $addon_buttons, $insert_after = 2 );
-                $out = implode( '&nbsp;', array_values( $addon_buttons ) );
-            }
-
-            echo $out;
-            
-        } else if ( $post->post_type == CRED_USER_FORMS_CUSTOM_POST_NAME ) {
-
-			$out = '';
-			if ( 'content' == $context ) {
-				$addon_buttons = array();
-				$shortcode_but = '';
-				$shortcode_but = CRED_Loader::tpl( 'insert-user-field-shortcode-button', array(
-							'help' => self::$help,
-							'help_target' => self::$help_link_target
-						) );
-
-				$shortcode2_but = '';
-				$fields_model = CRED_Loader::get( 'MODEL/Fields' );
-				$shortcode2_but = CRED_Loader::tpl( 'insert-generic-field-shortcode-button', array(
-							'gfields' => $fields_model->getTypesDefaultFields(),
-							'help' => self::$help,
-							'help_target' => self::$help_link_target
-						) );
-
-				$forms_model = CRED_Loader::get( 'MODEL/UserForms' );
-				$settings = $forms_model->getFormCustomField( $post->ID, 'form_settings' );
-				$scaffold_but = '';
-				$scaffold_but = CRED_Loader::tpl( 'user-scaffold-button', array(
-							'autogenerate_username_scaffold' => isset( $settings->form['autogenerate_username_scaffold'] ) ? $settings->form['autogenerate_username_scaffold'] : true,
-							'autogenerate_nickname_scaffold' => isset( $settings->form['autogenerate_nickname_scaffold'] ) ? $settings->form['autogenerate_nickname_scaffold'] : true,
-							'autogenerate_password_scaffold' => isset( $settings->form['autogenerate_password_scaffold'] ) ? $settings->form['autogenerate_password_scaffold'] : true,
-							'include_captcha_scaffold' => isset( $settings->form['include_captcha_scaffold'] ) ? $settings->form['include_captcha_scaffold'] : false,
-							'include_wpml_scaffold' => isset( $settings->form['include_wpml_scaffold'] ) ? $settings->form['include_wpml_scaffold'] : false,
-							'help' => self::$help,
-							'help_target' => self::$help_link_target
-						) );
-
-				$preview_but = '';
-				ob_start();
-
-				$preview_but = ob_get_clean();
-
-				$addon_buttons['scaffold'] = $scaffold_but;
-				$addon_buttons['post_fields'] = $shortcode_but;
-				$addon_buttons['generic_fields'] = $shortcode2_but;
-				$addon_buttons['preview'] = $preview_but;
-
-				$addon_buttons = apply_filters( 'cred_wpml_glue_generate_insert_button_block', $addon_buttons, $insert_after = 2 );
-				$out = implode( '&nbsp;', array_values( $addon_buttons ) );
-			}
-
-			echo $out;
-			
-        }
     }
 
     public static function route($path = '', $params = null, $raw = true) {

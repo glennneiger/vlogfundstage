@@ -11,7 +11,7 @@ if( ddl_has_feature('slider-cell') === false ){
 	return;
 }
 
-if (!class_exists('Layouts_cell_slider')) {
+if (!class_exists('Layouts_cell_slider', false )) {
     class Layouts_cell_slider{
 
         // define cell name

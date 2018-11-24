@@ -269,6 +269,7 @@
 			float: left;
 			margin-right: 30px;
 			width: 300px;
+            position:relative;
 		}
 
 			.ddl-settings-header h3 {
@@ -277,7 +278,15 @@
 				font-weight: normal;
 				font-size: 20px;
 				line-height: 20px;
+				float:left;
 			}
+            .ddl-import-export-help-icon{
+                position: relative;
+                top: 12px;
+                left: 8px;
+                font-size: 14px;
+                cursor:pointer;
+            }
 
 		.ddl-settings-content {
 			float: left;

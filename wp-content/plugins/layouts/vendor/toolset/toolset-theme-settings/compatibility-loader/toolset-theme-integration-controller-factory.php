@@ -23,8 +23,9 @@ class Toolset_Theme_Integration_Settings_Controllers_Factory{
 	}
 	
 	private function set_up_active_theme() {
+
 		$this->active_theme = wp_get_theme();
-		
+
 		if( ! $this->active_theme instanceof WP_Theme ) {
 			// Something went wrong but we'll try to recover.
 			$stylesheet = get_stylesheet();
@@ -43,6 +44,11 @@ class Toolset_Theme_Integration_Settings_Controllers_Factory{
 				$this->theme_parent_name = $parent_theme->get( 'Name' );
 				$this->theme_parent_slug = str_replace('-', '_', sanitize_title( $this->theme_parent_name ) );
 			}
+		}
+
+		// if theme usees Redux options framework to handle options, then use Redux compatibility class
+		if( class_exists('ReduxFramework') ){
+			$this->theme_slug = 'redux';
 		}
 	}
 

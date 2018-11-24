@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Holds settings and other information about CRED form.
+ * Holds settings and other information about Toolset Forms.
  *
  * Legacy class. Used in CRED_Form_Base and CRED_Helper.
  *
@@ -62,10 +62,31 @@ class CRED_Form_Data {
 		    $form->fields['extra']->js = '';
 	    }
 
-	    $redirect_delay = isset($form->fields['form_settings']->form['redirect_delay']) ? intval($form->fields['form_settings']->form['redirect_delay']) : self::DELAY;
-        $hide_comments = (isset($form->fields['form_settings']->form['hide_comments']) && $form->fields['form_settings']->form['hide_comments']) ? true : false;
-        $form->fields['form_settings']->form['redirect_delay'] = $redirect_delay;
-        $form->fields['form_settings']->form['hide_comments'] = $hide_comments;
+        $form->fields['form_settings']->form['redirect_delay'] = 
+            isset( $form->fields['form_settings']->form['redirect_delay'] )
+            ? intval( $form->fields['form_settings']->form['redirect_delay'] )
+            : 0;
+        $form->fields['form_settings']->form['hide_comments'] =
+            (
+                isset( $form->fields['form_settings']->form['hide_comments'] )
+                && $form->fields['form_settings']->form['hide_comments']
+            )
+            ? 1
+            : 0;
+        $form->fields['form_settings']->form['has_media_button'] =
+            (
+                isset( $form->fields['form_settings']->form['has_media_button'] )
+                && $form->fields['form_settings']->form['has_media_button']
+            )
+            ? 1
+            : 0;
+        $form->fields['form_settings']->form['has_toolset_buttons'] =
+            (
+                isset( $form->fields['form_settings']->form['has_toolset_buttons'] )
+                && $form->fields['form_settings']->form['has_toolset_buttons']
+            )
+            ? 1
+            : 0;
 
         if ($preview) {
             if (array_key_exists(CRED_StaticClass::PREFIX . 'form_preview_post_type', $_POST))

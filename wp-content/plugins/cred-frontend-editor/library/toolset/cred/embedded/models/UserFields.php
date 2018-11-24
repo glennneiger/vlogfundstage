@@ -2,6 +2,8 @@
 
 /**
  * Cred fields model gets custom fields for post types
+ * 
+ * @todo Cleanup this class and keep the relevant methods in a proper model.
  */
 class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_Singleton {
 
@@ -14,25 +16,43 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
 	 *
 	 * @return mixed
 	 */
-    public function getCustomFieldsList($exclude_fields = array()) {
-        $exclude = array('_edit_last', '_edit_lock', '_wp_old_slug', '_thumbnail_id', '_wp_page_template');
-        if ( !empty( $exclude_fields ) ) {
-            $exclude = array_merge( $exclude, $exclude_fields );
+    public function getCustomFieldsList( $exclude_fields = array() ) {
+        $cred_transient_meta_keys = false;
+		
+        if ( empty( $exclude_fields ) ) {
+			// Try to use the transient cached value
+			$cred_transient_meta_keys = get_transient( 'cred_transient_usermeta_keys_visible512' );
         }
+		
+		if ( $cred_transient_meta_keys !== false ) {
+			return $cred_transient_meta_keys;
+		}
+		
+		$limit = 512 + count( $exclude_fields );
 
-        $exclude = "'" . implode( "','", $exclude ) . "'"; //wrap in quotes
         $sql = $this->wpdb->prepare( 
-			"SELECT pm.meta_key 
-			FROM {$this->wpdb->usermeta} as pm INNER JOIN {$this->wpdb->users} as p
-            ON pm.user_id = p.ID
-            AND pm.meta_key NOT IN ({$exclude})
-            AND pm.meta_key NOT LIKE %s 
-            AND pm.meta_key NOT LIKE %s 
-			GROUP BY pm.meta_key", 
-			array( "wpcf-%", "\_%" ) 
+			"SELECT DISTINCT meta_key 
+			FROM {$this->wpdb->usermeta} 
+            WHERE meta_key NOT LIKE %s 
+            AND meta_key NOT LIKE %s 
+			LIMIT %d", 
+			array( "wpcf-%", "\_%", $limit ) 
 		);
 
         $fields = $this->wpdb->get_col( $sql );
+		
+		if ( count( $exclude_fields ) > 0 ) {
+			if ( $cred_transient_meta_keys === false ) {
+				$cachable_fields = array_slice( $fields, 0, 512 );
+				// Set the transient cached value
+				set_transient( 'cred_transient_usermeta_keys_visible512', $cachable_fields, WEEK_IN_SECONDS );
+			}
+			$fields = array_diff( $fields, $exclude_fields );
+			$fields = array_values( $fields );
+		} else {
+			// Set the transient cached value
+			set_transient( 'cred_transient_usermeta_keys_visible512', $fields, WEEK_IN_SECONDS );
+		}
 
         return $fields;
     }
@@ -53,40 +73,91 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
           TODO:
           make search incremental to avoid large data issues
          */
+		
+		$cred_transient_meta_keys = false;
+		
+        if ( empty( $exclude_fields ) ) {
+			// Try to use the transient cached value
+			if ( $show_private ) {
+				$cred_transient_meta_keys = get_transient( 'cred_transient_usermeta_keys_all512' );
+			} else {
+				$cred_transient_meta_keys = get_transient( 'cred_transient_usermeta_keys_visible512' );
+			}
+        }
 
         //get custom fields not managed by Types
         //added not like wpcf-%
-        $exclude = array('_edit_last', '_edit_lock', '_wp_old_slug', '_thumbnail_id', '_wp_page_template', 'first_name', 'last_name', 'nickname', 'description');
+        $exclude = array(
+			'_edit_last', '_edit_lock', '_wp_old_slug', '_thumbnail_id', '_wp_page_template', 
+			'first_name', 'last_name', 'nickname', 'description'
+		);
 	    if ( ! empty( $exclude_fields ) ) {
 		    $exclude = array_merge( $exclude, $exclude_fields );
 	    }
-
-	    $exclude = "'" . implode( "','", $exclude ) . "'"; //wrap in quotes
-
+		
+		$limit = 512 + count( $exclude );
+		
         if ( $paged < 0 ) {
+			
+			if ( $cred_transient_meta_keys !== false ) {
+				$fields = array_diff( $cred_transient_meta_keys, $exclude );
+				$fields = array_values( $fields );
+				return count( $fields );
+			}
+			
 	        if ( $show_private ) {
 		        $sql = $this->wpdb->prepare( 
-					"SELECT COUNT(DISTINCT(pm.meta_key)) 
-					FROM {$this->wpdb->usermeta} as pm, {$this->wpdb->users} as p
-					WHERE pm.user_id = p.ID
-					AND pm.meta_key NOT IN ({$exclude})
-					AND pm.meta_key NOT LIKE %s", 
-					"wpcf-%" 
+					"SELECT DISTINCT meta_key 
+					FROM {$this->wpdb->usermeta} 
+					WHERE meta_key NOT LIKE %s 
+					LIMIT %d", 
+					array( "wpcf-%", $limit ) 
 				);
+				
+				$fields = $this->wpdb->get_col( $sql );
+				
+				if ( count( $exclude ) > 0 ) {
+					$cachable_fields = array_slice( $fields, 0, 512 );
+					// Set the transient cached value
+					set_transient( 'cred_transient_usermeta_keys_all512', $cachable_fields, WEEK_IN_SECONDS );
+					$fields = array_diff( $fields, $exclude );
+					$fields = array_values( $fields );
+				} else {
+					// Set the transient cached value
+					set_transient( 'cred_transient_usermeta_keys_all512', $fields, WEEK_IN_SECONDS );
+				}
+				
+				return count( $fields );
+				
 	        } else {
 		        $sql = $this->wpdb->prepare( 
-					"SELECT COUNT(DISTINCT(pm.meta_key)) 
-					FROM {$this->wpdb->usermeta} as pm, {$this->wpdb->users} as p
-					WHERE pm.user_id = p.ID
-					AND pm.meta_key NOT IN ({$exclude})
-					AND pm.meta_key NOT LIKE %s 
-					AND pm.meta_key NOT LIKE %s",
-					array( "wpcf-%", "\_%" ) 
+					"SELECT DISTINCT meta_key  
+					FROM {$this->wpdb->usermeta} 
+					WHERE meta_key NOT LIKE %s 
+					AND meta_key NOT LIKE %s 
+					LIMIT %d",
+					array( "wpcf-%", "\_%", $limit ) 
 				);
+				
+				$fields = $this->wpdb->get_col( $sql );
+				
+				if ( count( $exclude ) > 0 ) {
+					$cachable_fields = array_slice( $fields, 0, 512 );
+					// Set the transient cached value
+					set_transient( 'cred_transient_usermeta_keys_visible512', $cachable_fields, WEEK_IN_SECONDS );
+					$fields = array_diff( $fields, $exclude );
+					$fields = array_values( $fields );
+				} else {
+					// Set the transient cached value
+					set_transient( 'cred_transient_usermeta_keys_visible512', $fields, WEEK_IN_SECONDS );
+				}
+				
+				return count( $fields );
 	        }
 
-            return $this->wpdb->get_var( $sql );
         }
+		
+		// TODO To optimize this query we need to be careful with the sorting options.
 
         $paged = intval( $paged );
         $perpage = intval( $perpage );
@@ -98,27 +169,27 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
 	    if ( ! in_array( $orderby, array( 'meta_key' ) ) ) {
 		    $orderby = 'meta_key';
 	    }
+		
+		$exclude_list = "'" . implode("','", $exclude) . "'"; //wrap in quotes
 
 	    if ( $show_private ) {
 		    $sql = $this->wpdb->prepare( 
-				"SELECT DISTINCT(pm.meta_key) 
-				FROM {$this->wpdb->usermeta} as pm, {$this->wpdb->users} as p
-				WHERE pm.user_id = p.ID
-				AND pm.meta_key NOT IN ({$exclude})
-				AND pm.meta_key NOT LIKE %s 
-				ORDER BY pm.{$orderby} {$order}
+				"SELECT DISTINCT meta_key 
+				FROM {$this->wpdb->usermeta} 
+				WHERE meta_key NOT IN ({$exclude_list})
+				AND meta_key NOT LIKE %s 
+				ORDER BY {$orderby} {$order}
 				LIMIT " . ( $paged * $perpage ) . ", " . $perpage, 
 				"wpcf-%" 
 			);
 	    } else {
 		    $sql = $this->wpdb->prepare( 
-				"SELECT DISTINCT(pm.meta_key) 
-				FROM {$this->wpdb->usermeta} as pm, {$this->wpdb->users} as p
-				WHERE pm.user_id = p.ID
-				AND pm.meta_key NOT IN ({$exclude})
-				AND pm.meta_key NOT LIKE %s 
-				AND pm.meta_key NOT LIKE %s
-				ORDER BY pm.{$orderby} {$order}
+				"SELECT DISTINCT meta_key 
+				FROM {$this->wpdb->usermeta} 
+				WHERE meta_key NOT IN ({$exclude_list})
+				AND meta_key NOT LIKE %s 
+				AND meta_key NOT LIKE %s
+				ORDER BY {$orderby} {$order}
 				LIMIT " . ( $paged * $perpage ) . ", " . $perpage, 
 				array( "wpcf-%", "\_%" )
 			);
@@ -130,7 +201,7 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
     }
 
 	/**
-	 * Function responsible to create correct User Fields array structure for CRED
+	 * Function responsible to create correct User Fields array structure for Toolset Forms
 	 * getting all the Types Fields and Types Controlled ones
 	 * NOTE: Types controlled fields do not have prefix 'wpcf-'
 	 *
@@ -270,7 +341,7 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
     }
 
 	/**
-	 * Function that gets all the custom fields related to User Forms by CRED and Types
+	 * Function that gets all the custom fields related to User Forms by Toolset Forms and Types
 	 *
 	 * @param array $autogenerate
 	 * @param string $role
@@ -279,6 +350,9 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
 	 * @param null|callable $localized_message_callback     Function used to translate using extra message by message_id like 'field_required' or similar. Usually the function used is CRED_Form_Builder_Helper::getLocalisedMessage($id) the $id that is a string (ex.'field_required') and returns a string translated
 	 *
 	 * @return array
+     * 
+     * @todo This never gets called with $add_default set to false...
+     * @todo Check why do we need the featurd image extra field here...
 	 */
     public function getFields($autogenerate = array('username' => true, 'nickname' => true, 'password' => true), $role = "", $type_form = "", $add_default = true, $localized_message_callback = null) {
         // ALL FIELDS
@@ -323,44 +397,17 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
 
         //#########################################################################################
 
-        $user_fields = array();
-
-        if ( $add_default ) {
-
-            if ( $localized_message_callback ) {
-                $required_message = call_user_func( $localized_message_callback, 'field_required' );
-                $equalto_message = call_user_func( $localized_message_callback, 'passwords_do_not_match' );
-            } else {
-                $required_message = __( 'This field is required', 'wp-cred' );
-                $equalto_message = __( 'Passwords do not match', 'wp-cred' );
-            }
-
-            $expression_user = isset( $autogenerate['username'] ) && ( (bool) $autogenerate['username'] !== true || $autogenerate['username'] === 'false');
-            $expression_nick = isset( $autogenerate['nickname'] ) && ( (bool) $autogenerate['nickname'] !== true || $autogenerate['nickname'] === 'false');
-            $expression_pawwsd = isset( $autogenerate['password'] ) && ( (bool) $autogenerate['password'] !== true || $autogenerate['password'] === 'false');
-
-            if ( $expression_user === true ) {
-                $user_fields['user_login'] = array('post_type' => 'user', 'post_labels' => __( 'Username', 'wp-cred' ), 'id' => 'user_login', 'wp_default' => true, 'slug' => 'user_login', 'type' => 'textfield', 'name' => __( 'Username', 'wp-cred' ), 'description' => 'Username', 'data' => array('repetitive' => 0, 'validate' => array('required' => array('active' => 1, 'value' => true, 'message' => $required_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
-            }
-
-            if ( $expression_nick === true ) {
-                $user_fields['nickname'] = array('post_type' => 'user', 'post_labels' => __( 'Nickname', 'wp-cred' ), 'id' => 'nickname', 'wp_default' => true, 'slug' => 'nickname', 'type' => 'textfield', 'name' => __( 'Nickname', 'wp-cred' ), 'description' => 'Nickname', 'data' => array('repetitive' => 0, 'validate' => array('required' => array('active' => 1, 'value' => true, 'message' => $required_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
-            }
-
-            if ( $expression_pawwsd === true ) {
-                $user_fields['user_pass'] = array('post_type' => 'user', 'post_labels' => __( 'Password', 'wp-cred' ), 'id' => 'user_pass', 'wp_default' => true, 'slug' => 'user_pass', 'type' => 'password', 'name' => __( 'Password', 'wp-cred' ), 'description' => 'Password', 'data' => array('repetitive' => 0, 'validate' => array('required' => array('active' => 1, 'value' => true, 'message' => $required_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
-                $user_fields['user_pass2'] = array('post_type' => 'user', 'post_labels' => __( 'Repeat Password', 'wp-cred' ), 'id' => 'user_pass2', 'wp_default' => true, 'slug' => 'user_pass2', 'type' => 'password', 'name' => __( 'Repeat Password', 'wp-cred' ), 'description' => 'Repeat Password', 'data' => array('repetitive' => 0, 'validate' => array('equalto' => array('active' => 1, 'args' => array('$value' => 'user_pass'), 'message' => $equalto_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
-            }
-
+        if ( $localized_message_callback ) {
+            $required_message = call_user_func( $localized_message_callback, 'field_required' );
+            $invalid_username_message = call_user_func( $localized_message_callback, 'invalid_username' );
+            $equalto_message = call_user_func( $localized_message_callback, 'passwords_do_not_match' );
+            $mail_localized_message = call_user_func( $localized_message_callback, 'enter_valid_email' );
+        } else {
+            $required_message = __( 'This field is required', 'wp-cred' );
+            $invalid_username_message = __( 'The username can only contain alphanumeric characters, dashes or underscores', 'wp-cred' );
+            $equalto_message = __( 'Passwords do not match', 'wp-cred' );
             $mail_localized_message = __( 'Please enter a valid email address', 'wp-cred' );
-            if ( $localized_message_callback ) {
-                $mail_localized_message = call_user_func( $localized_message_callback, 'enter_valid_email' );
-            }
-            $user_fields['user_email'] = array('post_type' => 'user', 'post_labels' => __( 'Email', 'wp-cred' ), 'id' => 'user_email', 'wp_default' => true, 'slug' => 'user_email', 'type' => 'email', 'name' => __( 'Email', 'wp-cred' ), 'description' => 'Email', 'data' => array('repetitive' => 0, 'validate' => array('email' => array('active' => 1, 'message' => $mail_localized_message), 'required' => array('active' => 1, 'value' => true, 'message' => $required_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
-            $user_fields['user_url'] = array('post_type' => 'user', 'post_labels' => __( 'Website', 'wp-cred' ), 'id' => 'user_url', 'wp_default' => true, 'slug' => 'user_url', 'type' => 'textfield', 'name' => __( 'Website', 'wp-cred' ), 'description' => 'Url', 'data' => array(/* 'repetitive' => 0, 'validate' => array ( 'required' => array ( 'active' => 1, 'value' => true, 'message' => __('This field is required','wp-cred') ) ), 'conditional_display' => array ( ), 'disabled_by_type' => 0 */));
         }
-
-        $parents = array();
 
         // EXTRA FIELDS
         $extra_fields = array();
@@ -378,24 +425,79 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
         }
 
         // featured image field
+        // WTF featured image in user forms!?????
         $extra_fields['_featured_image'] = array('id' => '_featured_image', 'slug' => '_featured_image', 'name' => esc_js( __( 'Featured Image', 'wp-cred' ) ), 'type' => 'image', 'cred_builtin' => true, 'description' => 'Featured Image');
         $extra_fields['_featured_image']['supports'] = false;
 
         // BASIC FORM FIELDS
         $form_fields = array();
         $form_fields['form'] = array('id' => 'creduserform', 'name' => esc_js( __( 'User Form Container', 'wp-cred' ) ), 'slug' => 'creduserform', 'type' => 'creduserform', 'cred_builtin' => true, 'description' => esc_js( __( 'User Form (required)', 'wp-cred', 'wp-cred' ) ));
-        //$form_fields['form_end']=array('id'=>'form_end','name'=>'Form End','slug'=>'form_end','type'=>'form_end','cred_builtin'=>true,'description'=>__('End of Form'));
         $form_fields['form_submit'] = array('value' => __( 'Submit', 'wp-cred' ), 'id' => 'form_submit', 'name' => esc_js( __( 'Form Submit', 'wp-cred' ) ), 'slug' => 'form_submit', 'type' => 'form_submit', 'cred_builtin' => true, 'description' => esc_js( __( 'Form Submit Button', 'wp-cred' ) ));
         $form_fields['form_messages'] = array('value' => '', 'id' => 'form_messages', 'name' => esc_js( __( 'Form Messages', 'wp-cred' ) ), 'slug' => 'form_messages', 'type' => 'form_messages', 'cred_builtin' => true, 'description' => esc_js( __( 'Form Messages Container', 'wp-cred' ) ));
-        $form_fields['user_login'] = array('post_type' => 'user', 'post_labels' => __( 'Username', 'wp-cred' ), 'id' => 'user_login', 'wp_default' => true, 'slug' => 'user_login', 'type' => 'textfield', 'name' => __( 'Username', 'wp-cred' ), 'description' => 'Username', 'data' => array('repetitive' => 0, 'validate' => array('required' => array('active' => 1, 'value' => true, 'message' => $required_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
-        //nickname is required
-        $form_fields['nickname'] = array('post_type' => 'user', 'post_labels' => __( 'Nickname', 'wp-cred' ), 'id' => 'nickname', 'wp_default' => true, 'slug' => 'nickname', 'type' => 'textfield', 'name' => __( 'Nickname', 'wp-cred' ), 'description' => 'Nickname', 'data' => array(/* 'repetitive' => 0, 'validate' => array ( 'required' => array ( 'active' => 1, 'value' => true, 'message' => __('This field is required','wp-cred') ) ), 'conditional_display' => array ( ), 'disabled_by_type' => 0 */));
+        $form_fields['user_login'] = array(
+            'post_type' => 'user',
+            'post_labels' => __( 'Username', 'wp-cred' ),
+            'id' => 'user_login',
+            'wp_default' => true,
+            'slug' => 'user_login',
+            'type' => 'textfield',
+            'name' => __( 'Username', 'wp-cred' ),
+            'description' => 'Username',
+            'data' => array(
+                'repetitive' => 0,
+                'validate' => array(
+                    'username' => array(
+                        'active' => 1,
+                        'value' => true,
+                        'message' => $invalid_username_message
+                    ),
+                    'required' => array(
+                        'active' => 1,
+                        'value' => true,
+                        'message' => $required_message
+                    )
+                ),
+                'conditional_display' => array(),
+                'disabled_by_type' => 0
+            )
+        );
+        $form_fields['nickname'] = array('post_type' => 'user', 'post_labels' => __( 'Nickname', 'wp-cred' ), 'id' => 'nickname', 'wp_default' => true, 'slug' => 'nickname', 'type' => 'textfield', 'name' => __( 'Nickname', 'wp-cred' ), 'description' => 'Nickname', 'data' => array());
         $form_fields['user_pass'] = array('post_type' => 'user', 'post_labels' => __( 'Password', 'wp-cred' ), 'id' => 'user_pass', 'wp_default' => true, 'slug' => 'user_pass', 'type' => 'password', 'name' => __( 'Password', 'wp-cred' ), 'description' => 'Password', 'data' => array('repetitive' => 0, 'validate' => array('required' => array('active' => 1, 'value' => true, 'message' => $required_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
         $form_fields['user_pass2'] = array('post_type' => 'user', 'post_labels' => __( 'Repeat Password', 'wp-cred' ), 'id' => 'user_pass2', 'wp_default' => true, 'slug' => 'user_pass2', 'type' => 'password', 'name' => __( 'Repeat Password', 'wp-cred' ), 'description' => 'Repeat Password', 'data' => array('repetitive' => 0, 'validate' => array('equalto' => array('active' => 1, 'args' => array('$value', 'user_pass'), 'message' => $equalto_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
+        $form_fields['user_email'] = array('post_type' => 'user', 'post_labels' => __( 'Email', 'wp-cred' ), 'id' => 'user_email', 'wp_default' => true, 'slug' => 'user_email', 'type' => 'email', 'name' => __( 'Email', 'wp-cred' ), 'description' => 'Email', 'data' => array('repetitive' => 0, 'validate' => array('email' => array('active' => 1, 'message' => $mail_localized_message), 'required' => array('active' => 1, 'value' => true, 'message' => $required_message)), 'conditional_display' => array(), 'disabled_by_type' => 0));
+        $form_fields['user_url'] = array('post_type' => 'user', 'post_labels' => __( 'Website', 'wp-cred' ), 'id' => 'user_url', 'wp_default' => true, 'slug' => 'user_url', 'type' => 'textfield', 'name' => __( 'Website', 'wp-cred' ), 'description' => 'Url', 'data' => array());
 
-        // TAXONOMIES FIELDS
-        $taxonomies = array();
+        // USER FIELDS
+        // As noted above, $add_default is ALWAYS TRUE!!!
+        // So $user_fields and $form_fields end up with the same entries...
+        // Note that form posts, $form_fields is just form, form_submit and form_messages
+        // while $post_fields include title, content, and excerpt
+        // For some reason for user forms it is those form fields
+        // plus all the user_xxx data. Why!??????
+        $user_fields = array();
+        if ( $add_default ) {
+            $expression_user = isset( $autogenerate['username'] ) && ( (bool) $autogenerate['username'] !== true || $autogenerate['username'] === 'false');
+            $expression_nick = isset( $autogenerate['nickname'] ) && ( (bool) $autogenerate['nickname'] !== true || $autogenerate['nickname'] === 'false');
+            $expression_pawwsd = isset( $autogenerate['password'] ) && ( (bool) $autogenerate['password'] !== true || $autogenerate['password'] === 'false');
 
+            if ( $expression_user === true ) {
+                $user_fields['user_login'] = $form_fields['user_login'];
+            }
+
+            if ( $expression_nick === true ) {
+                $user_fields['nickname'] = $form_fields['nickname'];
+            }
+
+            if ( $expression_pawwsd === true ) {
+                $user_fields['user_pass'] = $form_fields['user_pass'];
+                $user_fields['user_pass2'] = $form_fields['user_pass2'];
+            }
+            
+            $user_fields['user_email'] = $form_fields['user_email'];
+            $user_fields['user_url'] = $form_fields['user_url'];
+        }
+
+        // Probably no need to merge, since all entries in $user_fields already live in $form_fields...
         $form_fields = array_merge( $user_fields, $form_fields );
 
         $fields_all['groups'] = $groups;
@@ -403,24 +505,17 @@ class CRED_User_Fields_Model extends CRED_Fields_Abstract_Model implements CRED_
         $fields_all['form_fields'] = $form_fields;
         $fields_all['user_fields'] = $user_fields;
         $fields_all['custom_fields'] = $fields;
-        $fields_all['taxonomies'] = $taxonomies;
-        $fields_all['parents'] = $parents;
+        $fields_all['taxonomies'] = array();
+        $fields_all['parents'] = array();
         $fields_all['extra_fields'] = $extra_fields;
         $fields_all['form_fields_count'] = count( $form_fields );
         $fields_all['user_fields_count'] = count( $user_fields );
         $fields_all['custom_fields_count'] = count( $fields );
-        $fields_all['taxonomies_count'] = count( $taxonomies );
-        $fields_all['parents_count'] = count( $parents );
+        $fields_all['taxonomies_count'] = 0;
+        $fields_all['parents_count'] = 0;
         $fields_all['extra_fields_count'] = count( $extra_fields );
 
         return $fields_all;
-    }
-
-	/**
-	 * @return mixed
-	 */
-    public function getAllFields() {
-        return get_option( 'wpcf-fields' );
     }
 
 	/**

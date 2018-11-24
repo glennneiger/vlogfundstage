@@ -1,21 +1,15 @@
 <?php
 
 /**
- * CRED Frontend File Ajax Upload Manager handles credfile, credimage, credaudio and credvideo files
+ * Toolset Forms Frontend File Ajax Upload Manager handles credfile, credimage, credaudio and credvideo files
  * through wp_ajax_[nopriv_] wp hook
  *
  * @since 1.9.3
  */
 class CRED_Frontend_File_Ajax_Upload_Manager implements ICRED_Frontend_File_Ajax_Upload_Manager {
 
-	const CRED_ACTION_AJAX_UPLOAD = 'cred_frontend_ajax_upload_submit';
-	const CRED_AJAX_FILE_UPLOADER = 'cred-frontend-ajax-file-uploader';
-	const CREDFILE = 'wpt-field-credfile';
-
 	protected $php_file_upload_error_messages;
 	protected $cred_file_upload_error_messages;
-	protected $max_upload_size;
-	protected $human_readable_max_upload_size;
 
 	private static $instance;
 
@@ -26,9 +20,6 @@ class CRED_Frontend_File_Ajax_Upload_Manager implements ICRED_Frontend_File_Ajax
 	}
 
 	protected function init() {
-		$this->max_upload_size = wp_max_upload_size();
-		$this->human_readable_max_upload_size = size_format( $this->max_upload_size, 2 );
-
 		$this->php_file_upload_error_messages = array(
 			0 => __( 'There is no error, the file uploaded with success', 'wp-cred' ),
 			1 => __( 'The uploaded file exceeds the upload_max_filesize directive in php.ini', 'wp-cred' ),
@@ -62,7 +53,7 @@ class CRED_Frontend_File_Ajax_Upload_Manager implements ICRED_Frontend_File_Ajax
 		if (
 			cred_is_ajax_call()
 			&& isset( $_GET['action'] )
-			&& $_GET['action'] == self::CRED_ACTION_AJAX_UPLOAD
+			&& $_GET['action'] == CRED_Asset_Manager::CRED_ACTION_AJAX_UPLOAD
 			&& isset( $_SERVER["CONTENT_LENGTH"] )
 			&& $_SERVER["CONTENT_LENGTH"] > wp_max_upload_size()
 		) {
@@ -71,8 +62,8 @@ class CRED_Frontend_File_Ajax_Upload_Manager implements ICRED_Frontend_File_Ajax
 	}
 
 	protected function register_hooks() {
-		add_action( 'wp_ajax_' . self::CRED_ACTION_AJAX_UPLOAD, array( $this, 'upload' ) );
-		add_action( 'wp_ajax_nopriv_' . self::CRED_ACTION_AJAX_UPLOAD, array( $this, 'upload' ) );
+		add_action( 'wp_ajax_' . CRED_Asset_Manager::CRED_ACTION_AJAX_UPLOAD, array( $this, 'upload' ) );
+		add_action( 'wp_ajax_nopriv_' . CRED_Asset_Manager::CRED_ACTION_AJAX_UPLOAD, array( $this, 'upload' ) );
 	}
 
 	public static function get_instance() {
@@ -81,58 +72,6 @@ class CRED_Frontend_File_Ajax_Upload_Manager implements ICRED_Frontend_File_Ajax
 		}
 
 		return self::$instance;
-	}
-
-	/**
-	 * Enqueue all assets needed for the frontend file upload field.
-	 *
-	 * @param $is_progress_bar_disabled
-	 *
-	 * @since 1.9.3
-	 */
-	public function enqueue_file_upload_assets( $is_progress_bar_disabled ) {
-		wp_register_script( self::CREDFILE, CRED_Asset_Manager::get_instance()->get_asset_url( 'js/credfile.js' ), array( 'wptoolset-forms' ), WPTOOLSET_FORMS_VERSION, true );
-		wp_enqueue_script( self::CREDFILE );
-
-		if ( $is_progress_bar_disabled ) {
-			// Nothing else is needed
-			return;
-		}
-
-		$base_url = CRED_Asset_Manager::get_instance()->get_asset_url( 'js/jquery_upload' );
-
-		wp_enqueue_style( 'progress_bar-style', "$base_url/progress_bar.css" );
-
-		wp_enqueue_script( 'jquery-ui-core' );
-		wp_enqueue_script( 'jquery-ui-widget' );
-		wp_enqueue_script( 'jquery-ui-progressbar' );
-		wp_enqueue_script( 'load-image-all-script', "$base_url/load-image.all.min.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-iframe-transport-script', "$base_url/jquery.iframe-transport.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-script', "$base_url/jquery.fileupload.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-process-script', "$base_url/jquery.fileupload-process.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-image-script', "$base_url/jquery.fileupload-image.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-audio-script', "$base_url/jquery.fileupload-audio.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-video-script', "$base_url/jquery.fileupload-video.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-validate-script', "$base_url/jquery.fileupload-validate.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-ui-script', "$base_url/jquery.fileupload-ui.js", array( 'jquery' ), '', true );
-		wp_enqueue_script( 'jquery-fileupload-jquery-ui-script', "$base_url/jquery.fileupload-jquery-ui.js", array( 'jquery' ), '', true );
-
-		wp_enqueue_script( self::CRED_AJAX_FILE_UPLOADER, "$base_url/file_upload.js", array( 'jquery' ) );
-		wp_localize_script( self::CRED_AJAX_FILE_UPLOADER, 'settings',
-			array(
-				'ajaxurl' => admin_url( 'admin-ajax.php' ),
-				'action' => self::CRED_ACTION_AJAX_UPLOAD,
-				'media_settings' => Toolset_Utils::get_image_sizes( 'thumbnail' ),
-				'delete_confirm_text' => __( 'Are you sure to delete this file ?', 'wp-cred' ),
-				'delete_alert_text' => __( 'Generic Error in deleting file', 'wp-cred' ),
-				'delete_text' => __( 'delete', 'wp-cred' ),
-				'failed_upload_too_large_file_alert_text' => __( 'The file you uploaded it too large. You can upload files up to ', 'wp-cred' ),
-				'failed_upload_generic_alert_text' => __( 'There was an error uploading your file.', 'wp-cred' ),
-				'max_upload_size' => $this->max_upload_size,
-				'human_readable_max_upload_size' => $this->human_readable_max_upload_size,
-				'nonce' => wp_create_nonce( 'ajax_nonce' ),
-			)
-		);
 	}
 
 	public function upload() {

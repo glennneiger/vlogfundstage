@@ -2,6 +2,9 @@
 
 // All we have now is CRED_ABSPATH.
 
+// Get constants
+require_once CRED_ABSPATH . '/application/constants.php';
+
 /*
  * Toolset Common Library paths
  */
@@ -25,7 +28,7 @@ require_once CRED_ABSPATH . '/vendor/toolset/toolset-common/loader.php';
 toolset_common_initialize( CRED_ABSPATH . '/vendor/toolset/toolset-common/', CRED_ABSURL . '/vendor/toolset/toolset-common/');
 
 
-// Load old CRED
+// Load legacy Toolset Forms
 require_once CRED_ABSPATH . '/library/toolset/cred/plugin.php';
 
 
@@ -33,7 +36,7 @@ require_once CRED_ABSPATH . '/library/toolset/cred/plugin.php';
 require_once CRED_ABSPATH . '/application/functions.php';
 
 
-// Jumpstart new CRED
+// Jumpstart new Toolset Forms
 require_once CRED_ABSPATH . '/application/controllers/main.php';
 $cred_main = new CRED_Main();
 $cred_main->initialize();

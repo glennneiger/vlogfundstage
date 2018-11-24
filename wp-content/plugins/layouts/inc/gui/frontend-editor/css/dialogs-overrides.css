@@ -305,3 +305,4 @@ i.ddl-help-link-external{padding-left:2px;}
 .ddl-dialog .ddl-fields-description a[target="_blank"]:not(.notarget):after {
     content: "" !important;
 }
+.ddl-dialog-content .label{color:#888!important;}

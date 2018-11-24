@@ -709,7 +709,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
                                 <div class="toolset-bs-components-dialog-sides-bottom">
                                     <hr>
                                     <p class="toolset-bs-button-p">
-                                        <a href="<?php _e('https://wp-types.com/user-guides/using-bootstrap-css-elements-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=bootstrap-components&utm_term=help-link','ddl-layouts');?>" target="_blank"><?php _e('Learn how to use Bootstrap in layouts','ddl-layouts');?></a>
+                                        <a href="<?php _e('https://toolset.com/user-guides/using-bootstrap-css-elements-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=bootstrap-components&utm_term=help-link','ddl-layouts');?>" target="_blank"><?php _e('Learn how to use Bootstrap in layouts','ddl-layouts');?></a>
                                     </p>
                                 </div>
                             </div>

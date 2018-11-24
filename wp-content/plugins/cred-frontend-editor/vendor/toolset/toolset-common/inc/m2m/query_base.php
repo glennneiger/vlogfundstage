@@ -6,6 +6,7 @@
  * Contains shared methods, mainly related to query argument processing.
  *
  * @since m2m
+ * @deprecated Needed only for old association and relationship query classes. Remove when those are removed.
  */
 abstract class Toolset_Relationship_Query_Base {
 

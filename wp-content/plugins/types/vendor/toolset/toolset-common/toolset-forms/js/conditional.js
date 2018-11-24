@@ -41,6 +41,13 @@ var wptCond = (function ($) {
 
     function _getTrigger(trigger, formID)
     {
+        // check rfg items first
+        if( trigger.startsWith( "types-repeatable-group" ) ) {
+            var $trigger = $('[name="' + trigger + '"]', formID );
+
+            return $trigger;
+        }
+
         var $trigger = $('[data-wpt-name="' + trigger + '"]', formID);
         /**
          * wp-admin
@@ -182,6 +189,14 @@ var wptCond = (function ($) {
         if (wptCondDebug) {
             console.info('_getAffected');
         }
+
+        // check rfg fields first
+        if( affected.startsWith( "types-repeatable-group" ) ) {
+            var $affected = $('[name^="' + affected + '"]', formID );
+
+            return $affected;
+        }
+
         var $el = $('[data-wpt-id="' + affected + '"]', formID);
         if ($('body').hasClass('wp-admin')) {
             $el = $el.closest('.wpt-field');
@@ -773,7 +788,7 @@ var wptCond = (function ($) {
     }
 
 	// @bug This seems to be only used by date.js on its conditional_check_date method,
-	// which again gets only used by its ajaxConditional method, 
+	// which again gets only used by its ajaxConditional method,
 	// which seems hooked into a commented out JS action.
 	// The PHP side is in bootstrap.php :-/
 	// I do not think we have AJAX conditionals, not even for date fields :-//
@@ -799,6 +814,7 @@ var wptCond = (function ($) {
 
     function addConditionals(data)
     {
+
         _.each(data, function (c, formID) {
             if (typeof c.triggers != 'undefined'
                     && typeof wptCondTriggers[formID] != 'undefined') {
@@ -833,6 +849,9 @@ var wptCond = (function ($) {
                 });
             }
         });
+        if ( typeof Toolset !== 'undefined' && !!Toolset.hooks ) {
+            Toolset.hooks.doAction( 'toolset-conditionals-add-conditionals', data );
+        }
     }
 
     /**
@@ -870,7 +889,9 @@ var wptCond = (function ($) {
     return {
         init: init,
         ajaxCheck: ajaxCheck,
-        addConditionals: addConditionals
+        addConditionals: addConditionals,
+        getTrigger: _getTrigger,
+        check: _check
     };
 
 })(jQuery);

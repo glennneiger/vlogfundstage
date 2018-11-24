@@ -52,7 +52,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * Array with loop output settings (former layout settings; used also by WPA).
+     * Array with loop settings (former layout settings; used also by WPA).
      *
      * For documentation of particular elements see comments at those constants:
      * - LOOP_SETTINGS_META_HTML
@@ -687,7 +687,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
         $ct->defer_after_update_actions();
 
-        // Update Loop output and content of the Loop template
+        // Update Loop and content of the Loop template
         $ct->content = $content;
 
         $this->loop_meta_html = str_replace(
@@ -731,7 +731,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * View settings key for additional CSS code for the loop output.
+     * View settings key for additional CSS code for the loop.
      *
      * @since 1.10
      */
@@ -739,7 +739,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * View settings key for additional JS code for the loop output.
+     * View settings key for additional JS code for the loop.
      *
      * @since 1.10
      */
@@ -853,6 +853,41 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
             }
         }
     }
+	
+	
+	/**
+	 * Add or update several View settings at once, like when saving a query filter.
+	 *
+	 * @param array $settings Settings as key->value pairs.
+	 *
+	 * @since m2m
+	 */
+	public function set_view_settings( $settings ) {
+		$this->view_settings;
+		foreach ( $settings as $setting_key => $setting_value ) {
+			if ( $setting_value === toolset_getarr( $this->view_settings_cache, $setting_key ) ) {
+				continue;
+			}
+			$this->set_view_setting( $setting_key, $setting_value );
+		}
+	}
+	
+	
+	/**
+	 * Remove one or several View settings at once, like when deleting a query filter.
+	 *
+	 * @param string|array $setting_keys Setting keys.
+	 *
+	 * @since m2m
+	 */
+	public function delete_view_settings( $setting_keys ) {
+		if ( ! is_array( $setting_keys ) ) {
+			$setting_keys = array( $setting_keys );
+		}
+		foreach ( $setting_keys as $setting_key ) {
+			$this->delete_view_setting( $setting_key );
+		}
+	}
 
 
     /**
@@ -904,6 +939,21 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
         $this->view_settings_cache[ $setting_key ] = $value;
         $this->view_settings_update_needed();
     }
+	
+	/**
+     * Delete an individual View setting, and indicate that update is needed.
+     *
+     * @param string $setting_key Setting key.
+	 *
+     * @since m2m
+     */
+    protected function delete_view_setting( $setting_key ) {
+        $this->view_settings;
+		if ( isset( $this->view_settings_cache[ $setting_key ] ) ) {
+			unset( $this->view_settings_cache[ $setting_key ] );
+		}
+        $this->view_settings_update_needed();
+    }
 
 
     /**
@@ -928,7 +978,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * Get extra CSS code for the Loop Output section.
+     * Get extra CSS code for the Loop section.
      *
      * This is a View setting.
      *
@@ -946,7 +996,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * Get extra JS code for the Loop Output section.
+     * Get extra JS code for the Loop section.
      *
      * This is a View setting.
      *
@@ -992,7 +1042,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /* ************************************************************************* *\
-        Loop Output
+        Loop
     \* ************************************************************************* */
 
     /* Individual settings may differ for Views and WPAs. Here are defined only the
@@ -1009,7 +1059,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * Loop settings key for the actual Loop Output.
+     * Loop settings key for the actual Loop.
      *
      * This setting contains the "meta html" code.
      *
@@ -1029,10 +1079,11 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
     const LOOP_SETTINGS_INCLUDE_FIELD_NAMES = 'include_field_names';
     const LOOP_SETTINGS_FIELDS = 'fields';
     const LOOP_SETTINGS_REAL_FIELDS = 'real_fields';
+    const LOOP_SETTINGS_LIST_SEPARATOR = 'list_separator';
 
 
     /**
-     * This loop setting contains IDs of Content Templates included in the Loop Output
+     * This loop setting contains IDs of Content Templates included in the Loop
      * as a comma-separated string (without spaces).
      *
      * @since 1.10
@@ -1182,7 +1233,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * Get the Loop Output itself.
+     * Get the Loop itself.
      *
      * A.k.a. "loop meta HTML".
      *
@@ -1197,7 +1248,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
 
     /**
-     * Validate "loop meta html" (content of the Loop Output editor) before saving it to database.
+     * Validate "loop meta html" (content of the Loop editor) before saving it to database.
      *
      * Perform syntax check to ensure mandatory elements are all present exactly once and in the right order.
      * If that's not the case, throw an exception containing a message - this time very user-friendly one,
@@ -1223,7 +1274,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
             array( 'label' => '[wpv-layout-end]', 'pattern' => "\\[wpv-layout-end\\]", 'indent' => 0 )
         );
 
-        $this->validate_meta_html_content( $value, __( 'Loop Output', 'wpv-views' ), $elements );
+        $this->validate_meta_html_content( $value, __( 'Loop', 'wpv-views' ), $elements );
 
         return $value;
     }
@@ -1248,7 +1299,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
         $this->set_loop_setting( WPV_View_Base::LOOP_SETTINGS_META_HTML, $value );
 
 		/**
-		 * Fires once the value for the Loop Output editor for a View has been updated,
+		 * Fires once the value for the Loop editor for a View has been updated,
 		 * but before it has been saved.
 		 *
 		 * @since 2.3.0
@@ -1271,7 +1322,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      *
      * @param string $content The value to be sanitized. It *must* have added slashes (especially before quotes),
      *     otherwise the validation has undefined result.
-     * @param string $field_name Display name of the field (e.g. "Loop Output") that will be used
+     * @param string $field_name Display name of the field (e.g. "Loop") that will be used
      *     in generated error messages.
      * @param array $elements (
      *         Definition of syntax elements that must be present exactly once in the content. Order of those elements
@@ -1370,7 +1421,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
     /**
      * Helper method to generate demo content for error messages in validate_meta_html_content().
      *
-     * @param string $field_name Display name of the field (e.g. "Loop Output") that will be used
+     * @param string $field_name Display name of the field (e.g. "Loop") that will be used
      *     in generated error messages.
      * @param array $all_elements Definition of mandatory syntax elements. See validate_meta_html_content().
      * @param array $highlight_elements Subset of $all_elements. Those elements will be rendered in "strong" tags.
@@ -1463,6 +1514,14 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
         $this->set_loop_setting( WPV_View_Base::LOOP_SETTINGS_STYLE, sanitize_text_field( $value ) );
     }
 
+	protected function _get_list_separator() {
+		// We can skip sanitization for this specific field for two reasons:
+		//    * Even if we sanitize it, the user will be able to change it back to the unsanitized version in the Loop
+		//      so there will be inconsistencies between the saved meta value and the value that appears on the editor.
+		//    * WordPress will sanitize the contents of the Loop editor, which will include the skipped fields below,
+		//      as the field is saved in the database as part of a serialized array.
+		return $this->get_loop_setting( WPV_View_Base::LOOP_SETTINGS_LIST_SEPARATOR );
+	}
 
     protected function _set_loop_table_column_count( $value ) {
         $this->set_loop_setting( WPV_View_Base::LOOP_SETTINGS_TABLE_COLUMN_COUNT, sanitize_text_field( $value ) );
@@ -1508,16 +1567,25 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
         $this->set_loop_setting( WPV_View_Base::LOOP_SETTINGS_INCLUDED_CT_IDS, $value );
     }
 
+    protected function _set_list_separator( $value ) {
+	    // We can skip sanitization for this specific field for two reasons:
+	    //    * Even if we sanitize it, the user will be able to change it back to the unsanitized version in the Loop
+	    //      so there will be inconsistencies between the saved meta value and the value that appears on the editor.
+	    //    * WordPress will sanitize the contents of the Loop editor, which will include the skipped fields below,
+	    //      as the field is saved in the database as part of a serialized array.
+	    $this->set_loop_setting( WPV_View_Base::LOOP_SETTINGS_LIST_SEPARATOR, $value );
+    }
+
 
     /* ************************************************************************* *\
-        Loop Output rendering (static)
+        Loop rendering (static)
     \* ************************************************************************* */
 
 
     /**
-     * Generate default loop output settings (former layout settings) for a View, based on chosen loop output style
+     * Generate default loop settings (former layout settings) for a View, based on chosen loop style
      *
-     * @param string $style Loop output style name, which must be one of the following values:
+     * @param string $style Loop style name, which must be one of the following values:
      *     - table
      *     - bootstrap-grid
      *     - table_of_fields
@@ -1527,7 +1595,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      *     - empty (since 1.10): Ignores fields and renders just an empty <wpv-loop></wpv-loop>
      *
      * @param array $fields (
-     *         Array of definitions of fields that will be present in the loop output. If an element is not present, empty
+     *         Array of definitions of fields that will be present in the loop. If an element is not present, empty
      *         string is used instead.
      *
      *         @type string $prefix Prefix, text before shortcode.
@@ -1541,8 +1609,8 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      * @param array $args(
      *         Additional arguments.
      *
-     *         @type bool $include_field_names If the loop output style is table_of_fields, determines whether the rendered
-     *             loop output will contain table header with field names. Optional. Default is true.
+     *         @type bool $include_field_names If the loop style is table_of_fields, determines whether the rendered
+     *             loop will contain table header with field names. Optional. Default is true.
      *
      *         @type int $tab_column_count Number of columns for the bootstrap-grid style. Optional. Default is 1.
      *         @type int $bootstrap_column_count Number of columns for the table style. Optional. Default is 1.
@@ -1559,7 +1627,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      *             "<!-- wpv-loop end -->" tags is rendered. Optional. Default is false.
      *
      *         @type bool $use_loop_template Determines whether a Content Template will be used for field shortcodes.
-     *             If true, the content of the CT will be returned in the 'ct_content' element and the loop output will
+     *             If true, the content of the CT will be returned in the 'ct_content' element and the loop will
      *             contain shortcodes referencing it. In such case the argument loop_template_title is mandatory. Optional.
      *             Default is false.
      *
@@ -1569,7 +1637,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      *
      * @return  null|array Null on error. Otherwise an array containing following elements:
      *     array(
-     *         @type array loop_output_settings Loop Output settings for a View, as they should be stored in the database:
+     *         @type array loop_output_settings Loop settings for a View, as they should be stored in the database:
      *             array(
      *                 @type string $style
      *                 @type string $layout_meta_html
@@ -1587,167 +1655,15 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      *     )
      *
      * @since 1.10
+     * @since 2.6.4 This method was deprecated and it was replaced by this method inside a non static class.
+     *              It became a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and
+     *              calls the "generate" method.
+     *
+     * @deprecated Use the "generate" method of the "\OTGS\Toolset\Views\View\LoopOutputGenerator()" class instead.
      */
     static function generate_loop_output( $style = 'empty', $fields = array(), $args = array() ) {
-
-        // Default values for arguments
-        $args = array_merge(
-            array(
-                'include_field_names' => true,
-                'tab_column_count' => 1,
-                'bootstrap_column_count' => 1,
-                'bootstrap_version' => 'undefined',
-                'add_container' => false,
-                'add_row_class' => false,
-                'render_individual_columns' => false,
-                'use_loop_template' => false,
-                'loop_template_title' => '',
-                'render_only_wpv_loop' => false ),
-            $args );
-
-        // Avoid extract() and validate.
-        $include_field_names = ( true == $args['include_field_names'] ) ? true : false;
-        $tab_column_count = (int) $args['tab_column_count'];
-        $bootstrap_column_count = (int) $args['bootstrap_column_count'];
-        $add_container = ( true == $args['add_container'] ) ? true : false;
-        $add_row_class = ( true == $args['add_row_class'] ) ? true : false;
-        $render_individual_columns = ( true == $args['render_individual_columns'] ) ? true : false;
-        $use_loop_template = ( true == $args['use_loop_template'] ) ? true : false;
-        $loop_template_title = $args['loop_template_title']; // can be anything
-        $render_only_wpv_loop = ( true == $args['render_only_wpv_loop'] ) ? true : false;
-
-        // Disallow empty title if we're creating new CT
-        if( ( true == $use_loop_template ) && empty( $loop_template_title ) ) {
-            return null;
-        }
-
-        // Results
-        $loop_output_settings = array(
-            'style' => $style,  // this will be valid value, or we'll return null later
-            'additional_js'	=> '' );
-
-        // Ensure all field keys are present for all fields.
-        $fields_normalized = array();
-        $field_defaults = array(
-            'prefix' => '',
-            'shortcode' => '',
-            'suffix' => '',
-            'field_name' => '',
-            'header_name' => '',
-            'row_title' => '' );
-        foreach( $fields as $field ) {
-            $fields_normalized[] = wp_parse_args( $field, $field_defaults );
-        }
-        $fields = $fields_normalized;
-
-        // Render layout HTML
-        switch( $style ) {
-            case 'table':
-                $loop_output = WPV_View_Base::generate_table_layout( $fields, $args );
-                break;
-            case 'bootstrap-grid':
-                $loop_output = WPV_View_Base::generate_bootstrap_grid_layout( $fields, $args );
-                break;
-            case 'table_of_fields':
-                $loop_output = WPV_View_Base::generate_table_of_fields_layout( $fields, $args );
-                break;
-            case 'ordered_list':
-                $loop_output = WPV_View_Base::generate_list_layout( $fields, $args, 'ol' );
-                break;
-            case 'un_ordered_list':
-                $loop_output = WPV_View_Base::generate_list_layout( $fields, $args, 'ul' );
-                break;
-            case 'unformatted':
-                $loop_output = WPV_View_Base::generate_unformatted_layout( $fields, $args );
-                break;
-            case 'empty':
-                $loop_output = array(
-                    'loop_template' => "\t\t<wpv-loop>\n\t\t</wpv-loop>\n",
-                    'ct_content' => ''
-                );
-                break;
-            default:
-                // Invalid loop output style
-                return null;
-        }
-        // If rendering has failed, we fail too.
-        if( null == $loop_output ) {
-            return null;
-        }
-
-        $layout_meta_html = $loop_output['loop_template'];
-
-        if( ! $render_only_wpv_loop ) {
-            // Render the whole layout_meta_html
-            $layout_meta_html = sprintf(
-                "[wpv-layout-start]\n"
-                . "\t[wpv-items-found]\n"
-                . "\t<!-- wpv-loop-start -->\n"
-                . "%s"
-                . "\t<!-- wpv-loop-end -->\n"
-                . "\t[/wpv-items-found]\n"
-                . "\t[wpv-no-items-found]\n"
-                . "\t\t<strong>[wpml-string context=\"wpv-views\"]No items found[/wpml-string]</strong>\n"
-                . "\t[/wpv-no-items-found]\n"
-                . "[wpv-layout-end]\n",
-                $layout_meta_html );
-        }
-
-        $loop_output_settings['layout_meta_html'] = $layout_meta_html;
-
-        // Pass other layout settings in the same way as it was in wpv_update_layout_extra_callback().
-
-        // Only one value makes sense, but both are always stored...
-        $loop_output_settings['table_cols'] = $tab_column_count;
-        $loop_output_settings['bootstrap_grid_cols']  = $bootstrap_column_count;
-
-        // These are '1' for true or '' for false (not sure if e.g. 0 can be passed instead, better leave it as it was).
-        $loop_output_settings['bootstrap_grid_container'] = $add_container ? '1' : '';
-        $loop_output_settings['bootstrap_grid_row_class'] = $add_row_class ? '1' : '';
-        $loop_output_settings['bootstrap_grid_individual'] = $render_individual_columns ? '1' : '';
-        $loop_output_settings['include_field_names'] = $include_field_names ? '1' : '';
-
-        /* The 'fields' element is originally constructed in wpv_layout_wizard_convert_settings() with a comment
-         * saying just "Compatibility".
-         *
-         * TODO it would be nice to explain why is this needed (compatibility with what?). */
-        $fields_compatible = array();
-        $field_index = 0;
-        foreach ( $fields as $field ) {
-            $fields_compatible[ 'prefix_' . $field_index ] = '';
-
-            $shortcode = stripslashes( $field['shortcode'] );
-
-            if ( preg_match( '/\[types.*?field=\"(.*?)\"/', $shortcode, $matched ) ) {
-                $fields_compatible[ 'name_' . $field_index ] = 'types-field';
-                $fields_compatible[ 'types_field_name_' . $field_index ] = $matched[1];
-                $fields_compatible[ 'types_field_data_' . $field_index ] = $shortcode;
-            } else {
-                $fields_compatible[ 'name_' . $field_index ] = trim( $shortcode, '[]');
-                $fields_compatible[ 'types_field_name_' . $field_index ] = '';
-                $fields_compatible[ 'types_field_data_' . $field_index ] = '';
-            }
-
-            $fields_compatible[ 'row_title_' . $field_index ] = $field['field_name'];
-            $fields_compatible[ 'suffix_' . $field_index ] = '';
-
-            ++$field_index;
-        }
-        $loop_output_settings['fields'] = $fields_compatible;
-
-        // 'real_fields' will be an array of field shortcodes
-        $field_shortcodes = array();
-        foreach( $fields as $field ) {
-            $field_shortcodes[] = stripslashes( $field['shortcode'] );
-        }
-        $loop_output_settings['real_fields'] = $field_shortcodes;
-
-        // we'll be returning layout settings and content of a CT (optionally)
-        $result = array(
-            'loop_output_settings' => $loop_output_settings,
-            'ct_content' => $loop_output['ct_content'] );
-
-        return $result;
+    	$loop_output_generator = new \OTGS\Toolset\Views\View\LoopOutputGenerator();
+    	return $loop_output_generator->generate( $style, $fields, $args );
     }
 
 
@@ -1763,13 +1679,15 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      * @return string The shortcodes for all given fields.
      *
      * @since 1.10
+     * @since 2.6.4 This method was deprecated and it was replaced by this method inside a non static class.
+     *              It became a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and
+     *              calls the "generate_field_codes" method.
+     *
+     * @deprecated Use the "generate_field_codes" method of the "\OTGS\Toolset\Views\View\LoopOutputGenerator()" class instead.
      */
     private static function generate_field_codes( $fields, $row_prefix = '', $row_suffix = '' ) {
-        $field_codes = array();
-        foreach( $fields as $field ) {
-            $field_codes[] = $row_prefix . $field['prefix'] . $field['shortcode'] . $field['suffix'] . $row_suffix;
-        }
-        return implode( "\n", $field_codes );
+	    $loop_output_generator = new \OTGS\Toolset\Views\View\LoopOutputGenerator();
+	    return $loop_output_generator->generate_field_codes( $fields, $row_prefix, $row_suffix );
     }
 
 
@@ -1782,31 +1700,20 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      * @param array $args Additional arguments.
      *
      * @return array(
-     *     @type string $loop_template Loop Output code.
+     *     @type string $loop_template Loop code.
      *     @type string $ct_content Content of the Content Template or an empty string if it's not being used.
      * )
      *
      * @since 1.10
+     * @since 2.6.4 This method was deprecated and it was replaced by this method inside a non static class.
+     *              It became a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and
+     *              calls the "generate_unformatted_layout" method.
+     *
+     * @deprecated Use the "generate_unformatted_layout" method of the "\OTGS\Toolset\Views\View\LoopOutputGenerator()" class instead.
      */
     private static function generate_unformatted_layout( $fields, $args ) {
-
-        $indent = $args['use_loop_template'] ? "" : "\t\t";
-
-        $field_codes = WPV_View_Base::generate_field_codes( $fields, $indent );
-
-        if( $args['use_loop_template'] ) {
-            $ct_content = $field_codes;
-            $loop_template_body = "\t\t[wpv-post-body view_template=\"{$args['loop_template_title']}\"]";
-        } else {
-            $ct_content = '';
-            $loop_template_body = $field_codes;
-        }
-
-        $loop_template = "\t<wpv-loop>\n" . $loop_template_body . "\n\t</wpv-loop>\n\t";
-
-        return array(
-            'loop_template' => $loop_template,
-            'ct_content' => $ct_content );
+	    $loop_output_generator = new \OTGS\Toolset\Views\View\LoopOutputGenerator();
+	    return $loop_output_generator->generate_unformatted_layout( $fields, $args );
     }
 
 
@@ -1820,38 +1727,21 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      * @param string $list_type Type of the list. Can be 'ul' for unordered list or 'ol' for ordered list. Defaults to 'ul'.
      *
      * @return array(
-     *     @type string $loop_template Loop Output code.
+     *     @type string $loop_template Loop code.
      *     @type string $ct_content Content of the Content Template or an empty string if it's not being used.
      * )
      *
      * @since 1.10
+     * @since 2.6.4 This method was deprecated and it was replaced by this method inside a non static class.
+     *              It became a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and
+     *              calls the "generate_list_layout" method.
+     *
+     * @deprecated Use the "generate_list_layout" method of the "\OTGS\Toolset\Views\View\LoopOutputGenerator()" class instead.
      */
     private static function generate_list_layout( $fields, $args, $list_type = 'ul' ) {
-
-        $indent = $args['use_loop_template'] ? "" : "\t\t\t\t";
-        $field_codes = WPV_View_Base::generate_field_codes( $fields, $indent );
-        $list_type = ( 'ol' == $list_type ) ? 'ol' : 'ul';
-
-        if( $args['use_loop_template'] ) {
-            $ct_content = $field_codes;
-            $loop_template_body = "\t\t\t<li>[wpv-post-body view_template=\"{$args['loop_template_title']}\"]</li>";
-        } else {
-            $ct_content = '';
-            $loop_template_body = "\t\t\t<li>\n$field_codes\n\t\t\t</li>";
-        }
-
-        $loop_template =
-            "\t<$list_type class=\"wpv-loop js-wpv-loop\">\n"
-            . "\t\t<wpv-loop>\n"
-            . $loop_template_body . "\n"
-            . "\t\t</wpv-loop>\n"
-            . "\t</$list_type>\n\t";
-
-        return array(
-            'loop_template' => $loop_template,
-            'ct_content' => $ct_content );
+	    $loop_output_generator = new \OTGS\Toolset\Views\View\LoopOutputGenerator();
+	    return $loop_output_generator->generate_list_layout( $fields, $args, $list_type );
     }
-
 
     /**
      * Generate Table View layout.
@@ -1862,50 +1752,20 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      * @param array $args Additional arguments.
      *
      * @return array(
-     *     @type string $loop_template Loop Output code.
+     *     @type string $loop_template Loop code.
      *     @type string $ct_content Content of the Content Template or an empty string if it's not being used.
      * )
      *
      * @since 1.10
+     * @since 2.6.4 This method was deprecated and it was replaced by this method inside a non static class.
+     *              It became a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and
+     *              calls the "generate_table_of_fields_layout" method.
+     *
+     * @deprecated Use the "generate_table_of_fields_layout" method of the "\OTGS\Toolset\Views\View\LoopOutputGenerator()" class instead.
      */
     private static function generate_table_of_fields_layout( $fields, $args = array() ) {
-
-        // Optionally render table header with field names.
-        $thead = '';
-        if ( $args['include_field_names'] ) {
-            $thead = "\t\t<thead>\n\t\t\t<tr>\n";
-            foreach( $fields as $field ) {
-                $thead .= "\t\t\t\t<th>[wpv-heading name=\"{$field['header_name']}\"]{$field['row_title']}[/wpv-heading]</th>\n";
-            }
-            $thead .= "\t\t\t</tr>\n\t\t</thead>\n";
-        }
-
-        // Table body
-        $indent = $args['use_loop_template'] ? "" : "\t\t\t\t";
-        $field_codes = WPV_View_Base::generate_field_codes( $fields, $indent . '<td>', '</td>' );
-
-        if( $args['use_loop_template'] ) {
-            $ct_content = $field_codes;
-            $loop_template_body = "\t\t\t\t[wpv-post-body view_template=\"{$args['loop_template_title']}\"]";
-        } else {
-            $ct_content = '';
-            $loop_template_body = $field_codes;
-        }
-
-        // Put it all together.
-        $loop_template =
-            "\t<table width=\"100%\">\n"
-            . $thead
-            . "\t\t<tbody class=\"wpv-loop js-wpv-loop\">\n"
-            . "\t\t<wpv-loop>\n"
-            . "\t\t\t<tr>\n"
-            . $loop_template_body . "\n"
-            . "\t\t\t</tr>\n"
-            . "\t\t</wpv-loop>\n\t\t</tbody>\n\t</table>\n\t";
-
-        return array(
-            'loop_template' => $loop_template,
-            'ct_content' => $ct_content );
+	    $loop_output_generator = new \OTGS\Toolset\Views\View\LoopOutputGenerator();
+	    return $loop_output_generator->generate_table_of_fields_layout( $fields, $args );
     }
 
 
@@ -1918,44 +1778,20 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      * @param array $args Additional arguments.
      *
      * @return array(
-     *     @type string $loop_template Loop Output code.
+     *     @type string $loop_template Loop code.
      *     @type string $ct_content Content of the Content Template or an empty string if it's not being used.
      * )
      *
      * @since 1.10
+     * @since 2.6.4 This method was deprecated and it was replaced by this method inside a non static class.
+     *              It became a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and
+     *              calls the "generate_table_layout" method.
+     *
+     * @deprecated Use the "generate_table_layout" method of the "\OTGS\Toolset\Views\View\LoopOutputGenerator()" class instead.
      */
     private static function generate_table_layout( $fields, $args ) {
-
-        $indent = $args['use_loop_template'] ? "" : "\t\t\t\t";
-        $field_codes = WPV_View_Base::generate_field_codes( $fields, $indent );
-
-        if( $args['use_loop_template'] ) {
-            $ct_content = $field_codes;
-            $loop_template_body = "\t\t\t\t[wpv-post-body view_template=\"{$args['loop_template_title']}\"]";
-        } else {
-            $ct_content = '';
-            $loop_template_body = $field_codes;
-        }
-
-        $cols = $args['tab_column_count'];
-
-        $loop_template =
-            "\t<table width=\"100%\" class=\"wpv-loop js-wpv-loop\">\n\t<wpv-loop wrap=\"$cols\" pad=\"true\">\n"
-            . "\t\t[wpv-item index=1]\n"
-            . "\t\t<tr>\n\t\t\t<td>\n$loop_template_body\n\t\t\t</td>\n"
-            . "\t\t[wpv-item index=other]\n"
-            . "\t\t\t<td>\n$loop_template_body\n\t\t\t</td>\n"
-            . "\t\t[wpv-item index=$cols]\n"
-            . "\t\t\t<td>\n$loop_template_body\n\t\t\t</td>\n\t\t</tr>\n"
-            . "\t\t[wpv-item index=pad]\n"
-            . "\t\t\t<td></td>\n"
-            . "\t\t[wpv-item index=pad-last]\n"
-            . "\t\t\t<td></td>\n\t\t</tr>\n"
-            . "\t</wpv-loop>\n\t</table>\n\t";
-
-        return array(
-            'loop_template' => $loop_template,
-            'ct_content' => $ct_content );
+	    $loop_output_generator = new \OTGS\Toolset\Views\View\LoopOutputGenerator();
+	    return $loop_output_generator->generate_table_layout( $fields, $args );
     }
 
 
@@ -1970,104 +1806,20 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
      *
      * @return null|array Null on error (missing bootstrap version), otherwise the array:
      *     array (
-     *         @type string $loop_template Loop Output code.
+     *         @type string $loop_template Loop code.
      *         @type string $ct_content Content of the Content Template or an empty string if it's not being used.
      *     )
      *
      * @since 1.10
+     * @since 2.6.4 This method was deprecated and it was replaced by this method inside a non static class.
+     *              It became a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and
+     *              calls the "generate_bootstrap_grid_layout" method.
+     *
+     * @deprecated Use the "generate_bootstrap_grid_layout" method of the "\OTGS\Toolset\Views\View\LoopOutputGenerator()" class instead.
      */
     private static function generate_bootstrap_grid_layout( $fields, $args ) {
-
-        $column_count = $args['bootstrap_column_count'];
-
-        // Fail if we don't have valid bootstrap version
-        $bootstrap_version = wpv_getarr( $args, 'bootstrap_version', 'undefined', array( 2, 3 ) );
-        if( 'undefined' == $bootstrap_version ) {
-            return null;
-        }
-
-        $indent = $args['use_loop_template'] ? "" : "\t\t\t\t";
-        $field_codes = WPV_View_Base::generate_field_codes( $fields, $indent );
-
-        // Prevent division by zero
-        if( $column_count < 1 ) {
-            return null;
-        }
-
-        $column_offset = 12 / $column_count;
-
-        $output = '';
-
-        // Row style and cols class for bootstrap 2
-        $row_style = ( $bootstrap_version == 2 ) ? ' row-fluid' : '';
-        $col_style = ( $bootstrap_version == 2 ) ? 'span' : 'col-sm-';
-        $col_class = $col_style . $column_offset;
-
-        // Add row class (optional for bootstrap 2)
-        $row_class = ( $args['add_row_class'] || ( 3 == $bootstrap_version ) ) ? 'row' : '';
-
-        if( $args['use_loop_template'] ) {
-            $ct_content = $field_codes;
-            $loop_item = "<div class=\"$col_class\">[wpv-post-body view_template=\"{$args['loop_template_title']}\"]</div>";
-        } else {
-            $ct_content = '';
-            $loop_item = "<div class=\"$col_class\">\n$field_codes\n\t\t\t</div>";
-        }
-
-        if( $args['add_container'] ) {
-            $output .= "\t<div class=\"container wpv-loop js-wpv-loop\">\n";
-        }
-
-        $output .= "\t<wpv-loop wrap=\"{$column_count}\" pad=\"true\">\n";
-
-        // If the first column is also a last column, close the div tag.
-        $ifone = ( 1 == $column_count ) ? "\n\t\t</div>" : '';
-
-        if( $args['render_individual_columns'] ) {
-            // Render items for each column.
-            $output .=
-                "\t\t[wpv-item index=1]\n"
-                . "\t\t<div class=\"{$row_class} {$row_style}\">\n"
-                . "\t\t\t$loop_item$ifone\n";
-            for( $i = 2; $i < $column_count; ++$i ) {
-                $output .=
-                    "\t\t[wpv-item index=$i]\n" .
-                    "\t\t\t$loop_item\n";
-            }
-        } else {
-            // Render compact HTML
-            $output .=
-                "\t\t[wpv-item index=1]\n"
-                . "\t\t<div class=\"{$row_class} {$row_style}\">\n"
-                . "\t\t\t$loop_item$ifone\n"
-                . "\t\t[wpv-item index=other]\n"
-                . "\t\t\t$loop_item\n";
-        }
-
-        // Render item for last column.
-        if ( $column_count > 1) {
-            $output .=
-                "\t\t[wpv-item index=$column_count]\n"
-                . "\t\t\t$loop_item\n"
-                . "\t\t</div>\n";
-        }
-
-        // Padding items
-        $output .=
-            "\t\t[wpv-item index=pad]\n"
-            . "\t\t\t<div class=\"{$col_class}\"></div>\n"
-            . "\t\t[wpv-item index=pad-last]\n"
-            . "\t\t\t<div class=\"{$col_class}\"></div>\n"
-            . "\t\t</div>\n"
-            . "\t</wpv-loop>\n\t";
-
-        if ( $args['add_container'] ) {
-            $output .= "</div>\n\t";
-        }
-
-        return array(
-            'loop_template' => $output,
-            'ct_content' => $ct_content );
+	    $loop_output_generator = new \OTGS\Toolset\Views\View\LoopOutputGenerator();
+	    return $loop_output_generator->generate_bootstrap_grid_layout( $fields, $args );
     }
 
 
@@ -2080,7 +1832,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 	 * Create a duplicate of this View.
 	 *
 	 * Clone the View and it's postmeta. If there is a Loop Template assigned, duplicate that as well and update
-	 * references (in the appropriate postmeta, in shortcodes in loop output, etc.) in the duplicated View.
+	 * references (in the appropriate postmeta, in shortcodes in loop, etc.) in the duplicated View.
 	 *
 	 * @param string $new_post_title Title of the new View. Must not be used in any existing View or WPA.
 	 * @param bool $adjust_duplicate_title If true, the title might get changed in order to ensure it's uniqueness.
@@ -2197,7 +1949,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
         }
 
 
-        // Replace name of the old Loop template with new name in Loop output.
+        // Replace name of the old Loop template with new name in Loop.
         $loop_output = wpv_getarr( $new_postmeta_values[ WPV_View_Base::POSTMETA_LOOP_SETTINGS ], WPV_View_Base::LOOP_SETTINGS_META_HTML, '' );
         if ( !empty( $loop_output ) ) {
 

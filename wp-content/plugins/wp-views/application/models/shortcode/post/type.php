@@ -68,7 +68,11 @@ class WPV_Shortcode_Post_Type implements WPV_Shortcode_Interface {
 		$out = '';
 		
 		$item = get_post( $item_id );
-		
+
+		if ( null === $item ) {
+			return $out;
+		}
+
 		$item_object = get_post_type_object( $item->post_type );
 		
 		if ( ! is_null( $item_object ) ) {

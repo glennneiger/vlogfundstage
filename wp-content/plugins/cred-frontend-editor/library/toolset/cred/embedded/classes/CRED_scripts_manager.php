@@ -20,14 +20,14 @@ if( ! class_exists( 'CRED_scripts_manager', false ) ) {
     class CRED_scripts_manager extends Toolset_Assets_Manager
     {
 
-        protected function __initialize_styles()
+        protected function initialize_styles()
         {
 
             return;
         }
 
 
-        protected function __initialize_scripts()
+        protected function initialize_scripts()
         {
 
             return;

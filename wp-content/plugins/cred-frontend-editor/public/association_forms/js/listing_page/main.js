@@ -28,6 +28,7 @@ Toolset.CRED.AssociationFormsListing.Class = function( $ ) {
 
         var modelData = self.getModelData();
         //noinspection JSUnresolvedVariable
+        Toolset.CRED.AssociationFormsListing.toolsetFormsVersion = modelData.toolsetFormsVersion;
         Toolset.CRED.AssociationFormsListing.jsPath = modelData.jsIncludePath;
         Toolset.CRED.AssociationFormsListing.jsListingPath = modelData.jsListingIncludePath;
         self.initStaticData( modelData );
@@ -110,11 +111,11 @@ Toolset.CRED.AssociationFormsListing.Class = function( $ ) {
     self.loadDependencies = function( nextStep ) {
         // Continue after loading the view of the listing table.
         Toolset.CRED.head.load(
-            Toolset.CRED.AssociationFormsListing.jsPath + '/dialogs/DeleteForm.js',
-            Toolset.CRED.AssociationFormsListing.jsPath + '/dialogs/DuplicateForm.js',
-            Toolset.CRED.AssociationFormsListing.jsPath + '/AssociationFormActions.js',
-            Toolset.CRED.AssociationFormsListing.jsListingPath + '/ListingViewModel.js',
-            Toolset.CRED.AssociationFormsListing.jsListingPath + '/AssociationFormViewModel.js',
+            Toolset.CRED.AssociationFormsListing.jsPath + '/dialogs/DeleteForm.js?ver=' + Toolset.CRED.AssociationFormsListing.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsListing.jsPath + '/dialogs/DuplicateForm.js?ver=' + Toolset.CRED.AssociationFormsListing.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsListing.jsPath + '/AssociationFormActions.js?ver=' + Toolset.CRED.AssociationFormsListing.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsListing.jsListingPath + '/ListingViewModel.js?ver=' + Toolset.CRED.AssociationFormsListing.toolsetFormsVersion,
+            Toolset.CRED.AssociationFormsListing.jsListingPath + '/AssociationFormViewModel.js?ver=' + Toolset.CRED.AssociationFormsListing.toolsetFormsVersion,
             nextStep
         );
     };

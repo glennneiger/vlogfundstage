@@ -10,7 +10,7 @@ class WPDDL_features
 	function __construct()
 	{
 		
-        
+
         add_filter( 'ddl_default_support_features', array($this, 'add_supported_featured_cells'), 8, 1 );
 
 		$this->_support_features = apply_filters('ddl_default_support_features',array(
@@ -22,7 +22,7 @@ class WPDDL_features
 		$this->_all_features = apply_filters('ddl_default_all_features', $this->_support_features );
 		$this->_all_features[] = 'post-content-cell';
 		$this->_all_features[] = 'post-loop-cell';
-		
+
 	}
 
 
@@ -44,7 +44,7 @@ class WPDDL_features
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -70,12 +70,13 @@ class WPDDL_features
 				'imagebox-cell',
 				'cred-user-cell',
 				'cred-cell',
+				'cred-relationship-cell',
 				'comments-cell',
 				'grid-cell',
 				'ddl_missing_cell_type',
 				'ddl-container',
 				'tabs-cell',
-				'accordion-cell',
+				'accordion-cell'
 		) );
 	}
 

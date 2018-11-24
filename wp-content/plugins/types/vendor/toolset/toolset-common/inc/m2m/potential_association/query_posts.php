@@ -1,5 +1,8 @@
 <?php
 
+use OTGS\Toolset\Common\M2M\PotentialAssociation as potentialAssociation;
+
+
 /**
  * When you have a relationship and a specific element in one role, this
  * query class will help you to find elements that can be associated with it.
@@ -42,13 +45,15 @@ class Toolset_Potential_Association_Query_Posts implements IToolset_Potential_As
 	 *
 	 * @param IToolset_Relationship_Definition $relationship Relationship to query for.
 	 * @param IToolset_Relationship_Role_Parent_Child $target_role Element role. Only parent or child are accepted.
-	 * @param IToolset_Element $for_element Element that may be corrected with the result of the query.
+	 * @param IToolset_Element $for_element Element that may be connected with the result of the query.
 	 * @param array $args Additional query arguments:
 	 *     - search_string: string
 	 *     - count_results: bool
 	 *     - items_per_page: int
 	 *     - page: int
 	 *     - wp_query_override: array
+	 *     - exclude_elements: IToolset_Element[] Elements to exclude from the results and when checking
+	 *       whether the target element ($for_element) can accept another association.
 	 * @param Toolset_Relationship_Query_Factory|null $query_factory_di
 	 * @param Toolset_Element_Factory|null $element_factory_di
 	 */
@@ -75,14 +80,26 @@ class Toolset_Potential_Association_Query_Posts implements IToolset_Potential_As
 
 
 	/**
+	 * @param bool $check_can_connect_another_element Check wheter it is possible to connect any other element at all,
+	 *     and return an empty result if not.
+	 * @param bool $check_distinct_relationships Exclude elements that would break the "distinct" property of a relationship.
+	 *     You can set this to false if you're overwriting an existing association.
+	 *
 	 * @return IToolset_Post[]
 	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 */
-	public function get_results() {
+	public function get_results( $check_can_connect_another_element = true, $check_distinct_relationships = true ) {
+
+		// If the element we want to connect the results to is not accepting any
+		// associations (as it may have reached its cardinality limit), there's no point
+		// in searching any further.
+		if( $check_can_connect_another_element && ! $this->can_connect_another_element()->is_success() ) {
+			return array();
+		}
 
 		$query_args = array(
 
-			// Performance ptimizations
+			// Performance optimizations
 			//
 			//
 			'ignore_sticky_posts' => true,
@@ -110,22 +127,62 @@ class Toolset_Potential_Association_Query_Posts implements IToolset_Potential_As
 			$query_args['s'] = $search_string;
 		}
 
+		$elements_to_exclude = $this->get_exclude_elements();
+		if( ! empty( $elements_to_exclude ) ) {
+			$query_args['post__not_in'] = array_map( function( IToolset_Post $post ) {
+				return $post->get_id();
+			}, $elements_to_exclude );
+		}
+
 		$query_args = array_merge( $query_args, $this->get_additional_wp_query_args() );
+
+		// This is to prevent JOIN clause duplication between the classes that adjust the WP_Query clauses.
+		$join_manager = new potentialAssociation\JoinManager(
+			$this->relationship, $this->target_role, $this->for_element
+		);
+		$join_manager->hook();
 
 		// For distinct relationships, we need to make sure that the returned posts
 		// aren't already associated with $for_element.
-		$augment_query_for_distinct_relationships = $this->query_factory->distinct_relationship_posts(
-			$this->relationship,
-			$this->target_role,
-			$this->for_element
-		);
+		if( $check_distinct_relationships ) {
+			$augment_query_for_distinct_relationships = $this->query_factory->distinct_relationship_posts(
+				$this->relationship,
+				$this->target_role,
+				$this->for_element,
+				$join_manager
+			);
 
-		$augment_query_for_distinct_relationships->before_query();
+			$augment_query_for_distinct_relationships->before_query();
+		}
+
+		// Unless we're told not to check for cardinality limits of the target posts, we need to make yet another
+		// adjustment. It cannot be implemented directly in Toolset_Relationship_Distinct_Post_Query because
+		// we can (theoretically) have non-distinct relationships where this still needs to be checked.
+		if( $check_can_connect_another_element ) {
+			$augment_query_for_cardinality_limits = $this->query_factory->cardinality_query_posts(
+				$this->relationship,
+				$this->target_role,
+				$this->for_element,
+				$join_manager
+			);
+
+			$augment_query_for_cardinality_limits->before_query();
+		}
 
 		$query = $this->query_factory->wp_query( $query_args );
 		$results = $query->get_posts();
 
-		$augment_query_for_distinct_relationships->after_query();
+		if( $check_distinct_relationships ) {
+			/** @noinspection PhpUndefinedVariableInspection */
+			$augment_query_for_distinct_relationships->after_query();
+		}
+
+		if( $check_can_connect_another_element ) {
+			/** @noinspection PhpUndefinedVariableInspection */
+			$augment_query_for_cardinality_limits->after_query();
+		}
+
+		$join_manager->unhook();
 
 		$this->found_results = (int) $query->found_posts;
 
@@ -164,6 +221,21 @@ class Toolset_Potential_Association_Query_Posts implements IToolset_Potential_As
 		}
 
 		return $limit;
+	}
+
+
+	private function get_exclude_elements() {
+		$elements = array_map( function( $element ) {
+			if( ! $element instanceof IToolset_Post ) {
+				throw new InvalidArgumentException(
+					'Invalid element provided in the exclude_elements query argument. Only posts are accepted.'
+				);
+			}
+
+			return $element;
+		}, toolset_ensarr( toolset_getarr( $this->args, 'exclude_elements' ) ) );
+
+		return $elements;
 	}
 
 
@@ -330,16 +402,16 @@ class Toolset_Potential_Association_Query_Posts implements IToolset_Potential_As
 		IToolset_Relationship_Role_Parent_Child $role, IToolset_Element $element
 	) {
 		$query = $this->query_factory->associations_v2();
-		$query
+		$row_count = $query
 			->add( $query->relationship_slug( $this->relationship->get_slug() ) )
 			->add( $query->element( $element, $role ) )
+			->add( $query->do_and(
+				array_map( function( IToolset_Post $post ) use( $query, $role ) {
+					return $query->not( $query->element( $post, $role->other() ) );
+				}, $this->get_exclude_elements() )
+			) )
 			->do_not_add_default_conditions() // include all existing associations
-			->need_found_rows()
-			->limit( 1 ) // because we're not interested in the actual resuls
-			->return_association_uids() // ditto
-			->get_results();
-
-		$row_count = $query->get_found_rows();
+			->get_found_rows_directly();
 
 		return $row_count;
 	}

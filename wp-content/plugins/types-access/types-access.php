@@ -1,16 +1,16 @@
 <?php
 /*
 Plugin Name: Toolset Access
-Plugin URI: http://wp-types.com/home/types-access/?utm_source=accessplugin&utm_campaign=access&utm_medium=release-notes-plugins-list&utm_term=Visit plugin site
+Plugin URI: http://toolset.com/home/types-access/?utm_source=accessplugin&utm_campaign=access&utm_medium=release-notes-plugins-list&utm_term=Visit plugin site
 Description: User access control and roles management
 Author: OnTheGoSystems
 Author URI: http://www.onthegosystems.com/
-Version: 2.4.3.5
+Version: 2.5.2
 */
 
 
 // current version
-define( 'TACCESS_VERSION', '2.4.3.5' );
+define( 'TACCESS_VERSION', '2.5.2' );
 
 if ( function_exists('realpath') ) {
 	define( 'TACCESS_PLUGIN_PATH', realpath( dirname( __FILE__ ) ) );
@@ -301,10 +301,10 @@ function get_wpml_caps(){
 //Get Toolset caps
 function get_toolset_caps(){
 	$wpml_caps_list = array(
-		'toolset_manage_views'=>__('Manage Views','wpcf-access'),
-		'toolset_manage_types'=>__('Manage Types','wpcf-access'),
-		'toolset_manage_cred'=>__('Manage CRED','wpcf-access'),
-		'toolset_manage_access'=>__('Manage Access','wpcf-access'),
+		'toolset_manage_views' => __( 'Manage Views', 'wpcf-access' ),
+		'toolset_manage_types' => __( 'Manage Types', 'wpcf-access' ),
+		'toolset_manage_cred' => __( 'Manage Forms', 'wpcf-access' ),
+		'toolset_manage_access' => __( 'Manage Access', 'wpcf-access' ),
 	);
 	return $wpml_caps_list;
 }
@@ -320,7 +320,7 @@ function wpcf_access_woocommerce_capabilities ($data){
 	if ( $is_woocommerce ){
         $wp_roles['label'] = __('Woocommerce capabilities', 'wpcf-access');
         $wp_roles['capabilities'] = array(
-            'manage_woocommerce' => __('Manage WooCommerce Settings','wpcf-access'),            
+            'manage_woocommerce' => __('Manage WooCommerce Settings','wpcf-access'),
             'view_woocommerce_reports' => __('Manage WooCommerce Reports','wpcf-access')
         );
         $data[] = $wp_roles;
@@ -329,13 +329,13 @@ function wpcf_access_woocommerce_capabilities ($data){
 }
 
 function wpcf_access_wpml_capabilities ($data){
-   
-    
+
+
     if( defined('ICL_SITEPRESS_VERSION') && ICL_SITEPRESS_VERSION >= 3.1){
-        
-        
+
+
         if ( has_filter('wpml_roles_read_only') ){
-            $wp_roles = apply_filters('wpml_roles_read_only',array());          
+            $wp_roles = apply_filters('wpml_roles_read_only',array());
         }else{
             $wp_roles['label'] = __('WPML capabilities', 'wpcf-access');
             $wp_roles['capabilities'] = array(
@@ -369,21 +369,21 @@ function wpcf_access_general_capabilities ($data){
     return $data;
 }
 
-function wpcf_access_access_capabilities ($data){    
+function wpcf_access_access_capabilities ($data){
     $wp_roles['label'] = __('Access capabilities', 'wpcf-access');
     $wp_roles['capabilities'] = array(
 		'access_change_post_group'=>__('Select access group for content','wpcf-access'),
         'access_create_new_group'=>__('Create new access groups','wpcf-access')
     );
-    $data[] = $wp_roles;	
+    $data[] = $wp_roles;
     return $data;
 }
-function wpcf_access_layouts_capabilities ($data){    
+function wpcf_access_layouts_capabilities ($data){
     if ( class_exists('WPDD_Layouts_Users_Profiles') ){
         $wp_roles['label'] = __('Layouts capabilities', 'wpcf-access');
         $wp_roles['capabilities'] = WPDD_Layouts_Users_Profiles::ddl_get_capabilities();
         $data[] = $wp_roles;
-	}	
+	}
     return $data;
 }
 
@@ -401,8 +401,8 @@ function otg_access_plugin_row_meta( $plugin_meta, $plugin_file, $plugin_data, $
 	if ( $plugin_file == $this_plugin ) {
 		$plugin_meta[] = sprintf(
 				'<a href="%s" target="_blank">%s</a>',
-				'https://wp-types.com/version/access-2-4-3-5/?utm_source=accessplugin&utm_campaign=access&utm_medium=release-notes-plugins-list&utm_term=Access 2.4.3.5 release notes',
-				__( 'Access 2.4.3.5 release notes', 'wpcf-access' )
+				'https://toolset.com/version/access-2-5-2/?utm_source=accessplugin&utm_campaign=access&utm_medium=release-notes-plugins-list&utm_term=Access 2.5.2 release notes',
+				__( 'Access 2.5.2 release notes', 'wpcf-access' )
 			);
 	}
 	return $plugin_meta;

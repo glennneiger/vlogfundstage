@@ -14,6 +14,8 @@ class WPDDL_WPML_Strings_In_Content {
 				foreach ( $attributes as $key => $attribute ) {
 					if ( 'context' == $key ) {
 						$shortcode['context'] = $attribute;
+					} else if( 'name' == $key ){
+						$shortcode['name'] = $attribute;
 					}
 				}
 

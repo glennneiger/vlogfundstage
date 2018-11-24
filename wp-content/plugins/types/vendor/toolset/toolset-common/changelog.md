@@ -1,5 +1,65 @@
 # Toolset Common Library
 
+## 2.8
+* Legacy branch of the library created to support Types 2.3. Contains all fixes up until 3.0.1.
+
+## 3.0.1
+* Adjust the shortcodes GUI API so it generates attributes wrapped in single quotes.
+
+## 3.0
+* (types-1537) Display the Installer's Compatibility Reporting setting wherever necessary.
+* (toolsetcommon-406) Add new actions to inform about associations being created and deleted.
+* (types-1583) Fix: Errors in PHP 5.3.6.
+* (types-1553) Fix: Do not assume that an option for post type definitions is set.
+* Migration: do not enforce a specific translation mode between posts involved in relationships to migrate.
+* API: fails gracefully when trying to get a relationship by a non existing slug.
+* API: two new public functions to create associations.
+* WPML: support defining associations between posts without enforcing a specific translation mode for them.
+* WPML: ensure that data from a post reference field can be rendered.
+
+## 2.7.1
+* Tag for Forms 2.0-RC3
+* Better validation methods in shared forms.
+* Fixed styling issue in the Toolset shared admin pages.
+* Fixed the shortcodes API GUI on items that have a content and include instructions for it.
+
+## 2.7.0
+* Tag for upcoming Toolset releases.
+* Fix a PHP 5.3 compatibility issue.
+
+## 2.6.9.1
+* Restore compatibility with Toolset plugins using previous versions of the assets manager shared class.
+
+## 2.6.9
+* Restore the $current_page value for the post selector shortcode attribute.
+* Remove an admin notice about using Toolset plugins together.
+
+## 2.6.8
+* (types-1444) Fixed inconsistent API call results when WPML switcher is set to "All languages".
+
+## 2.6.7
+* Improve the shortcodes GUI post selector for better m2m compatibility.
+* Extend the m2m relationships query API so it can play with intermediary post types.
+
+## 2.6.6
+* (toolsetcommon-390) Make sure that there are no potential posts for association when the other (known) post has reached its cardinality limit.
+* (toolsetcommon-381) Make the `_wpcf_belongs_{$post_type}_id` usage in WP_Query meta queries safe to use also in m2m.
+* (types-1467) Fixes in the data structure upgrade mechanism and in the upgrade command for m2m-v1 tables.
+
+## 2.6.5
+* Released with CRED 2.0-b2 and Layouts 2.3-b1
+* Include a compatibility layer for xxx_post_meta native functions usage on legacy relationships postmeta keys.
+
+## 2.6.4
+* Added a set of checks to avoid errors with third parties also loading the Recaptcha v1.11 library.
+* (toolsetcommon-382) Fix issues with the Toolset_Post_Type_Repository too early initialization.
+* (toolsetcommon-369) Fix: Avoid repeated results in the association query.
+
+## 2.6.3
+* Compatibility for Types 2.3-b4
+* Fixed an issue using repeatable File field inside a relationship
+* (types-1374) Fail gracefully if dealing with corrupted `_wpcf_belongs_*_id` postmeta during the m2m migration.
+
 ## 2.6.2
 * Various minor bugfixes.
 * (toolsetcommon-290) First version of the public relationship API for both legacy and m2m relationships.
@@ -248,7 +308,6 @@
 - Fixed issue when there is more than one CRED form on a page with the same taxonomy.
 - Fixed a little problem with edit skype button modal window - was too narrow.
 - Fixed empty title problem for filter "wpt_field_options" on user edit/add screen.
-https://wp-types.com/forums/topic/populate-select-field-in-wpcf-um-group/
 - Added filter "toolset_editor_add_form_buttons" to disable Toolset buttons on the post editor.
 - Added placeholder attributes to fields.
 - Updated CakePHP validation URL method to allow new TLD's.

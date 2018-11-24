@@ -227,6 +227,12 @@ WPViews.ParametricSearchFilters = function( $ ) {
 			shortcode_string		= shortcode_data.shortcode,
 			shortcode_gui_action	= Toolset.hooks.applyFilters( 'wpv-filter-wpv-shortcodes-gui-get-gui-action', 'insert' );
 		
+		shortcode_string = Toolset.hooks.applyFilters( 
+			'wpv-filter-wpv-shortcodes-gui-add-control-structure-on-insert-for-' + shortcode_name, 
+			shortcode_string, 
+			shortcode_data 
+		);
+		
 		if ( _.contains( [ 'wpv-control-post-taxonomy', 'wpv-control-postmeta' ], shortcode_name ) ) {
 			
 			if ( 'insert' == shortcode_gui_action ) {
@@ -313,71 +319,6 @@ WPViews.ParametricSearchFilters = function( $ ) {
 				}
 			}
 			
-		}
-		
-		if ( 'wpv-control-post-relationship' == shortcode_name ) {
-			var shortcode_atts_relationship = [ 'url_param', 'ancestors', 'format' ],
-				shortcode_atts_ancestor = [ 'type', 'default_label', 'format', 'orderby', 'order', 'output', 'style', 'class', 'label_style', 'label_class' ],
-				shortcode_relationship = '',
-				shortcode_ancestor = '',
-				shortcode_ancestors_attributes = '';
-				filter_ancestors = ( _.has( shortcode_atts, 'ancestors' ) ) ? shortcode_atts.ancestors.split( '>' ) : [],
-				control_type = '',
-				output_type = '',
-				post_types_reference = Toolset.hooks.applyFilters( 'wpv-filter-wpv-edit-screen-get-post-types-reference', {} );
-			
-			shortcode_relationship += '[wpv-control-post-relationship';
-			
-			if ( _.has( shortcode_raw_atts, 'type' ) ) {
-				control_type = shortcode_raw_atts.type;
-			}
-			if ( _.has( shortcode_raw_atts, 'output' ) ) {
-				output_type = shortcode_raw_atts.output;
-			}
-			
-			_.each( shortcode_atts, function( value, key ) {
-				if ( 
-					$.inArray( key, shortcode_atts_relationship ) !== -1 
-					&& value !== false
-				) {
-					shortcode_relationship += " " + key + '="' + value + '"';
-				}
-				if ( 
-					$.inArray( key, shortcode_atts_ancestor ) !== -1 
-					&& value !== false
-				) {
-					shortcode_ancestors_attributes += " " + key + '="' + value + '"';
-				}
-			});
-			
-			shortcode_relationship += ']'
-			
-			shortcode_relationship += "\n";
-			
-			_.each( filter_ancestors, function( ancestor, index ) {
-				shortcode_ancestor = '[wpv-control-post-ancestor';
-				shortcode_ancestor += shortcode_ancestors_attributes;
-				shortcode_ancestor += ' ancestor_type="' + ancestor + '"';
-				shortcode_ancestor += ']';
-				
-				var shortcode_label = _.has( post_types_reference, ancestor ) ? ( '[wpml-string context="wpv-views"]' + post_types_reference[ ancestor ] + '[/wpml-string]' ) : '';
-				
-				if ( 'bootstrap' == output_type ) {
-					shortcode_ancestor = '<div class="form-group">' + '\n\t' + '<label>' + shortcode_label + '</label>' + '\n\t' + shortcode_ancestor + '\n' + '</div>';
-				} else {
-                    shortcode_ancestor_start = '';
-					if ( index > 0 ) {
-                        shortcode_ancestor_start = '\n';
-					}
-					shortcode_ancestor = shortcode_ancestor_start + '\t' + shortcode_label + '\n\t' + shortcode_ancestor;
-				}
-				
-				shortcode_relationship += shortcode_ancestor;
-			});
-			
-			shortcode_relationship += "\n" + '[/wpv-control-post-relationship]';
-			
-			shortcode_string = shortcode_relationship;
 		}
 		
 		if ( 
@@ -843,6 +784,9 @@ WPViews.ParametricSearchFilters = function( $ ) {
 				attribute_pairs.default_date = false;
 				if ( 'custom' == attribute_pairs.source ) {
 					attribute_pairs = self.compute_control_postmeta_custom_values( attribute_pairs );
+				} else {
+					attribute_pairs.values = false;
+					attribute_pairs.display_values = false;
 				}
 				if ( 'select' == actual_type ) {
 					attribute_pairs.label_class = false;
@@ -854,52 +798,54 @@ WPViews.ParametricSearchFilters = function( $ ) {
 				attribute_pairs.title = false;
 				attribute_pairs.date_format = false;
 				attribute_pairs.default_date = false;
+				attribute_pairs.default_label = false;
+
 				if ( 'custom' == attribute_pairs.source ) {
 					attribute_pairs = self.compute_control_postmeta_custom_values( attribute_pairs );
+				} else {
+					attribute_pairs.values = false;
+					attribute_pairs.display_values = false;
 				}
 				if ( 'multi-select' == actual_type ) {
 					attribute_pairs.label_class = false;
 					attribute_pairs.label_style = false;
 				}
-				
-				attribute_pairs.default_label = false;
 				break;
 			case 'checkbox':
 				attribute_pairs.date_format = false;
 				attribute_pairs.default_date = false;
-				
 				attribute_pairs.source = false;
 				attribute_pairs.default_label = false;
 				attribute_pairs.format = false;
 				attribute_pairs.order = false;
+				attribute_pairs.values = false;
+				attribute_pairs.display_values = false;
 				break;
 			case 'date':
 				attribute_pairs.title = false;
-				
 				attribute_pairs.source = false;
 				attribute_pairs.default_label = false;
 				attribute_pairs.format = false;
 				attribute_pairs.order = false;
 				attribute_pairs.label_class = false;
 				attribute_pairs.label_style = false;
+				attribute_pairs.values = false;
+				attribute_pairs.display_values = false;
 				break;
 			case 'textfield':
 			default:
 				attribute_pairs.title = false;
 				attribute_pairs.date_format = false;
 				attribute_pairs.default_date = false;
-				
 				attribute_pairs.source = false;
 				attribute_pairs.default_label = false;
 				attribute_pairs.format = false;
 				attribute_pairs.order = false;
 				attribute_pairs.label_class = false;
 				attribute_pairs.label_style = false;
+				attribute_pairs.values = false;
+				attribute_pairs.display_values = false;
 				break;
-		}
-		
-		if ( 'custom' == attribute_pairs.source ) {
-			attribute_pairs.order = false;
 		}
 		
 		attribute_pairs.value_compare = false;
@@ -912,116 +858,6 @@ WPViews.ParametricSearchFilters = function( $ ) {
 		
 		attribute_pairs.shortcode_label = false;
 		
-		return attribute_pairs;
-	};
-	
-	self.adjust_control_post_relationship_gui_per_type = function() {
-		var value_type = $( '#wpv-control-post-relationship-type' ).val();
-		
-		switch( value_type ) {
-			case 'select':
-				$( '.js-wpv-shortcode-gui-attribute-wrapper-for-default_label' ).slideDown( 'fast' );
-				$( '.js-wpv-shortcode-gui-attribute-group-for-label_frontend_combo' ).slideUp( 'fast' );
-				break;
-			case 'multi-select':
-				$( '.js-wpv-shortcode-gui-attribute-wrapper-for-default_label' ).slideUp( 'fast' );
-				$( '.js-wpv-shortcode-gui-attribute-group-for-label_frontend_combo' ).slideUp( 'fast' );
-				break;
-			case 'radios':
-				$( '.js-wpv-shortcode-gui-attribute-wrapper-for-default_label' ).slideDown( 'fast' );
-				$( '.js-wpv-shortcode-gui-attribute-group-for-label_frontend_combo' ).slideDown( 'fast' );
-				break;
-			case 'checkboxes':
-				$( '.js-wpv-shortcode-gui-attribute-wrapper-for-default_label' ).slideUp( 'fast' );
-				$( '.js-wpv-shortcode-gui-attribute-group-for-label_frontend_combo' ).slideDown( 'fast' );
-				break;
-		}
-	};
-	
-	$( document ).on( 'change', '#wpv-control-post-relationship-type', function() {
-		self.adjust_control_post_relationship_gui_per_type();
-	});
-	
-	self.get_view_selected_post_types = function() {
-		var post_types_checks = $( 'input.js-wpv-query-post-type:checked' ), 
-			post_types = [];
-		post_types_checks.each( function( i ) {
-			post_types.push( $( this ).val() );
-		});
-		return post_types;
-	};
-	
-	// @todo improve this with actual post type names instead of slugs
-	self.adjust_control_post_relationship_dialog = function( data ) {
-		var tree_select		= $( '#wpv-control-post-relationship-ancestors' ),
-			tree_empty		= $( '<option>', { value: '', text: wpv_parametric_i18n.generic.select_one, disabled: 'disabled', selected: 'selected' } ),
-			ancestors		= [],
-			dialog_container = tree_select.closest( '.js-wpv-shortcode-gui-dialog-container' ),
-			query_mode		= Toolset.hooks.applyFilters( 'wpv-filter-wpv-edit-screen-get-query-mode', 'normal' ),
-			tree_reference	= Toolset.hooks.applyFilters( 'wpv-filter-wpv-edit-screen-get-post-relationship-tree-reference', {} ),
-			error_message	= '';
-		if ( query_mode == 'archive' ) {
-			_.each( tree_reference, function( value, key, list ) {
-				ancestors = _.union( ancestors, value.split( ',' ) );
-			});
-			error_message = '<p>' + wpv_parametric_i18n.dialogs.error_message.post_relationship.no_ancestors_defined + '</p>';
-		} else {
-			var relevant_post_types = self.get_view_selected_post_types();
-			_.each( tree_reference, function( value, key, list ) {
-				if ( _.contains( relevant_post_types, key ) ) {
-					ancestors = _.union( ancestors, value.split( ',' ) );
-				}
-			});
-			error_message = '<p>' + wpv_parametric_i18n.dialogs.error_message.post_relationship.no_ancestors_available + '</p>';
-		}
-		tree_select.find( 'option' ).remove();
-		if ( ancestors.length > 0 ) {
-			tree_select.append( tree_empty );
-			_.each( ancestors, function( item, index, list ) {
-				var item_option = $( '<option>', { value: item, text: item } );
-				tree_select.append( item_option );
-			});
-			
-			if (
-				_.has( data, 'overrides' ) 
-				&& _.has( data.overrides, 'attributes' ) 
-				&& _.has( data.overrides.attributes, 'ancestors' ) 
-			) {
-				var selected_ancestors_tree = data.overrides.attributes.ancestors;
-				if ( tree_select.find( 'option[value="' + selected_ancestors_tree + '"]' ).length > 0 ) {
-					tree_select.val( selected_ancestors_tree );
-				}
-			}
-			
-			self.adjust_control_post_relationship_gui_per_type();
-			
-		} else {
-			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-block-dialog', dialog_container, error_message );
-		}
-	};
-	
-	self.filter_control_post_relationship_computed_attributes = function( attribute_pairs ) {
-		if ( _.has( attribute_pairs, 'type' ) ) {
-			switch( attribute_pairs.type ) {
-				case 'select':
-					attribute_pairs.label_class = false;
-					attribute_pairs.label_style = false;
-					break;
-				case 'multi-select':
-					attribute_pairs.default_label = false;
-					attribute_pairs.label_class = false;
-					attribute_pairs.label_style = false;
-					break;
-				case 'radios':
-					
-					break;
-				case 'checkboxes':
-					attribute_pairs.default_label = false;
-					break;
-			}
-		};
-		attribute_pairs.value_compare = false;
-		attribute_pairs.shortcode_label = false;
 		return attribute_pairs;
 	};
 
@@ -1126,7 +962,7 @@ WPViews.ParametricSearchFilters = function( $ ) {
 	};
 
     /**
-     * Click handler for the "Unlock filter editor" hyperlinkCheck if the editor is locked and if it is, unlock it.
+     * Click handler for the "Unlock editor" hyperlinkCheck if the editor is locked and if it is, unlock it.
      *
      * @since 2.4.1
      */
@@ -1166,7 +1002,7 @@ WPViews.ParametricSearchFilters = function( $ ) {
 		 *
 		 * @since 2.4.0
 		 */
-		Toolset.hooks.addAction( 'wpv-action-wpv-shortcodes-gui-before-do-action', self.check_cursor_position, 1, 2 );
+		Toolset.hooks.addAction( 'wpv-action-wpv-shortcodes-gui-before-do-action', self.check_cursor_position, 1 );
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-shortcodes-gui-before-do-action', self.add_control_structure_on_insert );
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-shortcodes-gui-maybe-edit-shortcode-data', self.edit_stored_custom_search_shortcodes_attributes, 20 );
 		
@@ -1175,9 +1011,6 @@ WPViews.ParametricSearchFilters = function( $ ) {
 		
 		Toolset.hooks.addAction( 'wpv-action-wpv-shortcodes-gui-after-open-wpv-control-postmeta-shortcode-dialog', self.adjust_control_postmeta_dialog, 20 );
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-shortcodes-gui-wpv-control-postmeta-computed-attributes-pairs', self.filter_control_postmeta_computed_attributes );
-		
-		Toolset.hooks.addAction( 'wpv-action-wpv-shortcodes-gui-after-open-wpv-control-post-relationship-shortcode-dialog', self.adjust_control_post_relationship_dialog, 20 );
-		Toolset.hooks.addFilter( 'wpv-filter-wpv-shortcodes-gui-wpv-control-post-relationship-computed-attributes-pairs', self.filter_control_post_relationship_computed_attributes );
 
         Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-query-type-changed', self.maybeUnlockFilterEditor, 10 );
         Toolset.hooks.addAction( 'toolset_text_editor_CodeMirror_init', self.initFilterButtons, 999 );
@@ -1455,10 +1288,24 @@ WPViews.ParametricSubmitButton = function( $ ) {
 	};
 
 	self.handle_flags = function() {
+		if ( ! self.needsSubmitControl() ) {
+			self.button
+				.addClass( 'disabled' )
+				.removeClass( 'wpv-button-flagged' );
+			self.button_container.data( 'tooltip-text', wpv_parametric_i18n.toolbar_buttons.submit.tooltip.irrelevant );
+			self.button
+				.find( '.js-wpv-parametric-search-submit-button-irrelevant, .js-wpv-parametric-search-submit-button-incomplete, .js-wpv-parametric-search-submit-button-complete' )
+					.hide();
+			return;
+		}
+		
+		self.button
+			.removeClass( 'disabled' )
+			.addClass( 'wpv-button-flagged' );
+			
 		var update_mode = '';
 		if ( $( '.js-wpv-dps-ajax-results:checked' ).length > 0 ) {
 			update_mode = $( '.js-wpv-dps-ajax-results:checked' ).val();
-			self.button.addClass( 'wpv-button-flagged' );
 		}
 		if ( update_mode == 'enable' ) {
 			self.button
@@ -1486,6 +1333,11 @@ WPViews.ParametricSubmitButton = function( $ ) {
 		} else {
 			self.button_container.data( 'tooltip-text', wpv_parametric_i18n.toolbar_buttons.submit.tooltip.irrelevant );
 		}
+	};
+	
+	self.needsSubmitControl = function() {
+		var content = WPV_Toolset.CodeMirror_instance[ self.editor_id ].getValue();
+		return ( content.search(/\[wpv-control/) == -1 && content.search(/\[wpv-filter-search/) == -1 ) ? false : true ;
 	};
 
 	self.has_submit = function( ) {
@@ -1515,6 +1367,9 @@ WPViews.ParametricSubmitButton = function( $ ) {
 				shortcode:	'wpv-filter-submit',
 				title:		wpv_parametric_i18n.toolbar_buttons.submit.dialog_title
 			};
+			if ( self.button.hasClass( 'disabled' ) ) {
+				return false;
+			}
 			window.wpcfActiveEditor = self.editor_id ;
 			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-set-gui-action', 'insert' );
 			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-open-shortcode-dialog', dialog_data );
@@ -1541,6 +1396,19 @@ WPViews.ParametricResetButton = function( $ ) {
 	};
 	
 	self.handle_flags = function() {
+		if ( ! self.needsResetControl() ) {
+			self.button
+				.addClass( 'disabled' )
+				.removeClass( 'wpv-button-flagged' );
+			self.button_container.data( 'tooltip-text', wpv_parametric_i18n.toolbar_buttons.reset.tooltip.irrelevant );
+			self.button
+				.find( '.js-wpv-parametric-search-reset-button-complete' )
+					.hide();
+			return;
+		}
+		
+		self.button.removeClass( 'disabled' );
+		
 		if ( self.has_reset() ) {
 			self.button
 				.addClass( 'wpv-button-flagged' )
@@ -1554,6 +1422,11 @@ WPViews.ParametricResetButton = function( $ ) {
 					.hide();
 			self.button_container.data( 'tooltip-text', wpv_parametric_i18n.toolbar_buttons.reset.tooltip.original );
 		}
+	};
+	
+	self.needsResetControl = function() {
+		var content = WPV_Toolset.CodeMirror_instance[ self.editor_id ].getValue();
+		return ( content.search(/\[wpv-control/) == -1 && content.search(/\[wpv-filter-search/) == -1 ) ? false : true ;
 	};
 
 	self.has_reset = function() {
@@ -1583,6 +1456,9 @@ WPViews.ParametricResetButton = function( $ ) {
 				shortcode:	'wpv-filter-reset',
 				title:		wpv_parametric_i18n.toolbar_buttons.reset.dialog_title
 			};
+			if ( self.button.hasClass( 'disabled' ) ) {
+				return false;
+			}
 			window.wpcfActiveEditor = self.editor_id ;
 			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-set-gui-action', 'insert' );
 			Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-open-shortcode-dialog', dialog_data );
@@ -1800,13 +1676,13 @@ WPViews.ParametricGenericButton = function( $ ) {
 	
 };
 
-jQuery( document ).ready( function( $ ) {
-	
-	WPViews.ParametricButtons.text_search = new WPViews.ParametricTextSearchButton( $ );
-	WPViews.ParametricButtons.submit = new WPViews.ParametricSubmitButton( $ );
-	WPViews.ParametricButtons.reset = new WPViews.ParametricResetButton( $ );
-	WPViews.ParametricButtons.spinner = new WPViews.ParametricSpinnerButton( $ );
-    
-	WPViews.ParametricButtons.generic = new WPViews.ParametricGenericButton( $ );
-	
+jQuery(document).ready(function ($) {
+    if ( ! wpv_editor_strings.is_views_lite ) {
+        WPViews.ParametricButtons.text_search = new WPViews.ParametricTextSearchButton($);
+        WPViews.ParametricButtons.submit = new WPViews.ParametricSubmitButton($);
+        WPViews.ParametricButtons.reset = new WPViews.ParametricResetButton($);
+        WPViews.ParametricButtons.spinner = new WPViews.ParametricSpinnerButton($);
+
+        WPViews.ParametricButtons.generic = new WPViews.ParametricGenericButton($);
+    }
 });

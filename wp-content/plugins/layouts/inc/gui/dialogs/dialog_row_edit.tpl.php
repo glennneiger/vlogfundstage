@@ -23,7 +23,7 @@
 
 						<li class="js-preset-layouts-rows row-not-render-message" id="js-row-not-render-message">
 						        <p class="toolset-alert toolset-alert-info">
-                                    <?php _e('This cell in itself will not have a typical row structure on the front-end. It will directly output content of the child layout which is why you can not add classes and IDs to it. To add custom styling, edit the child layout instead and add custom classes and IDs there. For more information, see <a href="http://wp-types.com/documentation/user-guides/hierarchical-layouts?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=child-layout-cell&utm_term=help-link" target="_blank">Using layout hierarchy for quick development</a>.', 'ddl-layouts');?>
+                                    <?php _e('This cell in itself will not have a typical row structure on the front-end. It will directly output content of the child layout which is why you can not add classes and IDs to it. To add custom styling, edit the child layout instead and add custom classes and IDs there. For more information, see <a href="https://toolset.com/documentation/user-guides/hierarchical-layouts?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=child-layout-cell&utm_term=help-link" target="_blank">Using layout hierarchy for quick development</a>.', 'ddl-layouts');?>
                                 </p>
 						</li>
 

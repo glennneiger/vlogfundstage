@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class that handles CRED User Form custom errors message set on CRED_Form_Rendering
+ * Class that handles Toolset Forms User Form custom errors message set on CRED_Form_Rendering
  *
  * @since 1.9.3
  */

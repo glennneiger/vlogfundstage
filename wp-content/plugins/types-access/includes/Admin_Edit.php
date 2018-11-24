@@ -63,7 +63,7 @@ public static function wpcf_access_admin_edit_access( $enabled = true ) {
 		}elseif ( $tab_section == 'types-fields' ){
 			$title = __( 'Control who can view and edit custom fields  ', 'wpcf-access' );
 		}elseif ( $tab_section == 'cred-forms' ){
-			$title = __( 'Choose who can use CRED forms on the front-end ', 'wpcf-access' );
+			$title = __( 'Choose who can use Toolset Forms on the front-end ', 'wpcf-access' );
 		}elseif ( $tab_section == 'taxonomy' ){
 			$title = __( 'Manage access control to tags, categories and custom taxonomies ', 'wpcf-access' );
 		}elseif ( $tab_section == 'custom-group' ){
@@ -117,15 +117,6 @@ public static function wpcf_access_admin_edit_access( $enabled = true ) {
 	$output .= '</div>';
 
     $output .= '</form></div>';
-
-    // Link to wp-types.com Access home URL
-	/*
-    $link_to_manual = '<a href="http://wp-types.com/documentation/user-guides/?utm_source=accessplugin&utm_campaign=access&utm_medium=access-edit&utm_term=Access manuals#Access" title="'
-            . __('Access Manuals &raquo;', 'wpcf-access') . '" target="_blank" '
-			. 'class="wpcf-access-link-to-manual" style="display:block;font-weight:bold;background-image: url(\''
-			. TACCESS_ASSETS_URL . '/images/question.png\');background-repeat: no-repeat;text-indent: 18px;">'
-            . __('Access Manuals &raquo;', 'wpcf-access') . '</a>';
-	*/
 
     echo $output;
 
@@ -195,7 +186,7 @@ public static function otg_access_get_permission_table_for_posts() {
 	}
 	$output .= '<p class="toolset-access-tab-info">
 		'. __('Expand each of these post types to set their access control. Select the \'Managed by Access\' checkbox to customize the access rules. ', 'wpcf-access') .'<br>
-		<a href="https://wp-types.com/documentation/user-guides/setting-access-control/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Post%20types&utm_campaign=access" title="'. __('Access Control for Standard and Custom Content Types', 'wpcf-access') .'" target="_blank">'. __('Access Control for Standard and Custom Content Types', 'wpcf-access') .'</a>
+		<a href="https://toolset.com/documentation/user-guides/setting-access-control/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Post%20types&utm_campaign=access" title="'. __('Access Control for Standard and Custom Content Types', 'wpcf-access') .'" target="_blank">'. __('Access Control for Standard and Custom Content Types', 'wpcf-access') .'</a>
 	</p>';
 
 	if ( ! empty( $post_types_available ) ) {
@@ -443,7 +434,7 @@ public static function otg_access_get_permission_table_for_taxonomies() {
 	$custom_data = Access_Helper::wpcf_access_tax_caps();
 	$output .= '<p class="toolset-access-tab-info">
 		'. __('Expand each of these taxonomies to set their access control. Select the \'Managed by Access\' checkbox to customize the access rules. ', 'wpcf-access') .'<br>
-		<a href="https://wp-types.com/documentation/user-guides/setting-access-control/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Taxonomies&utm_campaign=access" title="'. __('Access Control for Taxonomy ', 'wpcf-access') .'" target="_blank">'. __('Access Control for Taxonomy', 'wpcf-access') .'</a>
+		<a href="https://toolset.com/documentation/user-guides/setting-access-control/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Taxonomies&utm_campaign=access" title="'. __('Access Control for Taxonomy ', 'wpcf-access') .'" target="_blank">'. __('Access Control for Taxonomy', 'wpcf-access') .'</a>
 	</p>';
 	if ( ! empty( $taxonomies_available ) ) {
 		foreach ( $taxonomies_available as $tax_slug => $tax_data ) {
@@ -593,13 +584,13 @@ public static function otg_access_get_permission_table_for_third_party( $current
 	if ( $current_tab == 'types-fields' ){
 		$output .= '<p class="toolset-access-tab-info">
 			'. __('Expand each of these field groups to set their access control.', 'wpcf-access') .'<br>
-			<a href="https://wp-types.com/documentation/user-guides/access-control-for-user-fields/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Fields&utm_campaign=access" title="'. __('Access Control for Fields', 'wpcf-access') .'" target="_blank">'. __('Access Control for Fields', 'wpcf-access') .'</a>
+			<a href="https://toolset.com/documentation/user-guides/access-control-for-user-fields/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Fields&utm_campaign=access" title="'. __('Access Control for Fields', 'wpcf-access') .'" target="_blank">'. __('Access Control for Fields', 'wpcf-access') .'</a>
 		</p>';
 	}
 	if ( $current_tab == 'cred-forms' ){
 		$output .= '<p class="toolset-access-tab-info">
 			'. __('Expand each of these groups of forms (for posts and for users) to set their access control on the front-end.', 'wpcf-access') .'<br>
-			<a href="https://wp-types.com/documentation/user-guides/access-control-for-cred-forms/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Cred&utm_campaign=access" title="'. __('Access Control for CRED Forms', 'wpcf-access') .'" target="_blank">'. __('Access Control for CRED Forms', 'wpcf-access') .'</a>
+			<a href="https://toolset.com/documentation/user-guides/access-control-for-cred-forms/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Toolset%20Forms&utm_campaign=access" title="' . esc_attr( __('Access Control for Toolset Forms', 'wpcf-access') ) .'" target="_blank">'. __('Access Control for Toolset Forms', 'wpcf-access') .'</a>
 		</p>';
 	}
 	foreach ( $areas as $area ) {
@@ -810,7 +801,7 @@ public static function otg_access_get_permission_table_for_custom_groups() {
 	}
 	$output .= '<p class="toolset-access-tab-info">
 		'. __('Create \'post groups\', which hold together content that will share the same front-end access control. Then, set the access control for each group', 'wpcf-access') .'<br>
-		<a href="https://wp-types.com/documentation/user-guides/limiting-read-access-specific-content/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Post%20groups&utm_campaign=access" title="'. __('Limiting read access to specific content', 'wpcf-access') .'" target="_blank">'. __('Limiting read access to specific content', 'wpcf-access') .'</a>
+		<a href="https://toolset.com/documentation/user-guides/limiting-read-access-specific-content/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Post%20groups&utm_campaign=access" title="'. __('Limiting read access to specific content', 'wpcf-access') .'" target="_blank">'. __('Limiting read access to specific content', 'wpcf-access') .'</a>
 	</p>';
 	if ( $group_count > 0 ){
 		$output .= '<p class="toolset-access-align-right">'
@@ -1329,7 +1320,7 @@ public static function wpcf_access_admin_set_custom_roles_level_form($roles, $en
     $output .= '<div id="wpcf-access-custom-roles-wrapper">';
 	$output .= '<p class="toolset-access-tab-info">
 		'. __('Create custom user roles. Then, grant privileges for them.', 'wpcf-access') .'<br>
-		<a href="https://wp-types.com/documentation/user-guides/managing-wordpress-admin-capabilities-access/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Custom%20roles&utm_campaign=access" title="'. __('Managing WordPress Admin Capabilities', 'wpcf-access') .'" target="_blank">'. __('Managing WordPress Admin Capabilities', 'wpcf-access') .'</a>
+		<a href="https://toolset.com/documentation/user-guides/managing-wordpress-admin-capabilities-access/?utm_source=access&utm_medium=admin-tabs&utm_term=Access%20Control%20for%20Custom%20roles&utm_campaign=access" title="'. __('Managing WordPress Admin Capabilities', 'wpcf-access') .'" target="_blank">'. __('Managing WordPress Admin Capabilities', 'wpcf-access') .'</a>
 	</p>';
 	$output .= '<p class="toolset-access-align-right">
 			<button class="button button-large button-secondary js-otg-access-add-new-role otg-access-add-new-role"><i class="icon-plus fa fa-plus"></i>' .

@@ -12,6 +12,7 @@ class Toolset_Admin_Controller {
 
 	public function initialize() {
 		$this->load_whip();
+		$this->init_page_extensions();
 	}
 
 
@@ -27,6 +28,11 @@ class Toolset_Admin_Controller {
 
 		add_filter( 'whip_hosting_page_url_wordpress', '__return_true' );
 		whip_wp_check_versions( array( 'php' => '>=5.3' ) );
+	}
+
+
+	private function init_page_extensions() {
+
 	}
 
 }

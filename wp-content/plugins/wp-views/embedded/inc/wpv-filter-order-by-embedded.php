@@ -203,7 +203,7 @@ class WPV_Sorting_Embedded {
 	}
 	
 	/**
-	 * Add the sorting button to Filter and Loop Output editors toolbars.
+	 * Add the sorting button to Search and Pagination, and Loop editors toolbars.
 	 *
 	 * Currently returning early as terms and users can not add form items to submit changes, 
 	 * hence the sorting controls are useless there, so we needed to add them manually 

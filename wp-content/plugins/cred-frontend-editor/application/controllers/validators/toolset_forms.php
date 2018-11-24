@@ -42,10 +42,24 @@ class CRED_Validator_Toolset_Forms implements ICRED_Validator {
             }
         }
 
+	    /**
+	     * filter 'cred_file_upload_disable_progress_bar'
+	     *
+	     * CRED forms includes 2 types of file upload behavior: 'standard without progressbar' or 'ajax with progressbar'
+	     * since we have introduced this feature by default CRED uses the new feature file ajax upload
+	     * but we can disable it whenever we want using the following filter 'cred_file_upload_disable_progress_bar'
+	     *
+	     * @var bool $is_disabled_progress_bar
+	     *
+	     * @since 1.7
+	     */
+	    $is_disabled_progress_bar = (bool) apply_filters( 'cred_file_upload_disable_progress_bar', false );
+
         foreach ($zebraForm->form_properties['fields'] as $field) {
             if (in_array(str_replace('wpcf-', '', $field['name']), $conditional_group_fields)) {
                 continue;
             }
+
             // If Types field
             if (isset($field['plugin_type']) && $field['plugin_type'] == 'types') {
                 $field_name = $field['name'];
@@ -61,9 +75,10 @@ class CRED_Validator_Toolset_Forms implements ICRED_Validator {
                 if (isset($_POST['wpcf_repetitive_copy'][$field['slug']])) {
                     continue;
                 }
+
                 // Set field config
                 $config = wptoolset_form_filter_types_field($field, $post_id);
-				
+
 				$config['conditional']['values'] = isset( $config['conditional']['values'] )
 					? (array) $config['conditional']['values']
 					: array();
@@ -75,7 +90,7 @@ class CRED_Validator_Toolset_Forms implements ICRED_Validator {
 				}
 				
 				// Types conditions are stored here:
-				// Make sure we do apply them based on the posted data for the fields that control onditions
+				// Make sure we do apply them based on the posted data for the fields that control conditions
 				if ( isset( $config['conditional']['conditions'] ) ) {
 					foreach ( $config['conditional']['conditions'] as $condition_data ) {
 						if ( isset( $zebraForm->form_properties['fields'][ $condition_data['id'] ] ) ) {
@@ -88,6 +103,22 @@ class CRED_Validator_Toolset_Forms implements ICRED_Validator {
                 if (empty($config['repetitive'])) {
                     $_values = array($_values);
                 }
+
+                // When ajax file upload and progress bar is disabled
+	            // we need to avoid the url2 validation that needs a url and not just a file name
+	            // or it will triggered a url validation error
+	            if ( $is_disabled_progress_bar
+		            && (
+			            isset( $field[ 'file_data' ] )
+			            && ! empty( $field[ 'file_data' ] ) )
+		            || (
+			            isset( $_POST[ $field[ 'meta_key' ] ] )
+			            && ! empty( $_POST[ $field[ 'meta_key' ] ] )
+		            )
+		            && isset( $config[ 'validation' ][ 'url2' ] )
+	            ) {
+		            unset( $config[ 'validation' ][ 'url2' ] );
+	            }
 
                 // Loop over each value
                 if (is_array($_values)) {

@@ -15,12 +15,17 @@ class Toolset_Admin_Notices_Manager {
 	const JS_VARNAME_NONCE     = 'toolset-admin-notice-nonce';
 	const JS_VARNAME_ACTION    = 'toolset-admin-notice-action';
 	const JS_VARNAME_NOTICE_ID = 'notice-id';
+	const JS_VARNAME_DISMISS_SIMILAR_NOTICES = 'dismiss-similar-notices';
 
 	// js triggers
 	const JS_TRIGGER_NOTICE_DISMISSIBLE = 'toolset-dismissible';
 
 	// option fields
     const OPTION_FIELD_DISMISSED_NOTICE = 'dismissed-notices';
+    const OPTION_FIELD_DISMISSED_SIMILAR_NOTICES = 'dismissed-similar-notices';
+
+    // const similar notices keys
+	const SIMILAR_NOTICES_FREE_PLUGIN_SHOWS_PAID_FEATURES = 'free-plugin-shows-new-paid-features';
 
 	/**
 	 * @var Toolset_Admin_Notice_Interface[]
@@ -116,7 +121,9 @@ class Toolset_Admin_Notices_Manager {
 		}
 
 		foreach( $notices as $notice ) {
-			if( ! $notice->conditions_met() || self::is_notice_dismissed( $notice ) ) {
+			if( ! $notice->conditions_met()
+			    || self::is_notice_dismissed( $notice )
+			    || self::are_similar_notices_dismissed( $notice ) ) {
 				// visitor don't want to see the message anymore
 				continue;
 			}
@@ -153,6 +160,13 @@ class Toolset_Admin_Notices_Manager {
 					: false;
 
 			    self::dismiss_notice_by_id( rtrim( $_REQUEST[ self::JS_VARNAME_NOTICE_ID ], '$' ), $dismiss_globally );
+
+			    if( ! empty( $_REQUEST[ self::JS_VARNAME_DISMISS_SIMILAR_NOTICES ] ) ) {
+			    	foreach( $_REQUEST[ self::JS_VARNAME_DISMISS_SIMILAR_NOTICES ] as $key ) {
+					    self::dismiss_similar_notices( $key );
+				    }
+			    }
+
 				die( $_REQUEST[ self::JS_VARNAME_NOTICE_ID ] );
 				break;
 
@@ -196,6 +210,7 @@ class Toolset_Admin_Notices_Manager {
 				'varnameNonce'    => self::JS_VARNAME_NONCE,
 				'varnameAction'   => self::JS_VARNAME_ACTION,
 				'varnameNoticeId' => self::JS_VARNAME_NOTICE_ID,
+				'varnameDismissSimilarNotices' => self::JS_VARNAME_DISMISS_SIMILAR_NOTICES,
 				'triggerNoticeDismissible' => self::JS_TRIGGER_NOTICE_DISMISSIBLE
 			)
 		);
@@ -215,10 +230,33 @@ class Toolset_Admin_Notices_Manager {
             return false;
         }
 
+		return self::is_notice_dismissed_by_notice_id( $notice->get_id() );
+    }
+
+	/**
+	 * This function can be used by using the "id" of the notice instead of Toolset_Admin_Notice_Interface
+	 * "ID" is in this case a unique string, which describes the notice.
+	 *
+	 * @param $notice_id
+	 *
+	 * @return bool
+	 */
+	public static function is_notice_dismissed_by_notice_id( $notice_id ) {
 		$user_id = get_current_user_id();
 
 		if( $user_id == 0 ) {
 			return false;
+		}
+
+		// user settings
+		$user_settings = get_user_meta( $user_id, self::ID, true );
+
+		if( is_array( $user_settings )
+		    && array_key_exists( self::OPTION_FIELD_DISMISSED_NOTICE, $user_settings )
+		    && array_key_exists( $notice_id, $user_settings[ self::OPTION_FIELD_DISMISSED_NOTICE ] )
+		) {
+			// user dimissed the message
+			return true;
 		}
 
 		// globally dismissed
@@ -226,25 +264,14 @@ class Toolset_Admin_Notices_Manager {
 
 		if( is_array( $settings )
 		    && array_key_exists( self::OPTION_FIELD_DISMISSED_NOTICE, $settings )
-		    && array_key_exists( $notice->get_id(), $settings[ self::OPTION_FIELD_DISMISSED_NOTICE ] )
+		    && array_key_exists( $notice_id, $settings[ self::OPTION_FIELD_DISMISSED_NOTICE ] )
 		) {
 			// notice globally dismissed
 			return true;
 		}
 
-		// user settings
-		$user_settings = get_user_meta( $user_id, self::ID, true );
-
-		if( is_array( $user_settings )
-			&& array_key_exists( self::OPTION_FIELD_DISMISSED_NOTICE, $user_settings )
-            && array_key_exists( $notice->get_id(), $user_settings[ self::OPTION_FIELD_DISMISSED_NOTICE ] )
-        ) {
-			// user dimissed the message
-		    return true;
-        }
-
-        return false;
-    }
+		return false;
+	}
 
 	/**
 	 * Store that the current user don't want to see the notice with id anymore
@@ -278,20 +305,81 @@ class Toolset_Admin_Notices_Manager {
 	    update_user_meta( $user_id, self::ID, $user_settings );
     }
 
+	/**
+	 * Set stop showing similiar notices by $key_for_similar_notices
+	 *
+	 * @param $key_for_similar_notices
+	 *
+	 * @return bool
+	 */
+    public static function dismiss_similar_notices( $key_for_similar_notices ) {
+	    $user_id = get_current_user_id();
+
+	    if( $user_id == 0 ) {
+		    return false;
+	    }
+
+	    $user_settings = get_user_meta( $user_id, self::ID, true );
+	    $user_settings = empty( $user_settings ) ? array() : $user_settings;
+	    $user_settings[ self::OPTION_FIELD_DISMISSED_SIMILAR_NOTICES ][ $key_for_similar_notices ] = true;
+	    update_user_meta( $user_id, self::ID, $user_settings );
+    }
 
 	/**
-	 * Create a button primary
+	 * Check if current user has used the option to stop similar notices
 	 *
-	 * @param $title
+	 * @param Toolset_Admin_Notice_Interface $notice
+	 *
+	 * @return bool
+	 */
+    public static function are_similar_notices_dismissed( $notice ) {
+    	if( ! $notice instanceof Toolset_Admin_Notice_Interface ) {
+    		// no proper $notice (we have a filter for it, so probably that's the reason)
+    		return false;
+	    }
+
+	    $similar_notices_key = $notice->get_similar_notices_key();
+	    if( empty( $similar_notices_key ) ) {
+    		// no similar notices key used for this message
+		    return false;
+	    }
+
+	    $user_id = get_current_user_id();
+
+	    if( $user_id == 0 ) {
+		    return false;
+	    }
+
+	    // user settings
+	    $user_settings = get_user_meta( $user_id, self::ID, true );
+
+	    if( is_array( $user_settings )
+	        && array_key_exists( self::OPTION_FIELD_DISMISSED_SIMILAR_NOTICES, $user_settings )
+	        && array_key_exists( $notice->get_similar_notices_key(), $user_settings[ self::OPTION_FIELD_DISMISSED_SIMILAR_NOTICES ] )
+	    ) {
+		    // user dimissed similar notices
+		    return true;
+	    }
+
+	    return false;
+    }
+
+
+	/**
+	 * Create a button. Use of tpl_button_primary() or tpl_button_secondary() is preferred.
+	 *
+	 * @param string $title
 	 * @param string $href
+	 * @param string $class
 	 * @param bool $external
 	 *
 	 * @return string TPL of the link
+	 * @since 2.8
 	 */
-    public static function tpl_button_primary( $title, $href, $external = false ) {
+    public static function tpl_button( $title, $href, $class, $external = false ) {
 	    $title    = esc_attr( $title );
 	    $href     = esc_url( $href );
-		$class    = 'toolset-button toolset-button-primary';
+		$class    = 'toolset-button ' . $class;
 		$target   = '';
 
 	    if( $external === true ) {
@@ -303,6 +391,37 @@ class Toolset_Admin_Notices_Manager {
 	    // html link
 	    return '<a href="' . $href . '" class="' . $class . '"'. $target .'>' . $title . '</a>';
     }
+
+
+	/**
+	 * Create a primary button
+	 *
+	 * @param string $title
+	 * @param string $href
+	 * @param bool $external
+	 * @param string $extra_class
+	 *
+	 * @return string HTML markup of the link.
+	 */
+	public static function tpl_button_primary( $title, $href, $external = false, $extra_class = '' ) {
+		return self::tpl_button( $title, $href, 'toolset-button-primary ' . $extra_class, $external );
+	}
+
+
+	/**
+	 * Create a secondary button
+	 *
+	 * @param string $title
+	 * @param string $href
+	 * @param bool $external
+	 * @param string $extra_class
+	 *
+	 * @return string HTML markup of the link.
+	 * @since 2.8
+	 */
+	public static function tpl_button_secondary( $title, $href, $external = false, $extra_class = '' ) {
+		return self::tpl_button( $title, $href, 'toolset-button-secondary ' . $extra_class, $external );
+	}
 
 
 	/**

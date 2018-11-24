@@ -8,6 +8,10 @@
 
 class WPV_WPML_Shortcodes_Translation {
 
+	const WPV_WPML_TRANSLATABLE_ATTRIBUTE_FORMAT = 'format';
+	const WPV_WPML_TRANSLATABLE_ATTRIBUTE_PLACEHOLDER = 'placeholder';
+	const WPV_WPML_TRANSLATABLE_ATTRIBUTE_DEFAULT_LABEL = 'default_label';
+
 	protected $_context;
 
 	public function __construct() {
@@ -81,7 +85,6 @@ class WPV_WPML_Shortcodes_Translation {
 			'wpv-filter-search-box' => array( $this, 'fake_wpv_filter_search_box_shortcode_to_wpml_register_string' ),
 		);
 	}
-
 
 	/**
 	 * Register shortcode attributes for translation.
@@ -291,7 +294,6 @@ class WPV_WPML_Shortcodes_Translation {
 		return;
 	}
 
-
 	/**
 	 * Register wpv-control-post-taxonomy shortcode attributes for translation.
 	 *
@@ -314,17 +316,12 @@ class WPV_WPML_Shortcodes_Translation {
 			return;
 		}
 
-		$attributes_to_translate = array( 'default_label' );
+		$attributes_to_translate = array( self::WPV_WPML_TRANSLATABLE_ATTRIBUTE_DEFAULT_LABEL, self::WPV_WPML_TRANSLATABLE_ATTRIBUTE_FORMAT );
 
-		foreach ( $attributes_to_translate as $att_to_translate ) {
-			if ( isset( $atts[ $att_to_translate ] ) ) {
-				do_action( 'wpml_register_single_string', $this->_context, $url_param . '_' . $att_to_translate, $atts[ $att_to_translate ] );
-			}
-		}
+		$this->register_attributes_to_translate( $atts, $attributes_to_translate, $url_param . '_' . '%s' );
 
 		return;
 	}
-
 
 	/**
 	 * Register wpv-control-postmeta shortcode attributes for translation.
@@ -351,12 +348,11 @@ class WPV_WPML_Shortcodes_Translation {
 		// We need to catch each attribute one by one, just because of legacy and backwards compatibility :-)
 		if ( isset( $atts['default_label'] ) ) {
 			do_action( 'wpml_register_single_string', $this->_context, $url_param . '_auto_fill_default', $atts['default_label'] );
-
 		}
 
-		if ( isset( $atts['placeholder'] ) && ! empty( $atts['placeholder'] ) ) {
-			do_action( 'wpml_register_single_string', $this->_context, 'wpv_control_postmeta_placeholder_' . esc_attr( $atts['url_param'] ), $atts['placeholder'] );
-		}
+		$attributes_to_translate = array( self::WPV_WPML_TRANSLATABLE_ATTRIBUTE_FORMAT, self::WPV_WPML_TRANSLATABLE_ATTRIBUTE_PLACEHOLDER );
+
+		$this->register_attributes_to_translate( $atts, $attributes_to_translate, 'wpv_control_postmeta_' . '%s' . '_' . esc_attr( $atts['url_param'] ) );
 
 		if ( isset( $atts['display_values'] ) ) {
 			$display_values = explode( ',', $atts['display_values'] );
@@ -368,7 +364,6 @@ class WPV_WPML_Shortcodes_Translation {
 
 		return;
 	}
-
 
 	/**
 	 * Register wpv-control-post-ancestor shortcode attributes for translation.
@@ -392,17 +387,12 @@ class WPV_WPML_Shortcodes_Translation {
 			return;
 		}
 
-		$attributes_to_translate = array( 'default_label' );
+		$attributes_to_translate = array( self::WPV_WPML_TRANSLATABLE_ATTRIBUTE_DEFAULT_LABEL, self::WPV_WPML_TRANSLATABLE_ATTRIBUTE_FORMAT );
 
-		foreach ( $attributes_to_translate as $att_to_translate ) {
-			if ( isset( $atts[ $att_to_translate ] ) ) {
-				do_action( 'wpml_register_single_string', $this->_context, $ancestor_type . '_' . $att_to_translate, $atts[ $att_to_translate ] );
-			}
-		}
+		$this->register_attributes_to_translate( $atts, $attributes_to_translate, $ancestor_type . '_' . '%s' );
 
 		return;
 	}
-
 
 	/**
 	 * Register wpv-filter-submit shortcode attributes for translation.
@@ -431,7 +421,6 @@ class WPV_WPML_Shortcodes_Translation {
 		return;
 	}
 
-
 	/**
 	 * Register wpv-filter-search-box shortcode attributes for translation.
 	 *
@@ -457,7 +446,6 @@ class WPV_WPML_Shortcodes_Translation {
 
 		return;
 	}
-
 
 	/**
 	 * Register wpv-filter-reset shortcode attributes for translation.
@@ -485,7 +473,6 @@ class WPV_WPML_Shortcodes_Translation {
 
 		return;
 	}
-
 
 	/**
 	 * Fake callback for the wpml-string shortcode,
@@ -515,7 +502,6 @@ class WPV_WPML_Shortcodes_Translation {
 		}
 		return;
 	}
-
 
 	/**
 	 * Fake callback for the wpv-post-xxx shortcodes, so their attributes can be registered.
@@ -566,7 +552,6 @@ class WPV_WPML_Shortcodes_Translation {
 		}
 	}
 
-
 	/**
 	 * Fake callback for the toolset-edit-xxx-link shortcodes, so their content can be registered.
 	 *
@@ -613,7 +598,6 @@ class WPV_WPML_Shortcodes_Translation {
 
 		do_action( 'wpml_register_single_string', 'Toolset Shortcodes', $name, $content );
 	}
-
 
 	/**
 	 * Fake callback for the wpv-sort-orderby and wpv-sort-order shortcodes,
@@ -697,6 +681,26 @@ class WPV_WPML_Shortcodes_Translation {
 					do_action( 'wpml_register_single_string', $this->_context, $name, $att_value );
 					break;
 				}
+			}
+		}
+	}
+
+	/**
+	 * Registers for translation the shortcode attributes that should be translated.
+	 *
+	 * @param array $shortcodes_atts   The shotcode attributes.
+	 * @param array $atts_to_translate The array with the attribute names that need to be translated.
+	 * @param string $name             The name under which translatable shortcode attributes is been registered.
+	 *
+	 * @note The $name parameter can be a format string that contains a type specifier for a single argument, mostly
+	 *       used in order to include the translatable attribute name inside the registration name.
+	 *
+	 * @since 2.6.4
+	 */
+	function register_attributes_to_translate( $shortcodes_atts, $atts_to_translate, $name ) {
+		foreach ( $atts_to_translate as $att_to_translate ) {
+			if ( isset( $shortcodes_atts[ $att_to_translate ] ) ) {
+				do_action( 'wpml_register_single_string', $this->_context, sprintf( $name, $att_to_translate ), $shortcodes_atts[ $att_to_translate ] );
 			}
 		}
 	}

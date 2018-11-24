@@ -40,6 +40,7 @@ return array(
 'WPToolset_Field_Wysiwyg' => dirname( __FILE__ ) . '/classes/class.wysiwyg.php',
 'WPToolset_Forms_Bootstrap' => dirname( __FILE__ ) . '/bootstrap.php',
 'WPToolset_Forms_Conditional' => dirname( __FILE__ ) . '/classes/class.conditional.php',
+'WPToolset_Forms_Conditional_RFG' => dirname( __FILE__ ) . '/classes/class.conditional.rfg.php',
 'WPToolset_Forms_Repetitive' => dirname( __FILE__ ) . '/classes/class.repetitive.php',
 'WPToolset_Forms_Validation' => dirname( __FILE__ ) . '/classes/class.validation.php',
 'WPToolset_Types' => dirname( __FILE__ ) . '/classes/class.types.php',

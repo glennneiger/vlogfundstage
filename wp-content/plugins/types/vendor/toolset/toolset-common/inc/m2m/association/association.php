@@ -8,27 +8,20 @@
  * Not to be used directly outside of the m2m API.
  *
  * @since m2m
- * @refactoring!!!! Store intermediary ID and post object in the same way as the other elements.
  */
 class Toolset_Association implements IToolset_Association {
 
 
 	/**
-	 * @var int[] IDs of elements, always complete.
+	 * @var int[] IDs of elements indexed by role names, always complete.
 	 *
 	 * However, in case we deal with translatable elements, this will hold only the IDs
 	 * of the default language versions, so these values can't be always used directly.
 	 * get_element_id() will handle the translation if necessary.
+	 *
+	 * If the association has no intermediary post, zero will be stored as its ID.
 	 */
 	private $element_ids = array();
-
-
-	/**
-	 * @var int Intermediary post ID or zero if there is no intermediary post at all.
-	 *
-	 * See the note for $element_ids. Same goes here.
-	 */
-	private $intermediary_id;
 
 
 	/** @var Toolset_Relationship_Definition */
@@ -45,12 +38,6 @@ class Toolset_Association implements IToolset_Association {
 	 * @var int Translation group ID.
 	 */
 	private $uid;
-
-
-	/**
-	 * @var null|IToolset_Post
-	 */
-	protected $intermediary_post;
 
 
 	/** @var Toolset_WPML_Compatibility */
@@ -141,7 +128,7 @@ class Toolset_Association implements IToolset_Association {
 			&& 0 === (int) $element_source
 		) {
 			// No intermediary post.
-			$this->intermediary_id = 0;
+			$this->element_ids[ Toolset_Relationship_Role::INTERMEDIARY ] = 0;
 			return;
 		}
 
@@ -180,18 +167,10 @@ class Toolset_Association implements IToolset_Association {
 			throw new InvalidArgumentException( 'Invalid or missing element source.' );
 		}
 
-		if( $is_intermediary ) {
-			$this->intermediary_id = $element_id;
-			if( null !== $element ) {
-				$this->intermediary_post = $element;
-			}
-		} else {
-			$this->element_ids[ $role_name ] = $element_id;
-			if( null !== $element ) {
-				$this->elements[ $role_name ] = $element;
-			}
+		$this->element_ids[ $role_name ] = $element_id;
+		if( null !== $element ) {
+			$this->elements[ $role_name ] = $element;
 		}
-
 	}
 
 
@@ -237,10 +216,6 @@ class Toolset_Association implements IToolset_Association {
 		$element_role_name = Toolset_Relationship_Role::name_from_role( $element_role );
 
 		if( ! $this->can_be_translated() ) {
-			if( Toolset_Relationship_Role::INTERMEDIARY === $element_role_name ) {
-				return $this->intermediary_id;
-			}
-
 			return $this->element_ids[ $element_role_name ];
 		}
 
@@ -272,10 +247,15 @@ class Toolset_Association implements IToolset_Association {
 	public function get_element( $element_role ) {
 		$element_role_name = Toolset_Relationship_Role::name_from_role( $element_role );
 
-		if( Toolset_Relationship_Role::INTERMEDIARY === $element_role_name ) {
-			return $this->get_intermediary_post();
+		if(
+			Toolset_Relationship_Role::INTERMEDIARY === $element_role_name
+			&& 0 === $this->element_ids[ Toolset_Relationship_Role::INTERMEDIARY ]
+		) {
+			// If we know that there is no intermediary post at all, we'll not even try.
+			return null;
 		}
 
+		// Load the element if missing.
 		if(
 			! array_key_exists( $element_role_name, $this->elements )
 			|| null === $this->elements[ $element_role_name ]
@@ -349,20 +329,10 @@ class Toolset_Association implements IToolset_Association {
 	 * @return null|IToolset_Post
 	 */
 	protected function get_intermediary_post() {
-		if( 0 === $this->intermediary_id ) {
-			return null;
-		}
+		/** @var IToolset_Post|null $post */
+		$post = $this->get_element( new Toolset_Relationship_Role_Intermediary() );
 
-		if( null === $this->intermediary_post ) {
-			try {
-				$this->intermediary_post = $this->get_element_factory()->get_post( $this->intermediary_id );
-			} catch( Exception $e ) {
-				// We couldn't load the post, it probably doesn't exist. Reset the ID to avoid checking again.
-				$this->intermediary_id = 0;
-			}
-		}
-
-		return $this->intermediary_post;
+		return $post;
 	}
 
 
@@ -403,7 +373,7 @@ class Toolset_Association implements IToolset_Association {
 	 */
 	public function get_intermediary_id() {
 		if( ! $this->can_be_translated() ) {
-			return $this->intermediary_id;
+			return $this->element_ids[ Toolset_Relationship_Role::INTERMEDIARY ];
 		}
 
 		// We have to go through the post object because it might be translated.

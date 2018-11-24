@@ -9,10 +9,10 @@ class Toolset_Relationship_Query_Condition_Type extends Toolset_Relationship_Que
 
 
 	/** @var IToolset_Relationship_Role_Parent_Child */
-	private $role;
+	protected $role;
 
 	/** @var string */
-	private $type;
+	protected $type;
 
 
 	/**

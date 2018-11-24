@@ -50,7 +50,7 @@ class WPV_Editor_Ordering {
 				<ul class="wpv-settings-query-type-posts js-wpv-settings-posts-order"<?php echo ( $view_settings['query_type'][0] != 'posts' ) ? ' style="display: none;"' : ''; ?>>
 				<li style="position:relative">
 					<label for="wpv-settings-orderby"><?php _e( 'Order by ', 'wpv-views' ) ?></label>
-					<select id="wpv-settings-orderby" class="js-wpv-posts-orderby" name="_wpv_settings[orderby]" autocomplete="off" data-rand="<?php echo esc_attr( __('Pagination and random ordering do not work together and would produce unexpected results. Please disable pagination or random ordering.', 'wpv-views') ); ?>">
+					<select id="wpv-settings-orderby" class="js-wpv-posts-orderby" name="_wpv_settings[orderby]" autocomplete="off" data-rand="<?php echo esc_attr( __( 'Pagination combined with random ordering can lead to same items appearing in more than one pages. It\'s recommended not to combine pagination with random ordering, unless unexpected results are acceptable.', 'wpv-views' ) ); ?>">
 						<option value="post_date" <?php selected( $view_settings['orderby'], 'post_date' ); ?>><?php _e('Post date', 'wpv-views'); ?></option>
 						<option value="post_title" <?php selected( $view_settings['orderby'], 'post_title' ); ?>><?php _e('Post title', 'wpv-views'); ?></option>
 						<option value="ID" <?php selected( $view_settings['orderby'], 'ID' ); ?>><?php _e('Post ID', 'wpv-views'); ?></option>
@@ -115,8 +115,12 @@ class WPV_Editor_Ordering {
 							<option value=""><?php _e( 'As a native custom field', 'wpv-views' ) ?></option>
 							<option value="STRING" <?php selected( $view_settings['orderby_as'], 'STRING' ); ?>><?php _e( 'As a string', 'wpv-views' ) ?></option>
 							<option value="NUMERIC" <?php selected( $view_settings['orderby_as'], 'NUMERIC' ); ?>><?php _e( 'As a number', 'wpv-views' ) ?></option>
+                            <?php foreach( apply_filters( 'wpv_filter_wpv_get_orderby_as_options', array(), $view_settings ) as $value => $description ): ?>
+                                <option value="<?php echo $value ?>" <?php selected( $view_settings['orderby_as'], $value ); ?>><?php echo $description ?></option>
+                            <?php endforeach; ?>
 						</select>
 					</span>
+                    <?php echo apply_filters( 'wpv_filter_wpv_get_additional_order_options', '', $view_settings ); ?>
 				</li>
 				<?php
 				if ( ! version_compare( $wp_version, '4.0', '<' ) ) {
@@ -229,8 +233,12 @@ class WPV_Editor_Ordering {
 							<option value=""><?php _e( 'As a native custom field', 'wpv-views' ) ?></option>
 							<option value="STRING" <?php selected( $view_settings['taxonomy_orderby_as'], 'STRING' ); ?>><?php _e( 'As a string', 'wpv-views' ) ?></option>
 							<option value="NUMERIC" <?php selected( $view_settings['taxonomy_orderby_as'], 'NUMERIC' ); ?>><?php _e( 'As a number', 'wpv-views' ) ?></option>
+							<?php foreach( apply_filters( 'wpv_filter_wpv_get_orderby_as_options', array(), $view_settings ) as $value => $description ): ?>
+                                <option value="<?php echo $value ?>" <?php selected( $view_settings['taxonomy_orderby_as'], $value ); ?>><?php echo $description ?></option>
+							<?php endforeach; ?>
 						</select>
 					</span>
+					<?php echo apply_filters( 'wpv_filter_wpv_get_additional_order_options', '', $view_settings ); ?>
 				</li>
 				</ul>
 
@@ -310,8 +318,12 @@ class WPV_Editor_Ordering {
                                 <option value=""><?php _e( 'As a native custom field', 'wpv-views' ) ?></option>
                                 <option value="STRING" <?php selected( $view_settings['users_orderby_as'], 'STRING' ); ?>><?php _e( 'As a string', 'wpv-views' ) ?></option>
                                 <option value="NUMERIC" <?php selected( $view_settings['users_orderby_as'], 'NUMERIC' ); ?>><?php _e( 'As a number', 'wpv-views' ) ?></option>
+	                            <?php foreach( apply_filters( 'wpv_filter_wpv_get_orderby_as_options', array(), $view_settings ) as $value => $description ): ?>
+                                    <option value="<?php echo $value ?>" <?php selected( $view_settings['users_orderby_as'], $value ); ?>><?php echo $description ?></option>
+	                            <?php endforeach; ?>
                             </select>
                         </span>
+	                    <?php echo apply_filters( 'wpv_filter_wpv_get_additional_order_options', '', $view_settings ); ?>
                     </li>
                 </ul>
 				<div class="js-wpv-toolset-messages"></div>
@@ -343,7 +355,7 @@ class WPV_Editor_Ordering {
 				<ul class="wpv-settings-query-type-posts js-wpv-settings-posts-order">
 				<li style="position:relative">
 					<label for="wpv-settings-orderby"><?php _e( 'Order by ', 'wpv-views' ) ?></label>
-					<select id="wpv-settings-orderby" class="js-wpv-posts-orderby" name="_wpv_settings[orderby]" autocomplete="off" data-rand="<?php echo esc_attr( __('Pagination and random ordering do not work together and would produce unexpected results. Please disable pagination or random ordering.', 'wpv-views') ); ?>">
+					<select id="wpv-settings-orderby" class="js-wpv-posts-orderby" name="_wpv_settings[orderby]" autocomplete="off" data-rand="<?php echo esc_attr( __( 'Pagination combined with random ordering can lead to same items appearing in more than one pages. It\'s recommended not to combine pagination with random ordering, unless unexpected results are acceptable.', 'wpv-views' ) ); ?>">
 						<option value="post_date" <?php selected( $view_settings['orderby'], 'post_date' ); ?>><?php _e('Post date', 'wpv-views'); ?></option>
 						<option value="post_title" <?php selected( $view_settings['orderby'], 'post_title' ); ?>><?php _e('Post title', 'wpv-views'); ?></option>
 						<option value="ID" <?php selected( $view_settings['orderby'], 'ID' ); ?>><?php _e('Post ID', 'wpv-views'); ?></option>
@@ -491,7 +503,11 @@ class WPV_Editor_Ordering {
 			'taxonomy_orderby', 'taxonomy_order', 'taxonomy_orderby_as',
 			'users_orderby', 'users_order', 'users_orderby_as'
 		);
-		foreach ( $sorting_options as $sorting_opt ) {
+
+		// Filter for additional sorting options
+        $sorting_options = apply_filters( 'wpv_filter_wpv_get_additional_sorting_options', $sorting_options );
+
+        foreach ( $sorting_options as $sorting_opt ) {
 			if (
 				isset( $_POST[$sorting_opt] )
 				&& (

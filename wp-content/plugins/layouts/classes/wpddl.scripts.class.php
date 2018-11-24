@@ -32,7 +32,7 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
         return $html;
     }
     
-	protected function __initialize_styles()
+	protected function initialize_styles()
 	{
         #common backend
 		$this->styles['wp-layouts-pages'] = new WPDDL_style('wp-layouts-pages', WPDDL_RES_RELPATH . '/css/dd-general.css', null, WPDDL_VERSION );
@@ -77,7 +77,7 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
 
 		if( isset( $_GET['in-iframe-for-layout'] ) &&
 				$_GET['in-iframe-for-layout'] == 1 ){
-			$this->styles['ddl-iframe-styles-overrides'] = new WPDDL_style('ddl-iframe-styles-overrides', WPDDL_RES_RELPATH . "/css/ddl-iframe-styles-overrides.css", array(), WPDDL_VERSION);
+			$this->styles['ddl-iframe-styles-overrides'] = new WPDDL_style('ddl-iframe-styles-overrides', WPDDL_RES_RELPATH . "/css/ddl-iframe-styles-overrides.css", array('wp-layouts-pages'), WPDDL_VERSION);
 			$this->enqueue_styles('ddl-iframe-styles-overrides');
 		}
 
@@ -88,7 +88,7 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
     }
 
 
-	protected function __initialize_scripts()
+	protected function initialize_scripts()
 	{
 		global $pagenow;
 		
@@ -104,6 +104,7 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
 		$this->scripts['ddl_create_new_layout'] = new WPDDL_script('ddl_create_new_layout', (WPDDL_RES_RELPATH . "/js/dd_create_new_layout.js"), array('jquery'), WPDDL_VERSION, true);
 		$this->localize_script('ddl_create_new_layout', 'DDLayout_settings_create', array(
 			'user_can_create' => user_can_create_layouts(),
+			'user_can_create_private' => user_can_create_private_layouts(),
 			'strings' => array(
 				'associate_layout_to_page' => __('To create an association between this Layout and a single page open....', 'ddl-layouts')
 			)
@@ -118,8 +119,6 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
         $this->scripts['ddl_private_layout'] = new WPDDL_script('ddl_private_layout', (WPDDL_RES_RELPATH . "/js/dd-layouts-private-layout.js"), array('jquery', 'toolset-utils', 'toolset-event-manager'), WPDDL_VERSION, true);
 
 		$this->scripts['wp-layouts-dialogs-script'] = new WPDDL_script('wp-layouts-dialogs-script', WPDDL_GUI_RELPATH . 'dialogs/js/dialogs.js', array('jquery', 'toolset-utils', 'toolset_select2'), WPDDL_VERSION );
-
-		$this->scripts['ddl-wpml-dialog-controls'] = new WPDDL_script( 'ddl-wpml-dialog-controls', WPDDL_GUI_RELPATH . 'dialogs/js/ddl-wpml-dialog-controls.js', array('jquery'), WPDDL_VERSION );
 
 		$this->scripts['ddl-post-types'] = new WPDDL_script('ddl-post-types', WPDDL_RES_RELPATH . '/js/ddl-post-types.js', array('jquery', 'layouts-prototypes'), WPDDL_VERSION);
 
@@ -140,7 +139,7 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
         #codemirror.js and related
 
         $backend_editor = isset( $_GET['page'] ) && 'dd_layouts_edit' == $_GET['page'];
-        $frontend_editor = isset($_GET['toolset_editor']) && current_user_can('edit_others_pages');
+        $frontend_editor = isset($_GET['toolset_editor']) && user_can_edit_private_layouts();
 
         if($backend_editor || $frontend_editor){
             $this->scripts['icl_media-manager-js'] = new WPDDL_script('icl_media-manager-js',
@@ -167,8 +166,8 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
 				'toolset-utils',
 				'wpv_help_box_texts',
 				array(
-					'wpv_dont_show_it_again' => __("Got it! Don't show this message again", 'wpv-views'),
-					'wpv_close' => __("Close", 'wpv-views')
+					'wpv_dont_show_it_again' => __("Got it! Don't show this message again", 'ddl-layouts'),
+					'wpv_close' => __("Close", 'ddl-layouts')
 			));
 		}
 
@@ -241,13 +240,31 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
                 $this->scripts['ddl-layouts-cred-user-support'] = new WPDDL_script('ddl-layouts-cred-user-support', WPDDL_RES_RELPATH . '/js/dd-layouts-cred-user-support.js', array('jquery', 'ddl-layouts-toolset-support', 'toolset-chosen-wrapper' ), WPDDL_VERSION);
             }
         }
-		
+
+	        // CRED support
+	        if (isset( $_GET['in-iframe-for-layout']) &&
+	            $_GET['in-iframe-for-layout'] == 1 &&
+	            class_exists('CRED_Association_Form_Main') &&
+	            $pagenow == 'admin.php' &&
+	            isset( $_GET['page'] ) && $_GET['page'] === 'cred_relationship_form' ) {
+
+		        $post_id = $_GET['id'];
+		        $post    = get_post( $post_id );
+		        if ( $post->post_type == CRED_Relationship_Cell::FORM_POST_TYPE ) {
+			        $this->scripts['ddl-layouts-cred-relationship-support'] = new WPDDL_script( 'ddl-layouts-cred-relationship-support', WPDDL_RES_RELPATH . '/js/dd-layouts-cred-relationship-support.js', array(
+				        'jquery',
+				        'ddl-layouts-toolset-support',
+				        'toolset-chosen-wrapper'
+			        ), WPDDL_VERSION );
+		        }
+	        }
+
 
         # import export
         if( isset($_GET['page']) && $_GET['page'] === 'toolset-export-import' )
         {
             
-            $this->scripts['dd-layout-theme-import-export'] = new WPDDL_script('dd-layout-theme-import-export', WPDDL_RES_RELPATH . '/js/ddl-import-export-script.js', array( 'jquery'), WPDDL_VERSION, true);
+            $this->scripts['dd-layout-theme-import-export'] = new WPDDL_script('dd-layout-theme-import-export', WPDDL_RES_RELPATH . '/js/ddl-import-export-script.js', array( 'jquery', 'wp-pointer'), WPDDL_VERSION, true);
             $this->localize_script(
 				'dd-layout-theme-import-export',
 				'ddl_import_texts',
@@ -261,6 +278,7 @@ class WPDDL_scripts_manager extends Toolset_Assets_Manager
                     'deleted_layouts' => __("Deleted Layouts", 'ddl-layouts'),
                     'saved_css' => __("Saved CSS", 'ddl-layouts'),
                     'saved_js' => __("Saved JS", 'ddl-layouts'),
+					'saved_json' => __("Settings saved", 'ddl-layouts'),
                     'overwritten_layouts' => __("Overwritten Layouts", 'ddl-layouts'),
                     'server_timeout' => __("Server timeout, please try again later.", 'ddl-layouts'),
                     'import_finished' => __("Import finished", 'ddl-layouts'),

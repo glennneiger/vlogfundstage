@@ -10,15 +10,6 @@ final class CRED_Import_Model extends CRED_Abstract_Model implements CRED_Single
 
     private $option_name = 'cred_cred_settings';
 
-/**
- * Class constructor
- */
-    public function __construct()
-    {
-        parent::__construct();
-        //add_action('admin_notices', array( $this, 'updateSettingsMessage'));
-    }
-
     public function prepareDB()
     {
 //        $defaults=array(
@@ -54,12 +45,4 @@ final class CRED_Import_Model extends CRED_Abstract_Model implements CRED_Single
         return update_option($this->option_name,$settings);
     }
 
-    public function updateSettingsMessage()
-    {
-        if( array_key_exists( 'settings', $_POST ) ) {
-            echo '<div class="updated"><p><strong>';
-            _e('Settings saved.', 'wp-cred');
-            echo '</strong></p></div>';
-        }
-    }
 }

@@ -136,8 +136,11 @@ abstract class CRED_Notification_Manager_Base {
 	 * @param array $notifications
 	 */
 	public function set_current_attached_data( $form_id, $object_id, $notifications = array() ) {
-		$this->current_snapshot_field_hash = $this->get_attached_data( $form_id, $object_id, $notifications );
+		if ( ! $this->current_snapshot_field_hash ) {
+			$this->current_snapshot_field_hash = $this->get_attached_data( $form_id, $object_id, $notifications );
+		}
 	}
+
 
 	/**
 	 * @param int $form_id
@@ -215,7 +218,6 @@ abstract class CRED_Notification_Manager_Base {
 				}
 			}
 		}
-
 		if ( isset( $notification[ 'event' ][ 'any_all' ] ) ) {
 			$any_all_event = ( 'ALL' == $notification[ 'event' ][ 'any_all' ] );
 		} else {
@@ -248,7 +250,6 @@ abstract class CRED_Notification_Manager_Base {
 
 			// evaluate an individual condition here
 			$result = $this->get_comparation_field_result( $op, $field_value, $value );
-
 			if ( $condition[ 'only_if_changed' ] ) {
 				if ( isset( $snapshot_fields_hash[ $field ] )
 					&& isset( $current_snapshot[ $field ] )
@@ -268,7 +269,6 @@ abstract class CRED_Notification_Manager_Base {
 				break;
 			}
 		}
-
 		return $total_result;
 	}
 
@@ -397,6 +397,7 @@ abstract class CRED_Notification_Manager_Base {
 	 * @param array $notification
 	 *
 	 * @return array
+	 * @deprecated Maybe, seems not used anywhere?
 	 */
 	public function send_test_notification( $form_id, $notification ) {
 		// bypass if nothing
@@ -420,7 +421,15 @@ abstract class CRED_Notification_Manager_Base {
 		$form_title = ( $form_post ) ? $form_post->post_title : '';
 		$date = date( 'Y-m-d H:i:s', current_time( 'timestamp' ) );
 
-		// placeholder codes, allow to add custom
+		/**
+		 * Extend the notification subject placeholders.
+		 *
+		 * @param array Key-value pairs of placeholder-value
+		 * @param int $form_id
+		 * @param int|null $post_id Will be null on notification tests
+		 *
+		 * @since unknown
+		 */
 		$data_subject = apply_filters( 'cred_subject_notification_codes', array(
 			'%%USER_LOGIN_NAME%%' => $user->login,
 			'%%USER_DISPLAY_NAME%%' => $user->display_name,
@@ -430,7 +439,15 @@ abstract class CRED_Notification_Manager_Base {
 			'%%DATE_TIME%%' => $date,
 		), $form_id, $post_id );
 
-		// placeholder codes, allow to add custom
+		/**
+		 * Extend the notification body placeholders.
+		 *
+		 * @param array Key-value pairs of placeholder-value
+		 * @param int $form_id
+		 * @param int|null $post_id Will be null on notification tests
+		 *
+		 * @since unknown
+		 */
 		$data_body = apply_filters( 'cred_body_notification_codes', array(
 			'%%USER_LOGIN_NAME%%' => $user->login,
 			'%%USER_DISPLAY_NAME%%' => $user->display_name,
@@ -528,8 +545,8 @@ abstract class CRED_Notification_Manager_Base {
 		// replace placeholders
 		$subject = $this->replace_placeholders( $subject, $data_subject );
 
-		// parse shortcodes if necessary relative to $post_id
-		$subject = $this->render_with_post( stripslashes( $subject ), $post_id, false );
+		// parse shortcodes if necessary
+		$subject = do_shortcode( $subject );
 
 		$mailer->setSubject( $subject );
 
@@ -550,8 +567,8 @@ abstract class CRED_Notification_Manager_Base {
 		// replace placeholders
 		$body = $this->replace_placeholders( $body, $data_body );
 
-		// parse shortcodes/rich text if necessary relative to $post_id
-		$body = $this->render_with_post( $body, $post_id );
+		// pseudo the_content filter
+		$body = apply_filters( \OTGS\Toolset\Common\BasicFormatting::FILTER_NAME, $body );
 		$body = stripslashes( $body );
 
 		$mailer->setBody( $body );
@@ -591,36 +608,19 @@ abstract class CRED_Notification_Manager_Base {
 	 */
 	abstract public function send_notifications( $object_id, $form_id, $notificationsToSent );
 
-	/**
-	 * Get the content into some shortcode and filters elaboration
-	 *
-	 * @param string $content
-	 * @param int $post_id Post ID information used by Views WPV_wpcf_switch_post_from_attr_id during a post_id switch
-	 * @param bool $rich flag used to avoid the cred form shortcodes rendering if present in the content
-	 *
-	 * @return string
-	 */
-	protected function render_with_post( $content, $post_id, $rich = true ) {
-		if ( ! $post_id ) {
-			$output = do_shortcode( $content );
-			if ( $rich ) {
-				$output = CRED_Helper::render_with_basic_filters( $content );
-			}
-		} else {
-			$isViews = function_exists( 'WPV_wpcf_switch_post_from_attr_id' );
-			if ( $isViews ) {
-				$post_id_switch = WPV_wpcf_switch_post_from_attr_id( array( 'id' => $post_id ) );
-			}
-			$output = do_shortcode( $content );
-			if ( $rich ) {
-				$output = CRED_Helper::render_with_basic_filters( $content );
-			}
-			if ( $isViews ) {
-				unset( $post_id_switch );
-			}
-		}
 
-		return $output;
+	/**
+	 * Enqueue notifications for later sending.
+	 *
+	 * @param int $object_id Form or User ID.
+	 * @param int $form_id Form ID.
+	 * @param array $notifications Notifications to send
+	 */
+	public function enqueue_notifications( $object_id, $form_id, $notifications ) {
+		$queue_manager = CRED_Notification_Manager_Queue::get_instance();
+		foreach ( $notifications as $notification ) {
+			$queue_manager->enqueue( $object_id, $form_id, $notification['event']['type'], get_class( $this ), $notification );
+		}
 	}
 
 	/**
@@ -977,5 +977,23 @@ abstract class CRED_Notification_Manager_Base {
 		}
 
 		return $result;
+	}
+
+
+	/**
+	 * Saves current snapshot before any evaluation, needed for WP backend editing
+	 *
+	 * @param int $object_id Post or User ID
+	 * @since 2.0.1
+	 */
+	public function save_pre_snapshot( $object_id ) {
+		$model = $this->get_current_model();
+		$attached_data = $model->getAttachedData( $object_id );
+		if ( ! $attached_data ) {
+			return;
+		}
+		reset( $attached_data );
+		$form_id = key( $attached_data );
+		$this->set_current_attached_data( $form_id, $object_id, $model->getFormCustomField( $form_id, 'notification' )->notifications );
 	}
 }

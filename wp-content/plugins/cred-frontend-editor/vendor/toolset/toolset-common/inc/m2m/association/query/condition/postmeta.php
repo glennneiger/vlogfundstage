@@ -72,7 +72,7 @@ class Toolset_Association_Query_Condition_Postmeta extends Toolset_Association_Q
 		$postmeta = $this->join_manager->wp_postmeta( $this->for_role, $this->meta_key );
 		$meta_value = esc_sql( $this->meta_value );
 
-		return "$postmeta $this->comparison_operator '$meta_value'";
+		return "{$postmeta}.meta_value $this->comparison_operator '$meta_value'";
 	}
 
 }

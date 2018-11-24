@@ -336,3 +336,199 @@ function toolset_get_parent_post_by_type( $post, $target_type ) {
 
 	return toolset_get_related_post( $post, array( $target_type, $post->post_type ) );
 }
+
+
+/**
+ * Please refer to toolset_get_relationship() documentation in inc/public_api/m2m.php.
+ *
+ * @param string|string[] $identification
+ * @return array|null
+ * @since 2.6.4
+ */
+function toolset_get_relationship( $identification ) {
+
+	if( ! is_array( $identification ) || count( $identification ) !== 2 ) {
+		throw new InvalidArgumentException( 'The relationship must be an array containing parent post type and child post type.' );
+	}
+
+	// Just check if the relationship is defined.
+	$legacy_relationships = toolset_ensarr( get_option( 'wpcf_post_relationship', array() ) );
+	if(
+		! array_key_exists( $identification[0], $legacy_relationships )
+		|| ! is_array( $legacy_relationships[ $identification[0] ] )
+		|| ! array_key_exists( $identification[1], $legacy_relationships[ $identification[0] ] )
+		|| ! is_array( $legacy_relationships[ $identification[0] ][ $identification[1] ] )
+	) {
+		return null;
+	}
+
+	// The only varying part are the two post types.
+	$relationship = array(
+		'roles' => array(
+			'parent' => array(
+				'domain' => 'posts',
+				'types' => array( $identification[0] )
+			),
+			'child' => array(
+				'domain' => 'posts',
+				'types' => array( $identification[1] )
+			)
+		),
+		'cardinality' => array(
+			'type' => 'one-to-many',
+			'limits' => array(
+				'parent' => array(
+					'max' => 1,
+					'min' => 0
+				),
+				'child' => array(
+					'max' => -1,
+					'min' => 0
+				)
+			)
+		),
+		'origin' => 'standard'
+	);
+
+	return $relationship;
+}
+
+
+/**
+ * Please refer to toolset_get_relationships() documentation in inc/public_api/m2m.php.
+ *
+ * @param array $args
+ * @return array
+ * @since 2.6.4
+ */
+function toolset_get_relationships( $args ) {
+	if ( ! is_array( $args ) ) {
+		throw new InvalidArgumentException( 'Invalid input, expected an array of query arguments.' );
+	}
+
+	// Transform the legacy relationship data into pairs of post types.
+	//
+	//
+	$legacy_relationships_option = toolset_ensarr( get_option( 'wpcf_post_relationship', array() ) );
+	$legacy_relationships = array();
+	foreach( $legacy_relationships_option as $parent_type => $child_types ) {
+		foreach( array_keys( $child_types ) as $child_type ) {
+			$legacy_relationships[] = array(
+				'parent' => $parent_type,
+				'child' => $child_type
+			);
+		}
+	}
+
+
+	// Filter out relationships that have an inactive post type.
+	//
+	//
+	if( false === (bool) toolset_getarr( $args, 'include_inactive' ) ) {
+		$post_type_repository = Toolset_Post_Type_Repository::get_instance();
+		$is_post_type_active = function( $post_type_slug ) use( $post_type_repository ) {
+			$post_type = $post_type_repository->get( $post_type_slug );
+			if( null === $post_type ) {
+				return false;
+			}
+			return $post_type->is_registered();
+		};
+
+		$legacy_relationships = array_filter(
+			$legacy_relationships,
+			function( $relationship ) use ( $is_post_type_active ) {
+				return ( $is_post_type_active( $relationship['parent'] ) && $is_post_type_active( $relationship['child'] ) );
+			} );
+	}
+
+
+	// Filter out arguments that have only a single supported value in the legacy implementation.
+	//
+	//
+	if( ! in_array( toolset_getarr( $args, 'origin', 'standard' ), array( 'standard', 'any' ) ) ) {
+		return array();
+	}
+	if( ! in_array( toolset_getarr( $args, 'cardinality', 'one-to-many' ), array( 'one-to-many', 'one-to-something', '0..1:0..*' ) ) ) {
+		return array();
+	}
+
+
+	// Filter relationships by involved post types.
+	//
+	$type_constraints = toolset_ensarr( toolset_getarr( $args, 'type_constraints' ) );
+	foreach( $type_constraints as $role => $type_constraint ) {
+		if( ! in_array( $role, array( 'parent', 'child', 'any' ) ) ) {
+			return array();
+		}
+
+		$domain = toolset_getarr( $type_constraint, 'domain', Toolset_Element_Domain::POSTS );
+		if( Toolset_Element_Domain::POSTS !== $domain ) {
+			return array();
+		}
+
+		if( array_key_exists( 'type', $type_constraint ) ) {
+			$types = array( toolset_getarr( $type_constraint, 'type' ) );
+		} else {
+			$types = toolset_ensarr( toolset_getarr( $type_constraint, 'types' ) );
+		}
+		if( empty( $types ) ) {
+			continue;
+		}
+
+		$legacy_relationships = array_filter( $legacy_relationships, function( $relationship ) use( $role, $types ) {
+			switch( $role ) {
+				case 'any':
+					return ( in_array( $relationship['parent'], $types ) || in_array( $relationship['child'], $types ) );
+				default:
+					return in_array( $relationship[ $role ], $types );
+			}
+		});
+	}
+
+	// Format results.
+	return array_map( function( $relationship_identification ) {
+		return toolset_get_relationship( array( $relationship_identification['parent'], $relationship_identification['child'] ) );
+	}, $legacy_relationships );
+}
+
+
+/**
+ * Please refer to toolset_get_related_post_types() documentation in inc/public_api/m2m.php.
+ *
+ * @param string $return_role
+ * @param string $for_post_type
+ * @return array
+ * @since 2.6.4
+ */
+function toolset_get_related_post_types( $return_role, $for_post_type ) {
+
+	if( ! in_array( $return_role, array( 'parent', 'child' ) ) ) {
+		throw new InvalidArgumentException( 'Invalid role value. Accepted values are "parent" and "child".' );
+	}
+
+	$other_role = ( $return_role === 'parent' ? 'child' : 'parent' );
+
+	$relationships = toolset_get_relationships(
+		array(
+			'type_constraints' => array(
+				$other_role => array(
+					'type' => $for_post_type
+				)
+			)
+		)
+	);
+
+	$results = array();
+	foreach( $relationships as $relationship ) {
+		$result_post_type = $relationship['roles'][ $return_role ]['types'][0];
+		if( ! array_key_exists( $result_post_type, $results ) ) {
+			$results[ $result_post_type ] = array();
+		}
+		$results[ $result_post_type ][] = array(
+			$relationship['roles']['parent']['types'][0],
+			$relationship['roles']['child']['types'][0]
+		);
+	}
+
+	return $results;
+}

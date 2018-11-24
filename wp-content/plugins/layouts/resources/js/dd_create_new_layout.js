@@ -332,6 +332,8 @@ DDLayout.NewLayoutDialog = function ($) {
         $( document ).on( 'click', '.js-layout-private-add-new-top', function (e) {
             e.preventDefault();
 
+            if( ! +DDLayout_settings_create.user_can_create_private ) return;
+
             var private_layout_args = {
                 'post_type':  jQuery( this ).data( 'post_type' ),
                 'content_id': jQuery( this ).data( 'content_id' ),

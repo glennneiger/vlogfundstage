@@ -15,10 +15,10 @@
 	<li><?php echo __( 'Set the title', 'wpv-views'); ?></li>
 	<li><?php echo __( 'Select the content to load', 'wpv-views'); ?></li>
 	<li><?php echo __( 'Optionally, apply a filter to the query', 'wpv-views'); ?></li>
-	<li><?php echo __( 'If needed, enable pagination and front-end filters', 'wpv-views'); ?></li>
+    <?php if(!wpv_is_views_lite()):?><li><?php echo __( 'If needed, enable pagination and front-end filters', 'wpv-views'); ?></li></ol><?php endif;?>
 	<li><?php echo __( 'Design the output for the View by inserting fields and styling with HTML', 'wpv-views'); ?></li>
 </ol>
 <p><?php echo __( 'When you are done, remember to add the <strong>View</strong> to your content. You can do that by inserting the <strong>View</strong> as a shortcode to content or displaying it as a widget.', 'wpv-views'); ?></p>
 <p>
-	<a href="https://wp-types.com/documentation/getting-started-with-toolset/adding-lists-of-contents/?utm_source=viewsplugin&utm_campaign=views&utm_medium=view-editor&utm_term=Views online help" target="_blank"><?php echo __( 'Views online help', 'wpv-views'); ?></a>
+	<a href="https://toolset.com/documentation/getting-started-with-toolset/adding-lists-of-contents/?utm_source=viewsplugin&utm_campaign=views&utm_medium=view-editor&utm_term=Views online help" target="_blank"><?php echo __( 'Views online help', 'wpv-views'); ?></a>
 </p>

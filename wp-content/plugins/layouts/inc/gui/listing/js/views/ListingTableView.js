@@ -1,5 +1,8 @@
 DDLayout.listing.views.ListingTableView = Backbone.View.extend({
 	el: ".js-dd-layout-listing",
+    $tabs: null,
+    activeGroup: 'post_types',
+    marked: {},
 	initialize: function (options) {
 		var self = this;
 
@@ -9,7 +12,7 @@ DDLayout.listing.views.ListingTableView = Backbone.View.extend({
         self.can_edit = DDLayout_settings.DDL_JS.user_can_edit;
         self.can_create = DDLayout_settings.DDL_JS.user_can_create;
 
-		_.bindAll( self, 'render', 'afterRender');
+		_.bindAll( self, 'render', 'afterRender', 'tabActivate' );
 
 		self.render = _.wrap(self.render, function(render, args) {
 			render(args);
@@ -20,7 +23,7 @@ DDLayout.listing.views.ListingTableView = Backbone.View.extend({
 		self.options = options;
 		self.$el.data('view', self);
 		self.model.is_searching = false;
-	//	self.listenTo(self.model, 'sync', self.render, options);
+		self.listenTo(self.model, 'sync', self.render, options);
         self.listenTo(self.eventDispatcher, 'changes_in_dialog_done', self.render, options);
 		self.listenTo(self.model, 'changed_usage', self.render, options);
 		self.listenTo(self.eventDispatcher, 'resort', self.render, options);
@@ -40,10 +43,10 @@ DDLayout.listing.views.ListingTableView = Backbone.View.extend({
         			return;
                 }
 				jQuery('.js-do-bulk-action').parent().css( {'position':'relative', 'min-width' : '234px' } );
-				var width = jQuery('.js-do-bulk-action').parent().width() - 20;
+				var width = jQuery('.js-do-bulk-action').parent().width() - 50;
                 WPV_Toolset.Utils.loader.loadShow( jQuery('.js-do-bulk-action'), true).css({
 						'position' : 'absolute',
-						'top' : '5px',
+						'top' : '3px',
 						'left' : width.toString() + 'px'
 					});
         });
@@ -58,7 +61,6 @@ DDLayout.listing.views.ListingTableView = Backbone.View.extend({
 	render: function ( option ) {
 
 		//console.log('render the full table');
-
 		var self = this,
 			options = option || {};
 
@@ -66,24 +68,29 @@ DDLayout.listing.views.ListingTableView = Backbone.View.extend({
 
 		if( self.model.is_searching === false )
 		{
-			//console.log('table render', 'caching')
 			self.model.cache = self.model.get('Groups').toJSON();
 		}
 		else if( self.model.is_searching )
 		{
-		//	console.log('table render', 'not caching')
 			self.model.is_searching = false;
 		}
 
-	//	self.clean_up_relationship_data();
+		self._cleanBeforeRender(self.$el);
 
-		self._cleanBeforeRender(self.$el)
+        if( DDLayout_settings.DDL_JS.ddl_listing_status === 'trash' ){
+            options = _.extend(options, { model: self.model.get('Groups')});
+            self.groups_view = new DDLayout.listing.views.ListingGroupsView(options);
+        } else {
+            self.initTabs();
+            var renderGroup = option && option.renderGroup ? option.renderGroup : self.model.get('Groups').getActiveAsArray( self.activeGroup );
 
-		if ( self.model.get('Groups') ) {
-			var groups = self.model.get('Groups');
-			options = _.extend(options, { model: groups});
-			self.groups_view = new DDLayout.listing.views.ListingGroupsView(options);
-		}
+            if ( renderGroup.length > 0 ) {
+                var groups = new DDLayout.listing.models.ListingGroups( renderGroup );
+                options = _.extend(options, { model: groups, activeGroup: self.activeGroup });
+                self.groups_view = new DDLayout.listing.views.ListingGroupsView(options);
+            }
+        }
+
 
 		self.select_bulk_action();
 		self.select_single_item_in_list();
@@ -91,10 +98,54 @@ DDLayout.listing.views.ListingTableView = Backbone.View.extend({
 
 		return self;
 	},
+    initTabs: function () {
+        var self = this,
+            $tabs = jQuery('#layout-listing-tabs'),
+            $a = jQuery('a[href="#tab-' + self.activeGroup + '"]'),
+            index = $a.data('index');
+
+        if( null !== self.$tabs ){
+            self.$tabs.tabs('destroy');
+        }
+
+        self.$tabs = $tabs.tabs({
+            active: index,
+            cached: true,
+            activate: self.tabActivate
+        }).show();
+
+    },
+    tabActivate: function( event, ui ){
+        var self = this,
+            index = ui.newTab.index(),
+            activeId = jQuery("#layout-listing-tabs ul>li a").eq( index ).attr("href"),
+            active = activeId.split('#tab-')[1];
+
+        self.activeGroup = active;
+        self.model.activeGroup = self.activeGroup;
+
+        var renderGroup = self.model.get('Groups').getActiveAsArray( self.activeGroup );
+
+        if( renderGroup.length === 0 ){
+            self.model.get_data_from_server( {'group_slug' : self.activeGroup});
+        } else{
+            self.render( { renderGroup: renderGroup } );
+        }
+
+        jQuery('.js-tab-alert-icon', jQuery("#layout-listing-tabs ul>li").eq( index ) ).hide( function(){
+            jQuery(this).remove();
+            self.marked[self.activeGroup] = false;
+        });
+    },
+    forceActiveReload: function(){
+	    var self = this;
+
+	    self.model.get('Groups').removeActive( self.activeGroup );
+    },
 	afterRender:function()
 	{
 		var self = this;
-		self.eventDispatcher.trigger('table_view_after_render');
+		self.eventDispatcher.trigger( 'table_view_after_render', self );
 	},
 	manage_sort_icon_init:function()
 	{
@@ -423,14 +474,30 @@ DDLayout.listing.views.ListingTableView = Backbone.View.extend({
 				$current.trigger('click');
 			}
 		});
+
+       /* $input.on('change', function() {
+
+            if( jQuery(this).val() )
+            {
+                self.model.is_searching = true;
+                self.model.search( jQuery(this).val() );
+            }
+            else
+            {
+                self.model.search( null );
+                self.model.is_searching = false;
+            }
+        }); */
+
 		jQuery(document).on('click', $current.selector, function(event){
 			var $me = jQuery(event.target);
 			if( $me.prop('name') == DDLayout_settings.DDL_JS.ddl_listing_status )
 			{
 				event.preventDefault();
+                self.model.set( 'Groups', null );
 				self.model.parse( {Data:self.model.cache} );
 				self.model.trigger('done_searching');
-
+                self.model.searchCache = null;
 			}
 		});
 	},

@@ -10,7 +10,7 @@
 /**
  * Block dependencies
  */
-import OptGroup from './optgroup';
+import OptGroup from '../../common/optgroup';
 
 const {
 	__,
@@ -19,6 +19,10 @@ const {
 const {
 	Component,
 } = wp.element;
+
+const {
+	BaseControl,
+} = wp.components;
 
 export default class ViewSelect extends Component {
 	render() {
@@ -46,57 +50,62 @@ export default class ViewSelect extends Component {
 				taxonomy.length > 0 ||
 				users.length > 0
 			) ?
-				// eslint-disable-next-line jsx-a11y/no-onchange
-				<select
-					onChange={ onChangeView }
-					value={ view }
-					className={ className }
-				>
-					<option disabled="disabled" value="">{ __( 'Select a View' ) }</option>
+				<BaseControl>
 					{
-						posts.length > 0 ?
-							<OptGroup
-								attributes={
-									{
-										label: __( 'Post Views' ),
-										items: posts,
+						// eslint-disable-next-line jsx-a11y/no-onchange
+					} <select
+						onChange={ onChangeView }
+						value={ view }
+						className={ className }
+					>
+						<option disabled="disabled" value="">{ __( 'Select a View' ) }</option>
+						{
+							posts.length > 0 ?
+								<OptGroup
+									attributes={
+										{
+											label: __( 'Post Views' ),
+											items: posts,
+										}
 									}
-								}
-							/> :
-							null
-					}
+								/> :
+								null
+						}
 
-					{
-						taxonomy.length > 0 ?
-							<OptGroup
-								attributes={
-									{
-										label: __( 'Taxonomy Views' ),
-										items: taxonomy,
+						{
+							taxonomy.length > 0 ?
+								<OptGroup
+									attributes={
+										{
+											label: __( 'Taxonomy Views' ),
+											items: taxonomy,
+										}
 									}
-								}
-							/> :
-							null
-					}
-					{
-						users.length > 0 ?
-							<OptGroup
-								attributes={
-									{
-										label: __( 'User Views' ),
-										items: users,
+								/> :
+								null
+						}
+						{
+							users.length > 0 ?
+								<OptGroup
+									attributes={
+										{
+											label: __( 'User Views' ),
+											items: users,
+										}
 									}
-								}
-							/> :
-							null
-					}
-				</select> :
-				<select
-					disabled="disabled"
-					className={ className }
-				>
-					<option>{ __( 'Create a View first' ) }</option>
-				</select>
+								/> :
+								null
+						}
+					</select>
+				</BaseControl> :
+				<BaseControl>
+					<select
+						disabled="disabled"
+						className={ className }
+					>
+						<option>{ __( 'Create a View first' ) }</option>
+					</select>
+				</BaseControl>
 		);
 	}
 }

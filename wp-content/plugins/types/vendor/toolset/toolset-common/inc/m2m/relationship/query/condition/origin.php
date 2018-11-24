@@ -16,11 +16,11 @@ class Toolset_Relationship_Query_Condition_Origin extends Toolset_Relationship_Q
 	/**
 	 * Toolset_Relationship_Query_Condition_Origin constructor.
 	 *
-	 * @param string $origin
+	 * @param string|null $origin Null value to return all origins.
 	 * @throws InvalidArgumentException
 	 */
 	public function __construct( $origin ) {
-		if( ! is_string( $origin ) || empty( $origin ) ) {
+		if( null !== $origin && ( ! is_string( $origin ) ||  empty( $origin ) ) ) {
 			throw new InvalidArgumentException();
 		}
 
@@ -33,6 +33,10 @@ class Toolset_Relationship_Query_Condition_Origin extends Toolset_Relationship_Q
 	 * @return string
 	 */
 	public function get_where_clause() {
+		if( null === $this->origin ) {
+			return '1 = 1';
+		}
+
 		return sprintf(
 			"relationships.origin = '%s'",
 			esc_sql( $this->origin )

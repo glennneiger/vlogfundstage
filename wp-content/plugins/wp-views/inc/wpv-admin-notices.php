@@ -84,7 +84,7 @@ class WPToolset_Admin_Notices {
 	/**
 	* release_notes
 	*
-	* Display an admin notice on each release, linking to the wp-types.com Version page
+	* Display an admin notice on each release, linking to the https://toolset.com Version page
 	*
 	* @since 1.10
 	* @since 2.0	Disabled by design
@@ -110,7 +110,7 @@ class WPToolset_Admin_Notices {
 					. '<i class="icon-views-logo fa fa-wpv-custom ont-color-orange ont-icon-24" style="margin-right:5px;vertical-align:-2px;"></i>'
 					. __( 'This version of Views includes major updates and improvements.', 'wpv-views' )
 					. ' <a href="'
-					. 'https://wp-types.com/version/views-1-12/?utm_source=viewsplugin&utm_campaign=views&utm_medium=release-notes-admin-notice&utm_term=Views 1.12 release notes'
+					. 'https://toolset.com/version/views-1-12/?utm_source=viewsplugin&utm_campaign=views&utm_medium=release-notes-admin-notice&utm_term=Views 1.12 release notes'
 					. '" class="button button-primary button-primary-toolset" target="_blank">'
 					. __( 'Views 1.12 release notes', 'wpv-views' )
 					. '</a>';

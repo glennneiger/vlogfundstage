@@ -67,13 +67,15 @@ class WPV_Shortcode_Post_Menu_Order implements WPV_Shortcode_Interface {
 		$out = '';
 		
 		$item = get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
 		
-		$out = $item->menu_order;
+		$out .= $item->menu_order;
 
 		apply_filters( 'wpv_shortcode_debug', 'wpv-post-menu-order', json_encode( $this->user_atts ), '', 'Data received from cache', $out );
 
 		return $out;
 	}
-	
-	
 }

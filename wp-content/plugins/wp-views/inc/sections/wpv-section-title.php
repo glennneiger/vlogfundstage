@@ -34,7 +34,7 @@ class WPV_Editor_Title{
 							><?php _e('Update', 'wpv-views'); ?></button>
 						</span>
 					</div>
-					<span class="wpv-message-container js-wpv-message-container"></span>
+					<span class="wpv-message-container js-wpv-message-container-title"></span>
 				</div>
 
 				<div id="edit-slug-box" class="wpv-slug-container js-wpv-slug-container">
@@ -130,7 +130,7 @@ class WPV_Editor_Title{
 						<textarea id="wpv-description" class="js-wpv-description" name="_wpv_settings[view_description]" cols="72" rows="4" autocomplete="off"><?php echo ( isset( $view_description ) ) ? esc_html( $view_description ) : ''; ?></textarea>
 					</p>
 					<p class="update-button-wrap js-wpv-update-button-wrap">
-						<span class="js-wpv-message-container"></span>
+						<span class="js-wpv-message-container-description"></span>
 						<button
 							class="button button-secondary js-wpv-description-update"
 							data-nonce="<?php echo wp_create_nonce( 'wpv_view_description_nonce' ); ?>"

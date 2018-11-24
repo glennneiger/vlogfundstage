@@ -35,8 +35,13 @@ class WPToolset_Field_google_address extends FieldFactory {
         $metaform = array();
 		
 		
-		
-		$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_api_key', '' );
+
+		if ( apply_filters( 'toolset_maps_get_api_used', '' ) === Toolset_Addon_Maps_Common::API_GOOGLE ) {
+			$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_api_key', '' );
+		} else {
+			$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_azure_api_key', '' );
+		}
+
 		if ( empty( $maps_api_key ) ) {
 			if ( current_user_can( 'manage_options' ) ) {
 				$analytics_strings = array(
@@ -46,8 +51,8 @@ class WPToolset_Field_google_address extends FieldFactory {
 					'utm_term'		=> 'our documentation'
 				);
 				$markup = sprintf(
-					__( '<p><small><strong>You need a Google Maps API key</strong> to use Toolset Maps address fields. Find more information in %1$sour documentation%2$s.</small></p>', 'toolset-maps' ),
-					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), 'https://wp-types.com/documentation/user-guides/display-on-google-maps/' ) . '" target="_blank">',
+					__( '<p><small><strong>You need an API key</strong> to use Toolset Maps address fields. Find more information in %1$sour documentation%2$s.</small></p>', 'toolset-maps' ),
+					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), TOOLSET_ADDON_MAPS_DOC_LINK ) . '" target="_blank">',
 					'</a>'
 				);
 				$metaform[] = array(
@@ -67,7 +72,7 @@ class WPToolset_Field_google_address extends FieldFactory {
 			}
 			$after = '</div></div>';
 			
-			$attributes['class'] .= 'toolset-google-map js-toolset-google-map';
+			$attributes['class'] .= 'toolset-google-map js-toolset-google-map js-toolset-maps-address-autocomplete';
 			
 			if ( ! isset( $attributes['data-coordinates'] ) ) {
 				$attributes['data-coordinates'] = '';
@@ -97,8 +102,13 @@ class WPToolset_Field_google_address extends FieldFactory {
         return $metaform;
     }
 
-    public function enqueueScripts() {
-        wp_enqueue_script('toolset-google-map-editor-script');
-    }
+	public function enqueueScripts() {
+		if ( apply_filters( 'toolset_maps_get_api_used', '' ) === Toolset_Addon_Maps_Common::API_GOOGLE ) {
+			wp_enqueue_script( 'toolset-google-map-editor-script' );
+		} else {
+			wp_enqueue_script( 'toolset-maps-address-autocomplete' );
+			Toolset_Addon_Maps_Common::maybe_enqueue_azure_css();
+		}
+	}
 
 }

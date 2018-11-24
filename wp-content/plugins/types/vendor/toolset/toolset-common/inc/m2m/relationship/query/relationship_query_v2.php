@@ -35,12 +35,13 @@
  *     active and non-active relationship definitions, you need to manually add is_active('*').
  * - If no has_active_post_types() condition is used when constructing the query, has_active_post_types(true)
  *     is used for both parent and child role.
+ * - If no origin() condition is used, origin( 'wizard' ) is added by default.
  * - This mechanism doesn't recognize where, how and if these conditions are actually applied, so even
  *     $query->do_if( false, $query->is_active( true ) ) will disable the default is_active() condition.
  *
  * @since m2m
  */
-class Toolset_Relationship_Query_V2 implements IToolset_Query {
+class Toolset_Relationship_Query_V2 {
 
 
 	/** @var IToolset_Relationship_Query_Condition[] */
@@ -56,6 +57,7 @@ class Toolset_Relationship_Query_V2 implements IToolset_Query {
 	private $should_add_default_conditions = true;
 	private $has_is_active_condition = false;
 	private $has_is_post_type_active_condition = false;
+	private $has_origin_condition = false;
 
 
 	/** @var Toolset_Relationship_Database_Unique_Table_Alias */
@@ -178,6 +180,10 @@ class Toolset_Relationship_Query_V2 implements IToolset_Query {
 
 		if( ! $this->has_is_post_type_active_condition ) {
 			$this->add( $this->has_active_post_types() );
+		}
+
+		if( ! $this->has_origin_condition ) {
+			$this->add( $this->origin( Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ) );
 		}
 	}
 
@@ -305,12 +311,27 @@ class Toolset_Relationship_Query_V2 implements IToolset_Query {
 	/**
 	 * Condition that the relationship comes from a certain source
 	 *
-	 * @param string $origin
+	 * @param string|null $origin One of the keywords from IToolset_Relationship_Origin or null to include relationships with all origins.
 	 *
 	 * @return Toolset_Relationship_Query_Condition_Origin
 	 */
 	public function origin( $origin ) {
+		$this->has_origin_condition = true;
 		return $this->condition_factory->origin( $origin );
+	}
+
+
+	/**
+	 * Condition that the relationship includes a certain intermediary object.
+	 *
+	 * @param string $intermediary_type An intermediary object slug.
+	 *
+	 * @return Toolset_Relationship_Query_Condition_Intermediary
+	 *
+	 * @since 2.6.7
+	 */
+	public function intermediary_type( $intermediary_type ) {
+		return $this->condition_factory->intermediary_type( $intermediary_type );
 	}
 
 
@@ -332,6 +353,27 @@ class Toolset_Relationship_Query_V2 implements IToolset_Query {
 		}
 
 		return $this->condition_factory->has_type( $type, $in_role );
+	}
+
+
+	/**
+	 * Condition that the relationship has a certain type in a given role.
+	 *
+	 * @param string $type
+	 * @param IToolset_Relationship_Role_Parent_Child|null $in_role If null is provided, the type
+	 *    can be in both parent or child role for the condition to be true.
+	 *
+	 * @return IToolset_Relationship_Query_Condition
+	 */
+	public function exclude_type( $type, $in_role = null ) {
+		if( null === $in_role ) {
+			return $this->do_and(
+				$this->exclude_type( $type, new Toolset_Relationship_Role_Parent() ),
+				$this->exclude_type( $type, new Toolset_Relationship_Role_Child() )
+			);
+		}
+
+		return $this->condition_factory->exclude_type( $type, $in_role );
 	}
 
 
@@ -499,4 +541,15 @@ class Toolset_Relationship_Query_V2 implements IToolset_Query {
 		return (int) $this->found_rows;
 	}
 
+
+	/**
+	 * Condition that excludes a relationship.
+	 *
+	 * @param Toolset_Relationship_Definition $relationship Relationship Definition.
+	 *
+	 * @return IToolset_Relationship_Query_Condition
+	 */
+	public function exclude_relationship( $relationship ) {
+		return $this->condition_factory->exclude_relationship( $relationship );
+	}
 }

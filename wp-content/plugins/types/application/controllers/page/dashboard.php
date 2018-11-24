@@ -414,7 +414,7 @@ final class Types_Page_Dashboard extends Types_Page_Abstract {
 		return $string;
 	}
 
-	public function screen_settings_save($status, $option, $value) {
+	public function screen_settings_save($pre_save_value, $option, $value) {
 		if ( 'toolset_dashboard_screen_post_types' == $option ) {
 			if ( is_array( $_POST['toolset_dashboard_screen_post_types'] ) ) {
 				$toolset_dashboard_screen_post_types = array();
@@ -427,8 +427,9 @@ final class Types_Page_Dashboard extends Types_Page_Abstract {
 				$toolset_dashboard_screen_post_types = sanitize_text_field( $_POST['toolset_dashboard_screen_post_types'] );
 			}
 			$value = $toolset_dashboard_screen_post_types;
+			return $value;
 		}
-		return $value;
+		return $pre_save_value;
 	}
 
 

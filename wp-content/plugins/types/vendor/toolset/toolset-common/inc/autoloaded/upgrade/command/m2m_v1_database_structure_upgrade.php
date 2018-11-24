@@ -10,7 +10,7 @@
  * command aims at a specific database structure and by using hardcoded values (e.g. for table names)
  * we're becoming immune even to unlikely changes like future renaming of tables or columns.
  *
- * Note: This will fail terribly if executed for the second time.
+ * Note: This might fail terribly if executed for the second time.
  *
  * @since 2.5.4
  */
@@ -32,15 +32,20 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 	private $next_type_set_id = 1;
 
 
+	private $constants;
+
+
 	/**
 	 * Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade constructor.
 	 *
 	 * @param wpdb|null $wpdb_di
 	 * @param Toolset_Relationship_Database_Operations|null $relationship_database_operations_di
+	 * @param Toolset_Constants|null $constants_di
 	 */
 	public function __construct(
 		wpdb $wpdb_di = null,
-		Toolset_Relationship_Database_Operations $relationship_database_operations_di = null
+		Toolset_Relationship_Database_Operations $relationship_database_operations_di = null,
+		Toolset_Constants $constants_di = null
 	) {
 		if( null === $wpdb_di ) {
 			global $wpdb;
@@ -50,6 +55,7 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 		}
 
 		$this->_database_operations = $relationship_database_operations_di;
+		$this->constants = $constants_di ?: new Toolset_Constants();
 	}
 
 
@@ -75,23 +81,29 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 
 		$results = new Toolset_Result_Set();
 
-		$this->create_post_type_set_table();
-		$this->transform_post_type_sets();
-		$this->change_relationship_type_column_datatypes();
+		$results->add( $this->create_post_type_set_table() );
+		$results->add( $this->transform_post_type_sets() );
+		$results->add( $this->change_relationship_type_column_datatypes() );
 
-		$this->add_extra_relationship_columns();
-		$this->transform_extra_relationship_data();
-		$this->drop_relationship_extra_column();
+		$results->add( $this->add_extra_relationship_columns() );
+		$results->add( $this->transform_extra_relationship_data() );
+		$results->add( $this->drop_relationship_extra_column() );
 
-		$this->add_indexes_for_relationships_table();
+		$results->add( $this->add_indexes_for_relationships_table() );
 
-		$this->add_relationship_id_column_for_associations();
-		$this->transform_relationship_references_for_associations();
-		$this->remove_relationship_slug_column_for_associations();
+		$results->add( $this->add_relationship_id_column_for_associations() );
+		$results->add( $this->transform_relationship_references_for_associations() );
+		$results->add( $this->remove_relationship_slug_column_for_associations() );
 
-		$this->add_indexes_for_associations_table();
+		$results->add( $this->add_indexes_for_associations_table() );
 
 		error_log( 'The routine Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade::run() has finished' );
+
+		// This is a very basic check since dbDelta has a very bad way of reporting operation results.
+		// But if this detects a failure, we *know* for sure something went really wrong.
+		if( ! $this->is_database_already_up_to_date() ) {
+			$results->add( false, 'The m2m-v1 database structure upgrade to m2m-v2 seems to have failed.' );
+		}
 
 		return $results;
 	}
@@ -104,10 +116,35 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 	 * @return bool
 	 */
 	private function is_database_already_up_to_date() {
+		return (
+			$this->is_type_set_table_present()
+			&& $this->are_new_relationship_columns_present()
+		);
+	}
+
+
+	private function is_type_set_table_present() {
 		$table_name = $this->get_type_set_table_name();
-		$query = $this->wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name );
-		$type_set_table_already_exists = ( $this->wpdb->get_var( $query ) == $table_name );
+		$type_set_table_query = $this->wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name );
+		$type_set_table_already_exists = ( $this->wpdb->get_var( $type_set_table_query ) == $table_name );
+
 		return $type_set_table_already_exists;
+	}
+
+
+	private function are_new_relationship_columns_present() {
+		$relationship_column_query = "SELECT * 
+			FROM information_schema.COLUMNS 
+			WHERE 
+				TABLE_NAME = '{$this->get_relationships_table_name()}'
+				AND TABLE_SCHEMA = '{$this->constants->constant( 'DB_NAME' )}' 
+			AND COLUMN_NAME IN ( 
+				'display_name_plural', 'display_name_singular', 'role_name_parent', 'role_name_child',
+				'role_name_intermediary', 'needs_legacy_support', 'is_active'
+			)";
+
+		$results = $this->wpdb->get_results( $relationship_column_query );
+		return ( count( $results ) === 7 );
 	}
 
 
@@ -123,7 +160,9 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 			    KEY type (type)
 			) {$this->wpdb->get_charset_collate()};";
 
-		self::dbdelta( $query );
+		$output = self::dbdelta( $query );
+
+		return new Toolset_Result( true, implode( "\n", $output ) );
 	}
 
 
@@ -132,11 +171,13 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 			"SELECT id, parent_types, child_types FROM {$this->get_relationships_table_name()}"
 		);
 
+		$results = new Toolset_Result_Set();
+
 		foreach( $relationships as $relationship ) {
 			$parent_types = $this->save_post_type_set( maybe_unserialize( $relationship->parent_types ) );
 			$child_types = $this->save_post_type_set( maybe_unserialize( $relationship->child_types ) );
 
-			$this->wpdb->update(
+			$output = $this->wpdb->update(
 				$this->get_relationships_table_name(),
 				array(
 					'parent_types' => $parent_types,
@@ -148,16 +189,22 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 				'%s',
 				'%d'
 			);
+
+			$results->add( false !== $output, $this->wpdb->last_error );
 		}
+
+		return $results;
 	}
 
 
 	private function change_relationship_type_column_datatypes() {
-		$this->wpdb->query(
+		$output = $this->wpdb->query(
 			"ALTER TABLE {$this->get_relationships_table_name()}
 			MODIFY parent_types bigint(20) UNSIGNED NOT NULL DEFAULT 0,
 			MODIFY child_types bigint(20) UNSIGNED NOT NULL DEFAULT 0"
 		);
+
+		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
 	}
 
 
@@ -208,7 +255,7 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 
 
 	private function add_extra_relationship_columns() {
-		$this->wpdb->query(
+		$output = $this->wpdb->query(
 			"ALTER TABLE {$this->get_relationships_table_name()}
 			CHANGE COLUMN display_name display_name_plural varchar(255) NOT NULL DEFAULT '',
 			ADD COLUMN display_name_singular varchar(255) NOT NULL DEFAULT '',
@@ -218,6 +265,8 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
     		ADD COLUMN needs_legacy_support tinyint(1) NOT NULL DEFAULT 0,
     		ADD COLUMN is_active tinyint(1) NOT NULL DEFAULT 0"
 		);
+
+		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
 	}
 
 
@@ -226,10 +275,12 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 			"SELECT id, extra FROM {$this->get_relationships_table_name()}"
 		);
 
+		$results = new Toolset_Result_Set();
+
 		foreach( $relationships as $relationship ) {
 			$extra_data = maybe_unserialize( $relationship->extra );
 
-			$this->wpdb->update(
+			$output = $this->wpdb->update(
 				$this->get_relationships_table_name(),
 				array(
 					'role_name_parent' => 'parent',
@@ -243,34 +294,44 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 				array( '%s', '%s', '%s', '%d', '%d', '%s' ),
 				'%d'
 			);
+
+			$results->add( false !== $output, $this->wpdb->last_error );
 		}
+
+		return $results;
 	}
 
 
 	private function drop_relationship_extra_column() {
-		$this->wpdb->query(
+		$output = $this->wpdb->query(
 			"ALTER TABLE {$this->get_relationships_table_name()}
 			DROP COLUMN extra"
 		);
+
+		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
 	}
 
 
 	private function add_indexes_for_relationships_table() {
-		$this->wpdb->query(
+		$output = $this->wpdb->query(
 			"ALTER TABLE {$this->get_relationships_table_name()}
 			ADD INDEX is_active (is_active),
 			ADD INDEX needs_legacy_support (needs_legacy_support),
 			ADD INDEX parent_type (parent_domain, parent_types),
 			ADD INDEX child_type (child_domain, child_types)"
 		);
+
+		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
 	}
 
 
 	private function add_relationship_id_column_for_associations() {
-		$this->wpdb->query(
+		$output = $this->wpdb->query(
 			"ALTER TABLE {$this->get_associations_table_name()}
 			ADD COLUMN relationship_id bigint(20) UNSIGNED NOT NULL"
 		);
+
+		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
 	}
 
 
@@ -279,32 +340,42 @@ class Toolset_Upgrade_Command_M2M_V1_Database_Structure_Upgrade implements ITool
 			"SELECT id, slug FROM {$this->get_relationships_table_name()}"
 		);
 
+		$results = new Toolset_Result_Set();
+
 		foreach( $relationships as $relationship ) {
-			$this->wpdb->update(
+			$output = $this->wpdb->update(
 				$this->get_associations_table_name(),
 				array( 'relationship_id' => $relationship->id ),
 				array( 'relationship' => $relationship->slug ),
 				'%d',
 				'%s'
 			);
+
+			$results->add( false !== $output, $this->wpdb->last_error );
 		}
+
+		return $results;
 	}
 
 
 	private function remove_relationship_slug_column_for_associations() {
-		$this->wpdb->query(
+		$output = $this->wpdb->query(
 			"ALTER TABLE {$this->get_associations_table_name()}
 			DROP COLUMN relationship"
 		);
+
+		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
 	}
 
 
 	private function add_indexes_for_associations_table() {
-		$this->wpdb->query(
+		$output = $this->wpdb->query(
 			"ALTER TABLE {$this->get_associations_table_name()}
 			ADD INDEX relationship_id (relationship_id),
 			ADD INDEX parent_id (parent_id, relationship_id),
 			ADD INDEX child_id (child_id, relationship_id)"
 		);
+
+		return new Toolset_Result( false !== $output, $this->wpdb->last_error );
 	}
 }

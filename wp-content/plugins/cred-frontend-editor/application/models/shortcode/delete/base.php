@@ -1,21 +1,23 @@
 <?php
 
+namespace OTGS\Toolset\CRED\Model\Shortcode\Delete;
+
 /**
- * Class CRED_Shortcode_Delete_Base
+ * Base class for form edit links.
  *
  * @since m2m
  */
-class CRED_Shortcode_Delete_Base  {
+class Base {
 
 	/**
-	 * @var Toolset_Shortcode_Attr_Interface
+	 * @var \Toolset_Shortcode_Attr_Interface
 	 */
 	protected $item;
 	
 	/**
-	 * @param Toolset_Shortcode_Attr_Interface $item
+	 * @param \Toolset_Shortcode_Attr_Interface $item
 	 */
-	public function __construct( Toolset_Shortcode_Attr_Interface $item ) {
+	public function __construct( \Toolset_Shortcode_Attr_Interface $item ) {
 		$this->item = $item;
 	}
 	

@@ -21,7 +21,7 @@ function add_view_layout_templates( $view_settings, $view_layout_settings, $view
 	$invalid_templates	= array();
 	
 	// Legacy: when creating a Slider View, we display a helper message 
-	// before the CT we create for its Loop Output.
+	// before the CT we create for its Loop.
     $first_time = get_post_meta( $view_id, '_wpv_first_time_load', true );
 	delete_post_meta( $view_id, '_wpv_first_time_load' );
 	

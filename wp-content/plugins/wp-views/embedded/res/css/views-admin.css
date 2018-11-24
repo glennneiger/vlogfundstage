@@ -353,13 +353,14 @@
 		position: relative;
 		border-collapse: separate;
 		background: #fafafa;
-		transition: background-color 1s;
+		transition: background-color 0.5s;
 	}
 	
 	.wpv-editable-list .wpv-editable-list-item.ui-sortable-helper {
 		display: table-row !important;
 	}
 	
+		.wpv-editable-list div.wpv-editable-list-item, 
 		.wpv-editable-list .wpv-editable-list-item td {
 			padding: 5px;
 			vertical-align: baseline;
@@ -434,7 +435,7 @@
 /* Views edit page globals */
 .wpv-setting-container {
 	position: relative;
-	padding: 15px 0;
+	padding: 10px 0;
 	border-bottom: 1px solid #ededed;
 	clear: both;
 /*	background: #fff;*/
@@ -449,7 +450,7 @@
 	.wpv-layout-section,
 	.wpv-help-section,
     .wpv-settings-section {
-		margin-top: 20px;
+		margin-top: 10px;
 		margin-right: 100px;
 	}
 
@@ -1691,6 +1692,42 @@
 			font-weight: bold;
 			padding: 1px 5px;
 		}
+
+	.wpv-layout-wizard-layout-style-icon {
+		display: inline-block;
+		height: 32px;
+		margin: 0 5px;
+		vertical-align: middle;
+		width: 32px;
+	}
+		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-unformatted {
+			background: url('../img/layout-wizard-icons/unformatted.svg') center center no-repeat;
+		}
+
+		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-bootstrap-grid {
+			background: url('../img/layout-wizard-icons/bootstrap-grid.svg') center center no-repeat;
+		}
+
+		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-table-grid {
+			background: url('../img/layout-wizard-icons/table-grid.svg') center center no-repeat;
+		}
+
+		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-table {
+			background: url('../img/layout-wizard-icons/table.svg') center center no-repeat;
+		}
+
+		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-unordered-list {
+			background: url('../img/layout-wizard-icons/unordered-list.svg') center center no-repeat;
+		}
+
+		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-ordered-list {
+			background: url('../img/layout-wizard-icons/ordered-list.svg') center center no-repeat;
+		}
+
+		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-separators-list {
+			background: url('../img/layout-wizard-icons/separators_list.svg') center center no-repeat;
+			.svg') center center no-repeat;
+		}
 /* -----------*/
 /* WIZARD END */
 /* ---------- */
@@ -1856,6 +1893,10 @@
 .views-list-sort:hover i,
 .views-list-sort-active i {
 	visibility: visible;
+}
+/* make sure that pointer tooltip is visible inside dialog - Z-Wars */
+.wpv-pointer-inside-dialog{
+	z-index: 999999 !important;;
 }
 
 /* / Views listing date sorting END */
@@ -2229,6 +2270,7 @@
 ---------------------------------------------------------------------------- */
 
 .wp-core-ui .button-primary-toolset,
+.wp-core-ui .button-primary.button-primary-toolset,
 .wp-core-ui .button.button-primary-toolset {
 	background: #f6921e;
 	border-color: #EF6223;
@@ -2243,6 +2285,10 @@
 .wp-core-ui .button-primary-toolset:hover,
 .wp-core-ui .button-primary-toolset.focus,
 .wp-core-ui .button-primary-toolset:focus,
+.wp-core-ui .button-primary.button-primary-toolset.hover,
+.wp-core-ui .button-primary.button-primary-toolset:hover,
+.wp-core-ui .button-primary.button-primary-toolset.focus,
+.wp-core-ui .button-primary.button-primary-toolset:focus,
 .wp-core-ui .button.button-primary-toolset.hover,
 .wp-core-ui .button.button-primary-toolset:hover,
 .wp-core-ui .button.button-primary-toolset.focus,
@@ -2256,6 +2302,8 @@
 
 .wp-core-ui .button-primary-toolset.focus,
 .wp-core-ui .button-primary-toolset:focus,
+.wp-core-ui .button-primary.button-primary-toolset.focus,
+.wp-core-ui .button-primary.button-primary-toolset:focus,
 .wp-core-ui .button.button-primary-toolset.focus,
 .wp-core-ui .button.button-primary-toolset:focus {
 	border-color: #EF6223;
@@ -2267,6 +2315,10 @@
 .wp-core-ui .button-primary-toolset.active:hover,
 .wp-core-ui .button-primary-toolset.active:focus,
 .wp-core-ui .button-primary-toolset:active,
+.wp-core-ui .button-primary.button-primary-toolset.active,
+.wp-core-ui .button-primary.button-primary-toolset.active:hover,
+.wp-core-ui .button-primary.button-primary-toolset.active:focus,
+.wp-core-ui .button-primary.button-primary-toolset:active,
 .wp-core-ui .button.button-primary-toolset.active,
 .wp-core-ui .button.button-primary-toolset.active:hover,
 .wp-core-ui .button.button-primary-toolset.active:focus,
@@ -2282,6 +2334,10 @@
 .wp-core-ui .notice .button-primary-toolset.active:hover,
 .wp-core-ui .notice .button-primary-toolset.active:focus,
 .wp-core-ui .notice .button-primary-toolset:active,
+.wp-core-ui .notice .button-primary.button-primary-toolset.active,
+.wp-core-ui .notice .button-primary.button-primary-toolset.active:hover,
+.wp-core-ui .notice .button-primary.button-primary-toolset.active:focus,
+.wp-core-ui .notice .button-primary.button-primary-toolset:active,
 .wp-core-ui .notice .button.button-primary-toolset.active,
 .wp-core-ui .notice .button.button-primary-toolset.active:hover,
 .wp-core-ui .notice .button.button-primary-toolset.active:focus,
@@ -2292,6 +2348,9 @@
 .wp-core-ui .button-primary-toolset[disabled],
 .wp-core-ui .button-primary-toolset:disabled,
 .wp-core-ui .button-primary-toolset.disabled,
+.wp-core-ui .button-primary.button-primary-toolset[disabled],
+.wp-core-ui .button-primary.button-primary-toolset:disabled,
+.wp-core-ui .button-primary.button-primary-toolset.disabled,
 .wp-core-ui .button.button-primary-toolset[disabled],
 .wp-core-ui .button.button-primary-toolset:disabled,
 .wp-core-ui .button.button-primary-toolset.disabled {
@@ -2616,6 +2675,7 @@ html[dir='rtl'] .wpv-itembox-header .wpv-code-editor-toggler {
 .toolset_page_views-editor .toolset_select2-container.toolset_select2-container-in-setting, 
 .toolset_page_view-archives-editor .toolset_select2-container.toolset_select2-container-in-setting {
 	z-index: 99;
+	min-width: 150px;
 }
 
 .toolset_page_views-editor .toolset_select2-container--open.toolset_select2-dropdown-in-setting, 

@@ -19,8 +19,8 @@ WPViews.StickyFilterGUI = function( $ ) {
 	
 	self.spinner 					= '<span class="wpv-spinner ajax-loader"></span>&nbsp;&nbsp;';
 	
-	self.warning_post_not_suported	= '<p class="js-wpv-filter-post-sticky-not-supported js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_sticky_strings.post.post_type_not_supported + '</p>';
-	self.disabled_for_loop			= '<p class="js-wpv-archive-filter-post-sticky-disabled js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden"true"=""></i> ' + wpv_sticky_strings.archive.disable_post_sticky_filter + '</p>';
+	self.warning_post_not_suported	= '<p class="js-wpv-filter-post-sticky-not-supported js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_sticky_strings.post.post_type_not_supported + '</p>';
+	self.disabled_for_loop			= '<p class="js-wpv-archive-filter-post-sticky-disabled js-wpv-permanent-alert-error toolset-alert toolset-alert-warning"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + wpv_sticky_strings.archive.disable_post_sticky_filter + '</p>';
 	
 	self.post_row							= '.js-wpv-filter-row-post_sticky';
 	self.post_options_container_selector	= '.js-wpv-filter-post-sticky-options';

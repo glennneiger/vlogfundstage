@@ -1,11 +1,11 @@
 <?php
 
 if( !defined('TOOLSET_VERSION') ){
-	define('TOOLSET_VERSION', '2.6.2');
+	define('TOOLSET_VERSION', '2.8.1');
 }
 
 if ( ! defined('TOOLSET_COMMON_VERSION' ) ) {
-    define( 'TOOLSET_COMMON_VERSION', '2.6.2' );
+    define( 'TOOLSET_COMMON_VERSION', '2.8.1' );
 }
 
 if ( ! defined('TOOLSET_COMMON_PATH' ) ) {
@@ -14,6 +14,16 @@ if ( ! defined('TOOLSET_COMMON_PATH' ) ) {
 
 if ( ! defined('TOOLSET_COMMON_DIR' ) ) {
     define( 'TOOLSET_COMMON_DIR', basename( TOOLSET_COMMON_PATH ) );
+}
+
+if( ! defined( 'TOOLSET_DATA_STRUCTURE_VERSION') ) {
+	/**
+	 * Determines version of Toolset data structures or other changes that need
+	 * an upgrade routine to be executed.
+	 *
+	 * This constant should be used only by Toolset_Upgrade_Controller.
+	 */
+	define( 'TOOLSET_DATA_STRUCTURE_VERSION', 3 );
 }
 
 /**

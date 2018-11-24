@@ -1,7 +1,11 @@
 <?php
 
+use OTGS\Toolset\CRED\Controller\Factory;
+
 class CRED_Association_Form_Main {
 	const ASSOCIATION_FORMS_POST_TYPE = 'cred_rel_form';
+	const TRANSIENT_KEY = 'cred_transient_published_rel_forms';
+	
 	const RELATIONSHIP_POST_TYPE = 'relationship';
 	const CRED_ASSOCIATION_FORM_AJAX_ACTION = 'cred_association_form_ajax_submit';
 	const CRED_ASSOCIATION_FORM_AJAX_NONCE = 'cred_association_form_ajax_submit_nonce';
@@ -15,7 +19,7 @@ class CRED_Association_Form_Main {
 	private $condition_ajax_request = false;
 	private $condition_back_end = false;
 
-	public function __construct( CRED_Association_Form_Controller_Factory $controller_factory, CRED_Association_Form_Model_Factory $factory_model, CRED_Association_Form_Relationship_API_Helper $helper ) {
+	public function __construct( Factory $controller_factory, CRED_Association_Form_Model_Factory $factory_model, CRED_Association_Form_Relationship_API_Helper $helper ) {
 		$this->controller_factory = $controller_factory;
 		$this->model_factory = $factory_model;
 		$this->helper = $helper;
@@ -56,13 +60,15 @@ class CRED_Association_Form_Main {
 			if(  $this->condition_ajax_request ){
 				return $controller;
 			}
-			else if( $this->condition_back_end ){
-				$controller = $this->controller_factory->build( 'Back_End', $this->model_factory, $this->helper );
-			} else if( $this->condition_front_end && ! $this->condition_post_request ) {
-				$controller = $this->controller_factory->build( 'Front_End', $this->model_factory, $this->helper );
-			} else if( $this->condition_front_end && $this->condition_post_request ){
-				$this->controller_factory->build( 'Post_Request', $this->model_factory, $this->helper );
-				$controller = $this->controller_factory->build( 'Front_End', $this->model_factory, $this->helper );
+
+			if( $this->condition_post_request ){
+				$this->controller_factory->build( 'association', 'Post_Request', $this->model_factory, $this->helper );
+			}
+
+			if( $this->condition_back_end ){
+				$controller = $this->controller_factory->build( 'association', 'Back_End', $this->model_factory, $this->helper );
+			} else if( $this->condition_front_end ){
+				$controller = $this->controller_factory->build( 'association', 'Front_End', $this->model_factory, $this->helper );
 			}
 			return $controller;
 		} catch( Exception $exception ){
@@ -143,11 +149,24 @@ class CRED_Association_Form_Main {
 		register_post_type( self::ASSOCIATION_FORMS_POST_TYPE, $args );
 	}
 
+	/**
+	 * Set the condition for AJAX or post request
+	 *
+	 * @note This condition should not rely just on toolset_getpost( 'cred_form_id', false ),
+	 * it is waaaaaay to dangerous and narrows the usage of the cred_form_id
+	 * URL parameter, also for only association forms.
+	 */
 	protected function set_condition_is_post_request(){
-		if( !is_admin() && count( $_POST ) > 0 && isset( $_POST['cred_form_id'] ) ){
-			$this->condition_post_request = $_POST['cred_form_id'];
-		} else if( is_admin() && count( $_POST ) > 0 && isset( $_POST['action'] ) /**&& $_POST['action'] === self::CRED_ASSOCIATION_FORM_AJAX_ACTION**/ ){
-			$this->condition_ajax_request = isset( $_POST['cred_form_id'] ) ? $_POST['cred_form_id'] : true;
+		if( 
+			is_admin() 
+			&& self::CRED_ASSOCIATION_FORM_AJAX_ACTION === toolset_getpost( 'action' ) 
+		){
+			$this->condition_ajax_request = toolset_getpost( 'cred_form_id', true );
+		} else if( 
+			toolset_getpost( 'cred_form_id', false ) 
+			&& toolset_getpost( 'cred_relationship_slug', false )
+		){
+			$this->condition_post_request = toolset_getpost( 'cred_form_id' );
 		}
 	}
 

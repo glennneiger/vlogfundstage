@@ -5,7 +5,7 @@
         {% import "@toolset/forms.twig" as forms %}
         {{
             forms.twoColumnRow(
-                forms.label(__( 'Name plural', 'wpcf' ), true),
+                forms.label(__( 'Name plural', 'wpv-views' ), true),
                 forms.textInput('value: displayName')
             )
         }}
@@ -14,13 +14,14 @@
 #}
 
 
-{% macro textInput(dataBinding, class, value, label, isRequired, name, id, placeholder) %}
+{% macro textInput(dataBinding, class, value, label, isRequired, name, id, placeholder, type) %}
 
     {% if label is not empty %}
         {{ _self.label(label, isRequired, name, _self.textInput(name, id, value, class, placeholder, '', isRequired)) }}
     {% else %}
-        <input type="text"
+        <input type="{{ type|default('text') }}"
                id="{{ id }}"
+               value="{{ value }}"
                name="{{ name }}"
                class="{{ class|default('large-text') }}"
                placeholder="{{ placeholder }}"
@@ -43,7 +44,7 @@
         %}
         {{
             forms.twoColumnRow(
-                forms.label(__( 'Select', 'wpcf' ), true),
+                forms.label(__( 'Select', 'wpv-views' ), true),
                 forms.selectInput('value: displayName', 'myclass', optionsArray, true, 'selector_name', '')
             )
         }}
@@ -65,8 +66,8 @@
 {% endmacro %}
 
 
-{% macro radio( dataBinding, value, label, name, class )%}
-    <label>
+{% macro radio( dataBinding, value, label, name, class, labelClass )%}
+    <label class="{{ labelClass }}">
         <input type="radio"
                name="{{ name }}"
                class="{{ class }}"
@@ -79,8 +80,8 @@
 {% endmacro %}
 
 
-{% macro checkbox(dataBinding, value, label, name, class) %}
-    <label>
+{% macro checkbox(dataBinding, value, label, name, class, labelClass) %}
+    <label class="{{ labelClass }}">
         <input type="checkbox"
                name="{{ name }}"
                class="{{ class }}"
@@ -98,16 +99,33 @@
         {{ labelCaption }}
 
         {% if isRequired %}
-            (<strong>{{ __( 'required', 'wpcf' ) }}</strong>)
+            (<strong>{{ __( 'required', 'wpv-views' ) }}</strong>)
         {% endif %}
 
         {{ content|raw }}
     </label>
 {% endmacro %}
 
+{#
+    If it's necessary to control row visiblity you can set visibilityBinding
 
-{% macro twoColumnRow(labelColumn, fieldColumn) %}
-    <tr>
+    example:
+    {{
+    forms.twoColumnRow(
+        forms.label(__( 'Label', 'toolset' ), true),
+        forms.textInput('value: example', '', '', '', example, 'example', 'example', ''),
+        "exampleRowVisiblity"
+    )
+    }}
+
+    to control visibility use something like this:
+
+    self.exampleRowVisiblity = ko.observable( false ); // hide row
+    or
+    self.exampleRowVisiblity = ko.observable( true ); // show row
+#}
+{% macro twoColumnRow(labelColumn, fieldColumn, visibilityBinding) %}
+    <tr {% if visibilityBinding != null %} data-bind="visible: {{ visibilityBinding }}" {% endif %}>
         <td>
             {{ labelColumn }}
         </td>

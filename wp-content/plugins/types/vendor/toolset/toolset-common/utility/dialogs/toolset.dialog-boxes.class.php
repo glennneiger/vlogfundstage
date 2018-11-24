@@ -101,7 +101,7 @@ if( ! class_exists( 'Toolset_PopUpBlockerAlert', false ) ) {
 						<?php printf(
 							__( '%sTo see the preview, you need to allow this page to show popups.%sHow to enable popups in your browser%s', 'ddl-layouts' ),
 							'<p>',
-							'<br><a href="https://wp-types.com/documentation/user-guides/enable-pop-ups-browser/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=enable-pop-ups-browser&utm_term=help-link" title="enable popups" target="_blank">',
+							'<br><a href="https://toolset.com/documentation/user-guides/enable-pop-ups-browser/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=enable-pop-ups-browser&utm_term=help-link" title="enable popups" target="_blank">',
 							'</a></p>'
 						);
 						?>

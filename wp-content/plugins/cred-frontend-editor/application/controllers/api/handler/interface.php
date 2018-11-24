@@ -4,8 +4,6 @@
  * Interface for handlers of hook API calls.
  */
 interface CRED_Api_Handler_Interface {
-	
-	function __construct();
 
 	/**
 	 * @param array $arguments Original action/filter arguments.

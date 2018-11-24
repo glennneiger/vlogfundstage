@@ -59,7 +59,7 @@ function wpv_scan_wpv_if_callback() {
 	) {
 		$current_lang_code = $sitepress->get_current_language();
 		$trans_join = " JOIN {$wpdb->prefix}icl_translations t ";
-		$trans_where = " AND ID = t.element_id AND t.language_code = %s ";
+		$trans_where = " AND ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
 		$values_to_prepare[] = $current_lang_code;
     }
 	

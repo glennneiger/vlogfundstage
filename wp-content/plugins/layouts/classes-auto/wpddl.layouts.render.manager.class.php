@@ -5,6 +5,7 @@ class WPDD_Layouts_RenderManager{
     private $attachment_markup = '';
     private $content_removed_for_CRED= false;
     private $loop_has_no_posts = false;
+    private $password_protection_form_rendered = false;
 
     private function __construct(  ){
         $this->render_errors = array();
@@ -101,7 +102,7 @@ class WPDD_Layouts_RenderManager{
     }
 
     function fix_for_toolset_starter_wc_redirect() {
-        add_filter('template_include', array(&$this, 'fix_for_toolset_starter_wc_include'), 99, 1);
+        add_filter('template_include', array(&$this, 'fix_for_toolset_starter_wc_include'), 103, 1);
     }
 
     /*
@@ -766,6 +767,20 @@ class WPDD_Layouts_RenderManager{
 	    global $post;
 
         if( apply_filters( 'ddl-is_integrated_theme', false ) ){
+	        if ( post_password_required( $post ) ) {
+	            if( ! $this->password_protection_form_rendered ){
+		            $this->password_protection_form_rendered = true;
+		            return get_the_password_form( $post );
+                } else {
+	                return '';
+                }
+
+	        } else {
+		        return $content;
+            }
+        }
+
+        if( is_feed() ){
             return $content;
         }
 
@@ -787,40 +802,77 @@ class WPDD_Layouts_RenderManager{
 			return $content;
 		}
 
-	    // core functions that we accept calls from.
-	    $the_content_core = array( 'the_content' );
-	    // known theme functions that we accept calls from.
-	    $the_content_themes = array( 'wptouch_the_content' );
-		// known funcions that we should not allow,
-		$the_content_blacklist = array( 'require', 'require_once', 'include', 'include_once', 'locate_template', 'load_template', 'apply_filters', 'call_user_func_array', 'wpcf_fields_wysiwyg_view' );
+        // Core functions that we accept calls from.
+        $the_content_core = array( 
+				'the_content'
+		);
+		// Known theme functions that we accept calls from.
+		$the_content_themes = array( 
+			// WPTouch theme(s)
+			'wptouch_the_content' 
+		);
+		// Known plugin functions that we accept calls from.
+		$the_content_plugins = array( 
+			// Elementor Pro content widget
+			'ElementorPro\Modules\ThemeBuilder\Widgets\Post_Content::render' 
+		);
+		// known funcions that we should not allow
+		$the_content_blacklist = array( 
+				'require', 'require_once', 'include', 'include_once', 
+				'locate_template', 'load_template', 
+				'apply_filters', 'call_user_func_array', 
+				'wpcf_fields_wysiwyg_view' 
+		);
 
-	    $db = debug_backtrace();
+	    if ( version_compare( PHP_VERSION, '5.4.0' ) >= 0 ) {
+			$db = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 6 );
+		} else {
+			$db = debug_backtrace();
+		}
 	    $function_candidate = array();
 
 	    // From php7 debug_backtrace() has changed, and the target function might be at index 2 instead of 3 as in php < 7
 	    // Also, from WP 4.7 the new way to manage hooks adds some intermediary items so let's cover our backs reaching to 5
-	    // Also, the_excerpt_for_archives is supposed to be at index 1
-	    // Note: we might want to add a pluk and filter here, maybe...
 
 	    if ( isset( $db[5]['function'] ) ) {
-		    $function_candidate[] = $db[5]['function'];
-	    }
-
-	    if ( isset( $db[4]['function'] ) ) {
-		    $function_candidate[] = $db[4]['function'];
-	    }
-
-	    if ( isset( $db[3]['function'] ) ) {
-		    $function_candidate[] = $db[3]['function'];
-	    }
-
-	    if ( isset( $db[2]['function'] ) ) {
-		    $function_candidate[] = $db[2]['function'];
-	    }
-
-	    if ( isset( $db[1]['function'] ) ) {
-		    $function_candidate[] = $db[1]['function'];
-	    }
+			if ( isset( $db[5]['class'] ) ) {
+				$function_candidate[] = $db[5]['class'] . '::' . $db[5]['function'] ;
+			} else {
+				$function_candidate[] = $db[5]['function'];
+			}
+		}
+		
+		if ( isset( $db[4]['function'] ) ) {
+			if ( isset( $db[4]['class'] ) ) {
+				$function_candidate[] = $db[4]['class'] . '::' . $db[4]['function'] ;
+			} else {
+				$function_candidate[] = $db[4]['function'];
+			}
+		}
+		
+		if ( isset( $db[3]['function'] ) ) {
+			if ( isset( $db[3]['class'] ) ) {
+				$function_candidate[] = $db[3]['class'] . '::' . $db[3]['function'] ;
+			} else {
+				$function_candidate[] = $db[3]['function'];
+			}
+		}
+		
+		if ( isset( $db[2]['function'] ) ) {
+			if ( isset( $db[2]['class'] ) ) {
+				$function_candidate[] = $db[2]['class'] . '::' . $db[2]['function'] ;
+			} else {
+				$function_candidate[] = $db[2]['function'];
+			}
+		}
+		
+		if ( isset( $db[1]['function'] ) ) {
+			if ( isset( $db[1]['class'] ) ) {
+				$function_candidate[] = $db[1]['class'] . '::' . $db[1]['function'] ;
+			} else {
+				$function_candidate[] = $db[1]['function'];
+			}
+		}
 		
 		$function_candidate = array_diff( $function_candidate, $the_content_blacklist );
 
@@ -841,6 +893,7 @@ class WPDD_Layouts_RenderManager{
 		    if (
 			    in_array( $function_candidate_for_content, $the_content_core )
 			    || in_array( $function_candidate_for_content, $the_content_themes )
+			    || in_array( $function_candidate_for_content, $the_content_plugins )
 		    ) {
 			    $function_ok = true;
 		    }
@@ -964,7 +1017,7 @@ class WPDD_Layouts_RenderManager{
 	}
 	
 	function loop_start( $query ) {
-		if ( $query->is_main_query() ) {
+		if ( $query->is_main_query() && ! is_feed() ) {
 			
 			ob_start();
 			$this->loop_found = true;

@@ -2,27 +2,34 @@
 
 class WPDDL_Settings {
 
-    private static $instance;
-    const MAX_POSTS_OPTION_NAME = WPDDL_MAX_POSTS_OPTION_NAME;
-    const MAX_POSTS_OPTION_DEFAULT = WPDDL_MAX_POSTS_OPTION_DEFAULT;
-    private $twig = null;
-    private $parent_default = 0;
-    private $column_prefix = 'col-sm-';
-    public static $max_posts_num_option = self::MAX_POSTS_OPTION_DEFAULT;
-    public static $show_cell_details_on_insert = 'yes';
+	private static $instance;
+	const MAX_POSTS_OPTION_NAME = WPDDL_MAX_POSTS_OPTION_NAME;
+	const MAX_POSTS_OPTION_DEFAULT = WPDDL_MAX_POSTS_OPTION_DEFAULT;
+	private $twig = null;
+	private $parent_default = 0;
+	private $column_prefix = 'col-sm-';
+	private $js_global = 'no';
+	private $css_global = 'no';
+	private $scripts_global_options_values = array( 'no' => 'no', 'yes' => 'yes' );
+	public static $max_posts_num_option = self::MAX_POSTS_OPTION_DEFAULT;
+	public static $show_cell_details_on_insert = 'yes';
 
 
-    public function __construct() {
-        $this->column_prefix = apply_filters( 'ddl-get_default_column_prefix', $this->column_prefix );
-        $this->twig = $this->get_twig_helper( true );
-        add_action( 'init', array( $this, 'add_hooks' ), 10 );
-	    add_action( 'init', array( $this, 'reset_framework_values_to_default' ), 21 );
-	    add_filter( 'ddl-get_'.WPDDL_Options::COLUMN_PREFIX.'_default_value', array($this, 'get_column_prefix_default_option') );
-    }
+	public function __construct() {
+		$this->column_prefix = apply_filters( 'ddl-get_default_column_prefix', $this->column_prefix );
+		$this->twig = $this->get_twig_helper( true );
+		add_action( 'init', array( $this, 'add_hooks' ), 10 );
+		add_action( 'init', array( $this, 'reset_framework_values_to_default' ), 21 );
+		add_filter( 'ddl-get_' . WPDDL_Options::COLUMN_PREFIX . '_default_value', array( $this, 'get_column_prefix_default_option' ) );
+		add_filter( 'ddl-get_' . WPDDL_Options::JS_GLOBAL . '_default_value', array( $this, 'get_js_global_default_option' ) );
+		add_filter( 'ddl-get_' . WPDDL_Options::CSS_GLOBAL . '_default_value', array( $this, 'get_css_global_default_option' ) );
+	}
 
     public function add_hooks(){
         $this->parent_default = apply_filters('ddl-get-default-'.WPDDL_Options::PARENTS_OPTIONS, $this->parent_default, WPDDL_Options::PARENTS_OPTIONS );
-	    $this->column_prefix = apply_filters('ddl-get-default-'.WPDDL_Options::COLUMN_PREFIX, $this->column_prefix, WPDDL_Options::COLUMN_PREFIX );
+	    $this->column_prefix  = apply_filters('ddl-get-default-'.WPDDL_Options::COLUMN_PREFIX, $this->column_prefix, WPDDL_Options::COLUMN_PREFIX );
+	    $this->js_global = apply_filters( 'ddl-get-default-' . WPDDL_Options::JS_GLOBAL, $this->js_global, WPDDL_Options::JS_GLOBAL );
+	    $this->css_global = apply_filters( 'ddl-get-default-' . WPDDL_Options::CSS_GLOBAL, $this->css_global, WPDDL_Options::CSS_GLOBAL );
         self::set_max_num_posts( self::get_option_max_num_posts() );
         self::set_cell_details_settings( self::get_option_cell_details_settings() );
         add_action( 'wp_ajax_ddl_update_toolset_admin_bar_menu_status', array( $this, 'ddl_update_toolset_admin_bar_menu_status' ) );
@@ -30,8 +37,70 @@ class WPDDL_Settings {
         add_action( 'wp_ajax_ddl_set_cell_details_settings', array( $this, 'ddl_set_cell_details_settings' ) );
         add_action('wp_ajax_'.WPDDL_Options::PARENTS_OPTIONS, array(&$this, 'parent_default_ajax_callback'));
 	    add_action('wp_ajax_'.WPDDL_Options::COLUMN_PREFIX, array(&$this, 'column_prefix_ajax_callback'));
+	    add_action('wp_ajax_'.WPDDL_Options::JS_GLOBAL, array(&$this, WPDDL_Options::JS_GLOBAL . '_ajax_callback'));
+	    add_action('wp_ajax_'.WPDDL_Options::CSS_GLOBAL, array(&$this, WPDDL_Options::CSS_GLOBAL . '_ajax_callback'));
         add_filter( 'toolset_filter_toolset_admin_bar_menu_insert', array( $this, 'extend_toolset_admin_bar_menu' ), 11, 3 );
     }
+
+    public function js_global_ajax_callback(){
+	    if( user_can_assign_layouts() === false ){
+		    die( WPDD_Utils::ajax_caps_fail( __METHOD__ ) );
+	    }
+
+	    if( $_POST && wp_verify_nonce( $_POST[ WPDDL_Options::JS_GLOBAL . '_nonce'], WPDDL_Options::JS_GLOBAL . '_nonce' ) && isset( $_POST['action'] ) && $_POST['action'] === WPDDL_Options::JS_GLOBAL )
+	    {
+
+		    if( isset( $_POST[WPDDL_Options::JS_GLOBAL] ) ){
+
+			    $update = apply_filters( 'ddl-set-default-'.WPDDL_Options::JS_GLOBAL, WPDDL_Options::JS_GLOBAL, $_POST[WPDDL_Options::JS_GLOBAL] );
+		    }
+
+		    if( $update )
+		    {
+			    $send =  array( 'Data'=> array( 'message' => __('Updated option', 'ddl-layouts'), 'value' => $_POST[WPDDL_Options::JS_GLOBAL]  ) );
+
+		    } else {
+			    $send =  array( 'Data'=> array( 'error' => __('Option not updated', 'ddl-layouts') ) );
+
+		    }
+	    }
+	    else
+	    {
+		    $send = array( 'error' =>  sprintf( __( 'Nonce problem: apparently we do not know where the request comes from. %s',  'ddl-layouts'), __METHOD__  ) );
+	    }
+
+	    wp_send_json($send);
+    }
+
+	public function css_global_ajax_callback(){
+		if( user_can_assign_layouts() === false ){
+			die( WPDD_Utils::ajax_caps_fail( __METHOD__ ) );
+		}
+
+		if( $_POST && wp_verify_nonce( $_POST[ WPDDL_Options::CSS_GLOBAL . '_nonce'], WPDDL_Options::CSS_GLOBAL . '_nonce' ) && isset( $_POST['action'] ) && $_POST['action'] === WPDDL_Options::CSS_GLOBAL )
+		{
+
+			if( isset( $_POST[WPDDL_Options::CSS_GLOBAL] ) ){
+
+				$update = apply_filters( 'ddl-set-default-'.WPDDL_Options::CSS_GLOBAL, WPDDL_Options::CSS_GLOBAL, $_POST[WPDDL_Options::CSS_GLOBAL] );
+			}
+
+			if( $update )
+			{
+				$send =  array( 'Data'=> array( 'message' => __('Updated option', 'ddl-layouts'), 'value' => $_POST[WPDDL_Options::CSS_GLOBAL]  ) );
+
+			} else {
+				$send =  array( 'Data'=> array( 'error' => __('Option not updated', 'ddl-layouts') ) );
+
+			}
+		}
+		else
+		{
+			$send = array( 'error' =>  sprintf( __( 'Nonce problem: apparently we do not know where the request comes from. %s',  'ddl-layouts'), __METHOD__ ) );
+		}
+
+		wp_send_json($send);
+	}
 
     public static function getInstance()
     {
@@ -68,9 +137,25 @@ class WPDDL_Settings {
         return $this->column_prefix;
     }
 
+	public function get_js_global( ){
+		return $this->js_global;
+	}
+
+	public function get_css_global( ){
+        return $this->css_global;
+    }
+
     public function get_column_prefix_default_option( ){
         return array( WPDDL_Options::COLUMN_PREFIX => $this->get_column_prefix() );
     }
+
+	public function get_js_global_default_option( ){
+		return array( WPDDL_Options::JS_GLOBAL => $this->get_js_global() );
+	}
+
+	public function get_css_global_default_option( ){
+		return array( WPDDL_Options::CSS_GLOBAL => $this->get_css_global() );
+	}
 
     /**
      * Layouts Settings page set up
@@ -84,7 +169,15 @@ class WPDDL_Settings {
             'parent_settings_nonce' => wp_create_nonce( WPDDL_Options::PARENTS_OPTIONS.'_nonce', WPDDL_Options::PARENTS_OPTIONS.'nonce' ),
             'column_default' => $this->column_prefix,
             'column_option_name' => WPDDL_Options::COLUMN_PREFIX,
-            'column_settings_nonce' => wp_create_nonce( WPDDL_Options::COLUMN_PREFIX.'_nonce', WPDDL_Options::COLUMN_PREFIX.'nonce' )
+            'column_settings_nonce' => wp_create_nonce( WPDDL_Options::COLUMN_PREFIX.'_nonce', WPDDL_Options::COLUMN_PREFIX.'nonce' ),
+            'js_settings_values' => $this->scripts_global_options_values,
+            'js_settings_value' => $this->js_global,
+            'js_settings_option_name' => WPDDL_Options::JS_GLOBAL,
+            'js_settings_nonce' => wp_create_nonce( WPDDL_Options::JS_GLOBAL . '_nonce', WPDDL_Options::JS_GLOBAL . 'nonce' ),
+            'css_settings_values' => $this->scripts_global_options_values,
+            'css_settings_value' => $this->css_global,
+            'css_settings_option_name' => WPDDL_Options::CSS_GLOBAL,
+            'css_settings_nonce' => wp_create_nonce( WPDDL_Options::CSS_GLOBAL . '_nonce', WPDDL_Options::CSS_GLOBAL . 'nonce' ),
         );
 
         if ( is_admin() && isset( $_GET['page'] ) && ($_GET['page'] === 'toolset-settings' || $_GET['page'] === 'dd_layouts_edit') ) {
@@ -161,7 +254,7 @@ class WPDDL_Settings {
         }
 
         $menu_item_definitions[] = array(
-	    'title' => __( 'Layouts CSS and JS Editor', 'wpv-views' ),
+	    'title' => __( 'Layouts CSS and JS Editor', 'ddl-layouts' ),
 	    'menu_id' => 'toolset_layouts_edit_css',
 	    'href' => admin_url().'admin.php?page=dd_layout_CSS_JS'
 	);
@@ -183,6 +276,17 @@ class WPDDL_Settings {
         ob_start();
         require_once WPDDL_GUI_ABSPATH . 'templates/layout-settings-cell-details.tpl.php';
         echo ob_get_clean();
+    }
+
+	public function ddl_show_layout_scripts_options_gui( ){
+        $js_option_value = $this->js_global;
+        $js_option_name = WPDDL_Options::JS_GLOBAL;
+		$css_option_value = $this->css_global;
+		$css_option_name = WPDDL_Options::CSS_GLOBAL;
+		$layouts_scripts_global_options_values = $this->scripts_global_options_values;
+		ob_start();
+		require_once WPDDL_GUI_ABSPATH . 'templates/layout-settings-css-js.tpl.php';
+		echo ob_get_clean();
     }
 
     public static function get_option_max_num_posts(){
@@ -253,7 +357,7 @@ class WPDDL_Settings {
         }
         else
         {
-            $send = wp_json_encode( array( 'error' =>  __( sprintf('Nonce problem: apparently we do not know where the request comes from. %s', __METHOD__ ), 'ddl-layouts') ) );
+            $send = wp_json_encode( array( 'error' =>  sprintf( __( 'Nonce problem: apparently we do not know where the request comes from. %s', 'ddl-layouts'), __METHOD__ ) ) );
         }
 
         die($send);
@@ -275,7 +379,7 @@ class WPDDL_Settings {
         }
 
         if ( ! wp_verify_nonce( $_POST['ddl_cell-details_nonce'], 'ddl_cell-details_nonce' ) ) {
-            $send = array( 'error' => __( sprintf( 'Nonce problem: apparently we do not know where the request comes from. %s', __METHOD__ ), 'ddl-layouts' ) );
+            $send = array( 'error' => sprintf( __(  'Nonce problem: apparently we do not know where the request comes from. %s', 'ddl-layouts' ), __METHOD__ ) );
 	        wp_send_json_error( $send );
         }
 
@@ -344,7 +448,7 @@ class WPDDL_Settings {
         }
         else
         {
-            $send = array( 'error' =>  __( sprintf('Nonce problem: apparently we do not know where the request comes from. %s', __METHOD__ ), 'ddl-layouts') );
+            $send = array( 'error' =>  sprintf( __( 'Nonce problem: apparently we do not know where the request comes from. %s',  'ddl-layouts'), __METHOD__ ) );
         }
 
         wp_send_json($send);
@@ -361,7 +465,7 @@ class WPDDL_Settings {
 
 			if( isset( $_POST[WPDDL_Options::COLUMN_PREFIX] ) ){
 
-				$update = apply_filters('ddl-set-default-'.WPDDL_Options::COLUMN_PREFIX, WPDDL_Options::COLUMN_PREFIX, $_POST[WPDDL_Options::COLUMN_PREFIX] );
+				$update = apply_filters('ddl-set-default-'.WPDDL_Options::COLUMN_PREFIX, $_POST[WPDDL_Options::COLUMN_PREFIX], WPDDL_Options::COLUMN_PREFIX );
 			}
 
 			if( $update )
@@ -375,7 +479,7 @@ class WPDDL_Settings {
 		}
 		else
 		{
-			$send = array( 'error' =>  __( sprintf('Nonce problem: apparently we do not know where the request comes from. %s', __METHOD__ ), 'ddl-layouts') );
+			$send = array( 'error' =>  sprintf( __( 'Nonce problem: apparently we do not know where the request comes from. %s', 'ddl-layouts'),  __METHOD__ ) );
 		}
 
 		wp_send_json($send);

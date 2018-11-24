@@ -974,16 +974,18 @@ class WPV_Parent_Filter {
 * Used in the post parent and post relationship query filters.
 *
 * @param $attr array
+* @param boolean $echo Some functions needs to process the output before echoing.
 *
 * @note that wp_dropdown_pages calls get_pages, which only works for hierarchical post types, hence wee need to workaround that.
 *
+* @since m2m-v2 Added the $echo paramenter.
 * @since 2.0
 */
 
-function wpv_render_posts_select_dropdown( $attr ) {
-	
+function wpv_render_posts_select_dropdown( $attr, $echo = true ) {
+
 	$defaults = array(
-		'depth'					=> 0, 
+		'depth'					=> 0,
 		'child_of'				=> 0,
 		'selected'				=> 0,
 		'echo'					=> 1,
@@ -994,45 +996,55 @@ function wpv_render_posts_select_dropdown( $attr ) {
 		'option_none_value'		=> ''
 	);
 	$args = wp_parse_args( $attr, $defaults );
-	
+
 	$hierarchical_post_types = get_post_types( array( 'hierarchical' => true ) );
-	
+
 	if ( $args['selected'] > 0 ) {
 		$wpv_wpml_integration = WPV_WPML_Integration_Embedded::get_instance();
 		$args['selected'] = $wpv_wpml_integration->wpml_get_user_admin_language_post_id( $args['selected'] );
 	}
-	
+
 	$current_user_id = get_current_user_id();
 	$current_lang = apply_filters( 'wpml_current_language', '' );
 	$user_admin_lang = apply_filters( 'wpml_get_user_admin_language', '', $current_user_id );
 	do_action( 'wpml_switch_language', $user_admin_lang );
-	
+
 	if ( in_array( $args['post_type'], $hierarchical_post_types ) ) {
-		wp_dropdown_pages( $args );
+		$args['echo'] = $echo;
+		if ( $echo ) {
+			wp_dropdown_pages( $args );
+		} else {
+			return wp_dropdown_pages( $args );
+		}
 	} else {
 		$output = '';
-		$available_posts = get_posts( 
-			array( 
-				'numberposts'		=> -1, 
-				'post_type'			=> $args['post_type'], 
-				'suppress_filters'	=> false 
-			) 
+		$available_posts = get_posts(
+			array(
+				'numberposts'		=> -1,
+				'post_type'			=> $args['post_type'],
+				'suppress_filters'	=> false
+			)
 		);
 		if ( empty( $args['id'] ) ) {
 			$args['id'] = $args['name'];
 		}
+		
+		$output = "<select name='" . esc_attr( $args['name'] ) . "' id='" . esc_attr( $args['id'] ) . "'>\n";
+		if ( $args['show_option_no_change'] )
+			$output .= "\t<option value=\"-1\">" . $args['show_option_no_change'] . "</option>";
+		if ( $args['show_option_none'] )
+			$output .= "\t<option value=\"" . esc_attr( $args['option_none_value'] ) . "\">" . $args['show_option_none'] . "</option>\n";
 		if ( ! empty( $available_posts ) ) {
-			$output = "<select name='" . esc_attr( $args['name'] ) . "' id='" . esc_attr( $args['id'] ) . "'>\n";
-			if ( $args['show_option_no_change'] )
-				$output .= "\t<option value=\"-1\">" . $args['show_option_no_change'] . "</option>";
-			if ( $args['show_option_none'] )
-				$output .= "\t<option value=\"" . esc_attr( $args['option_none_value'] ) . "\">" . $args['show_option_none'] . "</option>\n";
 			$output .= walk_page_dropdown_tree( $available_posts, $args['depth'], $args );
-			$output .= "</select>\n";
 		}
-		echo $output;
+		$output .= "</select>\n";
+		if ( $echo ) {
+			echo $output;
+		} else {
+			return $output;
+		}
 	}
-	
+
 	do_action( 'wpml_switch_language', $current_lang );
-	
+
 }

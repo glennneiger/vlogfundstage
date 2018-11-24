@@ -11,7 +11,8 @@ if( ddl_has_feature('imagebox-cell') === false ){
 	return;
 }
 
-if (!class_exists('Layouts_cell_imagebox')) {
+if( ! class_exists( 'Layouts_cell_imagebox', false ) ) {
+	
     class Layouts_cell_imagebox{
         
             private $cell_type = 'imagebox-cell';
@@ -27,7 +28,7 @@ if (!class_exists('Layouts_cell_imagebox')) {
                         array(
                             'name' => __('Image', 'ddl-layouts'),
                             'cell-image-url' => DDL_ICONS_SVG_REL_PATH . 'layouts-imagebox-cell.svg',
-                            'description' => __('Display an image with a header and text. Suitable for callout boxes, key features, services showcase etc. Use the Visual Editor cell if you need more flexibility.', 'ddl-layouts'),
+                            'description' => __('Use this cell to insert images from the Media Gallery. To insert a custom Image field instead, use the Visual Editor cell and insert the image using the Fields and Views button.', 'ddl-layouts'),
                             'category' => __('Fields, text and media', 'ddl-layouts'),
                             'button-text' => __('Assign Image cell', 'ddl-layouts'),
                             'dialog-title-create' => __('Create new Image cell', 'ddl-layouts'),

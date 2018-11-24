@@ -72,6 +72,7 @@ class CRED_Association_Form_Listing_Page extends CRED_Page_Manager_Abstract{
 	public function build_js_data() {
 
 		$prepared_data =  array(
+			'toolsetFormsVersion' => CRED_FE_VERSION,
 			'itemsPerPage' => 10,
 			'jsListingIncludePath' => CRED_ABSURL . '/public/association_forms/js/listing_page',
 			'jsIncludePath' => CRED_ABSURL . '/public/association_forms/js',

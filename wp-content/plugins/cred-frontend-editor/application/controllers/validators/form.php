@@ -18,9 +18,9 @@ class CRED_Validator_Form extends CRED_Validator_Base {
         $form = $this->_formData;
 
 	    $is_user_form = ( $form->getForm()->post_type == CRED_USER_FORMS_CUSTOM_POST_NAME );
-        $zebraForm = $this->_zebraForm;
+        $cred_form_rendering = $this->_zebraForm;
 
-	    if ( ! $zebraForm->isSubmitted() ) {
+	    if ( ! $cred_form_rendering->is_submitted ) {
 		    return false;
 	    }
 
@@ -42,7 +42,7 @@ class CRED_Validator_Form extends CRED_Validator_Base {
         $fields_validator = new CRED_Validator_Fields($this->_base_form);
         $result[] = $fields_validator->validate();
 
-        $toolset_validator = new CRED_Validator_Toolset_Forms($zebraForm, $this->_post_id, $is_user_form);
+        $toolset_validator = new CRED_Validator_Toolset_Forms($cred_form_rendering, $this->_post_id, $is_user_form);
         $result[] = $toolset_validator->validate();
 
         return (count(array_unique($result)) === 1);

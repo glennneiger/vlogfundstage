@@ -1,6 +1,6 @@
 <?php
 /**
-* Toolset Maps - CRED integration
+* Toolset Maps - Forms integration
 *
 * @package ToolsetMaps
 *

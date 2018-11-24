@@ -17,7 +17,7 @@ class WPV_Pagination_Embedded {
 	
 	public function __construct() {
 		add_action( 'init',														array( $this, 'init' ) );	
-    }
+	}
 	
 	function init() {
 		$this->register_shortcodes();
@@ -403,9 +403,16 @@ class WPV_Pagination_Embedded {
 	* Callback for the [wpv-pagination] shortcode.
 	*
 	* @since unknown
+	* @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	*/
 
 	function wpv_pagination_shortcode_callback( $atts, $value ) {
+		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+		if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+			return '';
+		}
+
 		extract(
 			shortcode_atts(
 				array(), 
@@ -427,9 +434,16 @@ class WPV_Pagination_Embedded {
 	* Contains some legacy code for when this shortcode was used to display pagination controls like dropdowns or links.
 	*
 	* @since unknown
+	* @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	*/
 	
 	function wpv_pager_current_page_shortcode( $atts ) {
+		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+		if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+			return '';
+		}
+
 		extract(
 			shortcode_atts(
 				array(
@@ -514,9 +528,16 @@ class WPV_Pagination_Embedded {
 	* The other two shortcodes are for Views and WordPress Archive.
 	*
 	* @since unknown
+	* @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	*/
 
 	function wpv_pager_total_pages_shortcode( $atts ) {
+		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+		if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+			return '';
+		}
+
 		extract(
 			shortcode_atts(
 				array(
@@ -539,9 +560,16 @@ class WPV_Pagination_Embedded {
 	* Callback for the [wpv-pager-prev-page] shortcode, used on Views pagination.
 	*
 	* @since unknown
+	* @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	*/
 
 	function wpv_pager_prev_page_callback( $atts, $value ) {
+		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+		if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+			return '';
+		}
+
 		extract(
 			shortcode_atts(
 				array(
@@ -613,9 +641,16 @@ class WPV_Pagination_Embedded {
 	* Callback for the [wpv-pager-next-page] shortcode, used on Views pagination.
 	*
 	* @since unknown
+	* @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	*/
 
 	function wpv_pager_next_page_callback( $atts, $value ) {
+		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+		if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+			return '';
+		}
+
 		extract(
 			shortcode_atts(
 				array(
@@ -785,11 +820,18 @@ class WPV_Pagination_Embedded {
 	 *
 	 * @since 1.11.0
 	 * @since 2.4.0 Added the output attribute
+	 * @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	 *
 	 * @todo remember that the classname js-wpv-page-selector does nothing as of now...
 	 */
 	
 	function wpv_pager_nav_dropdown_callback( $atts ) {
+		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+		if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+			return '';
+		}
+
 		extract(
 			shortcode_atts(
 				array(
@@ -841,6 +883,7 @@ class WPV_Pagination_Embedded {
 	 * @since 2.4.0 Added the force_previous_next attribute
 	 * @since 2.4.0 Added the links_type attribute
 	 * @since 2.4.1 Added the first_last_links attribute
+	 * @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	 *
 	 * @todo Bring in sync with the paginate_links methos, to have a single, shaed mechanism for Views an WPAs:
 	 *     - apply the classname wpv-pagination-nav-links-item-current to the current list item.
@@ -850,6 +893,12 @@ class WPV_Pagination_Embedded {
 	 */
 	
 	function wpv_pager_nav_links_callback( $atts ) {
+		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+		if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+			return '';
+		}
+
 		extract(
 			shortcode_atts(
 				array(
@@ -952,7 +1001,7 @@ class WPV_Pagination_Embedded {
 					&& ( $i <= ( $page + $reach ) )
 				) {
 					$is_visible = true;
- 				}
+				}
 			}
 			if ( $is_visible ) {
 

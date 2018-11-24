@@ -217,6 +217,7 @@ jQuery(document).ready(function(){
     //        document.cookie = "wpcfActiveEditor="+window.wpcfActiveEditor+"; expires=Monday, 31-Dec-2020 23:59:59 GMT; path="+wpcf_cookiepath+"; domain="+wpcf_cookiedomain+";";
     });
     // CRED notifications V icon - set active editor - needed for notifications V icons
+    // Deprecated, remove after Forms 2.1 is released
     jQuery(document).on('click','input[id^="credmailsubject"]', function(){
 	    window.wpcfActiveEditor = jQuery(this).attr('id');
     });
@@ -225,6 +226,8 @@ jQuery(document).ready(function(){
     });
     /*
      * Handle the "Add Field" boxes - some layout changes.
+     * 
+     * @deprecated TO REMOVE
      */
     jQuery('.wpv_add_fields_button').on('click', function(e) {
 

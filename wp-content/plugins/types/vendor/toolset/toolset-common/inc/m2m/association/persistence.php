@@ -124,6 +124,8 @@ class Toolset_Association_Persistence {
 
 		$updated_association = $this->association_translator->from_database_row( (object) $row );
 
+		$this->report_inserted_association( $updated_association );
+
 		return $updated_association;
 	}
 
@@ -139,6 +141,7 @@ class Toolset_Association_Persistence {
 	 * @since m2m
 	 */
 	public function delete_association( IToolset_Association $association ) {
+		$this->report_before_association_delete( $association );
 		$cleanup = $this->get_cleanup_factory()->association();
 		return $cleanup->delete( $association );
 	}
@@ -156,5 +159,64 @@ class Toolset_Association_Persistence {
 	}
 
 
+	/**
+	 * Do the toolset_association_created action.
+	 *
+	 * See report_association_change() for action parameter information.
+	 *
+	 * @param IToolset_Association $association
+	 * @since 2.7
+	 */
+	private function report_inserted_association( IToolset_Association $association ) {
+		$this->report_association_change( $association, 'toolset_association_created' );
+	}
+
+
+
+	/**
+	 * Do the toolset_before_association_delete action.
+	 *
+	 * See report_association_change() for action parameter information.
+	 *
+	 * @param IToolset_Association $association
+	 * @since 2.7
+	 */
+	public function report_before_association_delete( IToolset_Association $association ) {
+		$this->report_association_change( $association, 'toolset_before_association_delete' );
+	}
+
+
+	/**
+	 * Do an action that indicates a change to an association.
+	 *
+	 * Action parameters:
+	 * - (string) $relationship_slug
+	 * - (int) $parent_id
+	 * - (int) $child_id
+	 * - (int) $intermediary_id, zero if there is none.
+	 * - (int) $association_uid: An internal identifier for the association. May become useful in the future.
+	 *
+	 * Note that all element IDs will come in their default language version.
+	 *
+	 * @param IToolset_Association $association
+	 * @param string $action_name Name of the hook.
+	 * @since 2.7
+	 */
+	private function report_association_change( IToolset_Association $association, $action_name ) {
+
+		$intermediary_post_id = ( $association->has_intermediary_post()
+			? $association->get_element( new Toolset_Relationship_Role_Intermediary() )->get_default_language_id()
+			: 0
+		);
+
+		do_action(
+			$action_name,
+			$association->get_definition()->get_slug(),
+			$association->get_element( new Toolset_Relationship_Role_Parent() )->get_default_language_id(),
+			$association->get_element( new Toolset_Relationship_Role_Child() )->get_default_language_id(),
+			$intermediary_post_id,
+			$association->get_uid()
+		);
+	}
 
 }

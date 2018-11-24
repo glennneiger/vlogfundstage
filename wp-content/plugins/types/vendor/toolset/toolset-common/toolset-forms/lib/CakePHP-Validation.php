@@ -121,7 +121,7 @@ class WPToolset_Cake_Validation {
      */
     function notEmpty($check) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
 
         if (is_array($check)) {
@@ -160,7 +160,7 @@ class WPToolset_Cake_Validation {
      */
     function alphaNumeric($check) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
 
         if (is_array($check)) {
@@ -183,7 +183,7 @@ class WPToolset_Cake_Validation {
 
     function alphaNumericWhitespaces($check) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
 
         if (is_array($check)) {
@@ -233,7 +233,7 @@ class WPToolset_Cake_Validation {
      */
     function blank($check) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
 
         if (is_array($check)) {
@@ -260,7 +260,7 @@ class WPToolset_Cake_Validation {
      */
     function cc($check, $type = 'fast', $deep = false, $regex = null) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
         $_this->type = $type;
         $_this->deep = $deep;
@@ -398,7 +398,7 @@ class WPToolset_Cake_Validation {
      */
     function custom($check, $regex = null) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
         $_this->regex = $regex;
         if (is_array($check)) {
@@ -445,7 +445,7 @@ class WPToolset_Cake_Validation {
         $format = isset($cake_date_formats[$format]) ? $cake_date_formats[$format] : $format;
 
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
         $_this->regex = $regex;
 
@@ -483,7 +483,7 @@ class WPToolset_Cake_Validation {
      */
     function time($check) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
         $_this->regex = '%^((0?[1-9]|1[012])(:[0-5]\d){0,2}([AP]M|[ap]m))$|^([01]\d|2[0-3])(:[0-5]\d){0,2}$%';
         return $_this->_check();
@@ -513,7 +513,7 @@ class WPToolset_Cake_Validation {
      */
     function decimal($check, $places = null, $regex = null) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->regex = $regex;
         $_this->check = $check;
 
@@ -538,7 +538,7 @@ class WPToolset_Cake_Validation {
      */
     function email($check, $deep = false, $regex = null) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__reset();
+        $_this->reset();
         $_this->check = $check;
         $_this->regex = $regex;
         $_this->deep = $deep;
@@ -646,7 +646,7 @@ class WPToolset_Cake_Validation {
         if (function_exists('filter_var')) {
             return filter_var($check, FILTER_VALIDATE_IP, array('flags' => FILTER_FLAG_IPV4)) !== false;
         }
-        $this->__populateIp();
+        $this->populateIp();
         $this->check = $check;
         $this->regex = '/^' . $this->__pattern['IPv4'] . '$/';
         return $this->_check();
@@ -663,7 +663,7 @@ class WPToolset_Cake_Validation {
         if (function_exists('filter_var')) {
             return filter_var($check, FILTER_VALIDATE_IP, array('flags' => FILTER_FLAG_IPV6)) !== false;
         }
-        $this->__populateIp();
+        $this->populateIp();
         $this->check = $check;
         $this->regex = '/^' . $this->__pattern['IPv6'] . '$/';
         return $this->_check();
@@ -948,7 +948,7 @@ class WPToolset_Cake_Validation {
      */
     function url($check, $strict = false, $require_tld = true) {
         $_this = &WPToolset_Cake_Validation::getInstance();
-        $_this->__populateIp();
+        $_this->populateIp();
         $_this->check = $check;
         $validChars = '([' . preg_quote('!"$&\'()*+,-.@_:;=~[]') . '\/0-9\p{L}\p{N}]|(%[0-9a-f]{2}))';
 
@@ -1165,7 +1165,12 @@ class WPToolset_Cake_Validation {
      * @access private
      */
 
-    function __populateIp() {
+    function populateIp() {
+	    if( method_exists( $this, '__populateIp' ) ) {
+		    // support for subclasses overwritting the previous __populateIp function
+		    return $this->__populateIp();
+	    }
+
         if (!isset($this->__pattern['IPv6'])) {
             $pattern = '((([0-9A-Fa-f]{1,4}:){7}(([0-9A-Fa-f]{1,4})|:))|(([0-9A-Fa-f]{1,4}:){6}';
             $pattern .= '(:|((25[0-5]|2[0-4]\d|[01]?\d{1,2})(\.(25[0-5]|2[0-4]\d|[01]?\d{1,2})){3})';
@@ -1196,7 +1201,12 @@ class WPToolset_Cake_Validation {
      * @return void
      * @access private
      */
-    function __reset() {
+    function reset() {
+	    if( method_exists( $this, '__reset' ) ) {
+		    // support for subclasses overwritting the previous __reset function
+		    return $this->__reset();
+	    }
+
         $this->check = null;
         $this->regex = null;
         $this->country = null;
@@ -1209,5 +1219,24 @@ class WPToolset_Cake_Validation {
     public static function required($value) {
         return !( is_null($value) || $value === false || $value === '' );
     }
+
+	/**
+	 * Backward compatibility
+	 * For PHP 7 we renamed the method __reset() and __populateIp() to reset() and populateIp().
+	 * As both are public methods we apply this fallback for the case someone calls the old methods.
+	 *
+	 * @param $method
+	 * @param $arguments
+	 */
+	public function __call( $method, $arguments ) {
+		switch( $method ) {
+			case '__reset':
+				$this->reset();
+				break;
+			case '__populateIp':
+				$this->populateIp();
+				break;
+		}
+	}
 
 }

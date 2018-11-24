@@ -9,7 +9,7 @@ DDLayout.ToolsetInIfame = function ($, child)
     self.open_in_iframe = function (cell_type, new_cell) {
         
         self._new_cell = new_cell;
-        
+
         self.dialog_pos = $('#ddl-default-edit').parent().offset();
         self.dialog_width = $('#ddl-default-edit').width();
         
@@ -54,16 +54,16 @@ DDLayout.ToolsetInIfame = function ($, child)
 		
         var content_height = $('#ddl-default-edit .ddl-dialog-content').height();
 		$('<div style="display:block; height:' + content_height + 'px;" class="js-layouts-views-loading"><div class="spinner ajax-loader-bar" style="display:block; height:100%"></div></div>').insertAfter($('#ddl-default-edit .ddl-dialog-content')).show();
-	}
+	};
     self.add_permission_message = function () {
         self.the_frame_ready();
         $('.js-close-toolset-iframe').attr('disabled', true);
-    }
+    };
 	
 	self.remove_loading_overlay = function () {
 		$('.js-layouts-views-loading').remove();
 
-	}
+	};
 	
     self._close_iframe = function (e) {
         self._spinner = jQuery('<div class="spinner ajax-loader"></div>')
@@ -73,18 +73,18 @@ DDLayout.ToolsetInIfame = function ($, child)
                                         top:'3px'
                                 });
 		self.close_iframe(self.save_toolset_complete);
-	}
+	};
 	
 	self.close_iframe = function (callback) {
 		return true;
-	}
+	};
 	
 	self.save_toolset_complete = function () {
         
         self._spinner.remove();
         
         self._restore_dialog();
-    }
+    };
     
     self._restore_dialog = function () {
         self.dialog_clean_up();
@@ -121,11 +121,11 @@ DDLayout.ToolsetInIfame = function ($, child)
 	
 	self.iframe_has_closed = function () {
 		return true;
-	}
+	};
     
     self._close_iframe_without_saving = function () {
         self._restore_dialog();
-    }
+    };
     
     self.the_frame_ready = function () {
 
@@ -142,11 +142,11 @@ DDLayout.ToolsetInIfame = function ($, child)
             jQuery.colorbox.close();
             self.dialog_clean_up();
         });
-    }
+    };
     
     self.is_new_cell = function () {
         return self._new_cell;
-    }
+    };
 
     self.set_dialog = function( dialog ){
         _dialog = dialog;
@@ -154,7 +154,7 @@ DDLayout.ToolsetInIfame = function ($, child)
 
     self.get_dialog = function(){
         return _dialog;
-    }
+    };
 	
 	self.fetch_extra_controls = function (div_id) {
 		var data = {};
@@ -170,7 +170,7 @@ DDLayout.ToolsetInIfame = function ($, child)
 		controls = '<h3><i class="icon-layouts-logo ont-color-orange ont-icon-24"></i> ' + DDLayout_settings.DDL_JS.strings.cred_layout_css_text + '</h3><hr />' + controls;
         data.controls = '<div id="' + div_id + '" class="ddl-cred-css ddl-setting-for-layouts-container-in-iframe not-hidden"><div class="ddl-form">' + controls + '</div></div>';
 		return data;
-	}
+	};
 	
 };
 

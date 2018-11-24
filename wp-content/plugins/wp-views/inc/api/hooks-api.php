@@ -4,7 +4,7 @@
  *
  * In optimal case, all interaction with Views would happen through these hooks.
  */
-class WPV_API {
+class WPV_API_Legacy {
 
 	public function __construct() {
 		$this->filter_hooks = array(

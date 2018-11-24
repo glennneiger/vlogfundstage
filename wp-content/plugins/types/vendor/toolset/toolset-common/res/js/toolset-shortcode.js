@@ -220,6 +220,13 @@ Toolset.shortcodeManager = function( $ ) {
 		Toolset.hooks.addAction( 'toolset-action-shortcode-dialog-loaded', self.initSelect2 );
 		
 		/**
+		 * Init the post selectors and reference field selectors once the shortcode dialog is completely opened.
+		 *
+		 * @since 2.5.4
+		 */
+		Toolset.hooks.addAction( 'toolset-action-shortcode-dialog-loaded', self.initPostSelector );
+		
+		/**
 		 * Init a wizard dialog, set the options width, and set the right value as selected.
 		 *
 		 * @since 2.5.4
@@ -518,6 +525,21 @@ Toolset.shortcodeManager = function( $ ) {
 	self.initSelect2 = function() {
 		self.initSelect2Attributes();
 		self.initSelect2AjaxAttributes();
+	};
+	
+	/**
+	 * Set the first post selector and post reference selector as checked, if any.
+	 *
+	 * @since m2m
+	 */
+	self.initPostSelector = function() {
+		$( 'input[name="related_object"]:not(:disabled)', '.js-toolset-shortcode-gui-dialog-container' )
+			.first()
+				.prop( 'checked', true );
+		
+		$( 'input[name="referenced_object"]:not(:disabled)', '.js-toolset-shortcode-gui-dialog-container' )
+			.first()
+				.prop( 'checked', true );
 	};
 	
 	/**
@@ -870,13 +892,21 @@ Toolset.shortcodeManager = function( $ ) {
 		});
 		*/
 		// Special case: item selector tab
-		if (
-			$( '.js-toolset-shortcode-gui-item-selector:checked', evaluatedContainer ).length > 0
-			&& 'object_id' == $( '.js-toolset-shortcode-gui-item-selector:checked', evaluatedContainer ).val()
-		) {
-			var itemSelection = $( '.js-toolset-shortcode-gui-item-selector_object_id', evaluatedContainer ),
-				itemSelectionId = itemSelection.val(),
-				itemSelectionValid = true;
+        var $itemSelector = $( '.js-toolset-shortcode-gui-item-selector:checked', evaluatedContainer );
+        if (
+            $itemSelector.length > 0
+            && (
+                'object_id' == $itemSelector.val() ||
+                'object_id_raw' == $itemSelector.val()
+            )
+        ) {
+
+            var itemSelection = ( 'object_id' == $itemSelector.val() )
+                ? $( '[name="specific_object_id"]', evaluatedContainer )
+                : $( '[name="specific_object_id_raw"]', evaluatedContainer );
+
+            var	itemSelectionId = itemSelection.val(),
+                itemSelectionValid = true;
 				//$itemSelectionMessage = '';
 			if ( '' == itemSelectionId ) {
 				itemSelectionValid = false;
@@ -973,8 +1003,12 @@ Toolset.shortcodeManager = function( $ ) {
 						case 'referenced':
 							shortcodeAttributeValue = $( '[name="referenced_object"]:checked', attributeWrapper ).val();
 							break;
-						case 'object_id':
+                        case 'object_id_raw':
+                            shortcodeAttributeValue = $( '.js-toolset-shortcode-gui-item-selector_object_id_raw', attributeWrapper ).val();
+                            break;
+                        case 'object_id':
 							shortcodeAttributeValue = $( '.js-toolset-shortcode-gui-item-selector_object_id', attributeWrapper ).val();
+							break;
 						case 'parent': // The value is correct out of the box
 						default:
 							break;
@@ -1053,7 +1087,7 @@ Toolset.shortcodeManager = function( $ ) {
 		// Compose the shortcodeAttributeString string
 		_.each( shortcodeAttributeValues, function( value, key ) {
 			if ( value ) {
-				shortcodeAttributeString += " " + key + '="' + value + '"';
+				shortcodeAttributeString += " " + key + "='" + value + "'";
 			}
 		});
 		
@@ -1237,6 +1271,42 @@ Toolset.shortcodeManager = function( $ ) {
 		$( '.js-wpv-loop-wizard-save-shortcode-ui-active' )
 			.removeClass( 'js-wpv-loop-wizard-save-shortcode-ui-active' );
 	};
+	
+	/**
+	 * Shortcodes GUI pointer management.
+	 *
+	 * @since m2m
+	 */
+	$( document ).on( 'click', '.js-wp-toolset-shortcode-pointer-trigger', function() {
+		var $tooltipTriggerer = $( this ),
+			tooltipContent = $tooltipTriggerer.closest( 'li' ).find( '.js-wp-toolset-shortcode-pointer-content' ).html();
+			edge = ( $( 'html[dir="rtl"]' ).length > 0 ) ? 'top' : 'top';
+
+		// hide this pointer if other pointer is opened.
+		$( '.wp-toolset-pointer' ).fadeOut( 100 );
+
+		$tooltipTriggerer.pointer({
+			pointerClass: 'wp-toolset-pointer wp-toolset-shortcode-pointer js-wp-toolset-shortcode-pointer',
+			pointerWidth: 400,
+			content: tooltipContent,
+			position: {
+				edge: edge,
+				align: 'center',
+				offset: '15 0'
+			},
+			buttons: function( event, t ) {
+				var button_close = $( '<button class="button button-primary-toolset alignright">' + 'Close' + '</button>' );
+				button_close.bind( 'click.pointer', function( e ) {
+					e.preventDefault();
+					t.element.pointer( 'close' );
+				});
+				return button_close;
+			}
+		}).pointer( 'open' );
+		$( '.js-wp-toolset-shortcode-pointer:not(.js-wp-toolset-shortcode-pointer-indexed)' )
+			.addClass( '.js-wp-toolset-shortcode-pointer-zindexed' )
+			.css( 'z-index', '10000000' );
+	});
 
     self.secureShortcodeFromSanitizationIfNeeded = function( shortcode_data ) {
         var shortcode_string;

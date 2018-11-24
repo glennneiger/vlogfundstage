@@ -1,5 +1,8 @@
 <?php
 
+use \OTGS\Toolset\Maps\Model\Shortcode\Distance\ConditionalDisplay;
+use \OTGS\Toolset\Maps\Model\Shortcode\Distance\Value;
+
 /**
 * Toolset Maps - Common methods
 *
@@ -7,12 +10,15 @@
 *
 * @since 1.0
 */
-
 class Toolset_Addon_Maps_Common {
 	
 	const option_name					= 'wpv_addon_maps_options';
 	const address_coordinates_option	= 'toolset_maps_address_coordinates';
-	
+
+	const API_GOOGLE = 'google';
+	const API_AZURE  = 'azure';
+	const API_AZURE_URL = 'https://atlas.microsoft.com/search/address/json';
+
 	static $used_map_ids		= array();
 	static $used_marker_ids		= array();
 	
@@ -25,12 +31,15 @@ class Toolset_Addon_Maps_Common {
 	static $maps_api_url_geocode	= 'https://maps.googleapis.com/maps/api/geocode/json';
 
 	protected $default_options = array(
-		'marker_images'		=> array(),
-		'map_counter'		=> 0,
-		'marker_counter'	=> 0,
-		'api_key'			=> '',
-		'map_style_files'   => array(),
-		'default_map_style' => 'Standard'
+		'marker_images'		    => array(),
+		'map_counter'		    => 0,
+		'marker_counter'	    => 0,
+		'api_key'			    => '',
+		'server_side_api_key'   => '',
+		'azure_api_key'         => '',
+		'map_style_files'       => array(),
+		'default_map_style'     => 'Standard',
+		'api_used'              => self::API_GOOGLE,
 	);
 
 	public static $map_defaults = array(
@@ -60,9 +69,18 @@ class Toolset_Addon_Maps_Common {
 		'cluster_click_zoom'		=> 'on',
 		'cluster_min_size'			=> 2,
 		'spiderfy'                  => 'off',
-		'style_json'                => ''
+		'style_json'                => '',
+        // Street View attributes
+        'street_view'               => 'off',
+        'marker_id'                 => '',
+        'location'                  => '',
+        'address'                   => '',
+		'heading'                   => '',
+		'pitch'                     => '',
 	);
-	
+
+	public static $icons_added = array();
+
 	function __construct() {
 		
 		
@@ -75,7 +93,9 @@ class Toolset_Addon_Maps_Common {
 		add_filter( 'toolset_filter_toolset_maps_get_options',		array( $this, 'get_options' ) );
 		add_action( 'toolset_filter_toolset_maps_update_options',	array( $this, 'update_options' ) );
 		
-		add_filter( 'toolset_filter_toolset_maps_get_api_key',		array( $this, 'get_api_key' ) );
+		add_filter( 'toolset_filter_toolset_maps_get_api_key',		        array( $this, 'get_api_key' ) );
+		add_filter( 'toolset_filter_toolset_maps_get_server_side_api_key',  array( $this, 'get_server_side_api_key' ) );
+		add_filter( 'toolset_filter_toolset_maps_get_azure_api_key',        array( $this, 'get_azure_api_key' ) );
 		
 		/**
 		* toolset_is_maps_available
@@ -86,6 +106,8 @@ class Toolset_Addon_Maps_Common {
 		*/
 
 		add_filter( 'toolset_is_maps_available', '__return_true' );
+
+		add_filter( 'toolset_maps_get_api_used',    array( $this, 'get_api_used' ) );
 	}
 	
 	function get_options( $options = array() ) {
@@ -109,6 +131,20 @@ class Toolset_Addon_Maps_Common {
 		$saved_options = $this->get_options();
 		return $saved_options['api_key'];
 	}
+
+	/**
+     * Server-side API key may or may not be set - if it isn't return first API key to be used instead
+     * @since 1.5
+	 * @return string
+	 */
+	public function get_server_side_api_key() {
+        $saved_options = $this->get_options();
+
+        if ( empty( $saved_options['server_side_api_key'] ) ) {
+            return $saved_options['api_key'];
+        }
+        return $saved_options['server_side_api_key'];
+	}
 	
 	function init() {
 		
@@ -116,10 +152,7 @@ class Toolset_Addon_Maps_Common {
 		add_action( 'wp_enqueue_scripts',		array( $this, 'wp_enqueue_scripts' ) );
 		add_action( 'toolset_enqueue_scripts',	array( $this, 'toolset_enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts',	array( $this, 'admin_enqueue_scripts' ) );
-		
-		add_action( 'wp_footer', array( $this, 'css_fix' ) );
-		add_action( 'admin_footer', array( $this, 'css_fix' ) );
-		
+
 		add_filter( 'plugin_action_links', array( $this, 'plugin_action_links'), 10, 4 );
 		add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 4 );
 		
@@ -138,10 +171,23 @@ class Toolset_Addon_Maps_Common {
 
         // In a Layouts post content cell, Map shortcodes may get rendered twice. Reset used Ids in such case
         add_action( 'ddl-before_layout_render', array( $this, 'reset_used_ids' ), 10, 2);
+
+		add_action( 'elementor/preview/enqueue_scripts', array( $this, 'elementor_preview_enqueue_scripts' ) );
+
+		// Generally available shortcodes, autoloaded when used
+		add_shortcode(
+			'toolset-maps-distance-conditional-display',
+			array( $this, 'render_shortcode_toolset_maps_location_conditional_display' )
+		);
+		add_shortcode(
+			'toolset-maps-distance-value',
+			array( $this, 'render_shortcode_toolset_maps_distance_value' )
+		);
 	}
 	
 	function admin_init() {
-		
+	    $this->register_admin_assets();
+
 		// Admin notices
 		add_action( 'admin_notices',											array( $this, 'display_admin_notices' ) );
 		
@@ -157,6 +203,179 @@ class Toolset_Addon_Maps_Common {
 
 		// AJAX callback to check G API
 		add_action( 'wp_ajax_wpv_addon_maps_check_g_api',                       array( $this, 'check_g_api' ) );
+
+		// Register API used section
+		add_filter(
+			'toolset_filter_toolset_register_settings_maps_section',
+			array( $this, 'register_api_select_settings_section' ),
+			5
+		);
+
+		// AJAX callback to update API used
+		add_action( 'wp_ajax_toolset_maps_update_api_used', array( $this, 'update_api_used' ) );
+
+		// Register Azure API key section
+		add_filter(
+			'toolset_filter_toolset_register_settings_maps_section',
+			array ($this, 'register_azure_api_key_settings_section'),
+			11
+		);
+
+		// AJAX callback to save Azure API key
+		add_action( 'wp_ajax_toolset_maps_update_azure_api_key', array( $this, 'update_azure_api_key' ) );
+	}
+
+	/**
+	 * Dispatches this shortcode to its autoloaded handler class
+	 * @since 1.6
+	 * @param array|string $atts
+	 * @param string $content
+	 * @param string $shortcode_tag
+	 * @return string
+	 */
+	public function render_shortcode_toolset_maps_location_conditional_display( $atts, $content, $shortcode_tag ) {
+		$renderer = new ConditionalDisplay( $atts, $content, $shortcode_tag );
+		return $renderer->render();
+	}
+
+	/**
+	 * @since 1.6
+	 *
+	 * @param array|string $atts
+	 * @param string $content
+	 * @param string $shortcode_tag
+	 *
+	 * @return string
+	 */
+	public function render_shortcode_toolset_maps_distance_value( $atts, $content, $shortcode_tag ) {
+		$renderer = new Value( $atts, $content, $shortcode_tag );
+		return $renderer->render();
+	}
+
+	/**
+	 * Register settings section to change used API
+	 *
+	 * @since 1.5
+	 *
+	 * @param array $sections
+	 *
+	 * @return array
+	 */
+	public function register_api_select_settings_section( array $sections ) {
+		$sections['maps-api-used'] = array(
+			'slug'		=> 'maps-api-used',
+			'title'		=> __( 'API to use', 'toolset-maps' ),
+			'content'	=> $this->render_api_select_settings_section()
+		);
+		return $sections;
+	}
+
+	/**
+	 * Render settings section to change used API
+	 *
+	 * @since 1.5
+	 *
+	 * @return string
+	 */
+	protected function render_api_select_settings_section() {
+		$explanation = __(
+			'Select the API to be used for maps rendering, geolocation and other functionalities of this plugin.',
+			'toolset-maps'
+		);
+		$google = __( 'Google Maps API', 'toolset-maps' );
+		$azure = __( 'Microsoft Azure Maps API', 'toolset-maps' );
+		$api_google = self::API_GOOGLE;
+		$api_azure = self::API_AZURE;
+		$api_google_checked = checked( $this->get_api_used(), self::API_GOOGLE, false );
+		$api_azure_checked = checked( $this->get_api_used(), self::API_AZURE, false );
+
+		return <<<HTML
+			<p>$explanation</p>
+			<ul class="js-toolset-maps-api-used-form">
+				<li>
+					<label><input type="radio" name="toolset-maps-api-used" value="$api_google" $api_google_checked/>$google</label>
+				</li>
+				<li>
+					<label><input type="radio" name="toolset-maps-api-used" value="$api_azure" $api_azure_checked/>$azure</label>
+				</li>
+			</ul>
+HTML;
+	}
+
+	/**
+	 * Return the API to be used. Compare the string returned to API_* constants to make decisions.
+	 *
+	 * @since 1.5
+	 *
+	 * @return string
+	 */
+	public function get_api_used( $api_used = '' ) {
+		$options = $this->get_options();
+
+		return $options['api_used'];
+	}
+
+	/**
+	 * Returns Azure API key.
+	 *
+	 * @since 1.5
+	 *
+	 * @return string
+	 */
+	public function get_azure_api_key( $azure_api_key = '' ) {
+		$options = $this->get_options();
+
+		return $options['azure_api_key'];
+	}
+
+	/**
+	 * Register settings section to add Azure API key
+	 *
+	 * @since 1.5
+	 *
+	 * @param array $sections
+	 *
+	 * @return array
+	 */
+	public function register_azure_api_key_settings_section( array $sections ) {
+		$sections['maps-azure-key'] = array(
+			'slug'		=> 'maps-azure-key',
+			'title'		=> __( 'Microsoft Azure Maps API key', 'toolset-maps' ),
+			'content'	=> $this->render_azure_api_key_settings_section()
+		);
+		return $sections;
+	}
+
+	/**
+	 * Render settings section to add Azure API key
+	 *
+	 * @since 1.5
+	 *
+	 * @return string
+	 */
+	protected function render_azure_api_key_settings_section() {
+		$description = __( "Set your Azure Maps API key.", 'toolset-maps' );
+		$placeholder = __( 'Azure Maps API key', 'toolset-maps' );
+		$help_text = sprintf(
+			__(
+				'An Azure Maps API key is <strong>required</strong> to use this API. You will need to create an Azure account and a <a href="%1$s" target="_blank">Maps API key</a>.',
+				'toolset-maps'
+			),
+			'https://docs.microsoft.com/en-us/azure/azure-maps/quick-demo-map-app#create-an-account-and-get-your-key'
+		);
+
+		return <<<HTML
+			<p>$description</p>
+			<div class="js-wpv-map-plugin-form">
+				<p>
+					<input id="js-wpv-map-azure-api-key" type="text" name="wpv-map-azure-api-key"
+                        class="regular-text js-wpv-map-api-key" value="{$this->get_azure_api_key()}"
+                        autocomplete="off" size="44" placeholder="$placeholder"
+                    />
+				</p>
+				<p>$help_text</p>
+			</div>
+HTML;
 	}
 
 	/**
@@ -217,16 +436,14 @@ class Toolset_Addon_Maps_Common {
 	}
 
 	/**
-	 * Warns capable user if Google API key is missing, offers information and ways to enter the key
+	 * Warns capable user if an API key is missing, offers information and link to enter the key.
 	 */
 	function display_admin_notices() {
-	    if ( !$this->is_user_capable_of_activating_plugins_and_on_plugin_page() ) {
+	    if (
+	    	!$this->is_user_capable_of_activating_plugins_and_on_plugin_page()
+		    || $this->is_any_api_key_entered()
+	    ) {
 	        return;
-        }
-
-        $maps_api_key = $this->get_api_key();
-        if ( !empty( $maps_api_key ) ) {
-            return;
         }
 
 		$analytics_strings = array(
@@ -239,21 +456,14 @@ class Toolset_Addon_Maps_Common {
 		?>
         <div class="message notice notice-warning">
             <p>
-            <form method="post" id="js-wpv-map-api-key-form">
-                <i class="icon-toolset-map-logo ont-color-orange ont-icon-24" style="margin-right:5px;vertical-align:-2px;"></i>
+                <i class="icon-toolset-map-logo ont-color-orange ont-icon-24"></i>
 				<?php echo sprintf(
-					__( '<strong>You need a Google Maps API key</strong> to use Toolset Maps. Find more information in %1$sour documentation%2$s, visit the %3$sToolset Maps settings page%4$s, or enter key here:', 'toolset-maps' ),
-					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), 'https://wp-types.com/documentation/user-guides/display-on-google-maps/' ) . '" target="_blank">',
+					__( '<strong>You need an API key</strong> to use Toolset Maps. Find more information in %1$sour documentation%2$s and visit the %3$sToolset Maps settings page%4$s to choose an API and enter the key.', 'toolset-maps' ),
+					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), TOOLSET_ADDON_MAPS_DOC_LINK ) . '" target="_blank">',
 					'</a>',
 					'<a href="' . $toolset_maps_settings_link . '">',
 					'</a>'
 				); ?>
-                <input id="js-wpv-map-api-key" type="text" name="wpv-map-api-key" class="regular-text wpv-map-api-key"
-                   autocomplete="off" placeholder="<?php echo esc_attr( __( 'Google Maps API key', 'toolset-maps' ) ) ?>"
-                   style="box-shadow: rgb(246, 146, 30) 0px 0px 5px 1px;" size="40"
-                />
-                <input type="submit" value="<?php _e( 'Save API Key','toolset-maps' ); ?>" class="button-primary" />
-            </form>
             </p>
         </div>
 		<?php
@@ -267,6 +477,14 @@ class Toolset_Addon_Maps_Common {
 		global $pagenow;
 		return ( current_user_can( 'activate_plugins' ) && $pagenow == 'plugins.php' );
 	}
+
+	/**
+	 * @since 1.5.3
+	 * @return bool
+	 */
+	protected function is_any_api_key_entered() {
+		return ( $this->get_api_key() || $this->get_azure_api_key() );
+	}
 	
 	function register_settings_maps_section( $sections ) {
 		if ( isset( $sections['maps'] ) ) {
@@ -274,7 +492,7 @@ class Toolset_Addon_Maps_Common {
 		}
 		$sections['maps'] = array(
 			'slug'	=> 'maps',
-			'title'	=> __( 'Maps', 'wpv-views' )
+			'title'	=> __( 'Maps', 'toolset-maps' )
 		);
 		return $sections;
 	}
@@ -292,7 +510,7 @@ class Toolset_Addon_Maps_Common {
 		);
 		return $sections;
 	}
-	
+
 	function render_api_key_options( $saved_options ) {
 		?>
 		<p>
@@ -309,11 +527,21 @@ class Toolset_Addon_Maps_Common {
 			<p>
 				<?php
 				echo sprintf( 
-					__( 'A Google Maps API key is <strong>required</strong> to use Toolset Maps. You will need to create a <a href="%1$s" target="_blank">project in the Developers console</a>, then create an API key and enable it for some specific API services.', 'toolset-maps' ),
+					__( 'An API key is <strong>required</strong> to use Toolset Maps. You will need to create a <a href="%1$s" target="_blank">project in the Developers console</a>, then create an API key and enable it for some specific API services.', 'toolset-maps' ),
 					'https://console.developers.google.com'
 				);
 				?>
 			</p>
+            <p>
+				<?php echo __( 'For added protection of your API keys, you may want to setup a 2nd key for server-side requests:', 'toolset-maps' ) ?>
+            </p>
+            <p>
+                <input id="js-wpv-map-server_side_api_key" type="text" name="wpv-map-server_side_api_key"
+                       class="regular-text js-wpv-map-server_side_api_key"
+                       value="<?php echo esc_attr( $saved_options['server_side_api_key'] ); ?>" autocomplete="off"
+                       size="40" placeholder="<?php echo esc_attr( __( 'Optional 2nd key', 'toolset-maps' ) ); ?>"
+                />
+            </p>
 			<p>
 				<?php 
 				$analytics_strings = array(
@@ -324,7 +552,7 @@ class Toolset_Addon_Maps_Common {
 				);
 				echo sprintf(
 					__( 'You can find more information in %1$sour documentation%2$s.', 'toolset-maps' ),
-					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), 'https://wp-types.com/documentation/user-guides/display-on-google-maps/' ) . '" target="_blank">',
+					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), TOOLSET_ADDON_MAPS_DOC_LINK ) . '" target="_blank">',
 					'</a>'
 				);
 				?>
@@ -336,13 +564,16 @@ class Toolset_Addon_Maps_Common {
         </div>
 		<?php
 	}
-	
+
+	/**
+	 * @since 1.5 - saves 2nd key too
+	 */
 	function toolset_maps_update_api_key() {
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
 				'type' => 'capability',
-				'message' => __( 'You do not have permissions for that.', 'wpv-views' )
+				'message' => __( 'You do not have permissions for that.', 'toolset-maps' )
 			);
 			wp_send_json_error( $data );
 		}
@@ -353,203 +584,101 @@ class Toolset_Addon_Maps_Common {
 		) {
 			$data = array(
 				'type' => 'nonce',
-				'message' => __( 'Your security credentials have expired. Please reload the page to get new ones.', 'wpv-views' )
+				'message' => __(
+					'Your security credentials have expired. Please reload the page to get new ones.',
+					'toolset-maps'
+                )
 			);
 			wp_send_json_error( $data );
 		}
-		
-		if ( ! isset( $_POST['api_key'] ) ) {
-			$_POST['api_key'] = '';
-		}
+
 		$saved_options = $this->get_options();
-		$saved_options['api_key'] = sanitize_text_field( $_POST['api_key'] );
+		$saved_options['api_key'] = isset( $_POST['api_key'] )
+			? sanitize_text_field( $_POST['api_key'] )
+			: '';
+		$saved_options['server_side_api_key'] = isset( $_POST['server_side_api_key'] )
+			? sanitize_text_field( $_POST['server_side_api_key'] )
+			: '';
+
 		self::$stored_options = $saved_options;
 		$this->set_options();
 		wp_send_json_success();
 	}
-	
+
 	/**
-	* css_fix
-	*
-	* Fix styles for some elements needed by this plugin
-	*
-	* @since 1.0
-	*/
-
-	function css_fix() {
-		if ( is_admin() ) {
-			$assets_url = TOOLSET_ADDON_MAPS_URL;
-		} else {
-			$assets_url = TOOLSET_ADDON_MAPS_FRONTEND_URL;
-		}
-		?>
-		<style>
-		/* Global fix for images inside the map */
-		.gm-style img,
-		.toolset-google-map-preview .gm-style img {
-			max-width: none;
-		}
-		/* Global glow effect when updating a field */
-		.toolset-google-map {
-			transition: all 1s linear;
-		}
-		.toolset-google-map-container {
-			overflow: hidden;
-		}
-		.toolset-google-map-container .toolset-google-map.toolset-being-updated,
-		.toolset-google-map-container .toolset-google-map-lat.toolset-being-updated ,
-		.toolset-google-map-container .toolset-google-map-lon.toolset-being-updated {
-			box-shadow: 0 0 10px 2px #7ad03a;
-			border-color: #7ad03a;
-		}
-		.toolset-google-map-container .toolset-google-map.toolset-latlon-error,
-		.toolset-google-map-container .toolset-google-map-lat.toolset-latlon-error ,
-		.toolset-google-map-container .toolset-google-map-lon.toolset-latlon-error {
-			box-shadow: 0 0 10px 2px #B94A48;
-			border-color: #B94A48;
-			color: #B94A48;
-		}
-		/* Global map preview dimensions */
-		.toolset-google-map-preview {
-			width: 100%;
-			height: 200px;
-			float: right;
-			background-color: #ccc;
-			background-image: url(<?php echo $assets_url; ?>/resources/images/powered-by-google-on-toolset.png);
-			background-position: 50% 50%;
-			background-repeat: no-repeat;
-		}
-		.toolset-google-map-preview-closest-address {
-			width: 100%;
-			float: right;
-			clear: right;
-			background: #f1f1f1;
-			margin: 0;
-			font-size: 0.9em;
-		}
-		.toolset-google-map-preview-closest-address-value {
-			font-size: 0.9em;
-		}
-		.toolset-google-map-preview .toolset-google-map-preview-reload {
-			display: none;
-			overflow: hidden;
-			position: absolute; 
-			top: 0px; 
-			left: 0px; 
-			right: 0px; 
-			bottom: 0px; 
-			text-align: center;
-			background-color: #ccc;
-			background-image: url(<?php echo $assets_url; ?>/resources/images/powered-by-google-on-toolset-reload.png);
-			background-position: 50% 40%;
-			background-repeat: no-repeat;
-			z-index: 1000;
-		}
-		.toolset-google-map-preview .toolset-google-map-preview-reload a {
-			display: block;
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			cursor: pointer;
-			margin-left: -999999px;
-		}
-		/* Autocomplete inside dialogs z-index fix */
-		.pac-container {
-			z-index: 100150;
+	 * Updates the API used setting
+	 * @since 1.5
+	 */
+	public function update_api_used() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			$data = array(
+				'type' => 'capability',
+				'message' => __( 'You do not have permissions for that.', 'toolset-maps' )
+			);
+			wp_send_json_error( $data );
 		}
 
-        .toolset-maps-success {
-            color: green;
-        }
-        .toolset-maps-error {
-            color: darkred;
-        }
-
-		/* Backend styles - Types field */
-		.wp-admin .wpt-google_address.wpt-repetitive .wpt-field-item {
-			padding: 0 0 0 10px;
-			border-left: solid 3px #ccc;
-		}
-		.wp-admin .toolset-google-map-container {
-			overflow: hidden;
-		}
-		.wp-admin .toolset-google-map-inputs-container {
-			width: 52%;
-			float: left;
-		}
-		.wp-admin .toolset-google-map-preview {
-			width: 45%;
-			height: 200px;
-			float: right;
-		}
-		.wp-admin .toolset-google-map-preview-closest-address {
-			width: 45%;
-			float: right;
-			clear: right;
+		if (
+			! isset( $_POST["wpnonce"] )
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'toolset_views_addon_maps_global' )
+		) {
+			$data = array(
+				'type' => 'nonce',
+				'message' => __(
+					'Your security credentials have expired. Please reload the page to get new ones.',
+					'toolset-maps'
+				)
+			);
+			wp_send_json_error( $data );
 		}
 
-        /* These can be shown on backend, and also on frotend, in a CRED form */
-		.toolset-google-map-toggle-latlon, .toolset-google-map-use-visitor-location {
-			cursor: pointer;
-			display: inline-block;
-			margin: 5px 0 10px;
-		}
+		$saved_options = $this->get_options();
+		$saved_options['api_used'] = isset( $_POST['api_used'] )
+			? sanitize_text_field( $_POST['api_used'] )
+			: self::API_GOOGLE;
 
-        /* Backend styles - Types fields table */
-		.wp-admin .toolset-google-map-toggling-latlon {
-			padding-bottom: 5px
-		}
-		.wp-admin .toolset-google-map-toggling-latlon p{
-			margin: 0 0 5px 0;
-		}
-		.wp-admin .toolset-google-map-label,
-		.wp-admin .toolset-shortcode-gui-dialog-container .toolset-google-map-label {
-			display: inline-block;
-			width: 120px;
-		}
-		.wp-admin .toolset-google-map-label-radio {
-			display: inline-block !important;
-			width: auto;
-		}
-		.wp-admin .toolset-google-map-lat,
-		.wp-admin .toolset-google-map-lon{
-			display: inline-block;
-			width: -webkit-calc(100% - 80px);
-			width: calc(100% - 80px);
-			max-width: 300px;
-		}
-		.wp-admin #wpcf-post-relationship .toolset-google-map-inputs-container,
-		.wp-admin #wpcf-post-relationship .toolset-google-map-preview {
-			width: 100%;
-			min-width: 200px;
-			float: none;
-		}
-		.wp-admin #wpcf-post-relationship .toolset-google-map-preview {
-			height: 150px;
-		}
-		.wp-admin #wpcf-post-relationship .toolset-google-map-preview-closest-address {
-			width: 100%;
-			float: none;
-			clear: both;
-		}
-		#wpcf-post-relationship table .textfield.toolset-google-map {
-			width: 99% !important;
-		}
-		.wp-admin #wpcf-post-relationship .toolset-google-map-label {
-			display: block;
-			width: auto;
-		}
-		.wp-admin #wpcf-post-relationship .toolset-google-map-lat,
-		.wp-admin #wpcf-post-relationship .toolset-google-map-lon {
-			width: auto;
-
-		}
-		</style>
-		<?php
+		self::$stored_options = $saved_options;
+		$this->set_options();
+		wp_send_json_success();
 	}
-	
+
+	/**
+	 * Updates the Azure API key
+	 * @since 1.5
+	 */
+	public function update_azure_api_key() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			$data = array(
+				'type' => 'capability',
+				'message' => __( 'You do not have permissions for that.', 'toolset-maps' )
+			);
+			wp_send_json_error( $data );
+		}
+
+		if (
+			! isset( $_POST["wpnonce"] )
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'toolset_views_addon_maps_global' )
+		) {
+			$data = array(
+				'type' => 'nonce',
+				'message' => __(
+					'Your security credentials have expired. Please reload the page to get new ones.',
+					'toolset-maps'
+				)
+			);
+			wp_send_json_error( $data );
+		}
+
+		$saved_options = $this->get_options();
+		$saved_options['azure_api_key'] = isset( $_POST['azure_api_key'] )
+			? sanitize_text_field( $_POST['azure_api_key'] )
+			: '';
+
+		self::$stored_options = $saved_options;
+		$this->set_options();
+		wp_send_json_success();
+	}
+
 	function plugin_action_links( $actions, $plugin_file, $plugin_data, $context ) {
 		$this_plugin = basename( TOOLSET_ADDON_MAPS_PATH ) . '/toolset-maps-loader.php';
 		if ( $plugin_file == $this_plugin ) {
@@ -572,7 +701,7 @@ class Toolset_Addon_Maps_Common {
 			);
 			$plugin_link = self::get_documentation_promotional_link(
                 $promo_args,
-                'https://wp-types.com/version/maps-1-4-2/'
+                'https://toolset.com/version/maps-' . str_replace( '.', '-', TOOLSET_ADDON_MAPS_VERSION ) . '/'
             );
 			$plugin_meta[] = sprintf(
                 '<a href="%1$s" target="_blank">%2$s</a>',
@@ -593,105 +722,24 @@ class Toolset_Addon_Maps_Common {
 			$assets_url = TOOLSET_ADDON_MAPS_FRONTEND_URL;
 		}
 		
-		$maps_api_js_url = self::$maps_api_url_js;
-		$maps_api_js_url = apply_filters( 'toolset_filter_toolset_maps_api_js_url', $maps_api_js_url );
-		
-		$args = array(
-			'sensor'	=> false,
-			'libraries'	=> 'places',
-            'v'         => '3.30'
-		);
-		
-		$maps_api_key = $this->get_api_key();
-		if ( ! empty( $maps_api_key ) ) {
-			$args['key'] = esc_attr( $maps_api_key );
+		if ( self::API_GOOGLE === $this->get_api_used() ) {
+			$this->register_google_specific_assets( $assets_url );
+		} else {
+			$this->register_azure_specific_assets( $assets_url );
 		}
-		
-		$maps_api_js_url = add_query_arg( $args, $maps_api_js_url );
-		
-		/**
-		* Google Maps script
-		* @version 3.30.x (uses v= parameter instead of ver= that WP would provide for version)
-		*/
-		wp_register_script( 'google-maps', $maps_api_js_url, array(), null, true );
-		
-		/**
-		* jQuery geocomplete
-		* @version 1.7.0
-		* @url http://ubilabs.github.io/geocomplete/
-		*/
-		wp_register_script(
-            'jquery-geocomplete',
-            $assets_url . '/resources/js/jquery.geocomplete.min.js',
-            array( 'jquery', 'google-maps' ),
-            '1.7.0',
-            true
-        );
-		
-		/**
-		* Frontend rendering script
-		*/
-		wp_register_script( 'views-addon-maps-script', $assets_url . '/resources/js/wpv_addon_maps.js', array( 'jquery', 'google-maps', 'underscore' ), TOOLSET_ADDON_MAPS_VERSION, true );
+
 		wp_localize_script(
 			'views-addon-maps-script',
 			'views_addon_maps_i10n',
 			array(
 				'marker_default_url'		=> TOOLSET_ADDON_MAPS_FRONTEND_URL . '/resources/images/spotlight-poi.png',
-				'cluster_default_imagePath'	=> TOOLSET_ADDON_MAPS_FRONTEND_URL . '/resources/images/clusterer/m'
-			)
-		);
-		
-		/**
-		* Marker clusterer
-		* @version 1.0
-		* @url https://github.com/googlemaps/v3-utility-library/tree/master/markerclusterer
-		*/
-		wp_register_script( 'marker-clusterer-script', $assets_url . '/resources/js/markerclusterer.js', array( 'jquery', 'google-maps', 'underscore', 'views-addon-maps-script' ), '1.0', true );
-		wp_localize_script(
-			'marker-clusterer-script',
-			'views_addon_maps_clusterer_i10n',
-			array(
-				'cluster_default_imagePath'	=> TOOLSET_ADDON_MAPS_FRONTEND_URL . '/resources/images/clusterer/m'
-			)
-		);
-
-		/**
-		 * Overlapping marker spiderfier
-         * @version 1.0
-         * @url https://github.com/jawj/OverlappingMarkerSpiderfier
-		 */
-		wp_register_script(
-            'overlapping-marker-spiderfier',
-            $assets_url . '/resources/js/oms.min.js',
-            array('google-maps'),
-            '1.0',
-            true
-        );
-		
-		/**
-		* Editor assets for Types in backend and CRED in frontend
-		*/		
-		wp_register_script(
-            'toolset-google-map-editor-script',
-            $assets_url . '/resources/js/wpv_addon_maps_editor.js',
-            array( 'jquery-geocomplete' ),
-            TOOLSET_ADDON_MAPS_VERSION,
-            true
-        );
-		wp_localize_script(
-			'toolset-google-map-editor-script',
-			'toolset_google_address_i10n',
-			array(
-				'showhidecoords'	=> __( 'Show/Hide coordinates', 'toolset-maps' ),
-				'latitude'			=> __( 'Latitude', 'toolset-maps' ),
-				'longitude'			=> __( 'Longitude', 'toolset-maps' ),
-				'usethisaddress'	=> __( 'Use this address', 'toolset-maps' ),
-				'closestaddress'	=> __( 'Closest address: ', 'toolset-maps' ),
-				'autocompleteoff'	=> __(
-                    'We could not connect to the Google Maps autocomplete service, but you can add an address manually.',
-                    'wpv-views'
-                ),
-                'usemylocation'     => __( 'Use my location', 'toolset-maps' )
+				'cluster_default_imagePath'	=> TOOLSET_ADDON_MAPS_FRONTEND_URL . '/resources/images/clusterer/m',
+				'marker_not_found_warning'  => __(
+					'Toolset Maps: Street View from marker requested for map: %s but marker not found.',
+					'toolset-maps'
+				),
+				'api_used'                  => $this->get_api_used(),
+				'azure_api_key'             => $this->get_azure_api_key(),
 			)
 		);
 
@@ -714,28 +762,172 @@ class Toolset_Addon_Maps_Common {
 			'nonce'					=> wp_create_nonce( 'toolset_views_addon_maps_settings' ),
 			'global_nonce'			=> wp_create_nonce( 'toolset_views_addon_maps_global' ),
 			'setting_saved'			=> __( 'Settings saved', 'toolset-maps' ),
-            'duplicate_style_warning' => __( 'Cannot upload: JSON style with that name already exists!', 'toolset-maps')
+            'duplicate_style_warning' => __('Cannot upload: JSON style with that name already exists!', 'toolset-maps'),
+			'api_used'              => $this->get_api_used()
 		);
 		wp_localize_script( 'views-addon-maps-settings-script', 'wpv_addon_maps_settings_local', $wpv_addon_maps_settings_localization );
 
-		// WP Plugins page frontend functionality
-        wp_register_script(
-            'views-addon-maps-plugins-script',
-            TOOLSET_ADDON_MAPS_URL . '/resources/js/wpv_addon_maps_plugins.js',
-			array( 'jquery', 'underscore' ),
+        // CSS fixes
+        wp_register_style(
+            'toolset-maps-fixes',
+            $assets_url . '/resources/css/toolset_maps_fixes.css',
+            array(),
             TOOLSET_ADDON_MAPS_VERSION
         );
-        wp_localize_script(
-            'views-addon-maps-plugins-script',
-            'wpv_addon_maps_plugins_local',
-            array(
-                'global_nonce' => wp_create_nonce('toolset_views_addon_maps_global')
-            )
-        );
 	}
-	
+
+	protected function register_google_specific_assets( $assets_url ) {
+		$maps_api_js_url = self::$maps_api_url_js;
+		$maps_api_js_url = apply_filters( 'toolset_filter_toolset_maps_api_js_url', $maps_api_js_url );
+
+		$args = array(
+			'sensor'	=> false,
+			'libraries'	=> 'places',
+			'v'         => '3'
+		);
+
+		$maps_api_key = $this->get_api_key();
+		if ( ! empty( $maps_api_key ) ) {
+			$args['key'] = esc_attr( $maps_api_key );
+		}
+
+		$maps_api_js_url = add_query_arg( $args, $maps_api_js_url );
+
+		/**
+		 * Google Maps script
+		 * @version 3.x (uses v= parameter instead of ver= that WP would provide for version)
+		 */
+		wp_register_script( 'google-maps', $maps_api_js_url, array(), null, true );
+
+		/**
+		 * jQuery geocomplete
+		 * @version 1.7.0
+		 * @url http://ubilabs.github.io/geocomplete/
+		 */
+		wp_register_script(
+			'jquery-geocomplete',
+			$assets_url . '/resources/js/jquery.geocomplete.min.js',
+			array( 'jquery', 'google-maps' ),
+			'1.7.0',
+			true
+		);
+
+		/**
+		 * Frontend rendering script
+		 */
+		wp_register_script( 'views-addon-maps-script', $assets_url . '/resources/js/wpv_addon_maps.js', array( 'jquery', 'google-maps', 'underscore' ), TOOLSET_ADDON_MAPS_VERSION, true );
+
+		/**
+		 * Marker clusterer
+		 * @version 1.0
+		 * @url https://github.com/googlemaps/v3-utility-library/tree/master/markerclusterer
+		 */
+		wp_register_script( 'marker-clusterer-script', $assets_url . '/resources/js/markerclusterer.js', array( 'jquery', 'google-maps', 'underscore', 'views-addon-maps-script' ), '1.0', true );
+		wp_localize_script(
+			'marker-clusterer-script',
+			'views_addon_maps_clusterer_i10n',
+			array(
+				'cluster_default_imagePath'	=> TOOLSET_ADDON_MAPS_FRONTEND_URL . '/resources/images/clusterer/m'
+			)
+		);
+
+		/**
+		 * Overlapping marker spiderfier
+		 * @version 1.0
+		 * @url https://github.com/jawj/OverlappingMarkerSpiderfier
+		 */
+		wp_register_script(
+			'overlapping-marker-spiderfier',
+			$assets_url . '/resources/js/oms.min.js',
+			array('google-maps'),
+			'1.0',
+			true
+		);
+
+		/**
+		 * Editor assets for Types in backend and Forms in frontend
+		 */
+		wp_register_script(
+			'toolset-google-map-editor-script',
+			$assets_url . '/resources/js/wpv_addon_maps_editor.js',
+			array( 'jquery-geocomplete' ),
+			TOOLSET_ADDON_MAPS_VERSION,
+			true
+		);
+		wp_localize_script(
+			'toolset-google-map-editor-script',
+			'toolset_google_address_i10n',
+			array(
+				'showhidecoords'	=> __( 'Show/Hide coordinates', 'toolset-maps' ),
+				'latitude'			=> __( 'Latitude', 'toolset-maps' ),
+				'longitude'			=> __( 'Longitude', 'toolset-maps' ),
+				'usethisaddress'	=> __( 'Use this address', 'toolset-maps' ),
+				'closestaddress'	=> __( 'Closest address: ', 'toolset-maps' ),
+				'autocompleteoff'	=> __(
+					'We could not connect to the Google Maps autocomplete service, but you can add an address manually.',
+					'toolset-maps'
+				),
+				'usemylocation'     => __( 'Use my location', 'toolset-maps' )
+			)
+		);
+	}
+
+	protected function register_azure_specific_assets( $assets_url ) {
+		// Register Azure assets
+		$azure_css_source = add_query_arg( 'api-version', '1.1', 'https://atlas.microsoft.com/sdk/css/atlas.min.css' );
+		wp_register_style( 'azure-maps-css', $azure_css_source, array(), null );
+
+		$azure_js_source = add_query_arg( 'api-version', '1.1', 'https://atlas.microsoft.com/sdk/js/atlas.min.js' );
+		wp_register_script( 'azure-maps-js', $azure_js_source, array(), null );
+
+		// Address autocomplete script
+		wp_register_script(
+			'toolset-maps-address-autocomplete',
+			$assets_url . '/resources/js/toolset_maps_address_autocomplete.js',
+			array( 'jquery', 'jquery-ui-autocomplete', 'underscore', 'azure-maps-js' ),
+			TOOLSET_ADDON_MAPS_VERSION
+		);
+		wp_localize_script(
+			'toolset-maps-address-autocomplete',
+			'toolset_maps_address_autocomplete_i10n',
+			array(
+				'azure_api_key'     => $this->get_azure_api_key(),
+				'showhidecoords'	=> __( 'Show/Hide coordinates', 'toolset-maps' ),
+				'latitude'			=> __( 'Latitude', 'toolset-maps' ),
+				'longitude'			=> __( 'Longitude', 'toolset-maps' ),
+				'usethisaddress'	=> __( 'Use this address', 'toolset-maps' ),
+				'closestaddress'	=> __( 'Closest address: ', 'toolset-maps' ),
+				'usemylocation'     => __( 'Use my location', 'toolset-maps' )
+			)
+		);
+
+		// Frontend rendering script
+		wp_register_script(
+			'views-addon-maps-script',
+			$assets_url . '/resources/js/wpv_addon_maps.js',
+			array( 'jquery', 'azure-maps-js', 'underscore' ),
+			TOOLSET_ADDON_MAPS_VERSION,
+			true
+		);
+	}
+
+	/**
+	 * Register assets that will be used only on admin side
+     * @since 1.5
+	 */
+	public function register_admin_assets() {
+	    wp_register_style(
+            'toolset-maps-plugins-page',
+            TOOLSET_ADDON_MAPS_URL . '/resources/css/toolset_maps_plugins_page.css',
+            array(),
+            TOOLSET_ADDON_MAPS_VERSION
+        );
+    }
+
 	function wp_enqueue_scripts() {
-		
+		wp_enqueue_style( 'toolset-maps-fixes' );
+
+		self::maybe_enqueue_azure_css();
 	}
 	
 	function toolset_enqueue_scripts( $page ) {
@@ -744,14 +936,52 @@ class Toolset_Addon_Maps_Common {
 			wp_enqueue_media();
 			wp_enqueue_script( 'views-addon-maps-settings-script' );
 		}
+
+		wp_enqueue_style( 'toolset-maps-fixes' );
 	}
 	
 	function admin_enqueue_scripts( $page ) {
 		if ( 'plugins.php' === $page ) {
-		    wp_enqueue_script( 'views-addon-maps-plugins-script' );
+		    wp_enqueue_style( 'toolset-maps-plugins-page' );
         }
+
+        self::maybe_enqueue_azure_css();
 	}
-	
+
+	/**
+	 * Helper method to potentially add azure CSS if its JS is added JIT, and later than enqueue hooks fire.
+	 * @since 1.5.4
+	 */
+	public static function maybe_enqueue_azure_css() {
+		if (
+			apply_filters( 'toolset_maps_get_api_used', '' ) === Toolset_Addon_Maps_Common::API_AZURE
+			&& wp_script_is( 'azure-maps-js' )
+			&& ! wp_style_is( 'azure-maps-css' )
+		) {
+			wp_enqueue_style( 'azure-maps-css' );
+		}
+	}
+
+	/**
+	 * Elementor editor preview fix. Brute force loading all JS there, because we have no way of knowing if
+	 * they're going to be needed or not. (This get key is an iframe, and then sections are loaded by ajax, and by
+	 * the time map is rendered, it's too late to add JS.)
+	 * @since 1.5
+	 */
+	public function elementor_preview_enqueue_scripts() {
+		if ( toolset_getget( 'elementor-preview' ) ) {
+			if ( ! wp_script_is( 'views-addon-maps-script' ) ) {
+				wp_enqueue_script( 'views-addon-maps-script' );
+			}
+			if ( ! wp_script_is( 'marker-clusterer-script' ) ) {
+				wp_enqueue_script( 'marker-clusterer-script' );
+			}
+			if ( ! wp_script_is( 'overlapping-marker-spiderfier' ) ) {
+				wp_enqueue_script( 'overlapping-marker-spiderfier' );
+			}
+		}
+	}
+
 	static function get_stored_coordinates() {
 		$coordinates_set = self::$coordinates_set;
 		if ( $coordinates_set === null ) {
@@ -792,7 +1022,6 @@ class Toolset_Addon_Maps_Common {
 		
 		$address_hash = md5( $address );
 		$coordinates_set = self::get_stored_coordinates();
-		$data = array();
 
 		if (
             ! isset( $coordinates_set[ $address_hash ] )
@@ -828,88 +1057,182 @@ class Toolset_Addon_Maps_Common {
 					return self::get_coordinates_not_valid( $address );
 				}
 			} else {
+				$api_used = self::get_saved_option( 'api_used' );
 
-				$args = array( 'address' => urlencode( $address ), 'sensor' => 'false' );
-				
-				$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_api_key', '' );
-				if ( ! empty( $maps_api_key ) ) {
-					$args['key'] = esc_attr( $maps_api_key );
-				}
-				
-				$maps_api_url_geocode = self::$maps_api_url_geocode;
-				$maps_api_url_geocode = apply_filters( 'toolset_filter_toolset_maps_api_geocode_url', $maps_api_url_geocode );
-				
-				$url        = add_query_arg( $args, $maps_api_url_geocode );
-				$response 	= wp_remote_get( $url );
-
-				if ( is_wp_error( $response ) ) {
-					return __( 'wp_remote_get could not communicate with the Google Maps API.', 'toolset-maps' );
-				}
-
-				$data = wp_remote_retrieve_body( $response );
-
-				if ( is_wp_error( $data ) ) {
-					return sprintf(
-						__( 'wp_remote_retrieve_body could not get data from the Google Maps API response. URL was %s', 'toolset-maps' ),
-						$url
-					);
-				}
-
-				if ( $response['response']['code'] == 200 ) {
-
-					$data = json_decode( $data );
-
-					if ( $data->status === 'OK' ) {
-
-						$coordinates = $data->results[0]->geometry->location;
-
-						$coordinates_set[ $address_hash ]['lat'] 			= $coordinates->lat;
-						$coordinates_set[ $address_hash ]['lon'] 			= $coordinates->lng;
-						$coordinates_set[ $address_hash ]['address']		= (string) $data->results[0]->formatted_address;
-						$coordinates_set[ $address_hash ]['address_passed']	= $address;
-
-						$data = $coordinates_set[ $address_hash ];
-						
-						self::$coordinates_save = true;
-						self::$coordinates_set = $coordinates_set;
-
-					} elseif ( $data->status === 'ZERO_RESULTS' ) {
-						return sprintf(
-							__( 'ZERO_RESULTS - No location found for the entered address. URL was %s', 'toolset-maps' ),
-							$url
-						);
-					} elseif( $data->status === 'INVALID_REQUEST' ) {
-						return sprintf(
-							__( 'INVALID_REQUEST - Invalid request. Did you enter an address? URL was %s', 'toolset-maps' ),
-							$url
-						);
-					} elseif ( $data->status === 'REQUEST_DENIED' ) {
-                        return sprintf(
-                            __( 'REQUEST_DENIED - %s', 'toolset-maps' ),
-                            $data->error_message
-                        );
-					} else {
-						return sprintf( 
-							__( '%1$s - Something went wrong while retrieving your map, please ensure you have entered the short code correctly. URL was %2$s', 'toolset-maps' ),
-							$data->status,
-							$url
-						);
-					}
-
+				if ( self::API_GOOGLE === $api_used ) {
+					$data = self::get_coordinates_google( $address, $address_hash, $coordinates_set );
+				} elseif ( self::API_AZURE === $api_used ) {
+					$data = self::get_coordinates_azure( $address, $address_hash, $coordinates_set );
 				} else {
 					return sprintf(
-						__( '%1$s - Unable to contact Google API service. URL was %2$s', 'toolset-maps' ),
-						$response['response']['code'],
-						$url
+						__( 'Unknown maps API configured!', 'toolset-maps' ),
+						$address
 					);
 				}
-			
 			}
 
 		} else {
 
 			$data = $coordinates_set[ $address_hash ];
 
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Resolve address to coordinates using Azure API
+	 *
+	 * @since 1.5
+	 *
+	 * @param string $address
+	 * @param string $address_hash
+	 * @param array $coordinates_set
+	 *
+	 * @return mixed|string|void
+	 */
+	protected static function get_coordinates_azure( $address, $address_hash, array $coordinates_set ) {
+		$args = array(
+			'subscription-key' => apply_filters( 'toolset_filter_toolset_maps_get_azure_api_key', '' ),
+			'api-version' => '1.0',
+			'query' => urlencode( $address )
+		);
+		$url = add_query_arg( $args, self::API_AZURE_URL );
+		$response = wp_remote_get( $url );
+
+		if ( is_wp_error( $response ) ) {
+			return __( 'wp_remote_get could not communicate with the Azure Maps API.', 'toolset-maps' );
+		}
+
+		$response_body = wp_remote_retrieve_body( $response );
+
+		if ( is_wp_error( $response_body ) ) {
+			return sprintf(
+				__(
+					'wp_remote_retrieve_body could not get data from the Azure Maps API response. URL was %s',
+					'toolset-maps'
+				),
+				$url
+			);
+		}
+
+		if ( $response['response']['code'] == 200 ) {
+
+			$decoded_body = json_decode( $response_body );
+
+			// If an address unknown to API is given, handle gracefully and don't save to cache.
+			if ( $decoded_body->summary->numResults === 0 ) {
+				return __( 'Given address is unknown to Azure API', 'toolset-maps' );
+			}
+
+			$result = $decoded_body->results[0];
+
+			$coordinates_set[ $address_hash ]['lat'] 			= $result->position->lat;
+			$coordinates_set[ $address_hash ]['lon'] 			= $result->position->lon;
+			$coordinates_set[ $address_hash ]['address']		= $result->address->freeformAddress;
+			$coordinates_set[ $address_hash ]['address_passed']	= $address;
+
+			$data = $coordinates_set[ $address_hash ];
+
+			self::$coordinates_save = true;
+			self::$coordinates_set = $coordinates_set;
+
+		} else {
+			return sprintf(
+				__( '%1$s - Unable to contact Azure API service. URL was %2$s', 'toolset-maps' ),
+				$response['response']['code'],
+				$url
+			);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Resolve address to coordinates using Google API
+	 *
+	 * @since 1.5
+	 *
+	 * @param string $address
+	 * @param string $address_hash
+	 * @param array $coordinates_set
+	 *
+	 * @return array|mixed|object|string|void
+	 */
+	protected static function get_coordinates_google( $address, $address_hash, $coordinates_set ) {
+		$args = array( 'address' => urlencode( $address ), 'sensor' => 'false' );
+				
+		$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_server_side_api_key', '' );
+		if ( ! empty( $maps_api_key ) ) {
+			$args['key'] = esc_attr( $maps_api_key );
+		}
+
+		$maps_api_url_geocode = self::$maps_api_url_geocode;
+		$maps_api_url_geocode = apply_filters( 'toolset_filter_toolset_maps_api_geocode_url', $maps_api_url_geocode );
+
+		$url        = add_query_arg( $args, $maps_api_url_geocode );
+		$response 	= wp_remote_get( $url );
+
+		if ( is_wp_error( $response ) ) {
+			return __( 'wp_remote_get could not communicate with the Google Maps API.', 'toolset-maps' );
+		}
+
+		$data = wp_remote_retrieve_body( $response );
+
+		if ( is_wp_error( $data ) ) {
+			return sprintf(
+				__( 'wp_remote_retrieve_body could not get data from the Google Maps API response. URL was %s', 'toolset-maps' ),
+				$url
+			);
+		}
+
+		if ( $response['response']['code'] == 200 ) {
+
+			$data = json_decode( $data );
+
+			if ( $data->status === 'OK' ) {
+
+				$coordinates = $data->results[0]->geometry->location;
+
+				$coordinates_set[ $address_hash ]['lat'] 			= $coordinates->lat;
+				$coordinates_set[ $address_hash ]['lon'] 			= $coordinates->lng;
+				$coordinates_set[ $address_hash ]['address']		= (string) $data->results[0]->formatted_address;
+				$coordinates_set[ $address_hash ]['address_passed']	= $address;
+
+				$data = $coordinates_set[ $address_hash ];
+
+				self::$coordinates_save = true;
+				self::$coordinates_set = $coordinates_set;
+
+			} elseif ( $data->status === 'ZERO_RESULTS' ) {
+				return sprintf(
+					__( 'ZERO_RESULTS - No location found for the entered address. URL was %s', 'toolset-maps' ),
+					$url
+				);
+			} elseif( $data->status === 'INVALID_REQUEST' ) {
+				return sprintf(
+					__( 'INVALID_REQUEST - Invalid request. Did you enter an address? URL was %s', 'toolset-maps' ),
+					$url
+				);
+			} elseif ( $data->status === 'REQUEST_DENIED' ) {
+				return sprintf(
+					__( 'REQUEST_DENIED - %s', 'toolset-maps' ),
+					$data->error_message
+				);
+			} else {
+				return sprintf(
+					__( '%1$s - Something went wrong while retrieving your map, please ensure you have entered the short code correctly. URL was %2$s', 'toolset-maps' ),
+					$data->status,
+					$url
+				);
+			}
+
+		} else {
+			return sprintf(
+				__( '%1$s - Unable to contact Google API service. URL was %2$s', 'toolset-maps' ),
+				$response['response']['code'],
+				$url
+			);
 		}
 
 		return $data;
@@ -944,7 +1267,9 @@ class Toolset_Addon_Maps_Common {
 	 */
 	static function render_map( $map_id, array $map_data, $content = '' ) {
 		$map_data = wp_parse_args( $map_data, self::$map_defaults );
-		
+		$lat = 0;
+		$long = 0;
+
 		if ( preg_match( '/^[+-]?((\d+(\.\d*)?)|(\.\d+))$/', $map_data['map_width'] ) ) {                
 			$map_data['map_width'] .= 'px';
 		}
@@ -955,6 +1280,14 @@ class Toolset_Addon_Maps_Common {
 		$current_used_map_ids = self::$used_map_ids;
 		$current_used_map_ids[] = $map_id;
 		self::$used_map_ids = $current_used_map_ids;
+
+		if ( $map_data['address'] ) {
+		    $latLong = self::get_coordinates( $map_data['address'] );
+			if ( is_array( $latLong ) ) {
+				$lat = $latLong['lat'];
+				$long = $latLong['lon'];
+			}
+        }
 
 		$return = '<div';
 		$return .= ' id="js-wpv-addon-maps-render-' . $map_id . '"';
@@ -986,9 +1319,22 @@ class Toolset_Addon_Maps_Common {
 		$return .= ' data-clusterminsize="' . esc_attr( $map_data['cluster_min_size'] ) . '"';
 		$return .= ' data-stylejson="' . self::get_given_or_default_style_json( $map_data['style_json'] ) . '"';
 		$return .= ' data-spiderfy="' . esc_attr( $map_data['spiderfy'] ) . '"';
+		$return .= ' data-streetview="' . esc_attr( $map_data['street_view'] ) . '"';
+		$return .= ' data-markerid="' . esc_attr( $map_data['marker_id'] ) . '"';
+		$return .= ' data-location="' . esc_attr( $map_data['location'] ) . '"';
+		$return .= ' data-lat="' . esc_attr( $lat ) . '"';
+		$return .= ' data-long="' . esc_attr( $long ) . '"';
+		$return .= ' data-heading="' . esc_attr( $map_data['heading'] ) . '"';
+		$return .= ' data-pitch="' . esc_attr( $map_data['pitch'] ) . '"';
 		$return .= '>';
 		$return .= $content;
 		$return .= '</div>';
+
+		$return .= self::maybe_add_hidden_icon_image_html_for_azure(
+			$map_data['marker_icon'],
+			$map_data['marker_icon_hover']
+		);
+
 		return $return;
 	}
 
@@ -1098,14 +1444,17 @@ class Toolset_Addon_Maps_Common {
 		$upload_dir = wp_upload_dir();
 		return $upload_dir['baseurl'];
 	}
-	
+
 	/**
-	* render_marker
-	*
-	* @since 1.0
-	*/
-	
-	static function render_marker( $map_id, $marker_data, $content = '' ) {
+	 * @param string $map_id
+	 * @param array $marker_data
+	 * @param string $content
+	 *
+	 * @return string
+     *
+     * @since 1.0
+	 */
+	static function render_marker( $map_id, array $marker_data, $content = '' ) {
 		$defaults = array(
 			'id'			=> '',
 			'title'			=> '',
@@ -1113,13 +1462,14 @@ class Toolset_Addon_Maps_Common {
 			'lon'			=> '',
 			'icon'			=> '',
 			'icon_hover'	=> '',
+            'street_view'   => 'no'
 		);
 		if (
 			empty( $marker_data['id'] )
 			|| empty( $marker_data['lat'] )
 			|| empty( $marker_data['lon'] )
 		) {
-			return;
+			return '';
 		}
 		$marker_data = wp_parse_args( $marker_data, $defaults );
 		
@@ -1129,7 +1479,10 @@ class Toolset_Addon_Maps_Common {
 		}
 		$current_used_marker_ids[ $map_id ][] = $marker_data['id'] ;
 		self::$used_marker_ids = $current_used_marker_ids;
-		
+
+		$icon = $marker_data['icon'];
+		$icon_hover = $marker_data['icon_hover'];
+
 		$return = '<div style="display:none"';
 		$return .= ' class="wpv-addon-maps-marker js-wpv-addon-maps-marker js-wpv-addon-maps-marker-' . esc_attr( $marker_data['id'] ) . ' js-wpv-addon-maps-markerfor-' . esc_attr( $map_id ) . '"';
 		$return .= ' data-marker="' . esc_attr( $marker_data['id'] ) . '"';
@@ -1137,12 +1490,58 @@ class Toolset_Addon_Maps_Common {
 		$return .= ' data-markerfor="' . esc_attr( $map_id ) . '"';
 		$return .= ' data-markerlat="' . esc_attr( $marker_data['lat'] ) . '"';
 		$return .= ' data-markerlon="' . esc_attr( $marker_data['lon'] ) . '"';
-		$return .= ' data-markericon="' . esc_attr( $marker_data['icon'] ) . '"';
-		$return .= ' data-markericonhover="' . esc_attr( $marker_data['icon_hover'] ) . '"';
+		$return .= ' data-markericon="' . esc_attr( $icon ) . '"';
+		$return .= ' data-markericonhover="' . esc_attr( $icon_hover ) . '"';
+		$return .= ' data-streetview="' . esc_attr( $marker_data['street_view'] ) . '"';
 		$return .= '>' . $content . '</div>';
+
+		$return .= self::maybe_add_hidden_icon_image_html_for_azure( $icon, $icon_hover );
+
 		return $return;
 	}
-	
+
+	/**
+	 * Given icon path, return the HTML load the icon in a hidden image.
+	 *
+	 * If the path is empty or the icon has already been added previously, returns empty string.
+	 *
+	 * @since 1.5.3
+	 *
+	 * @param string $icon
+	 *
+	 * @return string
+	 */
+	static protected function render_hidden_icon_image( $icon ) {
+		if ( !empty( $icon ) && !in_array( $icon, self::$icons_added ) ) {
+			return "<div style='display: none;'>"
+			       . "<img src='$icon' width='24' height='28' id='$icon' />"
+			       ."</div>";
+			self::$icons_added[] = $icon;
+		} else {
+			return '';
+		}
+	}
+
+	/**
+	 * For Azure API, we need to send icon image to be loaded by browser
+	 *
+	 * @since 1.5.3
+	 *
+	 * @param string $icon
+	 * @param string $icon_hover
+	 *
+	 * @return string
+	 */
+	static protected function maybe_add_hidden_icon_image_html_for_azure( $icon, $icon_hover ) {
+		$html = '';
+
+		if ( self::API_AZURE === apply_filters( 'toolset_maps_get_api_used', '' ) ) {
+			$html .= self::render_hidden_icon_image( $icon );
+			$html .= self::render_hidden_icon_image( $icon_hover );
+		}
+		return $html;
+	}
+
 	function maybe_save_stored_coordinates_in_footer() {
 		$coordinates_save = self::$coordinates_save;
 		if ( $coordinates_save ) {

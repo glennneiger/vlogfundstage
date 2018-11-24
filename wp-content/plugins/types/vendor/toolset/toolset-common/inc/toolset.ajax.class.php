@@ -74,6 +74,8 @@ class Toolset_Ajax {
 
 	const CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE = 'select2_suggest_posts_by_title';
 
+	const CALLBACK_SELECT2_SUGGEST_POSTS_BY_POST_TYPE = 'select2_suggest_posts_by_post_type';
+
 	const CALLBACK_SELECT2_SUGGEST_TERMS = 'select2_suggest_terms';
 
 	const CALLBACK_SELECT2_SUGGEST_USERS = 'select2_suggest_users';
@@ -102,6 +104,7 @@ class Toolset_Ajax {
 
 	protected function get_public_callback_names() {
 		return array(
+			self::CALLBACK_SELECT2_SUGGEST_POSTS_BY_POST_TYPE,
 			self::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE,
 			self::CALLBACK_SELECT2_SUGGEST_TERMS,
 			self::CALLBACK_SELECT2_SUGGEST_USERS,
@@ -222,7 +225,7 @@ class Toolset_Ajax {
 		unset( $name_parts[0] );
 		$class_name = implode( self::DELIMITER, $name_parts );
 		$class_name = strtolower( $class_name );
-		$class_name = mb_convert_case( $class_name, MB_CASE_TITLE );
+		$class_name = Toolset_Utils::resolve_callback_class_name( $class_name );
 		$class_name = $this->get_handler_class_prefix() . $class_name;
 
 		// Obtain an instance of the handler class.

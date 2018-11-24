@@ -27,6 +27,8 @@
  * @property int	$wpv_show_edit_view_link
  * @property mixed	$wpv_show_hidden_fields
  * @property array	$wpv_post_types_for_archive_loop
+ * @property int	$support_spaces_in_meta_filters
+ * @property int	$allow_views_wp_widgets_in_elementor
  */
 class WPV_Settings implements ArrayAccess {
 
@@ -183,6 +185,20 @@ class WPV_Settings implements ArrayAccess {
 	 */
 	const POST_TYPES_FOR_ARCHIVE_LOOP = 'wpv_post_types_for_archive_loop';
 
+	/**
+	 * Indicates whether meta fields with spaces in the meta ket can be used in query filters.
+	 *
+	 * Numeric value, 0 or 1.
+	 */
+	const SUPPORT_SPACES_IN_META_FILTERS = 'support_spaces_in_meta_filters';
+
+	/**
+	 * Indicates whether the Views WordPress Widgets will be shown in Elementor.
+	 *
+	 * Numeric value, 0 or 1.
+	 */
+	const ALLOW_VIEWS_WP_WIDGETS_IN_ELEMENTOR = 'allow_views_wp_widgets_in_elementor';
+
 
 
 	/* ************************************************************************* *\
@@ -235,7 +251,9 @@ class WPV_Settings implements ArrayAccess {
 		WPV_Settings::SAVED_AUTODETECTED_FRAMEWORK				=> '',
 		WPV_Settings::CODEMIRROR_AUTORESIZE						=> '',
 		WPV_Settings::ENABLE_PAGINATION_MANAGE_HISTORY			=> true,
-		WPV_Settings::ENABLE_PARAMETRIC_SEARCH_MANAGE_HISTORY	=> true
+		WPV_Settings::ENABLE_PARAMETRIC_SEARCH_MANAGE_HISTORY	=> true,
+		WPV_Settings::SUPPORT_SPACES_IN_META_FILTERS			=> true,
+		WPV_Settings::ALLOW_VIEWS_WP_WIDGETS_IN_ELEMENTOR => true,
 	);
 
 
@@ -668,6 +686,32 @@ class WPV_Settings implements ArrayAccess {
 	protected function _set_wpv_post_types_for_archive_loop( $value ) {
 		if( is_array( $value ) ) {
 			$this->settings[ WPV_Settings::POST_TYPES_FOR_ARCHIVE_LOOP ] = $value;
+		}
+	}
+
+	protected function _get_support_spaces_in_meta_filters() {
+		$value = (int) $this->get_raw_value( WPV_Settings::SUPPORT_SPACES_IN_META_FILTERS );
+		return ( in_array( $value, array( 0, 1 ) ) ? (bool) $value : (bool) WPV_Settings::$defaults[ WPV_Settings::SUPPORT_SPACES_IN_META_FILTERS ] );
+	}
+
+
+	protected function _set_support_spaces_in_meta_filters( $value ) {
+		$value = (int) $value;
+		if( in_array( $value, array( 0, 1 ) ) ) {
+			$this->settings[ WPV_Settings::SUPPORT_SPACES_IN_META_FILTERS ] = $value;
+		}
+	}
+
+	protected function _get_allow_views_wp_widgets_in_elementor() {
+		$value = (int) $this->get_raw_value( WPV_Settings::ALLOW_VIEWS_WP_WIDGETS_IN_ELEMENTOR );
+		return ( in_array( $value, array( 0, 1 ) ) ? (bool) $value : (bool) WPV_Settings::$defaults[ WPV_Settings::ALLOW_VIEWS_WP_WIDGETS_IN_ELEMENTOR ] );
+	}
+
+
+	protected function _set_allow_views_wp_widgets_in_elementor( $value ) {
+		$value = (int) $value;
+		if( in_array( $value, array( 0, 1 ) ) ) {
+			$this->settings[ WPV_Settings::ALLOW_VIEWS_WP_WIDGETS_IN_ELEMENTOR ] = $value;
 		}
 	}
 

@@ -24,78 +24,79 @@ DDLayout.utils = {};
 DDLayout_settings.DDL_JS.ns = head;
 
 DDLayout_settings.DDL_JS.ns.js(
-    DDLayout_settings.DDL_JS.lib_path + "backbone_overrides.js"
-    , DDLayout_settings.DDL_JS.lib_path + "he/he.min.js"
-    , DDLayout_settings.DDL_JS.common_rel_path + "/res/lib/jstorage.min.js"
-    , DDLayout_settings.DDL_JS.common_rel_path + "/utility/js/keyboard.min.js"
-    , DDLayout_settings.DDL_JS.lib_path + "prototypes.js"
-    , DDLayout_settings.DDL_JS.lib_path +"imagesloaded.pkgd.js"
+    DDLayout_settings.DDL_JS.lib_path + "backbone_overrides.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.lib_path + "he/he.min.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.common_rel_path + "/res/lib/jstorage.min.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.common_rel_path + "/utility/js/keyboard.min.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.lib_path + "prototypes.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.lib_path +"imagesloaded.pkgd.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
     , DDLayout_settings.DDL_JS.editor_lib_path + 'ddl-saving-saved-box.js'
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/abstract/Element.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Cell.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Spacer.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/collections/Cells.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Row.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/collections/Rows.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Container.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Tabs.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Tab.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Accordion.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Panel.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Layout.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/ThemeSectionRow.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/abstract/ElementView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/abstract/CollectionView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/CellsView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/RowsView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/RowView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/CellView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ContainerRowView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ContainerView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/TabsTabView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/TabsView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/AccordionPanelView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/AccordionView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/SpacerView.js"
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/abstract/Element.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Cell.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Spacer.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/collections/Cells.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Row.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/collections/Rows.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Container.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Tabs.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Tab.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Accordion.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Panel.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/Layout.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "models/cells/ThemeSectionRow.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/abstract/ElementView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/abstract/CollectionView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/CellsView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/RowsView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/RowView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/CellView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ContainerRowView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ContainerView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/TabsTabView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/TabsView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/AccordionPanelView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/AccordionView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/SpacerView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
     , DDLayout_settings.DDL_JS.editor_lib_path + 'parent-helper.js'
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/LayoutView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ThemeSectionRowView.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/UndoRedo.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/KeyHandler.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/Breadcrumbs.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/RowTooltip.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/CellDropPlaceholder.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/AddCellHandler.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/SaveState.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-wpml-box.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-tree-filter.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-types-views-popup.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "preview-manager.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/TooltipsView.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "create-cell-helper.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "default-dialog.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "css-cell-dialog.js" // Remove
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "css-row-dialog.js" // Remove
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "row-edit-dialog.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "container-edit-dialog.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "dialog-yes-no-cancel.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "layout-settings-dialog.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "dialog-repeating-fields.js"
-    , DDLayout_settings.DDL_JS.dialogs_lib_path + "html-properties/HtmlAttributesHandler.js" // Remove
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/LayoutView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ThemeSectionRowView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/UndoRedo.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/KeyHandler.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/Breadcrumbs.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/RowTooltip.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/CellDropPlaceholder.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/AddCellHandler.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/SaveState.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-wpml-box.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-tree-filter.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-types-views-popup.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "preview-manager.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/TooltipsView.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "create-cell-helper.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "default-dialog.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "css-cell-dialog.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION // Remove
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "css-row-dialog.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION // Remove
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "row-edit-dialog.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "container-edit-dialog.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "dialog-yes-no-cancel.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "layout-settings-dialog.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "dialog-repeating-fields.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.dialogs_lib_path + "html-properties/HtmlAttributesHandler.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION // Remove
     , DDLayout_settings.DDL_JS.dialogs_lib_path +'theme-section-row-edit-dialog.js'
     , DDLayout_settings.DDL_JS.dialogs_lib_path + 'tab-edit-dialog.js'
     , DDLayout_settings.DDL_JS.dialogs_lib_path + 'panel-edit-dialog.js'
     , DDLayout_settings.DDL_JS.dialogs_lib_path +'child-layout-manager.js'
     , DDLayout_settings.DDL_JS.dialogs_lib_path +'toolset-in-iframe.js'
     , DDLayout_settings.DDL_JS.editor_lib_path + 'ddl-bootstrap-size-settings.js'
-    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ViewLayoutManager.js"
-    , DDLayout_settings.DDL_JS.res_path + "/js/ddl_change_layout_use_helper.js"
-    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-post-types-options.js"
-    , DDLayout_settings.DDL_JS.res_path + "/js/ddl-individual-assignment-manager.js"
+    , DDLayout_settings.DDL_JS.editor_lib_path + "views/ViewLayoutManager.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.res_path + "/js/ddl_change_layout_use_helper.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.editor_lib_path + "ddl-post-types-options.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
+    , DDLayout_settings.DDL_JS.res_path + "/js/ddl-individual-assignment-manager.js?ver=" + DDLayout_settings.DDL_JS.WPDDL_VERSION
     , DDLayout_settings.DDL_JS.res_path + '/js/dd-layouts-parents-watcher.js'
     , DDLayout_settings.DDL_JS.editor_lib_path + 'ddl-duplicator.js'
     , DDLayout_settings.DDL_JS.editor_lib_path + 'ddl-edit-tabs.js'
     , DDLayout_settings.DDL_JS.editor_lib_path + 'ddl-edit-accordion.js'
+    , DDLayout_settings.DDL_JS.editor_lib_path + 'fields-cell.js'
     , function () {
         _.each(DDLayout.models.cells, function (item, key, list) {
             if (list.hasOwnProperty(key) ) {
@@ -134,6 +135,7 @@ DDLayout.AdminPage = function($)
     {
         Toolset.hooks.addFilter('ddl-get_containers_elements', self.get_containers_elements, 10, 1 );
         Toolset.hooks.addFilter('ddl-is_private_layout', self.check_is_private_layout, 10 );
+        Toolset.hooks.addFilter('ddl_save_layout_params', self.addExtraParamsToPrivateLayoutSaveData, 99, 2 );
 
         DDLayout.unique_id_created = false;
 
@@ -169,13 +171,13 @@ DDLayout.AdminPage = function($)
         self._tree_filter = new DDLayout.treeFilter();
 
         self.private_layout_handler(layout);
-        
+
         self.change_layout_title();
 
         self.deselect_cell();
 
         self.is_new_layout();
-        
+
         self.delete_layout();
 
         self.show_hide_styling_info();
@@ -280,9 +282,15 @@ DDLayout.AdminPage = function($)
         layoutStorageTextArea.text( layoutJson );
 
         // enable button on textarea change
-        layoutStorageTextArea.on( 'paste change', function () {
-            var currentVal = $( this ).val();
-            layoutStorageTextArea.text( currentVal );
+        layoutStorageTextArea.on( 'paste', function () {
+            var $me = $(this);
+            setTimeout(function(){
+                var currentVal = $me.val();
+                $me.val('').focus();
+                document.execCommand('insertHTML', false, currentVal);
+                $me.text( currentVal );
+                $me.val( currentVal );
+            },100);
             $( '.layout-storage-apply' ).attr( 'disabled', false);
         });
 
@@ -312,6 +320,8 @@ DDLayout.AdminPage = function($)
         });
 
     };
+
+
 
     /**
      * Save new layout json, re-render layout editor, set correct name value...
@@ -446,9 +456,9 @@ DDLayout.AdminPage = function($)
         }
 
         if( $context ){
-            jQuery('select.js-toolset-chosen-select', $context ).toolset_chosen_multiple( chosen_args, availableClasses, array_with_classes );
+            jQuery('select.js-toolset-chosen-select', $context ).toolset_chosen_multiple_css_classes( chosen_args, availableClasses, array_with_classes );
         } else {
-            jQuery('select.js-toolset-chosen-select', jQuery('#ddl-row-edit') ).toolset_chosen_multiple( chosen_args, availableClasses, array_with_classes );
+            jQuery('select.js-toolset-chosen-select', jQuery('#ddl-row-edit') ).toolset_chosen_multiple_css_classes( chosen_args, availableClasses, array_with_classes );
         }
 
     };
@@ -496,24 +506,55 @@ DDLayout.AdminPage = function($)
         self.is_private_layout = DDLayout_settings.DDL_JS.is_private_layout;
         return self.is_private_layout;
     };
-    
+
+    self.addExtraParamsToPrivateLayoutSaveData = function( params, mainView ){
+
+        if( ! self.check_is_private_layout() ){
+            return params;
+        } else {
+            params.render_private = "ddl_update_post_content_for_private_layout"
+        }
+
+        return params;
+    };
+
     /*
      * Check is this private layout, in case if it is, hide header, breadcrumbs and assignments area
      */
-    self.private_layout_handler = function(layout){
+	self.private_layout_handler = function( layout ){
+		// When editing a Content Template using Layouts, the URL for the "Save and Close" button as well as the URL for
+		// the "Cancel" button need to be adjusted to redirect the user to the right place after the relevant action is
+		// taken.
+		var saveCloseReturnURL = "post.php?post="+layout.get('id')+"&action=edit&message=1",
+			cancelReturnURL = "post.php?post="+layout.get('id')+"&action=edit";
 
-        self.private_layout_save_button.attr('href',"post.php?post="+layout.get('id')+"&action=edit&message=1");
+		var sourcePage = self.getUrlParameter( 'source' );
+		if ( 'undefined' !== typeof sourcePage ) {
+			switch ( sourcePage ) {
+				case 'views-editor':
+					var viewID = self.getUrlParameter( 'view_id' );
+					if ( 'undefined' !== viewID ) {
+						saveCloseReturnURL = cancelReturnURL = 'admin.php?page=views-editor&view_id=' + viewID;
+					}
+					break;
+				case 'ct-editor':
+					saveCloseReturnURL = cancelReturnURL ='admin.php?page=ct-editor&ct_id=' + layout.get('id');
+					break;
+			}
+		}
+
+		self.private_layout_save_button.attr( 'href', saveCloseReturnURL );
 
         if(DDLayout_settings.DDL_JS.is_new_layout === false){
             self.private_layout_save_button.attr('disabled',true);
         }
 
-        self.private_layout_cancel_button.attr('href',"post.php?post="+layout.get('id')+"&action=edit");
+        self.private_layout_cancel_button.attr( 'href', cancelReturnURL );
         self.private_layout_cancel_button.attr( 'data-button_label', 'close' );
-        
+
         $(document).on('click', '#js-private-layout-done-button', function (event) {
             event.preventDefault();
-            self.private_layout_save_button.text("Saving...")
+            self.private_layout_save_button.text("Saving...");
             // Save all changes first
             self.save_layout(self.private_layout_redirect_back_to_content);
 
@@ -540,7 +581,7 @@ DDLayout.AdminPage = function($)
                 document.location.href = self.private_layout_cancel_button.attr( 'href' );
             }
         });
-        
+
     };
 
     self.privateLayoutSaveIndicator = function( ){
@@ -555,20 +596,8 @@ DDLayout.AdminPage = function($)
     };
 
     self.private_layout_redirect_back_to_content = function(){
-
         var content_edit_page = self.private_layout_save_button.attr('href');
-
-        var json = jQuery.parseJSON( WPV_Toolset.Utils.editor_decode64( jQuery('.js-hidden-json-textarea').text() ) );
-        var layout = new DDLayout.models.cells.Layout( json );
-
-        jQuery.post(ajaxurl, {
-            'action': 'ddl_update_post_content_for_private_layout',
-            'layout_id': layout.get('id'),
-            'wpnonce' : DDL_Private_layout.private_layout_nonce
-        },
-        function(response) {
-            document.location.href = content_edit_page;
-        });
+        document.location.href = content_edit_page;
     };
 
     self.is_layout_assigned = function(){
@@ -589,7 +618,7 @@ DDLayout.AdminPage = function($)
 
         return disable_button;
     };
-    
+
     self.delete_layout = function(){
         var $button = jQuery('.js-trash-layout');
 
@@ -609,6 +638,8 @@ DDLayout.AdminPage = function($)
     self.delete_layout_callback = function(event){
         event.preventDefault();
         event.stopPropagation();
+
+        if( ! DDLayout_settings.DDL_JS.user_can_delete ) return false;
 
         if( self.is_layout_assigned() ){
             self.layout_assigned_dialog( self.instance_layout_view.model );
@@ -892,7 +923,7 @@ DDLayout.AdminPage = function($)
 
         el.on('click', function (event) {
             event.stopImmediatePropagation();
-            
+
             if( self.is_slug_edited ) return false;
 
             DDLayout.ddl_admin_page.take_undo_snapshot();

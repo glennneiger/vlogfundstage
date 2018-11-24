@@ -99,7 +99,7 @@
                 self.errors_div.append('<div class="ddl-messages ddl-error'+css_class+'"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>'+message+'</div>');
 
             }
-            else if( response.Data.message && response.Data.message.layout_changed == true )
+            else if( response.Data.message && response.Data.message.layout_changed )
             {
                 if( response.Data.show_messages ){
 
@@ -112,7 +112,7 @@
                     self.save_layout_callback.call(self, response, model, self.active_element);
                 }
 
-            } else if( response.Data.message && response.Data.message.layout_changed == false ){
+            } else if( response.Data.message && ! response.Data.message.layout_changed ){
 
                 /*if( response.Data.show_messages ) {
                     var message = DDLayout_settings.DDL_JS.strings.no_changes_for.replace( '%NAME%', '<strong>'+self.model.get('name')+'</strong>' );

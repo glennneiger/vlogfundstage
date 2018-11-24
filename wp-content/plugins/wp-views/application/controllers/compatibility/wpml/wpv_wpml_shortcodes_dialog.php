@@ -9,13 +9,11 @@ class WPV_WPML_Shortcodes_Dialog {
 
 	public function __construct() {
 		$this->init_hooks();
-
 		$this->add_shortcodes();
 	}
 
 	public function init_hooks() {
-		add_action( 'init', array( $this, 'init' ) );
-
+		add_action( 'wpv_action_collect_shortcode_groups', array( $this, 'register_shortcodes_dialog_group' ) );
 		add_action( 'wpv_action_wpv_add_wpml_shortcodes_to_editor', array( $this, 'wpv_add_wpml_shortcodes_to_editor' ), 10, 2 ); //Deprecated
 		add_filter( 'wpv_filter_wpv_shortcodes_gui_data', array( $this, 'register_wpml_shortcodes_data' ) );
 	}
@@ -26,10 +24,6 @@ class WPV_WPML_Shortcodes_Dialog {
 		add_shortcode( 'wpml-lang-footer', array( $this, 'wpml_lang_footer' ) );
 		//add_shortcode( 'wpml-breadcrumbs', array( $this, 'wpv_wpml_breadcrumbs' ) );
 		add_shortcode( 'wpml-sidebar', array( $this, 'wpml_sidebar' ) );
-	}
-
-	public function init() {
-		$this->register_shortcodes_dialog_group();
 	}
 
 	/**
@@ -59,31 +53,42 @@ class WPV_WPML_Shortcodes_Dialog {
 
 		if ( $this->is_wpml_active_and_configured() ) {
 			$group_data['fields']['wpml-string'] = array(
-				'name' => __( 'Translatable string', 'wpv-views' ),
-				'shortcode' => 'wpml-string',
-				'callback' => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-string', title: '" . esc_js( __( 'Translatable string', 'wpv-views' ) ) . "' })",
+				'name'      => __( 'Translatable string', 'wpv-views' ),
+				'handle'    => 'wpml-string',
+				'shortcode' => '[wpml-string]',
+				'callback'  => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-string', title: '" . esc_js( __( 'Translatable string', 'wpv-views' ) ) . "' })",
 			);
 		}
 
 		$group_data['fields']['wpml-lang-switcher'] = array(
-			'name' => __( 'Language selector', 'wpv-views' ),
-			'shortcode' => 'wpml-lang-switcher',
-			'callback' => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-lang-switcher', title: '" . esc_js( __( 'Language selector', 'wpv-views' ) ) . "' })",
+			'name'      => __( 'Language selector', 'wpv-views' ),
+			'handle'    => 'wpml-lang-switcher',
+			'shortcode' => '[wpml-lang-switcher]',
+			'callback'  => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-lang-switcher', title: '" . esc_js( __( 'Language selector', 'wpv-views' ) ) . "' })",
 		);
 		$group_data['fields']['wpml-lang-footer'] = array(
-			'name' => __( 'Footer language selector', 'wpv-views' ),
-			'shortcode' => 'wpml-lang-footer',
-			'callback' => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-lang-footer', title: '" . esc_js( __( 'Footer language selector', 'wpv-views' ) ) . "' })",
+			'name'      => __( 'Footer language selector', 'wpv-views' ),
+			'handle'    => 'wpml-lang-footer',
+			'shortcode' => '[wpml-lang-footer]',
+			'callback'  => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-lang-footer', title: '" . esc_js( __( 'Footer language selector', 'wpv-views' ) ) . "' })",
 		);
 
 		global $iclCMSNavigation;
 		if ( isset( $iclCMSNavigation ) ) {
 			$group_data['fields']['wpml-sidebar'] = array(
-				'name' => __( 'Sidebar navigation', 'wpv-views' ),
-				'shortcode' => 'wpml-sidebar',
-				'callback' => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-sidebar', title: '" . esc_js( __( 'Sidebar navigation', 'wpv-views' ) ) . "' })",
+				'name'      => __( 'Sidebar navigation', 'wpv-views' ),
+				'handle'    => 'wpml-sidebar',
+				'shortcode' => '[wpml-sidebar]',
+				'callback'  => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpml-sidebar', title: '" . esc_js( __( 'Sidebar navigation', 'wpv-views' ) ) . "' })",
 			);
 		}
+		
+		$group_data['fields'][ WPV_Shortcode_WPML_Conditional::SHORTCODE_NAME ] = array(
+			'name'      => __( 'Conditional output per language', 'wpv-views' ),
+			'handle'    => WPV_Shortcode_WPML_Conditional::SHORTCODE_NAME,
+			'shortcode' => '[' . WPV_Shortcode_WPML_Conditional::SHORTCODE_NAME . ']',
+			'callback'  => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: '" . WPV_Shortcode_WPML_Conditional::SHORTCODE_NAME . "', title: '" . esc_js( __( 'Conditional output per language', 'wpv-views' ) ) . "' })",
+		);
 
 		return array(
 			'group_id' => $group_id,
@@ -114,7 +119,7 @@ class WPV_WPML_Shortcodes_Dialog {
 
 		$group_data = $group_info['group_data'];
 
-		do_action( 'wpv_action_wpv_register_dialog_group', $group_id, $group_data );
+		do_action( 'wpv_action_register_shortcode_group', $group_id, $group_data );
 	}
 
 	/**

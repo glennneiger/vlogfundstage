@@ -84,7 +84,7 @@ class Class_WooCommerce_Views {
 						
 		/** WooCommerce Views shortcodes and its callback function */	
 		$this->wcviews_final_shortcodes = array(
-				//1.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-breadcrumb
+				//1.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-breadcrumb
 				//Scope: Single products and Listings.
 				'wpv-woo-breadcrumb'             =>array(
 														'callback'				=>'wpv_woo_breadcrumb_func',
@@ -94,7 +94,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//2.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-show-upsell-items
+				//2.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-show-upsell-items
 				//Scope: Single products only
 				'wpv-woo-show-upsell-items'      =>array(
 														'callback'				=>'wpv_woo_show_upsell_func',
@@ -104,7 +104,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//3.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-productcategory-images
+				//3.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-productcategory-images
 				//Scope: Product category loops only
 				'wpv-woo-productcategory-images' =>array(
 														'callback'				=>'wpv_woo_productcategory_images_func',
@@ -114,7 +114,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>true
 													),
-				//4.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-products-rating-listing
+				//4.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-products-rating-listing
 				//Scope: Product listings only
 				'wpv-woo-products-rating-listing'=>array(
 														'callback'				=>'wpv_woo_products_rating_on_listing_func',
@@ -124,7 +124,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//5.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-single-products-rating
+				//5.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-single-products-rating
 				//Scope: Single products only
 				'wpv-woo-single-products-rating' =>array(
 														'callback'				=>'wpv_woo_single_products_rating_func',
@@ -134,7 +134,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//6.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-related_products
+				//6.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-related_products
 				//Scope: Single products only
 				'wpv-woo-related_products'       =>array(
 														'callback'				=>'wpv_woo_related_products_func',
@@ -144,7 +144,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//7.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-list_attributes
+				//7.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-list_attributes
 				//Scope: Single products and listings.
 				'wpv-woo-list_attributes'        =>array(
 														'callback'				=>'wpv_woo_list_attributes_func',
@@ -154,7 +154,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//8.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-buy-or-select
+				//8.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-buy-or-select
 				//Scope: Product listings only
 				'wpv-woo-buy-or-select'          =>array(
 														'callback'				=>'wpv_woo_buy_or_select_func',
@@ -164,7 +164,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//9.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-product-price
+				//9.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-product-price
 				//Scope: Single products and listings.
 				'wpv-woo-product-price'          =>array(
 														'callback'				=>'wpv_woo_product_price_func',
@@ -174,7 +174,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//10.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-product-image
+				//10.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-product-image
 				//Scope: Single products and listings.
 				'wpv-woo-product-image'          =>array(
 														'callback'				=>'wpv_woo_product_image_func',
@@ -184,7 +184,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//11.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-buy-options
+				//11.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-buy-options
 				//Scope: Single products only
 				'wpv-woo-buy-options'            =>array(
 														'callback'				=>'wpv_woo_buy_options_func',
@@ -194,7 +194,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//12.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-add-to-cart-message
+				//12.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-add-to-cart-message
 				//Scope: Single products and listings
 				'wpv-add-to-cart-message'        =>array(
 														'callback'				=>'wpv_show_add_cart_success_func',
@@ -204,7 +204,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//13.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-display-tabs
+				//13.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-display-tabs
 				//Scope: Single products only
 				'wpv-woo-display-tabs'           =>array(
 														'callback'				=>'wpv_woo_display_tabs_func',
@@ -214,7 +214,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//14.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-onsale
+				//14.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-onsale
 				//Scope: Single products and listing
 				'wpv-woo-onsale'                 =>array(
 														'callback'				=>'wpv_woo_onsale_func',
@@ -224,7 +224,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//15.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-product-meta
+				//15.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-product-meta
 				//Scope: Single products only
 				'wpv-woo-product-meta'           =>array(
 														'callback'				=>'wpv_woo_product_meta_func',
@@ -243,7 +243,7 @@ class Class_WooCommerce_Views {
 														'order_usage'			=>false,
 														'product_cat_usage'		=>false
 													),
-				//17.) https://wp-types.com/documentation/user-guides/views-shortcodes/#wpv-woo-reviews
+				//17.) https://toolset.com/documentation/user-guides/views-shortcodes/#wpv-woo-reviews
 				//Scope: Single products only
 				'wpv-woo-reviews'                =>array(
 														'callback'				=>'wpv_woo_show_displayreviews_func',
@@ -1091,7 +1091,7 @@ class Class_WooCommerce_Views {
 			if ($v=='views') {
 			?>
 			<a target="_blank"
-				href="https://wp-types.com/home/toolset-components/#views">Views</a>
+				href="https://toolset.com/home/toolset-components/#views">Views</a>
 		     <?php
 		    } elseif ($v=='types') {
 		    ?>
@@ -3551,7 +3551,7 @@ class Class_WooCommerce_Views {
 		$pos = strpos($output, "Insert Types Shortcode");
 		
 		if($pos == false && !(isset($_GET['post_type']) && $_GET['post_type'] == 'view')){
-			$output .= '<ul class="editor_addon_wrapper"><li><img src="'. plugins_url() . '/' . basename(dirname(__FILE__)) . "/res/img/question-mark-icon.png" .'"><ul class="editor_addon_dropdown"><li><div class="title">Learn how to use these Views</div><div class="close">&nbsp;</div></li><li><div>These Views let you insert product sliders, grids and tables to your content. <br /><br /><a href="http://wp-types.com/documentation/views-inside/woocommerce-views/" target="_blank" style="text-decoration: underline; font-weight: bold; color: blue;">Learn how to use these Views</a></div></li></ul></li></ul>';
+			$output .= '<ul class="editor_addon_wrapper"><li><img src="'. plugins_url() . '/' . basename(dirname(__FILE__)) . "/res/img/question-mark-icon.png" .'"><ul class="editor_addon_dropdown"><li><div class="title">Learn how to use these Views</div><div class="close">&nbsp;</div></li><li><div>These Views let you insert product sliders, grids and tables to your content. <br /><br /><a href="https://toolset.com/documentation/views-inside/woocommerce-views/" target="_blank" style="text-decoration: underline; font-weight: bold; color: blue;">Learn how to use these Views</a></div></li></ul></li></ul>';
 		}
 	
 		return $output;

@@ -27,7 +27,7 @@ class WPDDL_views_support
 					</p>
 					<p>
 						&nbsp;&nbsp;
-						<a class="fieldset-inputs" href="http://wp-types.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-missing-message&utm_term=get-views" target="_blank">
+						<a class="fieldset-inputs" href="https://toolset.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=views-missing-message&utm_term=get-views" target="_blank">
 							<?php _e('About Views', 'ddl-layouts');?>
 						</a>
 					</p>

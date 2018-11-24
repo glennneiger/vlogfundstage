@@ -51,10 +51,9 @@
                             </label>
                         </p>
 
-                        <span class="spinner" style="float: right" data-bind="style: { visibility: (isInProgress() ? 'visible' : 'hidden') }"></span>
+                        <span class="spinner" data-bind="style: { visibility: (isInProgress() ? 'visible' : 'hidden') }"></span>
 
-                        <button class="button-primary"
-                                data-bind="
+                        <button data-bind="
                                     text: buttonLabel,
                                     enable: canProceed,
                                     attr: { class: buttonClass() },

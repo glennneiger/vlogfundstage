@@ -21,9 +21,9 @@
             <?php printf(__("You are using Layouts to design this page")); ?>
         </p>
         <p class="ddl-post-content-editor-layout-info-buttons-wrap">
-            <button <?php disabled( current_user_can( 'edit_others_pages' ) === false );?> title="<?php _e('Stop using Content Layout Editor', 'ddl-layouts');?>" class="js-ddl-stop-using-layouts-button button button-secondary" data-layout_type="private" data-layout_id="<?php echo $post->ID;?>" data-post_type="<?php echo $post_type;?>" data-content_id="<?php echo $post->ID;?>"><?php _e('Stop using Content Layout Editor', 'ddl-layouts');?></button>
+            <button <?php disabled( user_can_delete_private_layouts() === false );?> title="<?php _e('Stop using Content Layout Editor', 'ddl-layouts');?>" class="js-ddl-stop-using-layouts-button button button-secondary" data-layout_type="private" data-layout_id="<?php echo $post->ID;?>" data-post_type="<?php echo $post_type;?>" data-content_id="<?php echo $post->ID;?>"><?php _e('Stop using Content Layout Editor', 'ddl-layouts');?></button>
             <?php $href = sprintf('%sadmin.php?page=dd_layouts_edit&layout_id=%s&action=edit', admin_url(), $post->ID); ?>
-            <a class="<?php printf('%s %s', 'button', current_user_can( 'edit_others_pages' ) ? 'button-primary-toolset' : 'disabled' );?>" href="<?php echo current_user_can( 'edit_others_pages' ) ? $href : '#'; ?>" title="Edit {{{ _.escape(layout.name) }}}"><?php _e('Edit with Layouts', 'ddl-layouts');?></a>
+            <a class="<?php printf('%s %s', 'button', user_can_edit_private_layouts() ? 'button-primary-toolset' : 'disabled' );?>" href="<?php echo user_can_edit_private_layouts() ? $href : '#'; ?>" title="Edit {{{ _.escape(layout.name) }}}"><?php _e('Edit with Layouts', 'ddl-layouts');?></a>
         </p>
 
     </div>

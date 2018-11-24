@@ -22,6 +22,7 @@
  * @since 1.9
  */
 define( 'WPV_CT_EDITOR_PAGE_NAME', 'ct-editor' );
+define( 'WPV_CT_CREATOR_PAGE_NAME', 'ct-creator' );
 
 add_action( 'admin_init', 'wpv_ct_editor_load_sections' );
 add_action( 'admin_init', 'wpv_ct_editor_init' );
@@ -74,16 +75,16 @@ function wpv_ct_editor_init() {
                 'underscore',
                 'views-utils-script',
                 'views-codemirror-conf-script',
-                'knockout',
+                Toolset_Assets_Manager::SCRIPT_KNOCKOUT,
                 'icl_editor-script',
                 'icl_media-manager-js',
                 'quicktags',
                 'wplink',
-                'toolset-utils',
+                Toolset_Assets_Manager::SCRIPT_UTILS,
                 'views-ct-dialogs-js',
                 'toolset-uri-js',
-                'toolset-event-manager',
-				'toolset-colorbox'
+                Toolset_Assets_Manager::SCRIPT_TOOLSET_EVENT_MANAGER,
+				Toolset_Assets_Manager::SCRIPT_COLORBOX
             ),
             WPV_VERSION,
             true
@@ -153,6 +154,8 @@ function wpv_ct_editor_enqueue() {
 * This also results in inconsistencies since we have two pages for editing a CT and we might create a new one by just reloading the page.
 *
 * @note This is a hacky solution, we should implment an AJAX-based creation workflow.
+* @note Since 2.6 we have a dedicated admin create page that redirects to the edit one,
+*       to avoid problems with theme settings for integrated themes.
 *
 * @since 2.2
 */
@@ -165,7 +168,7 @@ function wpv_ct_editor_create_and_redirect() {
 	$action = wpv_getget( 'action', 'edit', array( 'edit', 'create' ) );
 	
 	if (
-		$page == WPV_CT_EDITOR_PAGE_NAME 
+		$page == WPV_CT_CREATOR_PAGE_NAME 
 		&& $action == 'create'
 	) {
 		if( !current_user_can( 'manage_options' ) ) {
@@ -224,6 +227,11 @@ function wpv_ct_editor_page() {
         case 'edit':
 
             $ct_id = (int) wpv_getget( 'ct_id' );
+			
+			// Set the global post as some third parties need to access it from get_the_ID();
+			global $post;
+			$post = get_post( $ct_id );
+			
             wpv_ct_editor_page_edit( $ct_id );
             break;
 
@@ -248,6 +256,16 @@ function wpv_ct_editor_page() {
     }
 
 }
+
+
+/**
+ * Fake function for the faked CT creator page.
+ *
+ * @return void
+ * 
+ * @since 2.6.0
+ */
+function wpv_ct_creator_page() {}
 
 
 /**

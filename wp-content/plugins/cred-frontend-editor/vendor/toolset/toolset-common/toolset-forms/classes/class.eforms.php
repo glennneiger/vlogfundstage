@@ -81,12 +81,13 @@ class Enlimbo_Forms {
 		 */
 		$this->form_settings = array(
 			'has_media_button' => true,
+			'has_toolset_buttons' => true,
 			'use_bootstrap' => false,
 		);
 		$this->_id = $id;
 		if ( ! Toolset_Utils::is_real_admin() ) {
-			// TODO check also doing_ajax as this gives false positives
 			$cred_form_id = preg_replace( '/^cred_form_(\d+)_\d+$/', "$1", $this->_id );
+			$cred_form_id = preg_replace( '/^cred_user_form_(\d+)_\d+$/', "$1", $cred_form_id );
 			$form_settings = get_post_meta( $cred_form_id, '_cred_form_settings', true );
 			if ( isset( $form_settings->form ) ) {
 				$this->form_settings = $form_settings->form;
@@ -100,6 +101,7 @@ class Enlimbo_Forms {
 				$this->form_settings['use_bootstrap'] = array_key_exists('use_bootstrap', $cred_cred_settings) && $cred_cred_settings['use_bootstrap'];
 			}
 		}
+
 	}
 
 	/**
@@ -398,6 +400,10 @@ class Enlimbo_Forms {
 				}
 				$element['#attributes']['data-wpt-validate'] = esc_html( self::json_encode( apply_filters( 'wptoolset_forms_field_js_validation_data_' . $this->_id, $element['#validate'] ) ) );
 				$element['#attributes']['data-wpt-field-title'] = esc_js( $custom_field_title );
+
+				// add Parsley elements
+				$element = $this->addParsleyDataAttributes($element);
+
 			}
 			if ( $element['#type'] == 'radios' && ! empty( $element['#options'] ) ) {
 				foreach ( $element['#options'] as &$option ) {
@@ -412,7 +418,7 @@ class Enlimbo_Forms {
 			 */
 			if ( Toolset_Utils::is_real_admin() && function_exists( 'wpcf_wpml_field_is_copied' ) && wpcf_wpml_field_is_copied( $element ) ) {
 				$element['#title'] .= sprintf(
-					'<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpcf' )
+					'<img src="%s/images/locked.png" alt="%s" title="%s" style="position:relative;left:2px;top:2px;" />', WPCF_EMBEDDED_RES_RELPATH, __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' ), __( 'This field is locked for editing because WPML will copy its value from the original language.', 'wpv-views' )
 				);
 				$element['#attributes']['readonly'] = true;
 				$element['#attributes']['disabled'] = true;
@@ -421,6 +427,62 @@ class Enlimbo_Forms {
 			return $this->{$method}( $element );
 		}
 	}
+
+	/**
+	 * Check element validation options and call method that will set correct
+	 * parsley data attributes for validation
+	 * @param $element
+	 *
+	 * @return array
+	 */
+	private function addParsleyDataAttributes($element){
+
+		if ( isset( $element['#validate'] ) ) {
+			foreach( $element['#validate'] as $key => $value ){
+				$element = $this->parsleyValidationBuild( $key, $element );
+			}
+		}
+
+		return $element;
+	}
+
+	/**
+	 * Set necessary data attributes for Parsley validation
+	 * @param $what_to_validate
+	 * @param $element
+	 *
+	 * @return array
+	 */
+	private function parsleyValidationBuild( $what_to_validate, $element ){
+
+		if( ! isset( $what_to_validate ) || ! is_array( $element ) ){
+			return $element;
+		}
+
+		switch( $what_to_validate ){
+
+			case 'number':
+				$element['#attributes']['data-parsley-type'] = 'number';
+				$element['#attributes']['data-parsley-error-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				break;
+			case 'url':
+				$element['#attributes']['data-parsley-type'] = 'url';
+				$element['#attributes']['data-parsley-error-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				break;
+			case 'email':
+				$element['#attributes']['data-parsley-type'] = 'email';
+				$element['#attributes']['data-parsley-error-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				break;
+			case 'required';
+				$element['#attributes']['data-parsley-required'] = 'true';
+				$element['#attributes']['data-parsley-required-message'] = $element['#validate'][ $what_to_validate ]['message'];
+				break;
+		}
+
+
+		return $element;
+	}
+
 
 	/**
 	 * Sets other element attributes.
@@ -454,10 +516,6 @@ class Enlimbo_Forms {
 			if ('hidden' != $element['#type']) {
 				$classes[] = $element['#type'];
 			}
-		}
-
-		if ( 'hidden' != $element['#type'] ) {
-			$classes[] = $element['#type'];
 		}
 
 		if ( isset( $element['#attributes'] ) && ! empty( $element['#attributes'] )
@@ -796,7 +854,8 @@ class Enlimbo_Forms {
 		$is_boolean = is_bool( $element['#value'] );
 		$use_default_value = ( ( $is_empty && $is_zero ) || $is_boolean );
 		$value_output = ( $use_default_value ? $value : esc_attr( $element['#value'] ) );
-		$element['_render']['element'] .= $value_output;
+		// we need to convert special characters of the input attr "value" (types-1643)
+		$element['_render']['element'] .= htmlspecialchars( $value_output );
 
 		$element['_render']['element'] .= '"' . $element['_attributes_string'];
 		if (
@@ -1166,7 +1225,7 @@ class Enlimbo_Forms {
 		$element = $this->_setRender( $element );
 		$output = '<input type="hidden" id="' . $element['#id'] . '" name="'
 			. $element['#name'] . '" value="';
-		$output .= isset( $element['#value'] ) ? $element['#value'] : 1;
+		$output .= array_key_exists( '#value', $element ) ? esc_attr( $element['#value'] ) : 1;
 		$output .= '"' . $element['_attributes_string'] . $this->_getDataWptId( $element ) . ' />';
 
 		return $output;

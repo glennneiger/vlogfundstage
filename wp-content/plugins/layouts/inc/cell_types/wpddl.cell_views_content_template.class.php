@@ -36,7 +36,13 @@ class WPDD_layout_cell_post_content_views extends WPDD_layout_cell {
 		$cell_content = $this->get_content();
         if($target->is_private_layout){
             $ct_slug = $this->get_view_slug_from_id($cell_content['ddl_view_template_id']);
-            $ret = $target->cell_content_callback( '[wpv-post-body view_template="'.$ct_slug.'"]', $this);
+
+             if ($cell_content['page'] == 'this_page') {
+	             $ret = $target->cell_content_callback( '[wpv-post-body view_template="' . sanitize_text_field( $ct_slug ) . '" item="' . sanitize_text_field( $cell_content['selected_post'] ) . '"]', $this);
+            } else {
+	             $ret = $target->cell_content_callback( '[wpv-post-body view_template="' . sanitize_text_field( $ct_slug ) . '"]', $this);
+             }
+
         } else {
 
             if ($cell_content['page'] == 'current_page') {
@@ -339,7 +345,7 @@ class Layouts_views_content_template_cell extends Layouts_toolset_based_cell{
 							<?php _e('This cell can display the post content using a Content Template, but your site does not have any Content Template yet. Install and activate the Views plugin, and you will be able to create Content Templates to display post fields', 'ddl-layouts'); ?>
 
 							&nbsp;&nbsp;
-							<a class="fieldset-inputs" href="http://wp-types.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=content-template-cell&utm_term=get-views" target="_blank">
+							<a class="fieldset-inputs" href="https://toolset.com/home/views-create-elegant-displays-for-your-content?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=content-template-cell&utm_term=get-views" target="_blank">
 								<?php _e('About Views', 'ddl-layouts');?>
 							</a>
 						</p>

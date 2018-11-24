@@ -2,25 +2,44 @@
 
 class WCViews_shortcodes_gui {
 	
-	/** @private array WooCommerce Views shortcodes associated post types */
-	private $associated_post_types =array();
+	private $wpv_shortcodes_api_version = 0;
 	
 	public function initialize() {
 		
 		
 		
-		$this->associated_post_types = array(
-			'dd_layouts',
-			'view',
-			'view-template'
-		);	
-		add_action( 'init', array( $this, 'init' ) );
-		add_action( 'init', array( $this, 'register_shortcodes_dialog_groups' ), 10 );
-		add_filter( 'wpv_filter_wpv_shortcodes_gui_data', array( $this, 'register_shortcodes_data' ) );
+		// Needs to run after after_setup_theme::999
+		add_action( 'after_setup_theme', array( $this, 'register_shortcodes_within_views' ), 9999 );
+		
+		add_action( 'init', array( $this, 'initialize_hooks' ) );
 	}
 	
-	public function init() {
+	/**
+	 * Register the WCV shortcodes within Views.
+	 *
+	 * @since m2m
+	 */
+	public function register_shortcodes_within_views() {
+		$this->wpv_shortcodes_api_version = apply_filters( 'wpv_filter_wpv_get_shortcodes_api_version', 0 );
 		
+		if ( $this->wpv_shortcodes_api_version < 260000 ) {
+			// Shortcodes in the Fields and Views dialog, legacy pre-2.6
+			add_action( 'init', array( $this, 'register_shortcodes_dialog_groups' ), 10 );
+		} else {
+			// Since Views 2.6 (Shortcodes API version 260000) 
+			// we use a dedicated action and better priorities management
+			// TODO new action callback with the proper registration action and elements
+			// TODO move legacy to a dedicated compatibility class
+			add_action( 'wpv_action_collect_shortcode_groups', array( $this, 'register_shortcodes_dialog_groups' ), 5 );
+		}
+	}
+	
+	/**
+	 *
+	 * @since xxx
+	 */
+	public function initialize_hooks() {
+		add_filter( 'wpv_filter_wpv_shortcodes_gui_data', array( $this, 'register_shortcodes_data' ) );
 	}
 	
 	public function get_images_sizes() {
@@ -47,27 +66,27 @@ class WCViews_shortcodes_gui {
 		return $sizes;
 	}
 	
-	public function register_shortcodes_dialog_groups() {
-		
-		global $post;
-		
-		//Let's not add the WooCommerce Views shortcodes in the 'Edit Product'
-		//To prevent misuse of these shortcodes.
-		//Related to this problem:
-		//https://icanlocalize.basecamphq.com/projects/11629195-toolset-peripheral-work/todo_items/193776982/comments
-		
-		$associated_post_types= $this->associated_post_types;
-		
-		if ( isset( $post ) ) {
-			if (
-				! is_object( $post )  
-				|| ! isset( $post->post_type ) 
-				|| ! in_array( $post->post_type, $associated_post_types )
-			) {
-				// When the global $post is set and it does not match any of the associated post types, return.
-				return;
-			}
+	/**
+	 * Maybe add brackets to the shortcode as passed to the Views GUI API.
+	 *
+	 * Required for backwards compatibility, as in legacy Views shortcodes were getting brackets automatically,
+	 * and since v.260000 they need to be passed completed.
+	 *
+	 * @param string $shortcode
+	 *
+	 * @return string
+	 *
+	 * @since m2m
+	 */
+	private function maybe_add_backets_to_shortcode( $shortcode ) {
+		if ( $this->wpv_shortcodes_api_version < 260000 ) {
+			return $shortcode;
 		}
+		$shortcode = '[' . $shortcode . ']';
+		return $shortcode;
+	}
+	
+	public function register_shortcodes_dialog_groups() {
 		
 		$group_id	= 'woocomerce-views';
 		$group_data	= array(
@@ -75,92 +94,110 @@ class WCViews_shortcodes_gui {
 			'fields'	=> array(
 				'wpv-woo-buy-or-select' => array(
 					'name'		=> __( 'Add to cart button - product listing pages', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-buy-or-select',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-buy-or-select' ),
+					'handle'	=> 'wpv-woo-buy-or-select',
 					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-woo-buy-or-select', title: '" . esc_js( __( 'Add to cart button - product listing pages', 'woocommerce_views' ) ). "' })"
 				),
 				'wpv-woo-product-price' => array(
 					'name'		=> __( 'Product price', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-product-price',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-product-price' ),
+					'handle'	=> 'wpv-woo-product-price',
 					'callback'	=> ""
 				),
 				'wpv-woo-buy-options' => array(
 					'name'		=> __( 'Add to cart button - single product page', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-buy-options',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-buy-options' ),
+					'handle'	=> 'wpv-woo-buy-options',
 					'callback' => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-woo-buy-options', title: '" . esc_js( __( 'Add to cart button - single product page', 'woocommerce_views' ) ). "' })"
 				),
 				'wpv-woo-product-image' => array(
 					'name'		=> __( 'Product image', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-product-image',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-product-image' ),
+					'handle'	=> 'wpv-woo-product-image',
 					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-woo-product-image', title: '" . esc_js( __( 'Product image', 'woocommerce_views' ) ). "' })"
 				),
 				'wpv-add-to-cart-message' => array(
 					'name'		=> __( 'Add to cart message', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-add-to-cart-message',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-add-to-cart-message' ),
+					'handle'	=> 'wpv-add-to-cart-message',
 					'callback'	=> ""
 				),
 				'wpv-woo-display-tabs' => array(
 					'name'		=> __( 'Product tabs - single product page', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-display-tabs',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-display-tabs' ),
+					'handle'	=> 'wpv-woo-display-tabs',
 					'callback' => "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-woo-display-tabs', title: '" . esc_js( __( 'Product tabs - single product page', 'woocommerce_views' ) ). "' })"
 				),
 				'wpv-woo-onsale' => array(
 					'name'		=> __( 'Onsale badge', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-onsale',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-onsale' ),
+					'handle'	=> 'wpv-woo-onsale',
 					'callback'	=> ""
 				),
 				'wpv-woo-list_attributes' => array(
 					'name'		=> __( 'Product attributes', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-list_attributes',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-list_attributes' ),
+					'handle'	=> 'wpv-woo-list_attributes',
 					'callback'	=> ""
 				),
 				'wpv-woo-related_products' => array(
 					'name'		=> __( 'Related Products', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-related_products',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-related_products' ),
+					'handle'	=> 'wpv-woo-related_products',
 					'callback'	=> ""
 				),
 				'wpv-woo-single-products-rating' => array(
 					'name'		=> __( 'Product Rating - single product page', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-single-products-rating',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-single-products-rating' ),
+					'handle'	=> 'wpv-woo-single-products-rating',
 					'callback'	=> ""
 				),
 				'wpv-woo-products-rating-listing' => array(
 					'name'		=> __( 'Product Rating - product listing pages', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-products-rating-listing',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-products-rating-listing' ),
+					'handle'	=> 'wpv-woo-products-rating-listing',
 					'callback'	=> ""
 				),
 				'wpv-woo-productcategory-images' => array(
 					'name'		=> __( 'Product Category Image', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-productcategory-images',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-productcategory-images' ),
+					'handle'	=> 'wpv-woo-productcategory-images',
 					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-woo-productcategory-images', title: '" . esc_js( __( 'Product category image', 'woocommerce_views' ) ). "' })"
 				),
 				'wpv-woo-show-upsell-items' => array(
 					'name'		=> __( 'Product Upsell', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-show-upsell-items',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-show-upsell-items' ),
+					'handle'	=> 'wpv-woo-show-upsell-items',
 					'callback'	=> ""
 				),
 				'wpv-woo-breadcrumb' => array(
 					'name'		=> __( 'Breadcrumb', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-breadcrumb',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-breadcrumb' ),
+					'handle'	=> 'wpv-woo-breadcrumb',
 					'callback'	=> ""
 				),
 				'wpv-woo-product-meta' => array(
 					'name'		=> __( 'Product meta', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-product-meta',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-product-meta' ),
+					'handle'	=> 'wpv-woo-product-meta',
 					'callback'	=> ""
 				),
 				'wpv-woo-cart-count' => array(
 					'name'		=> __( 'Cart Count', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-cart-count',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-cart-count' ),
+					'handle'	=> 'wpv-woo-cart-count',
 					'callback'	=> ""
 				),
 				'wpv-woo-reviews' => array(
 					'name'		=> __( 'Reviews', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-woo-reviews',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-woo-reviews' ),
+					'handle'	=> 'wpv-woo-reviews',
 					'callback'	=> ""
 				),
 				'wpv-ordered-product-ids' => array(
 					'name'		=> __( 'Ordered products', 'woocommerce_views' ),
-					'shortcode'	=> 'wpv-ordered-product-ids',
+					'shortcode'	=> $this->maybe_add_backets_to_shortcode( 'wpv-ordered-product-ids' ),
+					'handle'	=> 'wpv-ordered-product-ids',
 					'callback'	=> ""
 					)
 			)

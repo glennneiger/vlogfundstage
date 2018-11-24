@@ -81,6 +81,11 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 		}
 
 
+		// no child, check if association is requested
+		if ( $id = $this->get_association_id( $request_relationship, $request_role_name, $post ) ) {
+			return $this->return_single_id( $id );
+		}
+
 		// no child, check if intermediary is requested
 		if ( $id = $this->get_intermediary_id( $request_relationship, $request_role_name, $post ) ) {
 			return $this->return_single_id( $id );
@@ -99,7 +104,10 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 	private function get_parent_id( $request_relationship, $request_role_name, $post ) {
 		$parent_types = $request_relationship->get_parent_type()->get_types();
 
-		if ( $request_role_name == 'parent' && count( $parent_types ) == 1 ) {
+		if (
+				( Toolset_Relationship_Role::PARENT === $request_role_name || $request_relationship->get_role_name( Toolset_Relationship_Role::PARENT ) === $request_role_name )
+				&& count( $parent_types ) === 1
+		) {
 			// 'parent' is used as item slug, only works if there is just one parent type
 			$request_role_name = current( $parent_types );
 		}
@@ -107,6 +115,18 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 		if ( array_key_exists( $request_role_name, $parent_types )
 		     || in_array( $request_role_name, $parent_types )
 		) {
+			$intermediary_post_type = $request_relationship->get_intermediary_post_type();
+
+			if ( $intermediary_post_type === $post->post_type ) {
+				$parent_id = $this->service_relationship->find_parent_id_by_relationship_and_intermediary_post_id(
+					$request_relationship,
+					$post->ID
+				);
+
+				return $this->return_single_id( $parent_id );
+			}
+
+
 			$parent_id = $this->service_relationship->find_parent_id_by_relationship_and_child_id(
 				$request_relationship,
 				$post->ID,
@@ -116,8 +136,12 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 			return $this->return_single_id( $parent_id );
 		}
 
+
+
 		return false;
 	}
+
+
 
 	/**
 	 * @param $request_relationship
@@ -129,7 +153,10 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 	private function get_child_id( IToolset_Relationship_Definition $request_relationship, $request_role_name, $post ) {
 		$child_types = $request_relationship->get_child_type()->get_types();
 
-		if ( $request_role_name == 'child' && count( $child_types ) == 1 ) {
+		if (
+				( Toolset_Relationship_Role::CHILD === $request_role_name || $request_relationship->get_role_name( Toolset_Relationship_Role::CHILD ) === $request_role_name )
+				&& count( $child_types ) === 1
+		) {
 			// 'child' is used as item slug, only works if there is just one child type
 			$request_role_name = current( $child_types );
 		}
@@ -137,6 +164,17 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 		if ( array_key_exists( $request_role_name, $child_types )
 		     || in_array( $request_role_name, $child_types )
 		) {
+			$intermediary_post_type = $request_relationship->get_intermediary_post_type();
+
+			if ( $intermediary_post_type === $post->post_type ) {
+				$child_id = $this->service_relationship->find_child_id_by_relationship_and_intermediary_post_id(
+					$request_relationship,
+					$post->ID
+				);
+
+				return $this->return_single_id( $child_id );
+			}
+
 			$child_id = $this->service_relationship->find_child_id_by_relationship_and_parent_id(
 				$request_relationship,
 				$post->ID,
@@ -145,6 +183,8 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 
 			return $this->return_single_id( $child_id );
 		}
+
+		return false;
 	}
 
 	/**
@@ -154,9 +194,15 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 	 *
 	 * @return bool|int
 	 */
-	private function get_intermediary_id( IToolset_Relationship_Definition $request_relationship, $request_role_name, $post ) {
+	private function get_association_id( IToolset_Relationship_Definition $request_relationship, $request_role_name, $post ) {
+		$intermediary_post_type = $request_relationship->get_driver()->get_intermediary_post_type();
+
+		if ( null === $intermediary_post_type ) {
+			return false;
+		}
+
 		if ( $request_role_name != 'association'
-		     && $request_role_name != $request_relationship->get_driver()->get_intermediary_post_type()
+		     && $request_role_name != $intermediary_post_type
 		) {
 			return false;
 		}
@@ -191,6 +237,103 @@ class Toolset_Shortcode_Attr_Item_M2M extends Toolset_Shortcode_Attr_Item_Id {
 			if( $intermediary = $this->get_single_intermediary_id( $one_or_more_intermediary_posts ) ) {
 				return $intermediary;
 			};
+		}
+
+		// no unique intermediary post found
+		return false;
+	}
+
+	/**
+	 * Get the intermediary post ID when in a View loop with a filter by post relationship.
+	 *
+	 * @param $request_relationship
+	 * @param $request_role_name
+	 * @param $post
+	 *
+	 * @return bool|int
+	 */
+	private function get_intermediary_id( IToolset_Relationship_Definition $request_relationship, $request_role_name, $post ) {
+		$intermediary_post_type = $request_relationship->get_driver()->get_intermediary_post_type();
+
+		if ( null === $intermediary_post_type ) {
+			return false;
+		}
+
+		if (
+			$request_role_name != Toolset_Relationship_Role::INTERMEDIARY
+		    && $request_role_name != $intermediary_post_type
+		) {
+			return false;
+		}
+
+		// Try to guess the intermediary post by a Views filter by post relationship
+		$post_owner_data = apply_filters( 'wpv_filter_wpv_get_current_post_relationship_frontend_filter_post_owner_data', false );
+
+		if ( $post_owner_data ) {
+			$related_item_one = false;
+			foreach( $post_owner_data as $post_type => $post_candidate_list ) {
+				if ( count( $post_candidate_list ) > 0 ) {
+					$related_item_one = current( $post_candidate_list );
+					break;
+				}
+			}
+
+			if ( $related_item_one ) {
+				$related_item_two = $post->ID;
+
+				$association_query = new Toolset_Association_Query_V2();
+				$association_query->add( $association_query->relationship( $request_relationship ) );
+
+				// Get associations in this relationship where both:
+				// - item one is parent or intermediary or child
+				// - item two is parent or intermediary or child
+				// Deal with it :-P
+				$association_query->add(
+					$association_query->do_and(
+						$association_query->do_or(
+							$association_query->element_id_and_domain(
+								$related_item_one,
+								Toolset_Element_Domain::POSTS,
+								new Toolset_Relationship_Role_Parent()
+							),
+							$association_query->element_id_and_domain(
+								$related_item_one,
+								Toolset_Element_Domain::POSTS,
+								new Toolset_Relationship_Role_Intermediary()
+							),
+							$association_query->element_id_and_domain(
+								$related_item_one,
+								Toolset_Element_Domain::POSTS,
+								new Toolset_Relationship_Role_Child()
+							)
+						),
+						$association_query->do_or(
+							$association_query->element_id_and_domain(
+								$related_item_two,
+								Toolset_Element_Domain::POSTS,
+								new Toolset_Relationship_Role_Parent()
+							),
+							$association_query->element_id_and_domain(
+								$related_item_two,
+								Toolset_Element_Domain::POSTS,
+								new Toolset_Relationship_Role_Intermediary()
+							),
+							$association_query->element_id_and_domain(
+								$related_item_two,
+								Toolset_Element_Domain::POSTS,
+								new Toolset_Relationship_Role_Child()
+							)
+						)
+					)
+				);
+				$association_query->limit( 1 );
+
+				$associations = $association_query->get_results();
+
+				if ( $intermediary = $this->get_single_intermediary_id( $associations ) ) {
+					return $intermediary;
+				};
+			}
 		}
 
 		// no unique intermediary post found

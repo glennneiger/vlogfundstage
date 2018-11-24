@@ -1,4 +1,7 @@
 <?php
+
+use OTGS\Toolset\CRED\Controller\AssociationForms\Editor\Content\Toolbar;
+
 class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 
 	const JS_LISTING_HANDLE = 'toolset_cred_association_forms_back_end_listing_main_js';
@@ -53,9 +56,25 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 	}
 	
 	public function init_editor_toolbar() {
-		$content_editor_toolbar = new CRED_Association_Form_Content_Editor_Toolbar();
+		$content_editor_toolbar = new Toolbar();
 		$content_editor_toolbar->initialize();
+		// Disable the Toolset Views conditional output quicktag from editors.
+		add_filter( 'wpv_filter_wpv_disable_conditional_output_quicktag', '__return_true' );
+		 // Force include the Quicktag link template.
+		 add_action( 'admin_footer', array( $this, 'force_quicktag_link_template' ) );
 	}
+
+	/**
+     * Force include the Quicktag link template so it works.
+     *
+     * @since 2.1
+     */
+    public function force_quicktag_link_template() {
+        if ( ! class_exists( '_WP_Editors' ) ) {
+			require( ABSPATH . WPINC . '/class-wp-editor.php' );
+		}
+		\_WP_Editors::wp_link_dialog();
+    }
 
 	private function init_scripts_and_styles(){
 		$this->load_backend_assets();
@@ -174,7 +193,8 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 					Toolset_Assets_Manager::SCRIPT_HEADJS,
 					Toolset_Assets_Manager::SCRIPT_KNOCKOUT,
 					Toolset_Assets_Manager::SCRIPT_UTILS,
-					Toolset_Assets_Manager::SCRIPT_SELECT2
+					Toolset_Assets_Manager::SCRIPT_SELECT2,
+					CRED_Asset_Manager::SCRIPT_CODEMIRROR_SHORTCODES_MODE
 				),
 				CRED_FE_VERSION
 			);

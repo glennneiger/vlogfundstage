@@ -3,11 +3,11 @@ if (defined('WPDDL_VERSION')) return;
 
 
 
-define( 'WPDDL_VERSION', '2.2' );
+define( 'WPDDL_VERSION', '2.4.3' );
 define( 'WPDDL_VERSION_OPTION', 'ddl_layouts_plugin_version' );
 define( 'WPDDL_VERSIONS_COMPARE_OPTION', 'ddl_layouts_plugin_versions_compare' );
 define( 'LAYOUTS_PLUGIN_NAME', 'Toolset Layouts' );
-define( 'WPDDL_NOTES_URL', 'https://wp-types.com/version/layouts-2-2/' );
+define( 'WPDDL_NOTES_URL', 'https://toolset.com/version/layouts-2-4-3/' );
 define( 'WPDDL_ABSPATH', dirname(__FILE__) );
 define( 'WPDDL_RELPATH', plugins_url() . '/' . basename(dirname(__FILE__) ) );
 
@@ -65,8 +65,13 @@ if( !function_exists('ddl_register_layouts_plugin_version') ){
  * @since 2.0.3
  */
 function wpddl_upgrade_db_to_2030000() {
-	$user_profiles = WPDD_Layouts_Users_Profiles::getInstance();
+	global $wp_roles, $current_user;
+
+	$user_profiles = new WPDD_Layouts_Users_Profiles( $wp_roles, $current_user );
 	$user_profiles->clean_the_mess_in_nonadmin_user_caps( 'admin' );
+
+	$user_profiles_private = new WPDD_Layouts_Users_Profiles_Private( $wp_roles, $current_user );
+	$user_profiles_private->clean_the_mess_in_nonadmin_user_caps( 'admin' );
 }
 
 

@@ -1,5 +1,7 @@
 <?php
 
+use \OTGS\Toolset\Common\WPML\Package as wpml_package;
+
 /**
  * Relationship definition.
  *
@@ -152,17 +154,37 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 
 
 	/**
+	 * WPML package
+	 *
+	 * @var wpml_package\RelationshipDefinitionTranslationPackage
+	 * @since 3.0
+	 */
+	private $wpml_package;
+
+
+	/**
+	 * WPML compatibility
+	 *
+	 * @var Toolset_WPML_Compatibility
+	 * @since 3.0
+	 */
+	private $wpml_compatibility;
+
+	/**
 	 * Toolset_Relationship_Definition constructor.
 	 *
 	 * @param array $definition_array Valid definition array.
 	 * @param Toolset_Potential_Association_Query_Factory|null $potential_association_query_factory_di
 	 *
+	 * @refactoring Unit tests are hard to do with this constructor
 	 * @since m2m
 	 */
-	public function __construct( $definition_array, Toolset_Potential_Association_Query_Factory $potential_association_query_factory_di = null ) {
+	public function __construct( $definition_array, Toolset_Potential_Association_Query_Factory $potential_association_query_factory_di = null, wpml_package\RelationshipDefinitionTranslationPackage $wpml_package_di = null, Toolset_WPML_Compatibility $wpml_compatibility_di = null ) {
 		$this->read_definition_array( $definition_array );
 
 		$this->potential_association_query_factory = ( null === $potential_association_query_factory_di ? new Toolset_Potential_Association_Query_Factory() : $potential_association_query_factory_di );
+		$this->wpml_package = $wpml_package_di;
+		$this->wpml_compatibility = $wpml_compatibility_di;
 	}
 
 
@@ -300,10 +322,14 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	/**
 	 * @inheritdoc
 	 *
+	 * @param boolean $translate If it has to be translated.
 	 * @return string
 	 * @since m2m
+	 * @since 3.0 New parameter $translate
 	 */
-	public function get_display_name() { return $this->get_display_name_plural(); }
+	public function get_display_name( $translate = true ) {
+		return $this->get_display_name_plural( $translate );
+	}
 
 
 	/**
@@ -317,22 +343,38 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	}
 
 
-    /**
-     * Synonymous to get_display_name().
-     *
-     * @return string
-     * @since m2m
-     */
-	public function get_display_name_plural() { return $this->display_name_plural; }
+	/**
+	 * Synonymous to get_display_name().
+	 *
+	 * @param boolean $translate If it has to be translated.
+	 * @return string
+	 * @since m2m
+	 * @since 3.0 New parameter $translate
+	 */
+	public function get_display_name_plural( $translate = true ) {
+		if ( $translate ) {
+			$wpml_compatibility = $this->get_wpml_compatibility();
+			return $wpml_compatibility->translate_string( $this->display_name_plural, "{$this->slug}-plural", $this->get_wpml_package() );
+		}
+		return $this->display_name_plural;
+	}
 
 
-    /**
-     * Get the singular display name of the relationship.
-     *
-     * @return string
-     * @since m2m
-     */
-	public function get_display_name_singular() { return $this->display_name_singular; }
+	/**
+	 * Get the singular display name of the relationship.
+	 *
+	 * @param boolean $translate If it has to be translated.
+	 * @return string
+	 * @since m2m
+	 * @since 3.0 New parameter $translate
+	 */
+	public function get_display_name_singular( $translate = true ) {
+		if ( $translate ) {
+			$wpml_compatibility = $this->get_wpml_compatibility();
+			return $wpml_compatibility->translate_string( $this->display_name_singular, "{$this->slug}-singular", $this->get_wpml_package() );
+		}
+		return $this->display_name_singular;
+	}
 
 
 	/**
@@ -481,10 +523,12 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	/**
 	 * Build a definition array for persisting the definition.
 	 *
+	 * @param boolean $translate If it has to be translated.
 	 * @return array
 	 * @since m2m
+	 * @since 3.0 New parameter $translate
 	 */
-	public function get_definition_array() {
+	public function get_definition_array( $translate = true ) {
 
 		return array(
 			self::DA_SLUG => $this->get_slug(),
@@ -497,10 +541,10 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 			self::DA_IS_DISTINCT => $this->is_distinct(),
 			self::DA_SCOPE => ( $this->has_scope() ? $this->get_scope()->get_scope_data() : null ),
 			self::DA_ROLE_NAMES => $this->get_role_names(),
-			self::DA_ROLE_LABELS_SINGULAR => $this->get_role_labels_singular(),
-			self::DA_ROLE_LABELS_PLURAL => $this->get_role_labels_plural(),
-			self::DA_DISPLAY_NAME_PLURAL => $this->get_display_name_plural(),
-			self::DA_DISPLAY_NAME_SINGULAR => $this->get_display_name_singular()
+			self::DA_ROLE_LABELS_SINGULAR => $this->get_role_labels_singular( $translate ),
+			self::DA_ROLE_LABELS_PLURAL => $this->get_role_labels_plural( $translate ),
+			self::DA_DISPLAY_NAME_PLURAL => $this->get_display_name_plural( $translate ),
+			self::DA_DISPLAY_NAME_SINGULAR => $this->get_display_name_singular( $translate )
 		);
 	}
 
@@ -596,6 +640,29 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	}
 
 
+	/**
+	 * Set the intermediary post type for this relationship.
+	 *
+	 * Use with caution.
+	 *
+	 * @param IToolset_Post_Type $post_type
+	 * @param bool $override_integrity_check If this is true, do not check whether the given post type can be used as an intermediary.
+	 * @since 3.0.5
+	 */
+	public function set_intermediary_post_type( IToolset_Post_Type $post_type, $override_integrity_check = false ) {
+		$driver = $this->get_driver();
+		if( ! $driver instanceof Toolset_Relationship_Driver ) {
+			throw new InvalidArgumentException();
+		}
+
+		if( ! $override_integrity_check && ! $post_type->can_be_used_as_intermediary() ) {
+			throw new InvalidArgumentException( 'This post type cannot be used as intermediary in a relationship.' );
+		}
+
+		$driver->set_intermediary_post_type( $post_type, true );
+	}
+
+
 	public function is_ownership() {
 		return ( null != $this->ownership );
 	}
@@ -663,22 +730,32 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	 *
 	 * @param int|WP_Post|Toolset_Element $parent Parent element (of matching domain, type and other conditions)
 	 * @param int|WP_Post|Toolset_Element $child Child element (of matching domain, type and other conditions)
+	 * @param null|int $intermediary_id ID of the intermediary post to set. If null, the post will be
+	 * 		created automatically (if the relationship needs it)
 	 *
-	 * @return Toolset_Result|IToolset_Association The newly created association or a negative Toolset_Result when it could not have been created.
+	 * @return Toolset_Result|IToolset_Association The newly created association or a negative Toolset_Result when it
+	 *     could not have been created.
 	 * @throws RuntimeException when the association cannot be created because of a known reason. The exception would
 	 *     contain a displayable error message.
 	 * @throws InvalidArgumentException when the method is used improperly.
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 *
 	 * @since m2m
 	 */
-	public function create_association( $parent, $child ) {
+	public function create_association( $parent, $child, $intermediary_id = null ) {
 
 		$driver = $this->get_driver();
 		if( ! $driver instanceof Toolset_Relationship_Driver ) {
 			throw new RuntimeException( 'Not implemented!' );
 		}
 
-		$association = Toolset_Relationship_Database_Operations::create_association( $this, $parent, $child, 0 );
+		if( null === $intermediary_id ) {
+			$intermediary_id = 0;
+		} elseif( ! Toolset_Utils::is_natural_numeric( $intermediary_id ) ) {
+			throw new InvalidArgumentException();
+		}
+
+		$association = Toolset_Relationship_Database_Operations::create_association( $this, $parent, $child, $intermediary_id, true );
 
 		return $association;
 	}
@@ -768,18 +845,26 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	 * Get a custom role singular name that should be recognized in shortcodes instead of parent, child, etc.
 	 *
 	 * @param string|IToolset_Relationship_Role $element_role One of the Toolset_Relationship_Role values.
+	 * @param boolean $translate If it has to be translated.
 	 * @return string Custom role name.
 	 * @since m2m
+	 * @since 3.0 New parameter $translate
 	 */
-	public function get_role_label_singular( $element_role ) {
+	public function get_role_label_singular( $element_role, $translate = true ) {
 		$element_role = $this->role_to_role_name( $element_role );
 		if( ! Toolset_Relationship_Role::is_valid( $element_role ) ) {
 			throw new InvalidArgumentException();
 		}
 
-		return isset( $this->role_labels_singular[ $element_role ] )
+		$label = isset( $this->role_labels_singular[ $element_role ] )
 			? $this->role_labels_singular[ $element_role ]
 			: $this->default_role_labels_singular[ $element_role ];
+
+		if ( $translate ) {
+			$wpml_compatibility = $this->get_wpml_compatibility();
+			$label = $wpml_compatibility->translate_string( $label, "{$this->slug}-{$element_role}-singular", $this->get_wpml_package() );
+		}
+		return $label;
 	}
 
 
@@ -787,18 +872,26 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	 * Get a custom role plural name that should be recognized in shortcodes instead of parent, child, etc.
 	 *
 	 * @param string|IToolset_Relationship_Role $element_role One of the Toolset_Relationship_Role values.
+	 * @param boolean $translate If it has to be translated.
 	 * @return string Custom role name.
 	 * @since m2m
+	 * @since 3.0 New parameter $translate
 	 */
-	public function get_role_label_plural( $element_role ) {
+	public function get_role_label_plural( $element_role, $translate = true ) {
 		$element_role = $this->role_to_role_name( $element_role );
 		if( ! Toolset_Relationship_Role::is_valid( $element_role ) ) {
 			throw new InvalidArgumentException();
 		}
 
-		return isset( $this->role_labels_plural[ $element_role ] )
+		$label = isset( $this->role_labels_plural[ $element_role ] )
 			? $this->role_labels_plural[ $element_role ]
 			: $this->default_role_labels_plural[ $element_role ];
+
+		if ( $translate ) {
+			$wpml_compatibility = $this->get_wpml_compatibility();
+			$label = $wpml_compatibility->translate_string( $label, "{$this->slug}-{$element_role}-plural", $this->get_wpml_package() );
+		}
+		return $label;
 	}
 
 	/**
@@ -813,22 +906,43 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	/**
 	 * Get all custom role singular names as an associative array.
 	 *
+	 * @param boolean $translate If it has to be translated.
 	 * @return string[string]
 	 * @since m2m
+	 * @since 3.0 New parameter $translate
 	 */
-	public function get_role_labels_singular() {
-		return $this->role_labels_singular;
+	public function get_role_labels_singular( $translate = true ) {
+		$labels = $this->role_labels_singular;
+		if ( $translate ) {
+			$wpml_compatibility = $this->get_wpml_compatibility();
+			foreach ( $labels as $role => $label ) {
+				$labels[ $role ] = $wpml_compatibility->translate_string( $label, "{$this->slug}-{$role}-singular", $this->get_wpml_package() );
+			}
+		}
+		return $labels;
 	}
 
 
 	/**
 	 * Get all custom role plural names as an associative array.
 	 *
+	 * @param boolean $translate If it has to be translated.
 	 * @return string[string]
 	 * @since m2m
+	 * @since 3.0 New parameter $translate
 	 */
-	public function get_role_labels_plural() {
-		return $this->role_labels_plural;
+	public function get_role_labels_plural( $translate = true ) {
+		$labels = $this->role_labels_plural;
+		if ( $translate ) {
+			$wpml_compatibility = $this->get_wpml_compatibility();
+			foreach ( $labels as $role => $label ) {
+				if ( Toolset_Relationship_Role::INTERMEDIARY === $role ) {
+					continue;
+				}
+				$labels[ $role ] = $wpml_compatibility->translate_string( $label, "{$this->slug}-{$role}-plural", $this->get_wpml_package() );
+			}
+		}
+		return $labels;
 	}
 
 	/**
@@ -1071,5 +1185,37 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 			$this->set_role_label_singular( $role_name, $this->default_role_labels_singular[ $role_name ] );
 			$this->set_role_label_plural( $role_name, $this->default_role_labels_plural[ $role_name ] );
 		}
+	}
+
+
+	/**
+	 * Gets WPML package
+	 *
+	 * @return wpml_package\RelationshipDefinitionTranslationPackage
+	 * @since 3.0
+	 */
+	private function get_wpml_package() {
+		if ( ! $this->wpml_package ) {
+			$this->wpml_package = new wpml_package\RelationshipDefinitionTranslationPackage( $this );
+		}
+
+		return $this->wpml_package->get_package_definition();
+	}
+
+
+	/**
+	 * Gets WPML compatibility
+	 *
+	 * Needed to be public because I need to inject a mock into a mock :(
+	 *
+	 * @return Toolset_WPML_Compatibility
+	 * @since 3.0
+	 */
+	public function get_wpml_compatibility() {
+		if ( ! $this->wpml_compatibility ) {
+			$this->wpml_compatibility = Toolset_WPML_Compatibility::get_instance();
+		}
+
+		return $this->wpml_compatibility;
 	}
 }

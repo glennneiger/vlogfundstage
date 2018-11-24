@@ -10,8 +10,11 @@
 var WPViews = WPViews || {};
 
 WPViews.AddonMapsDialogs = function( $ ) {
-	
+	/** @var {Object} wpv_addon_maps_dialogs_local */
+
 	var self = this;
+
+	const API_GOOGLE = 'google';
 	
 	self.cache = {};
 	self.map_counter = 0;
@@ -40,10 +43,12 @@ WPViews.AddonMapsDialogs = function( $ ) {
 	/**
 	 * Prepare HTML templates
 	 * @since 1.4
+	 * @since 1.5 added Street View options
 	 */
 	self.init_templates = function() {
 		self.no_geolocation_message = wp.template( 'toolset-views-maps-dialogs-no-geolocation-message' );
 		self.upload_button_template = wp.template( 'toolset-views-maps-dialogs-upload-button-template' );
+		self.street_view_options_template = wp.template( 'toolset-views-maps-dialogs-street-view' );
 	};
 
 	self.add_marker_hover_options = function() {
@@ -143,8 +148,14 @@ WPViews.AddonMapsDialogs = function( $ ) {
 		var thiz = $( this ),
 		thiz_context = thiz.data( 'context' ),
 		thiz_type = thiz.data( 'type' ),
-		marker_container = $( '.js-wpv-shortcode-gui-attribute-wrapper-for-marker_icon' ),
-		marker_hover_container = $( '.js-wpv-shortcode-gui-attribute-wrapper-for-marker_icon_hover' ),
+		marker_container = $(
+			'.js-wpv-shortcode-gui-attribute-wrapper-for-marker_icon, '
+			+ '.js-toolset-shortcode-gui-attribute-wrapper-for-marker_icon'
+		),
+		marker_hover_container = $(
+			'.js-wpv-shortcode-gui-attribute-wrapper-for-marker_icon_hover, '
+			+ '.js-toolset-shortcode-gui-attribute-wrapper-for-marker_icon_hover'
+		),
 		data = {
 			action: 'wpv_addon_maps_update_marker',
 			csaction: 'add',
@@ -168,12 +179,15 @@ WPViews.AddonMapsDialogs = function( $ ) {
 			data: data,
 			success: function( response ) {
 				if ( response.success ) {
+					let value = thiz.val();
+					value = value.replace(/http:|https:/, '');
+
 					marker_container
 						.find( 'ul:not(.js-wpv-dismiss)' )
-							.append( self.add_marker_result( thiz_context, 'image', thiz.val() ) );
+							.append( self.add_marker_result( thiz_context, 'image', value ) );
 					marker_hover_container
 						.find( 'ul:not(.js-wpv-dismiss)' )
-							.append( self.add_marker_result( thiz_context, 'image-hover', thiz.val() ) );
+							.append( self.add_marker_result( thiz_context, 'image-hover', value ) );
 					if ( thiz_type == 'image' ) {
 						marker_container
 							.find( 'ul:not(.js-wpv-dismiss) li:last .js-shortcode-gui-field' )
@@ -183,6 +197,16 @@ WPViews.AddonMapsDialogs = function( $ ) {
 						marker_hover_container
 							.find( 'ul:not(.js-wpv-dismiss) li:last .js-shortcode-gui-field' )
 								.trigger( 'click' );
+					}
+					// For TC marker dialog, add these values to data from which it will be re-rendered on subsequent
+					// opens.
+					if ( maps_shortcode_i18n ) {
+						maps_shortcode_i18n.attributes.marker.markerIcons.fields.marker_icon.options[value] =
+							'<span class="wpv-icon-img js-wpv-icon-img" data-img="' + value
+							+ '" style="background-image:url(' + value + ');"></span>';
+						maps_shortcode_i18n.attributes.marker.markerIcons.fields.marker_icon_hover.options[value] =
+							'<span class="wpv-icon-img js-wpv-icon-img" data-img="' + value
+							+ '" style="background-image:url(' + value + ');"></span>';
 					}
 				}
 			},
@@ -532,6 +556,7 @@ WPViews.AddonMapsDialogs = function( $ ) {
 					self.init_marker_icons( 'map' );
 					self.init_colorpicker();
 					self.init_map_styles();
+					self.initStreetViewOptions();
 
 					$('.js-wpv-shortcode-gui-tabs').on( "tabsactivate.render_map", function( event, ui ) {
 						if ( ui.newTab.context.hash === '#wpv-map-render-style-options' ) {
@@ -644,10 +669,7 @@ WPViews.AddonMapsDialogs = function( $ ) {
 		$( 'input[type="radio"][value="browser_geolocation_disabled"]' )
 			.attr('disabled', true)
 			.closest('li')
-			.append( self.no_geolocation_message( {
-				unsecure_no_geolocation: wpv_addon_maps_dialogs_local.unsecure_no_geolocation,
-				how_to_move_site: wpv_addon_maps_dialogs_local.how_to_move_site
-			} ) );
+			.append( self.no_geolocation_message( {} ) );
 
 		$( '.js-wpv-shortcode-gui-attribute-wrapper-for-marker_position .js-shortcode-gui-field' )
 			.each( function() {
@@ -719,7 +741,7 @@ WPViews.AddonMapsDialogs = function( $ ) {
 						marker_position_extra += '</div>';
 						break;
 					case 'address':
-						marker_position_extra = '<input style="display:none" type="text" class="regular-text custom-combo-target js-wpv-map-marker-marker_position-target js-wpv-map-marker-marker_position-address" autocomplete="off" value="" />';
+						marker_position_extra = '<input style="display:none" type="text" class="regular-text custom-combo-target js-wpv-map-marker-marker_position-target js-wpv-map-marker-marker_position-address js-toolset-maps-address-autocomplete" autocomplete="off" value="" />';
 						break;
 					case 'latlon':
 						marker_position_extra = '<div style="display:none" class="custom-combo-target js-wpv-map-marker-marker_position-target">';
@@ -750,7 +772,14 @@ WPViews.AddonMapsDialogs = function( $ ) {
 			.first()
 				.prop( 'checked', true )
 				.trigger( 'change' );
-		$( '.js-wpv-map-marker-marker_position-address', '.js-wpv-shortcode-gui-attribute-wrapper-for-marker_position' ).geocomplete();
+
+		// Init address autocomplete, depending on API used
+		if ( API_GOOGLE === views_addon_maps_i10n.api_used ) {
+			$('.js-wpv-map-marker-marker_position-address', '.js-wpv-shortcode-gui-attribute-wrapper-for-marker_position')
+				.geocomplete();
+		} else {
+			WPViews.mapsAddressAutocomplete.init();
+		}
 	};
 
 	self.add_map_preview = function () {
@@ -761,6 +790,8 @@ WPViews.AddonMapsDialogs = function( $ ) {
 	 * Adds some parts of interface for map styles and starts the listener for map style change.
 	 */
 	self.init_map_styles = function() {
+		if ( API_GOOGLE !== views_addon_maps_i10n.api_used ) return;
+
 		var wrapper = $( '.js-wpv-shortcode-gui-attribute-wrapper-for-style_json' );
 		var select = $( 'select#wpv-map-render-style_json' );
 
@@ -783,6 +814,56 @@ WPViews.AddonMapsDialogs = function( $ ) {
 				: wpv_addon_maps_dialogs_local.default_json;
 
 			WPViews.addon_maps_preview.render_preview_map( preview_map_style );
+		} );
+	};
+
+	/**
+	 * Adds dynamic parts of interface for Street View section of Map shortcode generator.
+	 * @since 1.5
+	 */
+	self.initStreetViewOptions = function() {
+		// Lazy init this when section is clicked
+		// TODO: this lazy init could be abstracted and applied to all tabs...
+		var $guiTabs = $('.js-wpv-shortcode-gui-tabs');
+
+		$guiTabs.on( "tabsactivate.street_view", function( event, ui ) {
+			if ( ui.newTab.context.hash === '#wpv-map-render-street-view' ) {
+				$guiTabs.off( "tabsactivate.street_view" );
+
+				$('.js-wpv-shortcode-gui-attribute-wrapper-for-street_view').after(
+					self.street_view_options_template()
+				);
+
+				// Shows Street View location options only when Street View is enabled
+				$('input[name="wpv-map-render-street_view"]').on('change', function( event ) {
+					if ( $( event.target ).val() === 'on' ) {
+						$('div.js-wpv-shortcode-gui-attribute-wrapper-for-location').slideDown();
+
+						// Init address autocomplete, depending on API used
+						if ( API_GOOGLE === views_addon_maps_i10n.api_used ) {
+							// Geocomplete adds 'placeholder' attribute, so we can check for its presence and init lazy
+							if ( !$('#wpv-map-street-view-address').is('[placeholder]') ) {
+								$('#wpv-map-street-view-address').geocomplete();
+							}
+						} else {
+							WPViews.mapsAddressAutocomplete.initField( $('#wpv-map-street-view-address') );
+						}
+					} else {
+						$('div.js-wpv-shortcode-gui-attribute-wrapper-for-location').slideUp();
+					}
+				} );
+
+				// Toggles Street View location options
+				$('input[name="wpv-map-render-location"]').on('change', function( event ) {
+					$('.js-wpv-shortcode-gui-attribute-wrapper-for-location')
+						.find('div.custom-combo-target:visible')
+						.slideUp();
+					$( event.target )
+						.parent()
+						.siblings('div.custom-combo-target')
+						.slideDown();
+				} );
+			}
 		} );
 	};
 
@@ -929,7 +1010,13 @@ WPViews.AddonMapsDialogs = function( $ ) {
 		WPViews.shortcodes_gui.shortcode_gui_computed_attribute_pairs_filters[ 'wpv-map-marker' ] = self.marker_computed_attribute_pairs_filter;
 		self.extended_links_computed_classname_filters['focus'] = self.focus_computed_classname_filter;
 	};
-	
+
+	/**
+	 * Filters attributes pairs for map shortcode
+	 * @param {Object} shortcode_attribute_values
+	 * @return {Object}
+	 * @since 1.5 support for Street View attributes
+	 */
 	self.map_computed_attribute_pairs_filter = function( shortcode_attribute_values ) {
 		if ( $( '.js-wpv-shortcode-gui-attribute-wrapper-for-fitbounds .js-shortcode-gui-field:checked' ).val() == 'on' ) {
 			shortcode_attribute_values['general_zoom'] = false;
@@ -966,6 +1053,22 @@ WPViews.AddonMapsDialogs = function( $ ) {
 		var selected_style = $( 'select#wpv-map-render-style_json option:selected' ).val();
 		if ( selected_style ) {
 			shortcode_attribute_values['style_json'] = selected_style;
+		}
+
+		// If Street View is on, add shortcode with location source (except for location=first)
+		if ( shortcode_attribute_values['street_view'] && shortcode_attribute_values['street_view'] === 'on' ) {
+			switch ( shortcode_attribute_values['location'] ) {
+				case 'marker_id':
+					shortcode_attribute_values['marker_id'] = $( '#wpv-map-render-marker_id' ).val();
+					shortcode_attribute_values['location'] = false;
+					break;
+				case 'address':
+					shortcode_attribute_values['address'] = $( '#wpv-map-street-view-address' ).val();
+					shortcode_attribute_values['location'] = false;
+					break;
+			}
+		} else {
+			shortcode_attribute_values['location'] = false;
 		}
 
 		return shortcode_attribute_values;

@@ -152,9 +152,19 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend
 				if ( $revert_in_the_loop ) {
 					$wp_query->in_the_loop = false;
 				}
-				
+
 				if ( ! in_array( $template_selected, $this->beaver_post_id_assets_rendered ) ) {
+					// When having a Beaver Builder styled Content Template inside a Beaver Builder styled page we need to
+					// change the current post id for the Beaver Builder model in order to load the style of the Content
+					// Template instead of the page style.
+					FLBuilderModel::set_post_id( $template_selected );
+
 					FLBuilder::enqueue_layout_styles_scripts();
+
+					// After the Beaver Builder styled Content Template styles are loaded, we are reverting the model's id
+					// back to the id of the page.
+					FLBuilderModel::reset_post_id( $template_selected );
+					
 					$this->beaver_post_id_assets_rendered[] = $template_selected;
 				}
 				

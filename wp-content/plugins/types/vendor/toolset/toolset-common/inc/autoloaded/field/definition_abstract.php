@@ -5,42 +5,6 @@
  */
 abstract class Toolset_Field_Definition_Abstract implements Toolset_Field_Definition_Interface {
 
-	/**
-	 * @return string Field definition slug.
-	 */
-	public abstract function get_slug();
-
-
-	/**
-	 * @return string Field definition display name.
-	 */
-	public abstract function get_name();
-
-
-	/**
-	 * @return string Description provided by the user.
-	 */
-	public abstract function get_description();
-
-
-	/**
-	 * @return string Meta key used to store values of these fields.
-	 */
-	public abstract function get_meta_key();
-
-	/**
-	 * Determine whether the field is currently under Types control.
-	 *
-	 * @return mixed
-	 */
-	public abstract function is_under_types_control();
-
-
-	/**
-	 * @return Toolset_Field_Group[]
-	 */
-	public abstract function get_associated_groups();
-
 
 	/**
 	 * Does the field definition match a certain string?

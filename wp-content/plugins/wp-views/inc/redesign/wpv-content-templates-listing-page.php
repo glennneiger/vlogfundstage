@@ -1111,7 +1111,7 @@ function wpv_ct_listing_render_create_ct_button( $button_title, $label, $usage )
             add_query_arg(
 
                 array(
-                    'page' => WPV_CT_EDITOR_PAGE_NAME,
+                    'page' => WPV_CT_CREATOR_PAGE_NAME,
                     'action' => 'create',
                     'title' => urlencode( __( 'Content template for ', 'wpv-views' ) . $label ),
                     'usage' => $usage

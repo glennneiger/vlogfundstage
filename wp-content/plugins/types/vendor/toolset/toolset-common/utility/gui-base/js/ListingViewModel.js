@@ -331,6 +331,9 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
         self.hideDisplayedMessage();
         self.displayedMessage({text: text, type: type});
         self.messageVisibilityMode('show');
+        if ( type !== 'error' ) {
+            self.autoHideDislayedMessage( text );
+        }
     };
 
 
@@ -354,6 +357,18 @@ Toolset.Gui.ListingViewModel = function(itemModels, defaults, itemSearchFunction
     self.removeDisplayedMessage = function () {
         self.messageVisibilityMode('remove');
     };
+
+
+    /**
+     * Auto hide dislayed message after a time depending on text long
+     *
+     * @param {string} text Text needed for timing calculation
+     * @since m2m
+     */
+    self.autoHideDislayedMessage = function( text ) {
+        var miliseconds = Math.max( Math.min( text.length * 50, 2000 ), 7000 );
+        setTimeout( self.removeDisplayedMessage, miliseconds );
+    }
 
 
     /**

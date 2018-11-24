@@ -133,7 +133,11 @@ class Toolset_Post_Translation_Set implements IToolset_Post {
 		if ( ! array_key_exists( $language_code, $this->translations ) ) {
 			$translated_post_id = $this->fetch_translation( $language_code );
 			if ( $translated_post_id !== 0 ) {
-				$translation = $this->element_factory->get_post_untranslated( $translated_post_id, $language_code );
+				try {
+					$translation = $this->element_factory->get_post_untranslated( $translated_post_id, $language_code );
+				} catch ( Toolset_Element_Exception_Element_Doesnt_Exist $e ) {
+					$translation = null;
+				}
 			} else {
 				$translation = null;
 			}

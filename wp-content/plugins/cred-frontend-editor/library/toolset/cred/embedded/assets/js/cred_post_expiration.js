@@ -2,7 +2,6 @@ jQuery( document ).ready(function($) {
 	try {
 		var cred = window.cred_cred;
 		if ( $('#credpostexpirationdiv').length ) {
-			cred.app.attach('cred.notificationEventChanged', enablePlaceholders);
 			$('input[name="_cred_post_expiration[enable]"]').change(function(e) {
 				var cred_post_expiration_enabled = $('input[name="_cred_post_expiration[enable]"]').is(':checked');
 				if (cred_post_expiration_enabled) {
@@ -41,21 +40,6 @@ jQuery( document ).ready(function($) {
 		});
 		
 	} catch(e) {}
-
-	function enablePlaceholders() {
-		try {
-			if ($('input[name="_cred_post_expiration[enable]"]').is(':checked')) {
-				$('.cred_post_expiration_options').show();
-			} else {
-				$('.cred_post_expiration_options').each(function(index, element) {
-					var $option = $(element);
-					if ($('input[type="radio"]', $option).is(':checked')) {
-						$('input[type="radio"]:visible:first', $option.siblings()).first().attr('checked', 'checked');
-					}
-				}).hide();
-			}
-		} catch(e) {}
-	}
 	
 	$('.js-cred-post-expiration-datepicker').datepicker({
 		onSelect: function( dateText, inst ) {

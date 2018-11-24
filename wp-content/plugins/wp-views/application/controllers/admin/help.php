@@ -27,13 +27,18 @@ class WPV_Controller_Admin_Help {
 		if ( ! in_array( $screen->id, $all_views_pages_slugs ) ) {
 			return;
 		}
-
-		$renderer = new WPV_Renderer( $constants );
+		
+		$template_repository = WPV_Output_Template_Repository::get_instance();
+		$renderer = Toolset_Renderer::get_instance();
 
 		switch ( $screen->id ) {
 			case WPV_Page_Slug::VIEWS_LISTING_PAGE_DEPRECATED:// DERPECATED
 			case WPV_Page_Slug::VIEWS_LISTING_PAGE:
-				$help = $renderer->render( WPV_Renderer::VIEWS_LISTING_PAGE_HELP , array() );
+				$help = $renderer->render(
+					$template_repository->get( WPV_Output_Template_Repository::VIEWS_LISTING_PAGE_HELP ),
+					null,
+					false
+				);
 				$screen->add_help_tab(
 					array(
 						'id' => 'views-help',
@@ -44,7 +49,11 @@ class WPV_Controller_Admin_Help {
 				break;
 			case WPV_Page_Slug::VIEWS_EDIT_PAGE_DEPRECATED:// DERPECATED
 			case WPV_Page_Slug::VIEWS_EDIT_PAGE:
-				$help = $renderer->render( WPV_Renderer::VIEWS_EDIT_PAGE_HELP , array() );
+				$help = $renderer->render(
+					$template_repository->get( WPV_Output_Template_Repository::VIEWS_EDIT_PAGE_HELP ),
+					null,
+					false
+				);
 				$screen->add_help_tab(
 					array(
 						'id' => 'views-help',
@@ -55,7 +64,11 @@ class WPV_Controller_Admin_Help {
 				break;
 			case WPV_Page_Slug::CONTENT_TEMPLATES_LISTING_PAGE_DEPRECATED:// DERPECATED
 			case WPV_Page_Slug::CONTENT_TEMPLATES_LISTING_PAGE:
-				$help = $renderer->render( WPV_Renderer::CONTENT_TEMPLATES_LISTING_PAGE_HELP , array() );
+				$help = $renderer->render(
+					$template_repository->get( WPV_Output_Template_Repository::CONTENT_TEMPLATES_LISTING_PAGE_HELP ),
+					null,
+					false
+				);
 				$screen->add_help_tab(
 					array(
 						'id' => 'views-help',
@@ -66,7 +79,11 @@ class WPV_Controller_Admin_Help {
 				break;
 			case WPV_Page_Slug::CONTENT_TEMPLATES_EDIT_PAGE_DEPRECATED:// DERPECATED
 			case WPV_Page_Slug::CONTENT_TEMPLATES_EDIT_PAGE:
-				$help = $renderer->render( WPV_Renderer::CONTENT_TEMPLATES_EDIT_PAGE_HELP , array() );
+				$help = $renderer->render(
+					$template_repository->get( WPV_Output_Template_Repository::CONTENT_TEMPLATES_EDIT_PAGE_HELP ),
+					null,
+					false
+				);
 				$screen->add_help_tab(
 					array(
 						'id' => 'views-help',
@@ -77,7 +94,11 @@ class WPV_Controller_Admin_Help {
 				break;
 			case WPV_Page_Slug::WORDPRESS_ARCHIVES_LISTING_PAGE_DEPRECATED:// DERPECATED
 			case WPV_Page_Slug::WORDPRESS_ARCHIVES_LISTING_PAGE:
-				$help = $renderer->render( WPV_Renderer::WORDPRESS_ARCHIVES_LISTING_PAGE_HELP , array() );
+				$help = $renderer->render(
+					$template_repository->get( WPV_Output_Template_Repository::WORDPRESS_ARCHIVES_LISTING_PAGE_HELP ),
+					null,
+					false
+				);
 				$screen->add_help_tab(
 					array(
 						'id' => 'views-help',
@@ -88,7 +109,11 @@ class WPV_Controller_Admin_Help {
 				break;
 			case WPV_Page_Slug::WORDPRESS_ARCHIVES_EDIT_PAGE_DEPRECATED:// DERPECATED
 			case WPV_Page_Slug::WORDPRESS_ARCHIVES_EDIT_PAGE:
-				$help = $renderer->render( WPV_Renderer::WORDPRESS_ARCHIVES_EDIT_PAGE_HELP , array() );
+				$help = $renderer->render(
+					$template_repository->get( WPV_Output_Template_Repository::WORDPRESS_ARCHIVES_EDIT_PAGE_HELP ),
+					null,
+					false
+				);
 				$screen->add_help_tab(
 					array(
 						'id' => 'views-help',
@@ -99,7 +124,7 @@ class WPV_Controller_Admin_Help {
 				break;
 			case WPV_Page_Slug::VIEWS_SETTINGS_DEPRECATED:// DERPECATED
 			case WPV_Page_Slug::VIEWS_IMPORT_EXPORT_DEPRECATED:// DEPRECATED
-			case WPV_Page_Slug::VIEWS_FRAMEWORK_INTEGRATION_DEPRECATED://DEPRECATED
+			case WPV_Page_Slug::VIEWS_FRAMEWORK_INTEGRATION_DEPRECATED:// DEPRECATED
 				break;
 		}
 	}

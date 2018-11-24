@@ -9,7 +9,7 @@ abstract class CRED_Fields_Abstract_Model {
 
 	/*
 	 * Generic Custom Fields option const
-	 * All the fields that are controlled by CRED are stored here
+	 * All the fields that are controlled by Toolset Forms are stored here
 	 */
 	const CUSTOM_FIELDS_OPTION = '__CRED_CUSTOM_FIELDS';
 
@@ -32,11 +32,6 @@ abstract class CRED_Fields_Abstract_Model {
 	 * @return mixed
 	 */
 	abstract public function getPostTypeCustomFields( $post_type, $exclude_fields = array(), $show_private = true, $paged, $perpage = 10, $orderby = 'meta_key', $order = 'asc' );
-
-	/**
-	 * @return mixed
-	 */
-	abstract public function getAllFields();
 
 	/**
 	 * @param null $post_type

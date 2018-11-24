@@ -21,6 +21,7 @@ return array(
 	'Toolset_Theme_Integration_Settings_Front_End_Controller_genesis' => TOOLSET_THEME_SETTINGS_PATH . '/compatibility-modules/controllers/toolset-theme-integration-settings-front-end-controller-genesis.php',
 	'Toolset_Theme_Integration_Settings_Front_End_Controller_divi' => TOOLSET_THEME_SETTINGS_PATH . '/compatibility-modules/controllers/toolset-theme-integration-settings-front-end-controller-divi.php',
 	'Toolset_Theme_Integration_Settings_Front_End_Controller_avada' => TOOLSET_THEME_SETTINGS_PATH . '/compatibility-modules/controllers/toolset-theme-integration-settings-front-end-controller-avada.php',
+	'Toolset_Theme_Integration_Settings_Front_End_Controller_redux' => TOOLSET_THEME_SETTINGS_PATH . '/compatibility-modules/controllers/toolset-theme-integration-settings-front-end-controller-redux.php',
 	'Toolset_Compatibility_Theme_Handler'                        => TOOLSET_THEME_SETTINGS_PATH . '/compatibility-modules/toolset.layouts-theme.class.php',
 	'Toolset_Compatibility_Theme_Generic'                        => TOOLSET_THEME_SETTINGS_PATH . '/compatibility-modules/themes/toolset.compatibility-theme-generic.class.php',
 	'Toolset_Compatibility_Theme_astra'                          => TOOLSET_THEME_SETTINGS_PATH . '/compatibility-modules/themes/wpddl.layouts-astra-theme.class.php',

@@ -238,7 +238,7 @@ class WPDD_Widget_Area_Helper{
 
 		foreach($registered_sidebars as $sidebar){
 			register_sidebar(array(
-				"name" => __("Layouts", 'ddl-layouts') . " " . $sidebar->post_title,
+				"name" => $sidebar->post_title,
 				"id"   => "sidebar-".$sidebar->ID,
 				"before_widget" => $before_widget,
 				"after_widget" => $after_widget,
@@ -266,7 +266,7 @@ class WPDD_Widget_Area_Helper{
 				$send = wp_json_encode(array("Data" => array("message" => __("The sidebar has been ".($sidebar_id == null ? "created" : "updated") . " successfully!"),
 				                                             "data" => array(
 					                                             "new_sidebar_id" => $insert_new_sidebar,
-					                                             "new_sidebar_name" => __("Layouts", 'ddl-layouts') . " " . wp_strip_all_tags($_POST["sidebar_name"])
+					                                             "new_sidebar_name" => wp_strip_all_tags($_POST["sidebar_name"])
 				                                             ))));
 			}else{
 				$send = wp_json_encode(array("error" => array("message" => __("Error occurred while ".($sidebar_id == null ? "creating" : "updating") . " the sidebar!"))));

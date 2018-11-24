@@ -5,11 +5,16 @@
  *
  * Simplifies the access to field instances and associations.
  *
+ * Always use Toolset_Element_Factory to instantiate this class.
+ *
  * @since m2m
  */
 class Toolset_Post extends Toolset_Element implements IToolset_Post {
 
+
+	// FIXME document this
 	const SORTORDER_META_KEY = 'toolset-post-sortorder';
+
 
 	/** @var WP_Post */
 	private $post;
@@ -17,6 +22,15 @@ class Toolset_Post extends Toolset_Element implements IToolset_Post {
 
 	/** @var string Language code of the current post or an empty string if unknown or not applicable. */
 	private $language_code = null;
+
+
+	private $_post_type_repository;
+
+	private $element_factory;
+
+
+	/** @var Toolset_WPML_Compatibility */
+	private $wpml_service;
 
 
 	/**
@@ -27,11 +41,22 @@ class Toolset_Post extends Toolset_Element implements IToolset_Post {
 	 *     "this post has no language", while null can be passed if this unknown (and it will be
 	 *     determined first time it's needed).
 	 * @param null|Toolset_Field_Group_Post_Factory $group_post_factory DI for phpunit
+	 * @param Toolset_Post_Type_Repository|null $post_type_repository_di
+	 * @param Toolset_Element_Factory|null $element_factory_di
+	 * @param Toolset_WPML_Compatibility|null $wpml_service_di
 	 *
 	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 * @since m2m
 	 */
-	protected function __construct( $object_source, $language_code = null, $group_post_factory = null ) {
+	public function __construct(
+		$object_source,
+		$language_code = null,
+		$group_post_factory = null,
+		Toolset_Post_Type_Repository $post_type_repository_di = null,
+		Toolset_Element_Factory $element_factory_di = null,
+		Toolset_WPML_Compatibility $wpml_service_di = null
+	) {
+		$this->_post_type_repository = $post_type_repository_di;
 
 		if( Toolset_Utils::is_natural_numeric( $object_source ) ) {
 			$post = WP_Post::get_instance( $object_source );
@@ -53,8 +78,9 @@ class Toolset_Post extends Toolset_Element implements IToolset_Post {
 		parent::__construct( $post, $group_post_factory );
 
 		$this->post = $post;
-
 		$this->language_code = $language_code;
+		$this->element_factory = ( null === $element_factory_di ? new Toolset_Element_Factory() : $element_factory_di );
+		$this->wpml_service = ( null === $wpml_service_di ? Toolset_WPML_Compatibility::get_instance() : $wpml_service_di );
 	}
 
 
@@ -70,16 +96,18 @@ class Toolset_Post extends Toolset_Element implements IToolset_Post {
 	 * @deprecated Use Toolset_Element_Factory::get_post() instead.
 	 *
 	 * @return Toolset_Post
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 */
 	public static function get_instance( $object_source, $language_code = null ) {
-		return new self( $object_source, $language_code );
+		$element_factory = new Toolset_Element_Factory();
+		return $element_factory->get_post_untranslated( $object_source, $language_code );
 	}
 
 
 	/**
 	 * @return string One of the Toolset_Field_Utils::get_domains() values.
 	 */
-	public function get_domain() { return Toolset_Field_Utils::DOMAIN_POSTS; }
+	public function get_domain() { return Toolset_Element_Domain::POSTS; }
 
 
 	/**
@@ -121,7 +149,7 @@ class Toolset_Post extends Toolset_Element implements IToolset_Post {
 	 * @return bool
 	 */
 	public function is_translatable() {
-		return Toolset_Wpml_Utils::is_post_type_translatable( $this->get_type() );
+		return $this->wpml_service->is_post_type_translatable( $this->get_type() );
 	}
 
 
@@ -129,10 +157,9 @@ class Toolset_Post extends Toolset_Element implements IToolset_Post {
 	 * @inheritdoc
 	 * @return string
 	 */
-	function get_language() {
+	public function get_language() {
 		if( null === $this->language_code ) {
-			$post_language_details = apply_filters( 'wpml_post_language_details', null, $this->get_id() );
-			$this->language_code = toolset_getarr( $post_language_details, 'language_code', '' );
+			$this->language_code = $this->wpml_service->get_post_language( $this->get_id() );
 		}
 
 		return $this->language_code;
@@ -159,4 +186,93 @@ class Toolset_Post extends Toolset_Element implements IToolset_Post {
 	}
 
 
+	protected function get_post_type_repository() {
+		if( null === $this->_post_type_repository ) {
+			$this->_post_type_repository = Toolset_Post_Type_Repository::get_instance();
+		}
+
+		return $this->_post_type_repository;
+	}
+
+
+	/**
+	 * @return IToolset_Post_Type|null
+	 * @since 2.5.10
+	 */
+	public function get_type_object() {
+		return $this->get_post_type_repository()->get( $this->get_type() );
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param string $language_code
+	 * @param bool $exact_match_only
+	 *
+	 * @return IToolset_Element|null
+	 */
+	public function translate( $language_code, $exact_match_only = false ) {
+		if( ! $this->is_translatable() ) {
+			return $this;
+		}
+
+		// This could happen only in very rare cases, when WPML is active,
+		// someone obtains a translation set from Toolset_Element_Factory,
+		// calls translate() on it, which would return this instance, and then
+		// they call translate() again... and here we are.
+		$translation_set = $this->element_factory->get_post_translation_set( array( $this ) );
+		return $translation_set->translate( $language_code, $exact_match_only );
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return int
+	 * @since 2.5.10
+	 */
+	public function get_default_language_id() {
+		if( ! $this->is_translatable() ) {
+			return $this->get_id();
+		}
+
+		// This could happen only in very rare cases, when WPML is active,
+		// someone obtains a translation set from Toolset_Element_Factory,
+		// calls translate() on it, which would return this instance, and then
+		// they call this method... and here we are.
+		$translation_set = $this->element_factory->get_post_translation_set( array( $this ) );
+		return $translation_set->get_default_language_id();
+	}
+
+
+	/**
+	 * @return bool
+	 * @since 2.5.10
+	 */
+	public function is_revision() {
+		return ( 'revision' === $this->get_type() );
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return int
+	 * @since 2.5.11
+	 */
+	public function get_author() {
+		return (int) $this->post->post_author;
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return int
+	 * @since 2.5.11
+	 */
+	public function get_trid() {
+		return $this->wpml_service->get_post_trid( $this->get_id() );
+	}
 }

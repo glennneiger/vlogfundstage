@@ -1,10 +1,20 @@
 DDLayout.listing.models.ListingTable = Backbone.Model.extend({
 	url:ajaxurl,
 	Groups:null,
+	ACTION_DEFAULT: 'get_ddl_listing_data',
 	NOT_ASSIGNED:1,
 	TO_PAGE:2,
 	TO_TYPES:3,
-    TO_OTHERS:4
+    TO_OTHERS:4,
+    PARENTS: 5,
+    slugsToIds:{
+	  'post_types' : 3,
+        'archives' : 4,
+        'single'   : 2,
+        'parents'  : 5,
+        'free' : 1
+    },
+    activeGroup: 'post_types'
 	, initialize:function( json )
 	{
 		// very rough singleton implementation;
@@ -24,32 +34,42 @@ DDLayout.listing.models.ListingTable = Backbone.Model.extend({
         self.listenTo( self, 'items-collection-remove-item', self.remove_item);
 	},
     remove_item: function(model, options){
-        _.defer( this.after_removed_item, model, options )
+        _.defer( this.after_removed_item, model, options );
     },
     after_removed_item:function(model, options){
         this.trigger('items-collection-after-remove-item', model, options );
     },
 	/**
 	 * performs an ajax call to get json data
+     * @param params Object
+     * @param callback Function
+     * @param args Object
+     * @param scope Object
 	 */
 	get_data_from_server: function (params, callback, args, scope) {
 
 		var self = this,
 			defaults =  {
-				action: 'get_ddl_listing_data',
+				action: self.ACTION_DEFAULT,
 				ddl_listing_nonce: DDLayout_settings.DDL_JS.ddl_listing_nonce,
-				status: DDLayout_settings.DDL_JS.ddl_listing_status
+				status: DDLayout_settings.DDL_JS.ddl_listing_status,
+                group_slug: self.activeGroup
             }, send, show_posts = self.setUpShowPostsObject();
 
-        self.trigger('get_data_from_server', params);
-
         send = _.extend( {}, defaults, params );
+
+        self.trigger( 'get_data_from_server', send );
 
         send.current_page_status = DDLayout_settings.DDL_JS.ddl_listing_status;
 
         if( !_.isEmpty(show_posts) ){
             send.show_posts = show_posts;
         }
+
+        // if we are not simply switching tabs, reset groups
+        if( send.action !== self.ACTION_DEFAULT ){
+        	self.set( 'Groups', null );
+		}
 
 		self.fetch({
             contentType:'application/x-www-form-urlencoded; charset=UTF-8',
@@ -62,18 +82,30 @@ DDLayout.listing.models.ListingTable = Backbone.Model.extend({
 				}
 			},
 			error: function () {
-				//console.error(arguments);
+				console.error(arguments);
 			}
 		});
 	},
 	parse:function( data, attrs )
 	{
-		if( this.get('Groups') === null && data.Data === undefined ) return null;
-		if( this.get('Groups') !== null && data.Data === undefined ) return this.get('Groups');
+		if( ! this.get('Groups') && ! data.Data ) return null;
+		if( this.get('Groups') && ! data.Data ) return this.get('Groups');
 
-		this.set('Groups', new DDLayout.listing.models.ListingGroups(data.Data, {
-			parse: true
-		}) );
+		var self = this;
+		// do not overwrite Groups data but keep existing
+        if( self.get('Groups') ){
+        	_.each( data.Data, function( group ) {
+                self.get('Groups').add( new DDLayout.listing.models.ListingGroup( group, {
+                    parse: true
+                } ) );
+			});
+
+        } else {
+            self.set('Groups', new DDLayout.listing.models.ListingGroups(data.Data, {
+                parse: true
+            }) );
+        }
+
 
 		this.set('id', 0 );
 		this.set('name', 'master');
@@ -108,17 +140,28 @@ DDLayout.listing.models.ListingTable = Backbone.Model.extend({
 	},
 	search:function(s)
 	{
-		//if( s === '' || !s ) return;
+		if( s === '' || !s ) return;
 
-		var self = this, search = s,  push = [], parents = [];
+		var self = this,
+            search = s,
+            push = [],
+            parents = [],
+            currentId = self.slugsToIds[self.activeGroup],
+            currentParents = currentId * 10,
+            searchMe = self.get('Groups').where( {id:currentId} ),
+            searchMeParents = self.get('Groups').where( {id:currentParents} );
 
-		 self.get('Groups').each(function(g,k,l){
+		var groupsSearch = [ searchMe[0], searchMeParents[0] ];
+
+        if( ! self.searchCache ) self.searchCache = [ _.extend( {}, searchMe[0].toJSON() ), _.extend( {}, searchMeParents[0].toJSON() ) ];
+
+		 _.each(groupsSearch, function(g,k,l){
 			  var to_json = g.get('items')
 				  , items
 				  , term = search.toLocaleLowerCase(/*better explicitly pass locale as argument*/)
-				  , cache = self.cache;
+				  , cache = self.searchCache;
 
-			 if( cache && self.cache[k] && cache[k].hasOwnProperty('items') ) to_json.reset(cache[k].items, {silent:true})
+			 if( cache && cache[k] && cache[k].hasOwnProperty('items') ) to_json.reset(cache[k].items, {silent:true})
 			// to be refines
 			 items = to_json.filter(function(model) {
 				 if( model && model.get('post_name') && model.get('post_title') )
@@ -135,15 +178,13 @@ DDLayout.listing.models.ListingTable = Backbone.Model.extend({
 			 push[k] = items;
 		 });
 
-		_.each(push, function(v,k,l){
-			self.get('Groups').models[k].get('items').reset( push[k], {silent:true} );
-		});
+        searchMe[0].get('items').reset( push[0], {silent:true} );
+        searchMeParents[0].get('items').reset(parents, {silent:true});
 
-		self.get('Groups').models[0].get('items').add(parents, {silent:true})
+        self.get('Groups').reset( [ searchMe[0], searchMeParents[0] ], {silent:true} );
 
 		self.trigger('done_searching');
 	},
-
 	set_family: function (element) {
 		var self = this,
 			el = element,
@@ -210,7 +251,7 @@ DDLayout.listing.models.ListingTable = Backbone.Model.extend({
 		return parents;
 	},
     getGroupItems:function(group_id){
-        return this.get('Groups').get(group_id).get('items');
+        return this.get('Groups').get(group_id) ? this.get('Groups').get(group_id).get('items') : [];
     },
     setUpShowPostsObject:function(){
         var self = this, group_posts = self.getGroupItems(self.TO_PAGE), show = {};

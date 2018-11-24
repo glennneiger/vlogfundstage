@@ -44,7 +44,7 @@ class WPDD_GUI_FRONTEND_EDITOR extends WPDD_Layouts_Editor {
 			}
 
 
-		} else if ( is_admin() && isset( $_POST['action'] ) && ( $_POST['action'] === 'ddl_update_post_content_for_private_layout' || $_POST['action'] === 'dll_import_layouts' ) ) {
+		} else if ( is_admin() && isset( $_POST['render_private'] ) && ( $_POST['render_private'] === 'ddl_update_post_content_for_private_layout' || $_POST['action'] === 'dll_import_layouts' ) ) {
 
 			$this->init_async();
 
@@ -252,17 +252,7 @@ class WPDD_GUI_FRONTEND_EDITOR extends WPDD_Layouts_Editor {
 
 	public function add_cell_attributes( $out, $renderer, $cell ) {
 
-		$context = $renderer ? $renderer->get_context() : null;
-
-		if ( $renderer && $renderer->is_private_layout === true ) {
-			$layout_slug = $renderer->get_layout();
-			$layout_slug = $layout_slug->get_post_slug();
-		} else if ( $renderer && $renderer->is_private_layout === false ) {
-			$layout_slug = $context['slug'];
-		} else {
-			$layout_slug = '';
-		}
-
+		$layout_slug = $cell->get_post_slug();
 		$id   = $cell->get_unique_id() ? $cell->get_unique_id() : $cell->get_id();
 		$type = $cell->get_cell_type() ? $cell->get_cell_type() : strtolower( $cell->getKind() );
 		$kind = $cell->getKind();
@@ -498,6 +488,7 @@ class WPDD_GUI_FRONTEND_EDITOR extends WPDD_Layouts_Editor {
 				'column_prefixes_data'     => $this->get_framework_prefixes_data(),
 				'column_prefix_default'    => $this->settings->get_column_prefix(),
 				'woocommerce_archive_title'    => $this->get_woocommerce_archive_title(),
+			    'WPDDL_VERSION' => WPDDL_VERSION
 			),
 			'DDL_OPN' => WPDD_LayoutsListing::change_layout_dialog_options_name()
 		), 10, 3 );
@@ -644,7 +635,7 @@ class WPDD_GUI_FRONTEND_EDITOR extends WPDD_Layouts_Editor {
 
 			$send['show_messages'] = 'yes';
 
-			if ( isset( $send['message'] ) && isset( $send['message']['layout_changed'] ) && $send['message']['layout_changed'] === true ) {
+			if ( isset( $send['message'] ) && isset( $send['message']['layout_changed'] ) && $send['message']['layout_changed'] ) {
 
 				$layout_type = isset( $_POST['layout_type'] ) ? $_POST['layout_type'] : 'normal';
 				$this->handle_private_layout_post_content_data_save( isset( $_POST['post_id'] ) ? $_POST['post_id'] : null, $layout_type );
@@ -906,7 +897,7 @@ class WPDDL_FrontEndEditorDialogs extends Toolset_DialogBoxes {
 
 	public function dialog_dismiss() {
 
-		if ( current_user_can( 'edit_others_pages' ) === 'false' ) {
+		if ( user_can_edit_private_layouts() === 'false' ) {
 			die( WPDD_Utils::ajax_caps_fail( __METHOD__ ) );
 		}
 

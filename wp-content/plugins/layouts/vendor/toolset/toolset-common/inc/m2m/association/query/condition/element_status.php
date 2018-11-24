@@ -94,7 +94,8 @@ class Toolset_Association_Query_Condition_Element_Status extends Toolset_Associa
 					$accepted_statuses = array(
 						'publish',
 						'draft',
-						'pending'
+						'pending',
+						'future'
 					);
 					// FIXME make the logic complete (involving WP_Query business logic and Access)
 					if ( current_user_can( 'read_private_posts' ) ) {

@@ -19,8 +19,6 @@ class Toolset_Theme_Settings_Bootstrap {
 		$this->register_utils();
 		$this->register_inc();
 
-
-
 		add_filter( 'toolset_is_theme_settings_available', '__return_true' );
 
 		//add_action('init', array($this, 'run_compatibility_loader'), 98);

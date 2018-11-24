@@ -321,6 +321,8 @@ class WPCF_Field
      * removed - if ( !empty( $value ) || is_numeric( $value ) ) {
      *
      * @param type $value
+     *
+     * @refactoring !! Extreme spaghetti code.
      */
     function save( $value = null )
     {

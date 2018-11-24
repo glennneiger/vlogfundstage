@@ -58,6 +58,11 @@ class WPDD_json2layout {
 			$json_array = $json;
 		} else {
 			$json_array = json_decode( $json, true );
+
+			if( json_last_error() !== JSON_ERROR_NONE ){
+				$this->layout = null;
+				return $this->layout;
+			}
 		}
 
 		$this->layout_factory = $this->factories->get_factory( 'Layout', '' );

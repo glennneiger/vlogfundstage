@@ -381,7 +381,7 @@ if (typeof jQuery.fn.wpvToolsetHelp === 'undefined') {
 
             var $box = $('<div class="toolset-help ' + prms.classname + '"><div class="toolset-help-content"></div><div class="toolset-help-sidebar"></div></div>');
 
-            var $footer = $('<div class="toolset-help-footer"><button class="js-toolset-help-close js-toolset-help-close-forever button-secondary">' + wpv_help_box_texts.wpv_dont_show_it_again + '</button><button class="js-toolset-help-close js-toolset-help-close-once button-primary">' + wpv_help_box_texts.wpv_close + '</button></div>');
+            var $footer = $('<div class="toolset-help-footer"><button class="js-toolset-help-close js-toolset-help-close-forever button-secondary">' + toolset_utils_texts.wpv_dont_show_it_again + '</button><button class="js-toolset-help-close js-toolset-help-close-once button-primary">' + toolset_utils_texts.wpv_close + '</button></div>');
 
             if (prms.footer === true) {
                 $footer.appendTo($box);

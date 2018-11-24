@@ -83,7 +83,9 @@ class Toolset_User_Editors_Editor_Screen_Divi_Frontend
 	 */
 	public function set_custom_css_for_ct( $custom_css, $template_id ) {
 		if ( $this->is_divi_builder_used_in_ct( $template_id ) ) {
-			$custom_css .= get_post_meta( $template_id, '_et_pb_custom_css', true );
+			// The CSS written inside the Views Content Template editor needs to be completely skipped and it should be
+			// replaced by the CSS written in relevant section of the Divi builder.
+			$custom_css = get_post_meta( $template_id, '_et_pb_custom_css', true );
 		}
 
 		return $custom_css;
@@ -100,7 +102,7 @@ class Toolset_User_Editors_Editor_Screen_Divi_Frontend
 		$divi_builder_enabled = false;
 		if ( ! empty( $template_id ) ) {
 			$builder_selected = get_post_meta( $template_id, '_toolset_user_editors_editor_choice', true );
-			if ( $this->constants->constant( 'DIVI_SCREEN_ID' ) === $builder_selected ) {
+			if ( Toolset_User_Editors_Editor_Screen_Divi_Backend::DIVI_SCREEN_ID === $builder_selected ) {
 				$divi_builder_enabled = true;
 			}
 		}

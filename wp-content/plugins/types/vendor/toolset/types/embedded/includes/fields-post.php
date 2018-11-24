@@ -588,6 +588,7 @@ function wpcf_admin_post_meta_box( $post, $group, $echo = '', $open_style_editor
  * @param int $post_ID
  * @param WP_Post $post
  * @since unknown
+ * @refactoring !! Extreme spaghetti code.
  */
 function wpcf_admin_post_save_post_hook( $post_ID, $post ) {
 
@@ -621,16 +622,23 @@ function wpcf_admin_post_save_post_hook( $post_ID, $post ) {
 
 	$wpcf_form_data = wpcf_ensarr( wpcf_getarr( $_POST, 'wpcf' ) );
 
-	// Check wpcf_adjust_form_input_for_checkboxlike_fields() for information about side effects.
-	$wpcf_form_data = wpcf_adjust_form_input_for_checkboxlike_fields(
-        $wpcf_form_data,
-        wpcf_ensarr( wpcf_getarr( $_POST, '_wptoolset_checkbox' ) )
-    );
 
-	$wpcf_form_data = wpcf_adjust_form_input_for_checkboxlike_fields(
-        $wpcf_form_data,
-        wpcf_ensarr( wpcf_getarr( $_POST, '_wptoolset_radios' ) )
-    );
+	// For parent saving we need to add all checkbox/radio fields (even unchecked) to
+    // make sure save 0 is applied. This is NOT needed for the child update at this point
+    // (Including child post here will add all checkbox fields to children, even if the fields
+    // are not assigned to the child post cpt)
+    if( ! $is_child_post_update ) {
+	    // Check wpcf_adjust_form_input_for_checkboxlike_fields() for information about side effects.
+	    $wpcf_form_data = wpcf_adjust_form_input_for_checkboxlike_fields(
+		    $wpcf_form_data,
+		    wpcf_ensarr( wpcf_getarr( $_POST, '_wptoolset_checkbox' ) )
+	    );
+
+	    $wpcf_form_data = wpcf_adjust_form_input_for_checkboxlike_fields(
+		    $wpcf_form_data,
+		    wpcf_ensarr( wpcf_getarr( $_POST, '_wptoolset_radios' ) )
+	    );
+    }
 
 	if ( count( $wpcf_form_data ) ) {
 		$add_error_message = true;

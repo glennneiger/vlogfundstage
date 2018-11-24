@@ -127,7 +127,7 @@ class WPV_CT_List_Table_Embedded extends WPV_List_Table_Embedded {
     public function column_used_on( $item ) {
 
         if( $item->is_owned_by_view ) {
-            // This CT is used as a template for Loop Output in a View or WPA.
+            // This CT is used as a template for Loop in a View or WPA.
 
             // Get a View or WPA object. We'll be using only methods from their base, so it doesn't matter which one is it.
             $owner_view = WPV_View_Base::get_instance( $item->loop_output_id );

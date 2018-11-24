@@ -56,6 +56,8 @@ class WPV_Compatibility_WooCommerce {
 
 		add_action( 'wpv_action_wpv_before_forgot_password_form',      array( $this, 'wpv_action_wpv_before_forgot_password_form' ) );
 		add_action( 'wpv_action_wpv_after_forgot_password_form',       array( $this, 'wpv_action_wpv_after_forgot_password_form' ) );
+
+		add_action( 'wpv_action_after_archive_set', array( $this, 'fix_legacy_woocommerce_taxonomy_archives' ) );
 		
 	}
 	
@@ -198,7 +200,7 @@ class WPV_Compatibility_WooCommerce {
 						         . '</a> ';
 						}
 						$links .= '<a href="'
-							. 'https://wp-types.com/account/downloads/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Download WooCommerce Views'
+							. 'https://toolset.com/account/downloads/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Download WooCommerce Views'
 							. '" target="_blank">'
 							. __( 'Download from your Toolset account', 'wpv-views' )
 							. '</a>'
@@ -237,7 +239,7 @@ class WPV_Compatibility_WooCommerce {
 						          . '</a> ';
 						}
 						$links .= '<a href="'
-							. 'https://wp-types.com/account/downloads/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Download WooCommerce Views'
+							. 'https://toolset.com/account/downloads/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Download WooCommerce Views'
 							. '" target="_blank">'
 							. __( 'Download from your Toolset account', 'wpv-views' )
 							. '</a>'
@@ -268,7 +270,7 @@ class WPV_Compatibility_WooCommerce {
 				         . '</a>';
 			} else {
 				$links = '<a href="'
-				         . 'https://wp-types.com/account/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Download WooCommerce Views'
+				         . 'https://toolset.com/account/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Download WooCommerce Views'
 				         . '" class="button button-primary">'
 				         . __( 'Download WooCommerce Views', 'wpv-views' )
 				         . '</a>';
@@ -276,7 +278,7 @@ class WPV_Compatibility_WooCommerce {
 			$notice_text = '<p>'
 			               . sprintf(
 				               __( 'To add WooCommerce fields to Views and Content Templates, you need to use <a href="%s" title="Getting started with WooCommerce Views">WooCommerce Views</a>.', 'wpv-views' ),
-				               'https://wp-types.com/documentation/user-guides/getting-started-woocommerce-views/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Getting started with WooCommerce Views'
+				               'https://toolset.com/documentation/user-guides/getting-started-woocommerce-views/?utm_source=viewsplugin&utm_campaign=views&utm_medium=suggest-install-woocommerce-views&utm_term=Getting started with WooCommerce Views'
 			               )
 			               . '</p><p>'
 			               . $links
@@ -658,6 +660,27 @@ class WPV_Compatibility_WooCommerce {
 	public function wpv_action_wpv_after_forgot_password_form() {
 		if ( $this->is_woocommerce_installed ) {
 			add_filter( 'lostpassword_url', 'wc_lostpassword_url', 10, 1 );
+		}
+	}
+
+	/**
+	 * Remove the WooCommerce fix for a product taxonomy archive loop when a WPA is assigned to it.
+	 *
+	 * @param int|null $wpa_id
+	 * 
+	 * @since 2.6.0
+	 */
+	public function fix_legacy_woocommerce_taxonomy_archives( $wpa_id ) {
+		if ( 
+			null === $wpa_id
+			|| ! $this->is_woocommerce_installed 
+			|| ! function_exists( 'is_product_taxonomy' ) 
+			|| ! is_callable( array( 'WC_Template_Loader', 'unsupported_theme_init' ) )
+		) {
+			return;
+		}
+		if ( is_product_taxonomy() ) {
+			remove_action( 'template_redirect', array( 'WC_Template_Loader', 'unsupported_theme_init' ) );
 		}
 	}
 	

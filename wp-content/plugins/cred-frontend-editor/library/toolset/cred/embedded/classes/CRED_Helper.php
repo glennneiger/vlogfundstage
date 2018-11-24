@@ -32,7 +32,7 @@ final class CRED_Helper {
 	}
 
 	/**
-     * Setup CRED menus in admin
+     * Setup Toolset Forms menus in admin
      *
 	 * @param $pages
 	 *
@@ -124,11 +124,6 @@ final class CRED_Helper {
 			case 'toolset_page_CRED_User_Forms':
 				CRED_Loader::get( 'TABLE/EmbeddedUserForms' ); //DEPRECATED
 				break;
-
-			case 'cred_page_CRED_Fields'://DEPRECATED
-			case 'toolset_page_CRED_Fields':
-				CRED_Loader::get( 'TABLE/Custom_Fields' );
-				break;
 		}
 	}
 
@@ -184,7 +179,7 @@ final class CRED_Helper {
 			$set_on_pages = array( 'view-archives-editor', 'views-editor' );
 
 			/**
-			 * Get admin page slugs where CRED assets, used in form create and edit admin pages,
+			 * Get admin page slugs where Toolset Forms assets, used in form create and edit admin pages,
 			 * should be enueued.
 			 *
 			 * @param array $set_on_pages Array of page slugs.
@@ -219,7 +214,7 @@ final class CRED_Helper {
 	 * admin_enqueue_scripts action callback
 	 */
 	public static function onAdminEnqueueScripts() {
-		// On what admin pages should CRED assets be loaded?
+		// On what admin pages should Toolset Forms assets be loaded?
 		$set_on_pages = array(
 			'view-archives-editor',
 			'views-editor',
@@ -249,7 +244,7 @@ final class CRED_Helper {
 			'pages' => $set_on_pages,
 		) );
 
-		CRED_Loader::loadAsset( 'STYLE/cred_utility_css', 'cred_utility_css', false, CRED_CONCAT_ASSETS );
+		CRED_Loader::loadAsset( 'STYLE/cred_utility_css', 'cred_utility_css', false, false );
 		wp_enqueue_style( 'cred_utility_css' );
 
 		do_action( 'toolset_enqueue_styles', array( 'toolset-notifications-css' ) );
@@ -390,6 +385,7 @@ final class CRED_Helper {
 				wp_enqueue_script( 'cred_cred_post_dev' );
 				wp_enqueue_script( 'cred_wizard_dev' );
 				wp_enqueue_style( 'cred_cred_style_dev' );
+				wp_enqueue_style( 'cred_wizard_general_style' );
 				// WordPress 4.0 compatibility: remove all the new fancy editor enhancements that break the highlighting and toolbars
 				wp_dequeue_script( 'editor-expand' );
 			} else {
@@ -415,7 +411,7 @@ final class CRED_Helper {
 		) {
 			?>
             <style type="text/css">
-            /* CRED plugin ICONS */
+            /* Toolset Forms plugin ICONS */
             #icon-CRED_Forms.icon32-posts-cred-form,
             #icon-edit.icon32-posts-cred-form,
             #icon-cred-frontend-editor {
@@ -426,10 +422,6 @@ final class CRED_Helper {
                 if ( (self::$currentPage->isCustomPostEdit || self::$currentPage->isCustomPostNew) ||
                         (self::$currentUPage->isCustomPostEdit || self::$currentUPage->isCustomPostNew) ) {
                     ?>
-            #credformactionmessage,
-            #cred_form_action_message {
-                height: 200px;
-            }
 
             /* reduce FOUC a bit */
             #screen-meta-links,
@@ -438,16 +430,6 @@ final class CRED_Helper {
             .wrap div.error, .wrap div.updated {
                 display: none !important;
             }
-
-            /*div.wrap {
-                        padding-bottom:140px;
-                    }*/
-            /*#wpbody-content, div.wrap, form#post {
-                        position:relative;
-                        overflow:visible;
-                        min-height:100%;
-                        padding-bottom:140px;
-                    }*/
             <?php } ?>
             </style><?php
 		}
@@ -476,37 +458,14 @@ final class CRED_Helper {
 			case 'edit':
 				$help_link = CRED_CRED::$help['cred_inserting_edit_links']['link'];
 				$help_text = CRED_CRED::$help['cred_inserting_edit_links']['text'];
-				$help_link_query_args = array(
-					'utm_source' => 'credplugin',
-					'utm_campaign' => 'cred',
-					'utm_medium' => 'form-edit-notice',
-					'utm_term' => $help_text
-				);
-				$help_link = add_query_arg( $help_link_query_args, $help_link );
 				break;
 			default:
 				if ( 'post' == $post_type  ) {
 					$help_link = CRED_CRED::$help['add_post_forms_to_site']['link'];
 					$help_text = CRED_CRED::$help['add_post_forms_to_site']['text'];
-					$help_link_query_args = array(
-						'utm_source' => 'credplugin',
-						'utm_campaign' => 'cred',
-						'utm_medium' => 'form-creation-notice',
-						'utm_term' => $help_text
-					);
-					$help_link = add_query_arg( $help_link_query_args, $help_link );
-					$help_link .= '#designing-the-cred-post-form';
 				} else {
 					$help_link = CRED_CRED::$help['add_user_forms_to_site']['link'];
 					$help_text = CRED_CRED::$help['add_user_forms_to_site']['text'];
-					$help_link_query_args = array(
-						'utm_source' => 'credplugin',
-						'utm_campaign' => 'cred',
-						'utm_medium' => 'form-creation-notice',
-						'utm_term' => $help_text
-					);
-					$help_link = add_query_arg( $help_link_query_args, $help_link );
-					$help_link .= '#designing-the-cred-user-form';
 				}
 				break;
 		}
@@ -555,62 +514,13 @@ final class CRED_Helper {
 	 * admin_notice action callback
 	 */
 	public static function userFormCommerceAlertNotice() {
-		//You selected to 'Enable registration on the Checkout' in WooCommerce. This means that WooCommerce will automatically create users when paying. You are also use CRED to create new users, so for each registration, your site will have two users. To avoid this, go to the WooCommerce settings and disable 'Enable registration on the Checkout'.
+		//You selected to 'Enable registration on the Checkout' in WooCommerce. This means that WooCommerce will automatically create users when paying. You are also use Toolset Forms to create new users, so for each registration, your site will have two users. To avoid this, go to the WooCommerce settings and disable 'Enable registration on the Checkout'.
 		$woocommerce_settings = admin_url( 'admin.php' ) . '?page=wc-settings&tab=account';
 		?>
         <div class="cred-notification cred-error">
         <p>
             <i class="fa fa-warning"></i>
-			<?php printf( __( 'You selected to \'Enable registration on the Checkout\' in WooCommerce.<br>This means that WooCommerce will automatically create users when paying.<br>You are also using CRED to create new users, so for each registration, your site will have two users.<br>To avoid this, go to the %s and disable \'Enable registration on the Checkout\'.', 'wp-cred' ), '<a target="_blank" href="' . $woocommerce_settings . '">WooCommerce settings</a>' ); ?>
-        </p>
-        </div><?php
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public static function accessActiveFormAlertNotice() {
-		?>
-        <div class="cred-notification cred-error" style="margin-right:15px;">
-        <p>
-            <i class="fa fa-warning"></i> <b>Access Control</b>
-        </p>
-        <p>
-			<?php printf( __( 'To control who can see and use this form, go to the %s', 'wp-cred' ), '<a href="' . admin_url( 'admin.php?page=types_access' ) . '">Access</a>' ); ?>
-			<?php
-			$message_id = 'cred_dismiss_message_access_active';
-			echo '<div style="float:right;margin-top:-30px;"><a onclick="jQuery(this).parent().parent().fadeOut();jQuery.get(\''
-				. admin_url( 'admin-ajax.php?action=cred_dismiss_messages&amp;message_id='
-					. $message_id . '&amp;_wpnonce='
-					. wp_create_nonce( 'cred-access-message' ) ) . '\');return false;"'
-				. 'class="button-secondary" href="javascript:void(0);">'
-				. __( "Don't show this message again", 'wp-cred' ) . '</a></div>';
-			?>
-        </p>
-
-        </div><?php
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public static function accessNotActiveFormAlertNotice() {
-		?>
-        <div class="cred-notification cred-error" style="margin-right:15px;">
-        <p>
-            <i class="fa fa-warning"></i> <b>Access Control</b>
-        </p>
-        <p>
-			<?php printf( __( 'This Form will be accessible to everyone, including guest (not logged in). They will be able to submit/edit content using this form.<br>To control who can use the form, please install %s', 'wp-cred' ), '<a target="_blank" href="https://wp-types.com/home/toolset-components/#access">Access plugin</a>' ); ?>
-			<?php
-			$message_id = 'cred_dismiss_message_access_not_active';
-			echo '<div style="float:right;margin-top:-30px;"><a onclick="jQuery(this).parent().parent().fadeOut();jQuery.get(\''
-				. admin_url( 'admin-ajax.php?action=cred_dismiss_messages&amp;message_id='
-					. $message_id . '&amp;_wpnonce='
-					. wp_create_nonce( 'cred-access-message' ) ) . '\');return false;"'
-				. 'class="button-secondary" href="javascript:void(0);">'
-				. __( "Don't show this message again", 'wp-cred' ) . '</a></div>';
-			?>
+			<?php printf( __( 'You selected to \'Enable registration on the Checkout\' in WooCommerce.<br>This means that WooCommerce will automatically create users when paying.<br>You are also using Toolset Forms to create new users, so for each registration, your site will have two users.<br>To avoid this, go to the %s and disable \'Enable registration on the Checkout\'.', 'wp-cred' ), '<a target="_blank" href="' . $woocommerce_settings . '">WooCommerce settings</a>' ); ?>
         </p>
         </div><?php
 	}
@@ -817,7 +727,7 @@ final class CRED_Helper {
 	}
 
 	/**
-     * Add CRED support for WPML creating terms
+     * Add Toolset Forms support for WPML creating terms
      *
 	 * @param $term_lang
 	 *
@@ -852,29 +762,6 @@ final class CRED_Helper {
 	}
 
 	/**
-     * Applying the_content Filters before rendering content
-     *
-	 * @param string $content content to apply filters to
-	 *
-	 * @return mixed
-	 */
-	public static function render_with_basic_filters( $content ) {
-		add_shortcode( 'cred-form', array( __CLASS__, 'credFormShortcode' ) );
-		add_shortcode( 'cred_form', array( __CLASS__, 'credFormShortcode' ) );
-		add_shortcode( 'cred-user-form', array( __CLASS__, 'credUserFormShortcode' ) );
-		add_shortcode( 'cred_user_form', array( __CLASS__, 'credUserFormShortcode' ) );
-
-		$content = apply_filters( 'the_content', $content );
-
-		remove_shortcode( 'cred-form', array( __CLASS__, 'credFormShortcode' ) );
-		remove_shortcode( 'cred_form', array( __CLASS__, 'credFormShortcode' ) );
-		remove_shortcode( 'cred-user-form', array( __CLASS__, 'credUserFormShortcode' ) );
-		remove_shortcode( 'cred_user_form', array( __CLASS__, 'credUserFormShortcode' ) );
-
-		return $content;
-    }
-
-	/**
 	 * @param $status
 	 * @param $option
 	 * @param $value
@@ -885,6 +772,7 @@ final class CRED_Helper {
 		if ( 'cred_per_page' == $option ) {
 			return $value;
 		}
+		return $status;
 	}
 
 	public static function setupExtraHooks() {
@@ -969,10 +857,10 @@ final class CRED_Helper {
 			add_filter( 'cred_data_not_saved_message', array( __CLASS__, 'disableCREDSubmitMessage' ), 20 );
 		}
 
-		//CRED filters
+		// Toolset Forms filters
 
 		/**
-		 * Returns CRED form messages
+		 * Returns Toolset Forms form messages
 		 *
 		 * @since 1.9
 		 *
@@ -985,7 +873,7 @@ final class CRED_Helper {
 	/**
 	 * cred_modules_library_link_components
 	 *
-	 * Hooks into the Module Manager Library listing and offers links to edit/readonly versions of each CRED component
+	 * Hooks into the Module Manager Library listing and offers links to edit/readonly versions of each Toolset Forms component
 	 *
 	 * @param $current_module
 	 * @param $modman_modules (array) installed modules as stored in the Options table
@@ -1006,7 +894,7 @@ final class CRED_Helper {
 			global $wpdb;
 			?>
             <div class="module-elements-container">
-                <h4><?php _e( 'CRED elements in this Module', 'wp-cred' ); ?></h4>
+                <h4><?php _e( 'Toolset Forms elements in this Module', 'wp-cred' ); ?></h4>
                 <ul class="module-elements">
 					<?php
 					if ( isset( $this_module_data[ _CRED_MODULE_MANAGER_KEY_ ] ) &&
@@ -1038,7 +926,7 @@ final class CRED_Helper {
 			global $wpdb;
 			?>
             <div class="module-elements-container">
-                <h4><?php _e( 'CRED elements in this Module', 'wp-cred' ); ?></h4>
+                <h4><?php _e( 'Toolset Forms elements in this Module', 'wp-cred' ); ?></h4>
                 <ul class="module-elements">
 					<?php
 					if ( isset( $this_module_data[ _CRED_MODULE_MANAGER_USER_KEY_ ] ) &&
@@ -1086,7 +974,7 @@ final class CRED_Helper {
 	public static function register_modules_cred_sections( $sections ) {
 		//TODO: change with fonctcustom icon
 		$sections[ _CRED_MODULE_MANAGER_KEY_ ] = array(
-			'title' => __( 'CRED Post Forms', 'wp-cred' ),
+			'title' => __( 'Toolset Post Forms', 'wp-cred' ),
 			'icon' => CRED_ASSETS_URL . '/images/CRED-icon-color_12X12.png',
 			'icon_css' => 'icon-cred-logo ont-icon-16 ont-color-orange',
 		);
@@ -1101,7 +989,7 @@ final class CRED_Helper {
 	 */
 	public static function register_modules_cred_user_sections( $sections ) {
 		$sections[ _CRED_MODULE_MANAGER_USER_KEY_ ] = array(
-			'title' => __( 'CRED User Forms', 'wp-cred' ),
+			'title' => __( 'Toolset User Forms', 'wp-cred' ),
 			'icon' => CRED_ASSETS_URL . '/images/CRED-icon-color_12X12.png',
 			'icon_css' => 'icon-cred-logo ont-icon-16 ont-color-orange',
 		);
@@ -1249,7 +1137,7 @@ final class CRED_Helper {
 			$results = CRED_XML_Processor::importFromXMLString( $xmlstring );
 		}
 		if ( false === $results || is_wp_error( $results ) ) {
-			$error = ( false === $results ) ? __( 'Error during CRED Post Forms import', 'wp-cred' ) : $results->get_error_message( $results->get_error_code() );
+			$error = ( false === $results ) ? __( 'Error during Toolset Post Forms import', 'wp-cred' ) : $results->get_error_message( $results->get_error_code() );
 			$results = array( 'new' => 0, 'updated' => 0, 'failed' => 0, 'errors' => array( $error ) );
 		}
 		unset( $results['settings'] );
@@ -1289,7 +1177,7 @@ final class CRED_Helper {
 			$results = CRED_XML_Processor::importUserFromXMLString( $xmlstring );
 		}
 		if ( false === $results || is_wp_error( $results ) ) {
-			$error = ( false === $results ) ? __( 'Error during CRED User Forms import', 'wp-cred' ) : $results->get_error_message( $results->get_error_code() );
+			$error = ( false === $results ) ? __( 'Error during Toolset User Forms import', 'wp-cred' ) : $results->get_error_message( $results->get_error_code() );
 			$results = array( 'new' => 0, 'updated' => 0, 'failed' => 0, 'errors' => array( $error ) );
 		}
 		unset( $results['settings'] );
@@ -1362,6 +1250,14 @@ final class CRED_Helper {
 		return $items;
 	}
 
+
+    /**
+     * Get all forms... from cache?
+     *
+     * This is a potential performance bottleneck. Use apply_filters( 'cred_get_available_forms', array(), $domain ); instead.
+     *
+     * @deprecated
+     */
 	public static function getAllFormsCached() {
 		static $cache = null;
 		if ( null === $cache ) {
@@ -1371,6 +1267,13 @@ final class CRED_Helper {
 		return $cache;
 	}
 
+    /**
+     * Get all user forms... from cache?
+     *
+     * This is a potential performance bottleneck. Use apply_filters( 'cred_get_available_forms', array(), $domain ); instead.
+     *
+     * @deprecated
+     */
 	public static function getAllUserFormsCached() {
 		static $cache = null;
 		if ( null === $cache ) {
@@ -1378,664 +1281,6 @@ final class CRED_Helper {
 		}
 
 		return $cache;
-	}
-
-	private static function buildCredCaps() {
-		//public static $caps = null;
-
-		if ( ! isset( $caps ) ) {
-			$caps = array();
-
-			$forms = self::getAllFormsCached();
-			// register custom CRED Frontend capabilities specific to each form type
-			foreach ( $forms as $form ) {
-				$settings = isset( $form->meta ) ? maybe_unserialize( $form->meta ) : false;
-				// caps for forms that create
-				if ( $settings && $settings->form['type'] == 'new' ) {
-					$cred_cap = 'create_posts_with_cred_' . $form->ID;
-					$caps[] = $cred_cap;
-				} elseif ( $settings && $settings->form['type'] == 'edit' ) {
-					$cred_cap = 'edit_own_posts_with_cred_' . $form->ID;
-					$caps[] = $cred_cap;
-					$cred_cap = 'edit_other_posts_with_cred_' . $form->ID;
-					$caps[] = $cred_cap;
-				}
-			}
-			// these caps do not require a specific form
-			$cred_cap = 'delete_own_posts_with_cred';
-			$caps[] = $cred_cap;
-			$cred_cap = 'delete_other_posts_with_cred';
-			$caps[] = $cred_cap;
-		}
-
-		return $caps;
-	}
-
-	private static function buildCredUserCaps() {
-		//static $caps = null;
-
-		if ( ! isset( $caps ) ) {
-			$caps = array();
-
-			$forms = self::getAllUserFormsCached();
-			// register custom CRED Frontend capabilities specific to each form type
-			foreach ( $forms as $form ) {
-				$settings = isset( $form->meta ) ? maybe_unserialize( $form->meta ) : false;
-				// caps for forms that create
-				if ( $settings && $settings->form['type'] == 'new' ) {
-					$cred_cap = 'create_users_with_cred_' . $form->ID;
-					$caps[] = $cred_cap;
-				} elseif ( $settings && $settings->form['type'] == 'edit' ) {
-					$cred_cap = 'edit_own_user_with_cred_' . $form->ID;
-					$caps[] = $cred_cap;
-					$cred_cap = 'edit_other_users_with_cred_' . $form->ID;
-					$caps[] = $cred_cap;
-				}
-			}
-			// these caps do not require a specific form
-			$cred_cap = 'delete_own_user_with_cred';
-			$caps[] = $cred_cap;
-			$cred_cap = 'delete_other_users_with_cred';
-			$caps[] = $cred_cap;
-		}
-
-		return $caps;
-	}
-
-	/**
-     * Add current CRED caps to specific role/user
-     *
-	 * @param $r
-	 */
-	private static function addCredCapsToRoleUser( $r ) {
-		$caps = ( isset( $r->capabilities ) ) ? $r->capabilities : array();
-		$obsolete_cred_caps = array();
-
-		// clear forms caps which do not exist any more
-		foreach ( array_keys( $caps ) as $cap ) {
-			if ( preg_match( '/^create\_posts\_with\_cred\_\d+$/', $cap ) ) {
-				$obsolete_cred_caps[] = $cap;
-			} elseif ( preg_match( '/^edit\_own\_posts\_with\_cred\_\d+$/', $cap ) ) {
-				$obsolete_cred_caps[] = $cap;
-			} elseif ( preg_match( '/^edit\_other\_posts\_with\_cred\_\d+$/', $cap ) ) {
-				$obsolete_cred_caps[] = $cap;
-			}
-		}
-		//Get caps for current role
-		$caps = self::buildCredCaps();
-
-		//Remove unused caps
-		foreach ( $obsolete_cred_caps as $cred_obsolete_cap ) {
-			if ( ! in_array( $cred_obsolete_cap, $caps ) ) {
-				$r->remove_cap( $cred_obsolete_cap );
-			}
-		}
-
-		// register custom CRED Frontend capabilities specific to each form type for existing forms
-		// Add only new caps
-		foreach ( $caps as $cred_cap ) {
-			if ( ! $r->has_cap( $cred_cap ) ) {
-				$r->add_cap( $cred_cap );
-			}
-		}
-	}
-
-	/**
-	 * @param $r
-	 */
-	private static function addCredUserCapsToRoleUser( $r ) {
-		$caps = ( isset( $r->capabilities ) ) ? $r->capabilities : array();
-		$obsolete_cred_caps = array();
-
-		// clear forms caps which do not exist any more
-		foreach ( array_keys( $caps ) as $cap ) {
-			if ( preg_match( '/^create\_users\_with\_cred\_\d+$/', $cap ) ) {
-				$obsolete_cred_caps[] = $cap;
-			} elseif ( preg_match( '/^edit\_own\_user\_with\_cred\_\d+$/', $cap ) ) {
-				$obsolete_cred_caps[] = $cap;
-			} elseif ( preg_match( '/^edit\_other\_users\_with\_cred\_\d+$/', $cap ) ) {
-				$obsolete_cred_caps[] = $cap;
-			}
-		}
-		//Get caps for current role
-		$caps = self::buildCredUserCaps();
-
-		//Remove unused caps
-		foreach ( $obsolete_cred_caps as $cred_obsolete_cap ) {
-			if ( ! in_array( $cred_obsolete_cap, $caps ) ) {
-				$r->remove_cap( $cred_obsolete_cap );
-			}
-		}
-
-		// register custom CRED Frontend capabilities specific to each form type for existing forms
-		// Add only new caps
-		foreach ( $caps as $cred_cap ) {
-			if ( ! $r->has_cap( $cred_cap ) ) {
-				$r->add_cap( $cred_cap );
-			}
-		}
-	}
-
-	public static function setupCustomCaps() {
-		global $wp_roles;
-
-		if (
-		function_exists( 'wpcf_access_register_caps' )
-		) {
-			// Integrate with Toolset Access
-			// Since 1.7 we can define a custom tab on Access >= 2.1
-			$access_version = apply_filters( 'toolset_access_version_installed', '1.0' );
-			if ( version_compare( $access_version, '2.0' ) > 0 ) {
-				// Toolset Access 2.1 or above, so define custom tabs
-				add_filter( 'types-access-tab', array( __CLASS__, 'register_access_cred_tab' ) );
-				add_filter( 'types-access-area-for-cred-forms', array( __CLASS__, 'register_access_cred_area' ) );
-			} else {
-				// Toolset Access below 2.1, so define custom areas in the common third party tab
-				add_filter( 'types-access-area', array( __CLASS__, 'register_access_cred_area' ) );
-			}
-			add_filter( 'types-access-group', array( __CLASS__, 'register_access_cred_group' ), 10, 2 );
-			add_filter( 'types-access-cap', array( __CLASS__, 'register_access_cred_caps' ), 10, 3 );
-			// do any necessary changes when access imports / exports custom capabilities
-			add_filter( 'access_import_custom_capabilities_' . '__CRED_CRED', array(
-				__CLASS__,
-				'import_access_cred_caps',
-			), 1, 2 );
-			add_filter( 'access_export_custom_capabilities_' . '__CRED_CRED', array(
-				__CLASS__,
-				'export_access_cred_caps',
-			), 1, 2 );
-		} elseif (
-			function_exists( 'ure_not_edit_admin' ) /* User Role Editor plugin */ ||
-			class_exists( 'Members_Load' ) /* Members plugin */
-		) { // export custom cred caps to admin role for other plugins to manipulate them (eg User Role Editor or Members)
-			if ( ! isset( $wp_roles ) && class_exists( 'WP_Roles' ) ) {
-				$wp_roles = new WP_Roles();
-			}
-			$wp_roles->use_db = true;
-			if ( $wp_roles->is_role( 'administrator' ) ) {
-				$administrator = $wp_roles->get_role( 'administrator' );
-			} else {
-				$administrator = false;
-				trigger_error( __( 'Administrator Role not found! CRED capabilities will not work', 'wp-cred' ), E_USER_NOTICE );
-
-				return;
-			}
-
-			if ( $administrator ) {
-				self::addCredCapsToRoleUser( $administrator );
-			}
-		} else {
-			self::$caps = self::buildCredCaps();
-			add_filter( 'user_has_cap', array( 'CRED_Helper', 'defaultCredCapsFilter' ), 5, 3 );
-		}
-	}
-
-	public static function setupCustomUserCaps() {
-		global $wp_roles;
-
-		if (
-		function_exists( 'wpcf_access_register_caps' )
-		) {
-			// Integrate with Toolset Access
-			// Since 1.7 we can define a custom tab on Access >= 2.1
-			$access_version = apply_filters( 'toolset_access_version_installed', '1.0' );
-			if ( version_compare( $access_version, '2.0' ) > 0 ) {
-				// Toolset Access 2.1 or above, so define custom tabs
-				add_filter( 'types-access-tab', array( __CLASS__, 'register_access_cred_tab' ) );
-				add_filter( 'types-access-area-for-cred-forms', array( __CLASS__, 'register_access_cred_user_area' ) );
-			} else {
-				// Toolset Access below 2.1, so define custom areas in the common third party tab
-				add_filter( 'types-access-area', array( __CLASS__, 'register_access_cred_user_area' ) );
-			}
-			add_filter( 'types-access-group', array( __CLASS__, 'register_access_cred_user_group' ), 10, 2 );
-			add_filter( 'types-access-cap', array( __CLASS__, 'register_access_cred_user_caps' ), 10, 3 );
-			// do any necessary changes when access imports / exports custom capabilities
-			add_filter( 'access_import_custom_capabilities_' . '__CRED_CRED_USER', array(
-				__CLASS__,
-				'import_access_cred_user_caps',
-			), 1, 2 );
-			add_filter( 'access_export_custom_capabilities_' . '__CRED_CRED_USER', array(
-				__CLASS__,
-				'export_access_cred_user_caps',
-			), 1, 2 );
-		} elseif (
-			function_exists( 'ure_not_edit_admin' ) /* User Role Editor plugin */ ||
-			class_exists( 'Members_Load' ) /* Members plugin */
-		) { // export custom cred caps to admin role for other plugins to manipulate them (eg User Role Editor or Members)
-			if ( ! isset( $wp_roles ) && class_exists( 'WP_Roles' ) ) {
-				$wp_roles = new WP_Roles();
-			}
-			$wp_roles->use_db = true;
-			if ( $wp_roles->is_role( 'administrator' ) ) {
-				$administrator = $wp_roles->get_role( 'administrator' );
-			} else {
-				$administrator = false;
-				trigger_error( __( 'Administrator Role not found! CRED Users capabilities will not work', 'wp-cred' ), E_USER_NOTICE );
-
-				return;
-			}
-
-			if ( $administrator ) {
-				self::addCredUserCapsToRoleUser( $administrator );
-			}
-		} else {
-			self::$caps = array_merge( self::$caps, self::buildCredUserCaps() );
-			add_filter( 'user_has_cap', array( 'CRED_Helper', 'defaultCredCapsFilter' ), 5, 3 );
-		}
-	}
-
-	/**
-     * Default cred caps filter, all true
-     *
-	 * @param $allcaps
-	 * @param $caps
-	 * @param $args
-	 *
-	 * @return mixed
-	 */
-	public static function defaultCredCapsFilter( $allcaps, $caps, $args ) {
-		foreach ( self::$caps as $cred_cap ) {
-			$allcaps[ $cred_cap ] = true;
-		}
-
-		return $allcaps;
-	}
-
-	/**
-	 * register_access_cred_tab
-	 *
-	 * Register a custom tab in the Access Control admin page for managing CRED forms capabilities.
-	 *
-	 * @note Requires Access 2.1 or above.
-	 * @note Registered twice as we have different methods for post and user forms.
-	 *
-	 * @since 1.7
-	 */
-	public static function register_access_cred_tab( $tabs ) {
-		$tabs['cred-forms'] = __( 'CRED Forms', 'wp-cred' );
-
-		return $tabs;
-	}
-
-	/**
-     * Register a new Types Access Area for custom CRED Frontend capabilities
-     *
-	 * @param $areas
-	 *
-	 * @return array
-	 */
-	public static function register_access_cred_area( $areas ) {
-		$CRED_ACCESS_AREA_NAME = __( 'CRED Frontend Access', 'wp-cred' );
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED';
-		$CRED_ACCESS_GROUP_NAME = __( 'Post Forms Front-end Access Group', 'wp-cred' );
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_GROUP';
-		$areas[] = array( 'id' => $CRED_ACCESS_AREA_ID, 'name' => $CRED_ACCESS_AREA_NAME );
-		return $areas;
-	}
-
-	/**
-	 * @param $areas
-	 *
-	 * @return array
-	 */
-	public static function register_access_cred_user_area( $areas ) {
-		$CRED_ACCESS_AREA_NAME = __( 'CRED Users Frontend Access', 'wp-cred' );
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED_USER';
-		$CRED_ACCESS_GROUP_NAME = __( 'User Forms Front-end Access Group', 'wp-cred' );
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_USER_GROUP';
-		$areas[] = array( 'id' => $CRED_ACCESS_AREA_ID, 'name' => $CRED_ACCESS_AREA_NAME );
-		return $areas;
-	}
-
-	/**
-     * Register a new Types Access Group within Area for custom CRED Frontend capabilities
-     *
-	 * @param $groups
-	 * @param $id
-	 *
-	 * @return array
-	 */
-	public static function register_access_cred_group( $groups, $id ) {
-		$CRED_ACCESS_AREA_NAME = __( 'CRED Frontend Access', 'wp-cred' );
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED';
-		$CRED_ACCESS_GROUP_NAME = __( 'Post Forms Front-end Access Group', 'wp-cred' );
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_GROUP';
-		if ( $id == $CRED_ACCESS_AREA_ID ) {
-			$groups[] = array( 'id' => $CRED_ACCESS_GROUP_ID, 'name' => $CRED_ACCESS_GROUP_NAME );
-		}
-
-		return $groups;
-	}
-
-	/**
-	 * @param $groups
-	 * @param $id
-	 *
-	 * @return array
-	 */
-	public static function register_access_cred_user_group( $groups, $id ) {
-		$CRED_ACCESS_AREA_NAME = __( 'CRED Users Frontend Access', 'wp-cred' );
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED_USER';
-		$CRED_ACCESS_GROUP_NAME = __( 'User Forms Front-end Access Group', 'wp-cred' );
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_USER_GROUP';
-		if ( $id == $CRED_ACCESS_AREA_ID ) {
-			$groups[] = array( 'id' => $CRED_ACCESS_GROUP_ID, 'name' => $CRED_ACCESS_GROUP_NAME );
-		}
-
-		return $groups;
-	}
-
-	/**
-     * Register custom CRED Frontend capabilities specific to each form type
-     *
-	 * @param $caps
-	 * @param $area_id
-	 * @param $group_id
-	 *
-	 * @return mixed
-	 */
-	public static function register_access_cred_caps( $caps, $area_id, $group_id ) {
-		$CRED_ACCESS_AREA_NAME = __( 'CRED Frontend Access', 'wp-cred' );
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED';
-		$CRED_ACCESS_GROUP_NAME = __( 'Post Forms Front-end Access Group', 'wp-cred' );
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_GROUP';
-		$default_role = 'author';
-
-		if ( $area_id == $CRED_ACCESS_AREA_ID && $group_id == $CRED_ACCESS_GROUP_ID ) {
-			$forms = self::getAllFormsCached();
-			foreach ( $forms as $form ) {
-				$settings = isset( $form->meta ) ? maybe_unserialize( $form->meta ) : false;
-				// caps for forms that create
-				if ( $settings && isset( $settings->form['type'] ) && 'new' == $settings->form['type'] ) {
-					$cred_cap = 'create_posts_with_cred_' . $form->ID;
-					$caps[ $cred_cap ] = array(
-						'cap_id' => $cred_cap,
-						'title' => sprintf( __( 'Create Custom Post with CRED Form "%s"', 'wp-cred' ), $form->post_title ),
-						'default_role' => $default_role,
-					);
-				} elseif ( $settings && isset( $settings->form['type'] ) && 'edit' == $settings->form['type'] ) {
-					$cred_cap = 'edit_own_posts_with_cred_' . $form->ID;
-					$caps[ $cred_cap ] = array(
-						'cap_id' => $cred_cap,
-						'title' => sprintf( __( 'Edit Own Custom Post with CRED Form "%s"', 'wp-cred' ), $form->post_title ),
-						'default_role' => $default_role,
-					);
-					$cred_cap = 'edit_other_posts_with_cred_' . $form->ID;
-					$caps[ $cred_cap ] = array(
-						'cap_id' => $cred_cap,
-						'title' => sprintf( __( 'Edit Others Custom Post with CRED Form "%s"', 'wp-cred' ), $form->post_title ),
-						'default_role' => $default_role,
-					);
-				}
-			}
-			// these caps do not require a specific form
-			$caps['delete_own_posts_with_cred'] = array(
-				'cap_id' => 'delete_own_posts_with_cred',
-				'title' => __( 'Delete Own Posts using CRED', 'wp-cred' ),
-				'default_role' => $default_role,
-			);
-			$caps['delete_other_posts_with_cred'] = array(
-				'cap_id' => 'delete_other_posts_with_cred',
-				'title' => __( 'Delete Others Posts using CRED', 'wp-cred' ),
-				'default_role' => $default_role,
-			);
-		}
-
-		return $caps;
-	}
-
-	/**
-	 * @param $caps
-	 * @param $area_id
-	 * @param $group_id
-	 *
-	 * @return mixed
-	 */
-	public static function register_access_cred_user_caps( $caps, $area_id, $group_id ) {
-		$CRED_ACCESS_AREA_NAME = __( 'CRED USers Frontend Access', 'wp-cred' );
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED_USER';
-		$CRED_ACCESS_GROUP_NAME = __( 'User Forms Front-end Access Group', 'wp-cred' );
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_USER_GROUP';
-		$default_role = 'administrator';
-
-		if ( $area_id == $CRED_ACCESS_AREA_ID && $group_id == $CRED_ACCESS_GROUP_ID ) {
-			$forms = self::getAllUserFormsCached();
-			foreach ( $forms as $form ) {
-				$settings = isset( $form->meta ) ? maybe_unserialize( $form->meta ) : false;
-				// caps for forms that create
-				if ( $settings && isset( $settings->form['type'] ) && 'new' == $settings->form['type'] ) {
-					$cred_cap = 'create_users_with_cred_' . $form->ID;
-					$caps[ $cred_cap ] = array(
-						'cap_id' => $cred_cap,
-						'title' => sprintf( __( 'Create Custom User with CRED Form "%s"', 'wp-cred' ), $form->post_title ),
-						'default_role' => $default_role,
-					);
-				} elseif ( $settings && isset( $settings->form['type'] ) && 'edit' == $settings->form['type'] ) {
-					$cred_cap = 'edit_own_user_with_cred_' . $form->ID;
-					$caps[ $cred_cap ] = array(
-						'cap_id' => $cred_cap,
-						'title' => sprintf( __( 'Edit Own Custom User with CRED Form "%s"', 'wp-cred' ), $form->post_title ),
-						'default_role' => $default_role,
-					);
-					$cred_cap = 'edit_other_users_with_cred_' . $form->ID;
-					$caps[ $cred_cap ] = array(
-						'cap_id' => $cred_cap,
-						'title' => sprintf( __( 'Edit Others Custom User with CRED Form "%s"', 'wp-cred' ), $form->post_title ),
-						'default_role' => $default_role,
-					);
-				}
-			}
-		}
-
-		return $caps;
-	}
-
-	/**
-	 * @param $caps
-	 * @param $area
-	 *
-	 * @return mixed
-	 */
-	public static function export_access_cred_caps( $caps, $area ) {
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED';
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_GROUP';
-
-		if ( isset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] ) ) {
-			foreach ( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] as $cap => $cdata ) {
-				if ( false !== strpos( $cap, 'create_posts_with_cred_' ) ) {
-					$id = intval( str_replace( 'create_posts_with_cred_', '', $cap ) );
-					$form = get_post( $id );
-					if ( $form ) {
-						$newcap = 'create_posts_with_cred_' . $form->post_name;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_own_posts_with_cred_' ) ) {
-					$id = intval( str_replace( 'edit_own_posts_with_cred_', '', $cap ) );
-					$form = get_post( $id );
-					if ( $form ) {
-						$newcap = 'edit_own_posts_with_cred_' . $form->post_name;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_other_posts_with_cred_' ) ) {
-					$id = intval( str_replace( 'edit_other_posts_with_cred_', '', $cap ) );
-					$form = get_post( $id );
-					if ( $form ) {
-						$newcap = 'edit_other_posts_with_cred_' . $form->post_name;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				}
-			}
-		}
-
-		return $caps;
-	}
-
-	/**
-	 * @param $caps
-	 * @param $area
-	 *
-	 * @return mixed
-	 */
-	public static function export_access_cred_user_caps( $caps, $area ) {
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED_USER';
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_USER_GROUP';
-
-		if ( isset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] ) ) {
-			foreach ( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] as $cap => $cdata ) {
-				if ( false !== strpos( $cap, 'create_users_with_cred_' ) ) {
-					$id = intval( str_replace( 'create_users_with_cred_', '', $cap ) );
-					$form = get_post( $id );
-					if ( $form ) {
-						$newcap = 'create_users_with_cred_' . $form->post_name;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_own_user_with_cred_' ) ) {
-					$id = intval( str_replace( 'edit_own_user_with_cred_', '', $cap ) );
-					$form = get_post( $id );
-					if ( $form ) {
-						$newcap = 'edit_own_user_with_cred_' . $form->post_name;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_other_users_with_cred_' ) ) {
-					$id = intval( str_replace( 'edit_other_users_with_cred_', '', $cap ) );
-					$form = get_post( $id );
-					if ( $form ) {
-						$newcap = 'edit_other_users_with_cred_' . $form->post_name;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				}
-			}
-		}
-
-		return $caps;
-	}
-
-	/**
-	 * @param $caps
-	 * @param $area
-	 *
-	 * @return mixed
-	 */
-	public static function import_access_cred_caps( $caps, $area ) {
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED';
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_GROUP';
-
-		if ( isset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] ) ) {
-			foreach ( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] as $cap => $cdata ) {
-				if ( false !== strpos( $cap, 'create_posts_with_cred_' ) ) {
-					$name = str_replace( 'create_posts_with_cred_', '', $cap );
-					$args = array(
-						'name' => $name,
-						'post_type' => CRED_FORMS_CUSTOM_POST_NAME,
-						'post_status' => 'private',
-						'posts_per_page' => 1,
-					);
-					$form = get_posts( $args );
-					if ( $form ) {
-						$newcap = 'create_posts_with_cred_' . $form[0]->ID;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_own_posts_with_cred_' ) ) {
-					$name = str_replace( 'edit_own_posts_with_cred_', '', $cap );
-					$args = array(
-						'name' => $name,
-						'post_type' => CRED_FORMS_CUSTOM_POST_NAME,
-						'post_status' => 'private',
-						'posts_per_page' => 1,
-					);
-					$form = get_posts( $args );
-					if ( $form ) {
-						$newcap = 'edit_own_posts_with_cred_' . $form[0]->ID;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_other_posts_with_cred_' ) ) {
-					$name = str_replace( 'edit_other_posts_with_cred_', '', $cap );
-					$args = array(
-						'name' => $name,
-						'post_type' => CRED_FORMS_CUSTOM_POST_NAME,
-						'post_status' => 'private',
-						'posts_per_page' => 1,
-					);
-					$form = get_posts( $args );
-					if ( $form ) {
-						$newcap = 'edit_other_posts_with_cred_' . $form[0]->ID;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				}
-			}
-		}
-
-		return $caps;
-	}
-
-	/**
-	 * @param $caps
-	 * @param $area
-	 *
-	 * @return mixed
-	 */
-	public static function import_access_cred_user_caps( $caps, $area ) {
-		$CRED_ACCESS_AREA_ID = '__CRED_CRED_USER';
-		$CRED_ACCESS_GROUP_ID = '__CRED_CRED_USER_GROUP';
-
-		if ( isset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] ) ) {
-			foreach ( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'] as $cap => $cdata ) {
-				if ( false !== strpos( $cap, 'create_users_with_cred_' ) ) {
-					$name = str_replace( 'create_users_with_cred_', '', $cap );
-					$args = array(
-						'name' => $name,
-						'post_type' => CRED_USER_FORMS_CUSTOM_POST_NAME,
-						'post_status' => 'private',
-						'posts_per_page' => 1,
-					);
-					$form = get_posts( $args );
-					if ( $form ) {
-						$newcap = 'create_users_with_cred_' . $form[0]->ID;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_own_user_with_cred_' ) ) {
-					$name = str_replace( 'edit_own_user_with_cred_', '', $cap );
-					$args = array(
-						'name' => $name,
-						'post_type' => CRED_USER_FORMS_CUSTOM_POST_NAME,
-						'post_status' => 'private',
-						'posts_per_page' => 1,
-					);
-					$form = get_posts( $args );
-					if ( $form ) {
-						$newcap = 'edit_own_user_with_cred_' . $form[0]->ID;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				} elseif ( false !== strpos( $cap, 'edit_other_users_with_cred_' ) ) {
-					$name = str_replace( 'edit_other_users_with_cred_', '', $cap );
-					$args = array(
-						'name' => $name,
-						'post_type' => CRED_USER_FORMS_CUSTOM_POST_NAME,
-						'post_status' => 'private',
-						'posts_per_page' => 1,
-					);
-					$form = get_posts( $args );
-					if ( $form ) {
-						$newcap = 'edit_other_users_with_cred_' . $form[0]->ID;
-						$caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $newcap ] = $cdata;
-						unset( $caps[ $CRED_ACCESS_GROUP_ID ]['permissions'][ $cap ] );
-					}
-				}
-			}
-		}
-
-		return $caps;
 	}
 
 	public static $message_after;
@@ -2555,18 +1800,72 @@ final class CRED_Helper {
 	}
 
 	/**
-	 * @param $form
-	 * @param bool $post_id
+	 * Render a post form.
 	 *
-	 * @return bool|string
+	 * @param mixed $form_identifier Title, slug or ID of the form to render
+	 * @param bool|int $post_id ID of the post to edit, if any
+	 *
+	 * @return string
+	 *
+	 * @since unknown
+	 * @since m2m Introduce the ability to set the post to edit on an URL parameter for repeatable field groups when:
+	 * - The form is not forced to edit a specific post with its post shortcode attribute
+	 * - And there is a cred_action=edit_rfg URL query argument
+	 * - And there is a cred_rfg_id URL query parameter
+	 * - And the ID of the post to edit is a child in a RFG relationship (the form itself will perform later some post type checks)
 	 */
-	public static function cred_form( $form, $post_id = false ) {
-		if ( empty( $form ) ) {
+	public static function cred_form( $form_identifier, $post_id = false ) {
+		if ( empty( $form_identifier ) ) {
 			return '<strong>' . __( 'No form specified', 'wp-cred' ) . '</strong>';
 		}
 
-		$form = cred_get_object_form( $form, CRED_FORMS_CUSTOM_POST_NAME );
+		$form = cred_get_object_form( $form_identifier, CRED_FORMS_CUSTOM_POST_NAME );
+		if ( ! $form ) {
+			if ( current_user_can( 'manage_options' ) ) {
+				return sprintf( __( "The Toolset Form %s does not exist", "wp-cred" ), $form_identifier );
+			}
+			return '';
+		}
+		
 		$form_id = cred_get_form_id_by_form( $form );
+		
+		// Since m2m: support editing RFG items set by URL parameter
+		// Make sure we are indeed getting a RFG object ID by:
+		// - checking that it is indeed in an association, as a child
+		// - checking that this association belongs to a RFG relationship
+		if ( 
+			! $post_id 
+			&& isset( $_GET['cred_action'] ) 
+			&& 'edit_rfg' === $_GET['cred_action'] 
+			&& isset( $_GET['cred_rfg_id'] ) 
+		) {
+			if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+				return '';
+			}
+			
+			do_action( 'toolset_do_m2m_full_init' );
+			$cred_rfg_id = (int) $_GET['cred_rfg_id'];
+			
+			$association_query = new Toolset_Association_Query_V2();
+			$associations = $association_query
+				->limit( 1 )
+				->add( $association_query->element_id_and_domain( $cred_rfg_id, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() ) )
+				->get_results();
+				
+			if ( 
+				is_array( $associations ) 
+				&& count( $associations ) 
+			) {
+				$association = reset( $associations );
+				$relationship_origin = $association->get_definition()->get_origin();
+				if ( Toolset_Relationship_Origin_Repeatable_Group::ORIGIN_KEYWORD != $relationship_origin::ORIGIN_KEYWORD ) {
+					return '';
+				}
+				$post_id = $cred_rfg_id;
+			} else {
+				return '';
+			}
+		}
 
 		// localise the ID
 		if ( $post_id ) {
@@ -2585,14 +1884,30 @@ final class CRED_Helper {
 		return $output;
 	}
 
-	public static function cred_user_form( $form_id, $user_id = false ) {
-		$specific_post_id = $user_id;
-
-		if ( empty( $form_id ) ) {
+	/**
+	 * Render an user form.
+	 *
+	 * @param mixed $form_identifier Title, slug or ID of the form to render
+	 * @param bool|int $user_id ID of the user to edit, if any
+	 *
+	 * @return string
+	 *
+	 * @since unknown
+	 */
+	public static function cred_user_form( $form_identifier, $user_id = false ) {
+		if ( empty( $form_identifier ) ) {
 			return '<strong>' . __( 'No user form specified', 'wp-cred' ) . '</strong>';
 		}
 
-		$form = cred_get_object_form( $form_id, CRED_USER_FORMS_CUSTOM_POST_NAME );
+		$form = cred_get_object_form( $form_identifier, CRED_USER_FORMS_CUSTOM_POST_NAME );
+		
+		if ( ! $form ) {
+			if ( current_user_can( 'manage_options' ) ) {
+				return sprintf( __( "The Toolset User Form %s does not exist", "wp-cred" ), $form_identifier );
+			}
+			return '';
+		}
+		
 		$form_id = cred_get_form_id_by_form( $form );
 
 		$fm = CRED_Loader::get( 'MODEL/UserForms' );
@@ -2611,9 +1926,6 @@ final class CRED_Helper {
 		// prevent recursion if form shortcode inside posts content
 		remove_shortcode( 'cred-user-form', array( __CLASS__, 'credUserFormShortcode' ) );
 		remove_shortcode( 'cred_user_form', array( __CLASS__, 'credUserFormShortcode' ) );
-
-		//CRED_Loader::load('CLASS/Form_Builder');
-		//$output = CRED_Form_Builder::getUserForm($form_id, $user_id, false, $specific_post_id);
 
 		$output = CRED_CRED::get_form_builder()->get_form( $form_id, $user_id );
 
@@ -2759,6 +2071,8 @@ final class CRED_Helper {
 				|| $is_edit_form )
 			&& is_singular()
 		) {
+
+			do_action( 'toolset_forms_enqueue_frontend_form_assets' );
 			/*
 		     * Fixing oceanWP forcing it to use the_content under preview and making filter usable as well
 		     */
@@ -2909,8 +2223,6 @@ final class CRED_Helper {
 	}
 
 	/**
-	 * CRED-Shortcode: cred_delete_post_link
-	 *
 	 * Description: Display a link to delete a post
 	 *
 	 * Parameters:
@@ -2960,8 +2272,6 @@ final class CRED_Helper {
 	}
 
 	/**
-	 * CRED-Shortcode: cred_link_form
-	 *
 	 * Description: Display a link to edit a post with given form
 	 *
 	 * Parameters:
@@ -3005,7 +2315,7 @@ final class CRED_Helper {
 		$form = cred_get_object_form( $params['form'], CRED_FORMS_CUSTOM_POST_NAME );
 		if ( ! $form ) {
 			if ( current_user_can( 'manage_options' ) ) {
-				return sprintf( __( "CRED form %s does not exist", "wp-cred" ), $params['form'] );
+				return sprintf( __( "The Toolset Form %s does not exist", "wp-cred" ), $params['form'] );
 			}
 			return;
 		}
@@ -3028,20 +2338,18 @@ final class CRED_Helper {
 		$form = cred_get_object_form( $params['form'], CRED_USER_FORMS_CUSTOM_POST_NAME );
 		if ( ! $form ) {
 			if ( current_user_can( 'manage_options' ) ) {
-				return sprintf( __( "CRED user form %s does not exist", "wp-cred" ), $params['form'] );
+				return sprintf( __( "The Toolset User Form %s does not exist", "wp-cred" ), $params['form'] );
 			}
 			return;
 		}
 
-		//Back compatibility to CRED 1.6.x
+		// Back compatibility to Toolset Forms 1.6.x
 		$user = ( isset( $params['user'] ) && ! empty( $params['user'] ) ) ? $params['user'] : ( ( isset( $params['post'] ) && ! empty( $params['post'] ) ) ? $params['post'] : "" );
 
 		return self::cred_edit_user_link( $params['form'], $user, $params['text'], $params['class'], $params['style'], $params['target'], $params['attributes'] );
 	}
 
 	/**
-	 * CRED-Shortcode: cred_child_link_form
-	 *
 	 * Description: Display a link to create a child post with given form and parent
 	 *
 	 * Parameters:
@@ -3084,9 +2392,7 @@ final class CRED_Helper {
 	}
 
 	/**
-	 * CRED-Shortcode: cred_form
-	 *
-	 * Description: Display a CRED form
+	 * Description: Display a Toolset Form
 	 *
 	 * Parameters:
 	 * 'form' => Form Title or Form ID of form to display.
@@ -3109,8 +2415,7 @@ final class CRED_Helper {
 	 *
 	 * Note:
 	 *  'post'> if post is omitted and form is an edit form, then current post_id will be used, for example inside Loop
-	 *
-	 * */
+	 */
 	public static function credFormShortcode( $atts ) {
 		global $post;
 		if ( is_null( $post ) && ! is_archive() ) {
@@ -3120,7 +2425,7 @@ final class CRED_Helper {
 		 * clone post object to revert after form
 		 */
 		if ( isset( $post ) ) {
-			$orginal = clone $post;
+			$original_post = clone $post;
 		}
 
 		$params = shortcode_atts( array(
@@ -3128,24 +2433,17 @@ final class CRED_Helper {
 			'post' => '',
 		), $atts );
 
-		$form = cred_get_object_form( $params['form'], CRED_FORMS_CUSTOM_POST_NAME );
-		if ( ! $form ) {
-			if ( current_user_can( 'manage_options' ) ) {
-				return sprintf( __( "CRED form %s does not exist", "wp-cred" ), $params['form'] );
-			}
-			return;
-		}
-
 		$out = self::cred_form( $params['form'], $params['post'] );
 		wp_reset_query();
 		/**
 		 * revert orginal $post
 		 */
-		if ( isset( $orginal ) ) {
-			$post = $orginal;
-			unset( $orginal );
+		if ( isset( $original_post ) ) {
+			$post = $original_post;
+			unset( $original_post );
 		}
 
+		do_action( 'toolset_forms_enqueue_frontend_form_assets' );
 		return $out;
 	}
 
@@ -3154,11 +2452,12 @@ final class CRED_Helper {
 		if ( is_null( $post ) && ! is_archive() ) {
 			return null;
 		}
+
 		/**
 		 * clone post object to revert after form
 		 */
 		if ( isset( $post ) ) {
-			$orginal = clone $post;
+			$original_post = clone $post;
 		}
 
 		$params = shortcode_atts( array(
@@ -3170,16 +2469,16 @@ final class CRED_Helper {
 		if ( isset( $_GET['user_id'] ) ) {
 			$user = (int) $_GET['user_id'];
 		} else {
-			//Back compatibility to CRED 1.6.x
+			//Back compatibility to Toolset Forms 1.6.x
 			$user = ( isset( $params['user'] ) && ! empty( $params['user'] ) ) ? $params['user'] : ( ( isset( $params['post'] ) && ! empty( $params['post'] ) ) ? $params['post'] : "" );
 		}
 
 		$form = cred_get_object_form( $params['form'], CRED_USER_FORMS_CUSTOM_POST_NAME );
 		if ( ! $form ) {
 			if ( current_user_can( 'manage_options' ) ) {
-				return sprintf( __( "CRED user form %s does not exist", "wp-cred" ), $params['form'] );
+				return sprintf( __( "The Toolset User Form %s does not exist", "wp-cred" ), $params['form'] );
 			}
-			return;
+			return '';
 		}
 
 		$type = "edit";
@@ -3207,14 +2506,15 @@ final class CRED_Helper {
 		/**
 		 * revert orginal $post
 		 */
-		if ( isset( $original ) ) {
-			$post = $orginal;
-			unset( $orginal );
+		if ( isset( $original_post ) ) {
+			$post = $original_post;
+			unset( $original_post );
 		}
 
+		do_action( 'toolset_forms_enqueue_frontend_form_assets' );
 		return $out;
 	}
-
+	
 	// auxiliary functions
 	public static function __true() {
 		return true;
@@ -3222,111 +2522,6 @@ final class CRED_Helper {
 
 	public static function __false() {
 		return false;
-	}
-
-	public static function getMediaButtons( $id, $params = array() ) {
-		global $wp_version;
-		static $template_with_media = null, $template_no_media = null, $dummy = "___%%ID%%___";
-		$output = '';
-		$params = array_merge( array(
-			'extra' => '',
-		), (array) $params );
-		$no_media_button = (bool) ( $params['no_media_button'] );
-		// remove the media button hook
-		if ( $no_media_button ) {
-			if ( is_null( $template_no_media ) ) {
-				$media_button_priority = false;
-				$media_filter_hook = null;
-				/* if ( !function_exists('media_buttons') )
-                  include(ABSPATH . 'wp-admin/includes/media.php'); */
-				$media_button_priority = has_action( 'media_buttons', 'media_buttons' );
-				if ( false !== $media_button_priority ) {
-					remove_action( 'media_buttons', 'media_buttons', $media_button_priority );
-				}
-				$template_no_media = '';
-				// render media buttons
-				if ( version_compare( $wp_version, '3.1.4', '>' ) ) {
-					ob_start();
-					do_action( 'media_buttons', $dummy, '#' . $dummy );
-					$template_no_media = ob_get_clean();
-				} else {
-					ob_start();
-					do_action( 'media_buttons_context', $dummy, '#' . $dummy );
-					$template_no_media = ob_get_clean();
-				}
-				// add again the media button hook
-				if ( false !== $media_button_priority ) {
-					//add_action('media_buttons', 'media_buttons', $media_button_priority);
-					// this is better since it prepends the media buttons first and not append it
-					if ( ! has_action( "media_buttons" ) ) {
-						add_action( "media_buttons", "media_buttons", $media_button_priority, 2 );
-					}
-				}
-			}
-			// computed once statically, ;)
-			$output = str_replace( $dummy, $id, $template_no_media );
-		} else {
-			if ( is_null( $template_with_media ) ) {
-				/* if ( !function_exists('media_buttons') )
-                  include(ABSPATH . 'wp-admin/includes/media.php'); */
-				$template_with_media = '';
-				// render media buttons for cred forms at editor
-				if ( version_compare( $wp_version, '3.1.4', '>' ) ) {
-					ob_start();
-					do_action( 'media_buttons', $dummy, '#' . $dummy );
-					$template_with_media = ob_get_clean();
-				} else {
-					ob_start();
-					do_action( 'media_buttons_context', $dummy, '#' . $dummy );
-					$template_with_media = ob_get_clean();
-				}
-			}
-			// computed once statically, ;)
-			$output = str_replace( $dummy, $id, $template_with_media );
-		}
-		// add any extra buttons here
-		if ( ! empty( $params['extra'] ) ) {
-			$output .= (string) ( $params['extra'] );
-		}
-
-		return $output;
-	}
-
-	public static function dummyMediaButtons() {
-		// use a placeholder
-		echo '######__DUMMY_MEDIA_BUTTONS__######';
-	}
-
-	public static function getRichEditor( $id, $name, $content, $settings = array(), $params = array() ) {
-		$settings = array_merge( array(
-			'textarea_name' => $name,
-			'editor_height' => 360,
-			'wpautop' => true,
-			// use wpautop?
-			'media_buttons' => true,
-			// show insert/upload button(s)
-			'tabindex' => '',
-			'editor_css' => '',
-			// intended for extra styles for both visual and HTML editors buttons, needs to include the <style> tags, can use "scoped".
-			'editor_class' => '',
-			// intended for extra CSS Classes to append to the Editor textarea
-			'teeny' => false,
-			// output the minimal editor config used in Press This
-			'dfw' => false,
-			// replace the default fullscreen with DFW (needs specific DOM elements and css)
-			'tinymce' => true,
-			// load TinyMCE, can be used to pass settings directly to TinyMCE using an array()
-			'quicktags' => true
-			// load Quicktags, can be used to pass settings directly to Quicktags using an array()
-		), (array) $settings );
-
-		add_filter( 'user_can_richedit', array( __CLASS__, '__true' ), 100 );
-		ob_start();
-		wp_editor( $content, $id, $settings );
-		$output = ob_get_clean();
-		remove_filter( 'user_can_richedit', array( __CLASS__, '__true' ), 100 );
-
-		return $output;
 	}
 
 	public static function strHash( $str ) {
@@ -3426,7 +2621,7 @@ final class CRED_Helper {
 		return $users;
 	}
 
-	// Used to delete all auto drafts created by CRED if they're not used within 4 hours (14400 seconds) after creation.
+	// Used to delete all auto drafts created by Toolset Forms if they're not used within 4 hours (14400 seconds) after creation.
 	// Runs every 12 hours (43200 seconds).
 	public static function clearCREDAutoDrafts() {
 		$_last_run = intval( get_option( "cred_autodraft_clearance_job_lastrun" ) );
@@ -3512,16 +2707,14 @@ final class CRED_Helper {
 		) {
 			add_action( 'admin_head', array( __CLASS__, 'jsForCredCustomPost' ) );
 		}
-		//        if (version_compare($wp_version, '3.2', '>=')) {
-		//            if (isset($post) && $post->post_type == CRED_FORMS_CUSTOM_POST_NAME)
-		//                remove_action('pre_post_update', 'wp_save_post_revision');
-		//        }
 
 		/**
 		 * add debug information
 		 */
 		add_filter( 'icl_get_extra_debug_info', array( __CLASS__, 'getExtraDebugInfo' ) );
 	}
+
+
 
 	/**
 	 * get_form_object
@@ -3549,18 +2742,30 @@ final class CRED_Helper {
 	 * @return array
 	 */
 
-	public static function get_form_messages($messages_array, $form_id) {
-	    if($form_id != null) {
-		    $forms_model = CRED_Loader::get( 'MODEL/Forms' );
-		    $form_post = get_post( $form_id );
-		    $form_extra_settings = $forms_model->getFormCustomField( $form_id , 'extra' );
-		    if( isset( $form_extra_settings->messages ) ) {
-		        $messages_array = $form_extra_settings->messages;
-		        foreach( $messages_array as $message_key => $message_value ) {
-			        $messages_array[$message_key] = cred_translate( 'Message_' . $message_key, $message_value, 'cred-form-' . $form_post->post_title . '-' . $form_id );
-                }
-            }
-        }
+	public static function get_form_messages( $messages_array, $form_id ) {
+		if ( ! $form_id ) {
+			return $messages_array;
+		}
+		
+		$form_type = get_post_type( $form_id );
+		
+		switch ( $form_type ) {
+			case 'cred_rel_form':
+				return get_post_meta( $form_id, 'messages', true );
+				break;
+			default:
+				$forms_model = CRED_Loader::get( 'MODEL/Forms' );
+				$form_post = get_post( $form_id );
+				$form_extra_settings = $forms_model->getFormCustomField( $form_id , 'extra' );
+				if ( isset( $form_extra_settings->messages ) ) {
+					$messages_array = $form_extra_settings->messages;
+					foreach( $messages_array as $message_key => $message_value ) {
+						$messages_array[$message_key] = cred_translate( 'Message_' . $message_key, $message_value, 'cred-form-' . $form_post->post_title . '-' . $form_id );
+					}
+				}
+				break;
+		}
+		
         return $messages_array;
     }
 

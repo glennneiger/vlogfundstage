@@ -9,13 +9,20 @@
 */
 
 // Filter section files
-require_once WPV_PATH . '/inc/sections/wpv-section-query-type.php';
 require_once WPV_PATH . '/inc/sections/wpv-section-query-options.php';
 require_once WPV_PATH . '/inc/sections/wpv-section-ordering.php';
 
-require_once WPV_PATH . '/inc/sections/wpv-section-filters.php';
-require_once WPV_PATH . '/inc/sections/wpv-section-pagination.php';
+/*
+ * require files only for full version
+ */
+if( ! wpv_is_views_lite() ){
+	require_once WPV_PATH . '/inc/sections/wpv-section-pagination.php';
+	require_once WPV_PATH . '/inc/sections/wpv-section-parametric-search.php';
+}
 require_once WPV_PATH . '/inc/sections/wpv-section-filter-extra.php';
+require_once WPV_PATH . '/inc/sections/wpv-section-filters.php';
+
+
 // Layout section files
 require_once WPV_PATH . '/inc/sections/wpv-section-layout-template.php';
 
@@ -23,8 +30,9 @@ require_once WPV_PATH . '/inc/sections/wpv-section-layout-template.php';
  * View edit screen
  */
 function views_redesign_html() {
+	new WPV_Section_Content_Selection();
 	global $post;
-	
+
 	if ( 
 		isset( $_GET['view_id'] ) 
 		&& is_numeric( $_GET['view_id'] ) 
@@ -153,9 +161,9 @@ function views_redesign_html() {
 			<?php
 			wpv_get_view_introduction_data();
 			?>
-			
+
 			<span class="wpv-section-title"><?php _e('The Query section determines what content the View loads from the database','wpv-views') ?></span>
-			
+
 			<div class="js-wpv-metasection-message-container js-wpv-metasection-message-container-query"></div>
 			
 			<?php 
@@ -178,8 +186,10 @@ function views_redesign_html() {
 		</div><!-- .wpv-query-section -->
 
 		<div class="wpv-filter-section">
+
+	        <?php if( ! wpv_is_views_lite() ):?>
 			<span class="wpv-section-title"><?php _e('The Filter section lets you set up pagination and custom search, which let visitors control the View query','wpv-views') ?></span>
-			
+	        <?php endif;?>
 			<div class="js-wpv-metasection-message-container js-wpv-metasection-message-container-filter"></div>
 			
 			<?php
@@ -212,7 +222,7 @@ function views_redesign_html() {
 		?>
 
 		<div class="wpv-layout-section">
-			<span class="wpv-section-title"><?php _e('The Loop Output section styles the View output on the page.','wpv-views') ?></span>
+			<span class="wpv-section-title"><?php _e('The Loop section styles the View output on the page.','wpv-views') ?></span>
 			
 			<div class="js-wpv-metasection-message-container js-wpv-metasection-message-container-layout"></div>
 			
@@ -221,15 +231,25 @@ function views_redesign_html() {
 			wpv_toolset_help_box($data);
 			?>
 			<?php
-			
+
 			/**
 			* wpv_action_view_editor_section_layout
 			*
-			* Hook for sections in the first half of the Loop Output metasection.
+			* Hook for sections in the first half of the Loop metasection.
 			*
 			* @since 2.1
 			*/
 			do_action( 'wpv_action_view_editor_section_layout', $view_settings, $view_layout_settings, $view_id, $user_id );
+
+			/**
+			 * wpv_action_view_editor_section_view_wrapper
+			 *
+			 * Hook for sections in the View Wrapper metasection.
+			 *
+			 * @since 2.6.4
+			 */
+			do_action( 'wpv_action_view_editor_section_view_wrapper', $view_settings, $view_id, $user_id, $view );
+
 			/**
 			* The action 'view-editor-section-layout' is now deprecated, leave it for backwards compatibility
 			*
@@ -240,7 +260,7 @@ function views_redesign_html() {
 			/**
 			* wpv_action_view_editor_section_extra
 			*
-			* Hook for sections in the second half of the Loop Output metasection.
+			* Hook for sections in the second half of the Loop metasection.
 			*
 			* @since 2.1
 			*/

@@ -55,23 +55,20 @@ class CRED_Abstract_WPToolset_Field_Credfile extends WPToolset_Field_Textfield {
 		/**
 		 * cred_file_upload_disable_progress_bar
 		 *
-		 * Allows for overriding the decision whether the file upload progress bar should be displayed
-		 * we have progress bar since 1.3.6.3 so current filter by default will be disabled for older version
+		 * Allows to override the decision whether the file upload & progress bar should be displayed
+		 * we have this new feature since version 1.3.6.3 so current filter by default should be set to false
 		 *
 		 * @param bool $disable true to disable, false to enable.
 		 *
 		 * @since 1.3.6.3
 		 */
-		$is_disabled = (bool) apply_filters(
-			'cred_file_upload_disable_progress_bar', version_compare( CRED_FE_VERSION, '1.3.6.2', '<=' )
-		);
+		$is_disabled = (bool) apply_filters( 'cred_file_upload_disable_progress_bar', false );
 
 		return $is_disabled;
 	}
 
 	public function init() {
-		$this->disable_progress_bar = $this->is_progress_bar_disabled();
-		CRED_Frontend_File_Ajax_Upload_Manager::get_instance()->enqueue_file_upload_assets($this->disable_progress_bar);
+		CRED_Asset_Manager::get_instance()->enqueue_file_upload_assets();
 	}
 
 	public static function registerScripts() {
@@ -147,6 +144,9 @@ class CRED_Abstract_WPToolset_Field_Credfile extends WPToolset_Field_Textfield {
 			$image_hash = md5( $value );
 			$preview_file = isset( $preview_images[ $image_hash ] ) ? $preview_images[ $image_hash ] : $value;
 			$attr_file['style'] = 'display:none';
+			if ( ! empty( $value ) ) {
+				$attr_file['disabled'] = 'disabled';
+			}
 		} else {
 			$attr_hidden['disabled'] = 'disabled';
 		}
@@ -353,7 +353,7 @@ class CRED_Abstract_WPToolset_Field_Credfile extends WPToolset_Field_Textfield {
 	public function get_post_thumbnail_id( $post_id, $has_image ) {
 		$post_thumbnail_id = get_post_thumbnail_id( $post_id );
 
-		//Covering the case of CRED NEW form
+		//Covering the case of Toolset Forms for NEW content
 		//when validation is failed
 		//and we need to re-render the featured_image
 		//with attachid__feature_image set as well
@@ -413,7 +413,14 @@ class CRED_Abstract_WPToolset_Field_Credfile extends WPToolset_Field_Textfield {
 		 */
 		$allowed_field_upload_mime_types = apply_filters( 'toolset_valid_' . $field_upload_type . '_extentions', $allowed_field_upload_mime_types );
 
-		$default_message = ('file' == $field_upload_type) ? 'You cannot upload a file of this type' : $default_message = 'You can only upload a ' . $field_upload_type . ' file';
+		$default_message = ( 'file' == $field_upload_type )
+		/** translators: This is a validation message when trying to upload a file of an unsupported format */
+			? __( 'You cannot upload a file of this type', 'wp-cred' )
+			: sprintf(
+				/** translators: This is a validation message when trying to upload a file of an unsupported type, like an image as an audio field value */
+				__( 'You can only upload a %s file', 'wp-cred' ),
+				$field_upload_type
+			);
 
 		//set validation extension array
 		$validation['mime_type'] = array(
@@ -421,14 +428,14 @@ class CRED_Abstract_WPToolset_Field_Credfile extends WPToolset_Field_Textfield {
 				'mime_type',
 				implode('|', $allowed_field_upload_mime_types),
 			),
-			'message' => __( $default_message, 'wpv-views' ),
+			'message' => $default_message,
 		);
 		$validation['extension'] = array(
 			'args' => array(
 				'extension',
 				implode('|', $allowed_field_upload_extensions),
 			),
-			'message' => __( $default_message, 'wpv-views' ),
+			'message' => $default_message,
 		);
 	}
 

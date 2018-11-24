@@ -87,8 +87,8 @@ if ( ! class_exists( 'Toolset_Promotion', false ) ) {
 			$link_button_args = array(
 				'hash'	=>	'buy-toolset'
 			);
-			$link_learn =	$this->get_affiliate_promotional_link( 'http://wp-types.com/' );
-			$link_button =	$this->get_affiliate_promotional_link( 'http://wp-types.com/', $link_button_args );
+			$link_learn =	$this->get_affiliate_promotional_link( 'https://toolset.com/' );
+			$link_button =	$this->get_affiliate_promotional_link( 'https://toolset.com/', $link_button_args );
 
             ob_start();
             ?>

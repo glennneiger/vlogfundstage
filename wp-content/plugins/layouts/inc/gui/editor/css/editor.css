@@ -214,7 +214,7 @@
     color: #414141;
 }
 .editor-toolbar-fixed .layout-container {
-    margin-top: 61px;
+    margin-top: 0px;
 }
 
 .layout-container * {
@@ -264,7 +264,7 @@ li.padding-top{padding-top:10px;}
 .show_all_wrap{float:right;}
 .where-used-title-wrap{width:100%;}
 
-.where-used-ui{float:left;position: relative;}
+.where-used-ui{position: relative;}
 .layout-content-assignment ul{margin-bottom: 0px;position:relative;}
 .layout-content-assignment ul li{padding-bottom: 0px;margin-bottom: 0px;position:relative;display:block;clear:both; height:3.3em;}
 .list-where-used-item{
@@ -2071,7 +2071,7 @@ a.create-disabled-a, a.create-disabled-a:hover{cursor:default;}
     overflow: hidden;
     height: 100%
 }
-.ddl-cred-user-preview{text-align:center;}
+.ddl-cred-user-preview, .ddl-cred-relationship-preview{text-align:center;}
 
 /* OVERRIDES */
 input[name="ddl-layout-autogenerate_username"]{margin-left:35px;}
@@ -2353,3 +2353,12 @@ ul.ddl-form li.js-ct-editor-wrapper div.cred-popup-box{left:10px!important}
 .toolset_page_dd_layouts_edit .mce-menu {
     z-index: 99999 !important;
 }
+
+.ddl-only-header-pointer .wp-pointer-content {
+    padding: 0px !important;
+}
+.ddl-only-header-pointer .wp-pointer-content h3 {
+    margin: 0 0 0px !important;
+}
+/* Force Toolset icons in insert buttons in the right position (middle) */
+.button-secondary .ont-icon-18, .button-secondary .icon-picture{vertical-align: top; margin-top: 2px;}

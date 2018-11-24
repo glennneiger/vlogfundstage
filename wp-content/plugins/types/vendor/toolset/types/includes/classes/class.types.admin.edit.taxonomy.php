@@ -96,14 +96,14 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
     {
         $this->save();
 
-	    // Flush rewrite rules if we're asked to do so. 
-	    // 
+	    // Flush rewrite rules if we're asked to do so.
+	    //
 	    // This must be done after all post types and taxonomies are registered, and they can be registered properly
 	    // only on 'init'. So after making changes, we need to reload the page and THEN flush.
 	    if( '1' == wpcf_getget( 'flush', '0' ) ) {
 		    flush_rewrite_rules();
 	    }
-	    
+
         global $wpcf;
 
         $id = false;
@@ -146,7 +146,7 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
                 '#value' => $id,
                 '#name' => 'ct[wpcf-tax]',
             );
-	        
+
 	        $form['slug_conflict_check_nonce'] = array(
 		        '#type' => 'hidden',
 		        '#value' => wp_create_nonce( Types_Ajax::CALLBACK_CHECK_SLUG_CONFLICTS ),
@@ -527,6 +527,24 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
             ),
         );
 
+        $form['show_in_rest'] = array(
+            '#type' => 'checkbox',
+            '#name' => 'ct[show_in_rest]',
+            '#default_value' => !empty( $this->ct['show_in_rest'] ),
+            '#title' => __( 'show_in_rest', 'wpcf' ),
+            '#description' => __( 'Whether to expose this taxonomy in the REST API.', 'wpcf' ) . '<br />' . __( 'Default: false.', 'wpcf' ),
+            '#inline' => true,
+        );
+
+        $form['rest_base'] = array(
+            '#type' => 'textfield',
+            '#name' => 'ct[rest_base]',
+            '#title' => __( 'Rest Base', 'wpcf' ),
+            '#description' => __( 'The base slug that this taxonomy will use when accessed using the REST API.', 'wpcf' ) . '<br />' . __( 'Default: $taxonomy.', 'wpcf' ),
+            '#value' => isset( $this->ct['rest_base'] ) ? $this->ct['rest_base'] : '',
+            '#inline' => true,
+        );
+
         $form['meta_box_cb-header'] = array(
             '#type' => 'markup',
             '#markup' => sprintf('<h3>%s</h3>', __('Meta box callback function', 'wpcf')),
@@ -796,7 +814,7 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
         }
         $data = $_POST['ct'];
         $update = false;
-        
+
         // Sanitize data
         $data['labels']['name'] = isset( $data['labels']['name'] )
             ? sanitize_text_field( $data['labels']['name'] )
@@ -1005,7 +1023,7 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
             'wpcf-message' => get_user_option('types-modal'),
             'flush' => 1
         );
-        
+
         if( isset( $_GET['ref'] ) )
             $args['ref'] = $_GET['ref'];
 
@@ -1054,4 +1072,3 @@ class Types_Admin_Edit_Taxonomy extends Types_Admin_Page
     }
 
 }
-

@@ -18,7 +18,6 @@ class CRED_Ajax_Media_Upload_Fix {
 	 */
 	public function add_temporary_edit_posts_cap_to_fix_media_upload_permissions() {
 		$current_user = wp_get_current_user();
-
 		if ( cred_is_ajax_call()
 			&& isset( $_POST['action'] )
 			&& (

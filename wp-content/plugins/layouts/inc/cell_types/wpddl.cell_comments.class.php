@@ -4,13 +4,11 @@
  * Displays form and coments
  *
  */
-
-
-
  if( ddl_has_feature('comments-cell') === false ){
     return;
 }
-if (!class_exists('Layouts_cell_comments')) {
+
+if (!class_exists('Layouts_cell_comments', false )) {
     class Layouts_cell_comments{
         
         private $cell_type = 'comments-cell';
@@ -19,7 +17,6 @@ if (!class_exists('Layouts_cell_comments')) {
             add_action( 'init', array(&$this,'register_comments_cell_init'), 12 );
             add_action('wp_ajax_ddl_load_comments_page_content', array(&$this,'ddl_load_comments_page_content'));
             add_action('wp_ajax_nopriv_ddl_load_comments_page_content', array(&$this,'ddl_load_comments_page_content'));
-            add_filter( 'preprocess_comment', array($this, 'sanitise_comment_text'), 10, 1 );
         }
         
         
@@ -28,12 +25,12 @@ if (!class_exists('Layouts_cell_comments')) {
                 register_dd_layout_cell_type($this->cell_type, 
                     array(
                         'name' => __('Comments', 'ddl-layouts'),
-                        'description' => __('Display the comments section. This cell is typically used in layouts for blog posts and pages that need comments section.', 'ddl-layouts'),
+                        'description' => __('Display the comments section. This cell is typically used in layouts for blog posts and pages that need comments enable.', 'ddl-layouts'),
                         'category' => __('Site elements', 'ddl-layouts'),
                         'cell-image-url' => DDL_ICONS_SVG_REL_PATH . 'layouts-comments-cell.svg',
-                        'button-text' => __('Assign Comments cell', 'ddl-layouts'),
-                        'dialog-title-create' => __('Create new Comments cell', 'ddl-layouts'),
-                        'dialog-title-edit' => __('Edit Comments cell', 'ddl-layouts'),
+                        'button-text' => __('Assign comments cell', 'ddl-layouts'),
+                        'dialog-title-create' => __('Create a new comments cell', 'ddl-layouts'),
+                        'dialog-title-edit' => __('Edit comments cell', 'ddl-layouts'),
                         'dialog-template-callback' => array(&$this,'comments_cell_dialog_template_callback'),
                         'cell-content-callback' => array(&$this,'comments_cell_content_callback'),
                         'cell-template-callback' => array(&$this,'comments_cell_template_callback'),
@@ -86,7 +83,12 @@ if (!class_exists('Layouts_cell_comments')) {
                 </p>
             </div>
 
-            <div class="ddl-form">			
+            <div class="ddl-form">
+                <p>
+                    <label for="<?php the_ddl_name_attr('ddl_comment_nav_position'); ?>"><?php _e( 'Comments Navigation', 'ddl-layouts' ) ?>:</label>
+                    <span class="indent-30"><input type="radio" name="<?php the_ddl_name_attr('ddl_comment_nav_position'); ?>" id="<?php the_ddl_name_attr('ddl_comment_nav_position'); ?>" value="above" checked> <?php _e( 'Above', 'ddl-layouts' ) ?></span>
+                    <span class="indent-10"><input type="radio" name="<?php the_ddl_name_attr('ddl_comment_nav_position'); ?>" id="<?php the_ddl_name_attr('ddl_comment_nav_position'); ?>" value="below"> <?php _e( 'Below', 'ddl-layouts' ) ?></span>
+                </p>
                 <p>
                     <label for="<?php the_ddl_name_attr('ddl_prev_link_text'); ?>"><?php _e( 'Previous link text', 'ddl-layouts' ) ?>:</label>
                     <input type="text" name="<?php the_ddl_name_attr('ddl_prev_link_text'); ?>" id="<?php the_ddl_name_attr('ddl_prev_link_text'); ?>" value="<?php _e( '<< Older Comments', 'ddl-layouts' ) ?>">
@@ -133,10 +135,10 @@ if (!class_exists('Layouts_cell_comments')) {
             ?>
                     <div class="cell-content">
 
-                            <p class="cell-name"><?php _e('Comments', 'ddl-layouts'); ?></p>
+                            <p class="cell-name"><?php _e('Comment Cell', 'ddl-layouts'); ?></p>
                             <div class="cell-preview">
                     <div class="ddl-comments-preview">
-                                            <img src="<?php echo DDL_ICONS_SVG_REL_PATH . 'comments.svg'; ?>" height="130px">
+                                            <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/svg/comments.svg'; ?>" height="130px">
                                     </div>
                             </div>
                     </div>
@@ -217,12 +219,9 @@ if (!class_exists('Layouts_cell_comments')) {
 	function comments_cell_content_callback() {		
             global $wpddlayout, $wp_query, $withcomments, $post, $wpdb, $id, $comment, $user_login, $user_ID, $user_identity, $overridden_cpage;
 
-            // if none of those are met then stop running
-            if (  ( !is_single() && !is_page() && !$withcomments  && !isset( $_POST['toolset_editor'] ) ) || empty($post) ){
-	            return;
-            }
+            if ( !(is_single() || is_page() || $withcomments) || empty($post) )
+            return;
 
-		    wp_enqueue_script( 'comment-reply' );
             $wpddlayout->enqueue_scripts('ddl-comment-cell-front-end');
             $wpddlayout->localize_script('ddl-comment-cell-front-end', 'DDL_Comments_cell', 
                 array(
@@ -275,7 +274,25 @@ if (!class_exists('Layouts_cell_comments')) {
             
             return $comments;
 	}
-        
+
+	    private function print_comments_navigation( $comments, $class ) {
+            ob_start();
+		    if ( get_comment_pages_count( $comments ) > 1 && get_option( 'page_comments' ) ):?>
+			    <?php
+			    add_filter( 'previous_comments_link_attributes', array(
+				    &$this,
+				    'ddl_add_previous_comments_link_data'
+			    ) );
+			    add_filter( 'next_comments_link_attributes', array( &$this, 'ddl_add_next_comments_link_data' ) );
+			    ?>
+                <nav id="comment-nav-<?php echo $class;?>">
+                    <div class="nav-previous js-ddl-previous-link"><?php previous_comments_link( get_ddl_field( 'ddl_prev_link_text' ) ); ?></div>
+                    <div class="nav-next js-ddl-next-link"><?php next_comments_link( get_ddl_field( 'ddl_next_link_text' ) ); ?></div>
+                </nav>
+		    <?php endif; // check for comment navigation
+            echo ob_get_clean();
+	    }
+
         
         //Generate comments listing
 	function ddl_render_comments_list($comments, $post, $load_page=''){
@@ -285,7 +302,11 @@ if (!class_exists('Layouts_cell_comments')) {
             <div id="comments">
             <?php if ( post_password_required($post) ) : ?>
                 <p class="nopassword"><?php the_ddl_field('password_text'); ?></p>
-                <p><?php echo get_the_password_form( $post ); ?></p>
+                <p><?php
+                    if( ! apply_filters( 'ddl-is_integrated_theme', false ) ):
+                        echo get_the_password_form( $post );
+                    endif;
+                    ?></p>
             </div><!-- #comments -->
             <?php
                 return ob_get_clean();
@@ -306,18 +327,10 @@ if (!class_exists('Layouts_cell_comments')) {
                     number_format_i18n( $num_comments ), '<span>' . $post->post_title . '</span>' );
                     ?>
                     </h2>
-                    <?php if ( get_comment_pages_count($comments) > 1 && get_option( 'page_comments' )  ):?>
-                    <?php					
-                    add_filter('previous_comments_link_attributes',array(&$this,'ddl_add_previous_comments_link_data'));
-                    add_filter('next_comments_link_attributes',array(&$this,'ddl_add_next_comments_link_data'));
-                    ?>
-                    <nav id="comment-nav-above">						
-                            <div class="nav-previous js-ddl-previous-link"><?php previous_comments_link( get_ddl_field('ddl_prev_link_text') ); ?></div>
-                            <div class="nav-next js-ddl-next-link"><?php next_comments_link( get_ddl_field('ddl_next_link_text') ); ?></div>
-                    </nav>
-                    <?php endif; // check for comment navigation ?>	
-            
-                    <?php						
+                    <?php
+                    if ( !get_ddl_field( 'ddl_comment_nav_position' ) || get_ddl_field( 'ddl_comment_nav_position' ) === 'above' ){
+	                    $this->print_comments_navigation( $comments, 'above' );
+                    }
                     $comments_defaults = array();
                     //Set comments style
                     $comments_defaults['style'] = apply_filters('ddl_comment_cell_style', 'ul');
@@ -371,6 +384,9 @@ if (!class_exists('Layouts_cell_comments')) {
                     wp_list_comments( $comments_defaults, $comments );
                     echo $after_comments_list;
                     echo '</div>';
+                    if ( get_ddl_field( 'ddl_comment_nav_position' ) === 'below' ){
+	                    $this->print_comments_navigation( $comments, 'below' );
+                    }
                     ?>
 
 
@@ -387,15 +403,8 @@ if (!class_exists('Layouts_cell_comments')) {
             return ob_get_clean();
 	}
 
-	public function sanitise_comment_text( $comment_data_array ){
-        $comment_content = $comment_data_array['comment_content'];
-		$comment_content = preg_replace('/script.*?\/script/ius', ' ', $comment_content)
-			? preg_replace('/\<script.*?\/script\>/ius', ' ', $comment_content)
-			: $comment_content;
-		$comment_data_array['comment_content'] = $comment_content;
-	    return $comment_data_array;
-    }
-        
+
+
 
     }
     new Layouts_cell_comments();

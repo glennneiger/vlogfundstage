@@ -82,4 +82,12 @@ class Toolset_Field_Definition_Term extends Toolset_Field_Definition {
 		return new Toolset_Field_Instance_Term( $this, $element_id );
 	}
 
+
+	/**
+	 * @return string Domain where this field belongs to.
+	 * @since 2.5.8
+	 */
+	public function get_domain() {
+		return Toolset_Element_Domain::TERMS;
+	}
 }

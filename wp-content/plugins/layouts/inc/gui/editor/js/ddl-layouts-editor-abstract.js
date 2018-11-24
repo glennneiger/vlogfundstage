@@ -157,7 +157,7 @@ DDLayout.AdminPageAbstract.prototype.get_layout_as_JSON = function() {
     try{
         return this.instance_layout_view.getLayoutModelToJs();
     } catch( e ){
-        console.log( e.message );
+        console.log( 'This is not a blocking error: ', e.message );
         return null;
     }
 };

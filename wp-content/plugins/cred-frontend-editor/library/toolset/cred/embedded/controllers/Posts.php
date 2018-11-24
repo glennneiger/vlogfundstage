@@ -158,7 +158,7 @@ class CRED_Posts_Controller extends CRED_Abstract_Controller {
 			if ( is_array( $results ) ) {
 				foreach ( $results as $result ) {
 					$output[] = array(
-						'text' => $result->post_title,
+						'text' => $result->ID." ".$result->post_title,
 						'id' => $result->ID,
 					);
 				}

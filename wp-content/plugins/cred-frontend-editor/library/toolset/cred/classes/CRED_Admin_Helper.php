@@ -81,7 +81,7 @@ final class CRED_Admin_Helper
             'register_settings_forms_section_filter'
         ), 60);
 
-        //Registering AJAX actions used in CRED settings section
+        //Registering AJAX actions used in Toolset Forms settings section
         add_action('wp_ajax_cred_get_allowed_tags', array( __CLASS__, 'get_allowed_tags' ));
         add_action('wp_ajax_cred_set_allowed_tags', array( __CLASS__, 'set_allowed_tags' ));
         add_action('wp_ajax_cred_save_wizard_settings', array( __CLASS__, 'save_wizard_settings' ));
@@ -119,13 +119,6 @@ final class CRED_Admin_Helper
 
     // add custom classes to our metaboxes, so they can be handled as needed
     public static function addMetaboxClasses( $classes )
-    {
-        array_push($classes, 'cred_related');
-
-        return $classes;
-    }
-
-    public static function addMetaboxClasses2( $classes )
     {
         array_push($classes, 'cred_related');
 
@@ -181,10 +174,12 @@ final class CRED_Admin_Helper
             );
         }
         if ( 'CRED_Fields' == $current_page ) {
+            $fields_control = new \OTGS\Toolset\CRED\Controller\Forms\Post\FieldsControl\Main();
+            $fields_control->initialize();
             $pages[] = array(
                 'slug' => 'CRED_Fields',
-                'menu_title' => __('CRED Custom Fields', 'wp-cred'),
-                'page_title' => __('CRED Custom Fields', 'wp-cred'),
+                'menu_title' => __('Toolset Forms Custom Fields', 'wp-cred'),
+                'page_title' => __('Toolset Forms Custom Fields', 'wp-cred'),
                 'callback' => array( 'CRED_Admin_Helper', 'FieldsMenuPage' ),
                 'capability' => CRED_CAPABILITY
             );
@@ -209,10 +204,12 @@ final class CRED_Admin_Helper
             );
         }
         if ( 'CRED_User_Fields' == $current_page ) {
+            $fields_control = new \OTGS\Toolset\CRED\Controller\Forms\User\FieldsControl\Main();
+            $fields_control->initialize();
             $pages[] = array(
                 'slug' => 'CRED_User_Fields',
-                'menu_title' => __('CRED User Fields', 'wp-cred'),
-                'page_title' => __('CRED User Fields', 'wp-cred'),
+                'menu_title' => __('Toolset Forms User Fields', 'wp-cred'),
+                'page_title' => __('Toolset Forms User Fields', 'wp-cred'),
                 'callback' => array( 'CRED_Admin_Helper', 'UserFieldsMenuPage' ),
                 'capability' => CRED_CAPABILITY
             );
@@ -260,10 +257,6 @@ final class CRED_Admin_Helper
             case 'toolset_page_CRED_User_Forms':
                 CRED_Loader::get('TABLE/UserForms');
                 break;
-            case 'cred_page_CRED_Fields'://DEPRECATED
-            case 'toolset_page_CRED_Fields':
-                CRED_Loader::get('TABLE/Custom_Fields');
-                break;
         }
     }
 
@@ -277,14 +270,22 @@ final class CRED_Admin_Helper
         CRED_Loader::load('VIEW/user_forms');
     }
 
-    public static function FieldsMenuPage()
-    {
-        CRED_Loader::load('VIEW/custom_fields');
+    public static function FieldsMenuPage() {
+        $template_repository = \CRED_Output_Template_Repository::get_instance();
+        $renderer = \Toolset_Renderer::get_instance();
+        $renderer->render(
+			$template_repository->get( \CRED_Output_Template_Repository::FIELDS_CONTROL_POSTMETA_PAGE ),
+			null
+		);
     }
 
-    public static function UserFieldsMenuPage()
-    {
-        CRED_Loader::load('VIEW/custom_user_fields');
+    public static function UserFieldsMenuPage() {
+        $template_repository = \CRED_Output_Template_Repository::get_instance();
+        $renderer = \Toolset_Renderer::get_instance();
+        $renderer->render(
+			$template_repository->get( \CRED_Output_Template_Repository::FIELDS_CONTROL_USERMETA_PAGE ),
+			null
+		);
     }
 
     public static function ExportMenuSettings()
@@ -306,19 +307,19 @@ final class CRED_Admin_Helper
     {
         $sections[ 'cred' ] = array(
             'slug' => 'cred',
-            'title' => __('CRED', 'wp-cred'),
+            'title' => __('Forms', 'wp-cred'),
             'icon' => '<i class="icon-cred-logo ont-icon-16"></i>',
             'items' => array(
                 'export' => array(
-                    'title' => __('Export CRED forms', 'wpv-views'),
+                    'title' => __('Export Forms', 'wp-cred'),
                     'callback' => array( 'CRED_Admin_Helper', 'ExportMenuSettings' ),
                 ),
                 'import-post-forms' => array(
-                    'title' => __('Import CRED Post Forms', 'wpv-views'),
+                    'title' => __('Import Post Forms', 'wp-cred'),
                     'callback' => array( 'CRED_Admin_Helper', 'ImportPostFormsSettings' ),
                 ),
                 'import-user-forms' => array(
-                    'title' => __('Import CRED User Forms', 'wpv-views'),
+                    'title' => __('Import User Forms', 'wp-cred'),
                     'callback' => array( 'CRED_Admin_Helper', 'ImportUserFormsSettings' ),
                 )
             )
@@ -412,7 +413,7 @@ final class CRED_Admin_Helper
         } elseif ( is_array($import_messages) ) {
             ?>
             <div class="message updated">
-                <h3><?php echo __('CRED import summary :', 'wp-cred'); ?></h3>
+                <h3><?php echo __('Forms import summary:', 'wp-cred'); ?></h3>
                 <ul>
                     <?php
                     /**
@@ -480,7 +481,7 @@ final class CRED_Admin_Helper
     {
         $sections[ 'forms' ] = array(
             'slug' => 'forms',
-            'title' => __('Forms', 'wpv-views')
+            'title' => __('Forms', 'wp-cred')
         );
 
         return $sections;
@@ -490,7 +491,7 @@ final class CRED_Admin_Helper
     {
         $sections[ 'forms-wizard' ] = array(
             'slug' => 'forms-wizard',
-            'title' => __('CRED Wizard', 'wp-cred'),
+            'title' => __('Forms Wizard', 'wp-cred'),
             'callback' => array( 'CRED_Admin_Helper', 'SettingsSectionWizard' )
         );
 
@@ -556,7 +557,7 @@ final class CRED_Admin_Helper
     {
         $sections[ 'forms-user-forms' ] = array(
             'slug' => 'forms-user-forms',
-            'title' => __('CRED User Forms', 'wp-cred'),
+            'title' => __('Toolset User Forms', 'wp-cred'),
             'callback' => array( 'CRED_Admin_Helper', 'SettingsSectionUserForms' )
         );
 
@@ -628,7 +629,7 @@ final class CRED_Admin_Helper
         if ( !current_user_can('manage_options') ) {
             $data = array(
                 'type' => 'capability',
-                'message' => __('You do not have permissions for that.', 'wpv-views')
+                'message' => __('You do not have permissions for that.', 'wp-cred')
             );
             wp_send_json_error($data);
         }
@@ -659,7 +660,7 @@ final class CRED_Admin_Helper
             ?>
             <p class="js-cred-allowed-tags-summary-text">
                 <?php
-                _e('The following HTML tags are allowed:', 'wpv-views');
+                _e('The following HTML tags are allowed:', 'wp-cred');
                 ?>
             </p>
             <ul class="toolset-taglike-list">
@@ -672,7 +673,7 @@ final class CRED_Admin_Helper
             ?>
             <p class="js-cred-allowed-tags-summary-text">
                 <?php
-                _e('No HTML tags have been selected.', 'wpv-views');
+                _e('No HTML tags have been selected.', 'wp-cred');
                 ?>
             </p>
             <?php
@@ -690,7 +691,7 @@ final class CRED_Admin_Helper
         if ( !current_user_can('manage_options') ) {
             $data = array(
                 'type' => 'capability',
-                'message' => __('You do not have permissions for that.', 'wpv-views')
+                'message' => __('You do not have permissions for that.', 'wp-cred')
             );
             wp_send_json_error($data);
         }
@@ -733,7 +734,7 @@ final class CRED_Admin_Helper
         if ( !current_user_can('manage_options') ) {
             $data = array(
                 'type' => 'capability',
-                'message' => __('You do not have permissions for that.', 'wpv-views')
+                'message' => __('You do not have permissions for that.', 'wp-cred')
             );
             wp_send_json_error($data);
         }
@@ -777,7 +778,7 @@ final class CRED_Admin_Helper
         if ( !current_user_can('manage_options') ) {
             $data = array(
                 'type' => 'capability',
-                'message' => __('You do not have permissions for that.', 'wpv-views')
+                'message' => __('You do not have permissions for that.', 'wp-cred')
             );
             wp_send_json_error($data);
         }
@@ -837,7 +838,7 @@ final class CRED_Admin_Helper
         if ( !current_user_can('manage_options') ) {
             $data = array(
                 'type' => 'capability',
-                'message' => __('You do not have permissions for that.', 'wpv-views')
+                'message' => __('You do not have permissions for that.', 'wp-cred')
             );
             wp_send_json_error($data);
         }
@@ -892,7 +893,7 @@ final class CRED_Admin_Helper
         if ( !current_user_can('manage_options') ) {
             $data = array(
                 'type' => 'capability',
-                'message' => __('You do not have permissions for that.', 'wpv-views')
+                'message' => __('You do not have permissions for that.', 'wp-cred')
             );
             wp_send_json_error($data);
         }
@@ -946,315 +947,6 @@ final class CRED_Admin_Helper
         $toolset_common_bootstrap->load_sections($toolset_common_sections);
     }
 
-    // metabox placeholder for Module Manager plugin
-    public static function addModManMetaBox( $form )
-    {
-        $key = ( $form->post_type == CRED_USER_FORMS_CUSTOM_POST_NAME ) ? _CRED_MODULE_MANAGER_USER_KEY_ : _CRED_MODULE_MANAGER_KEY_;
-        $element = array( 'id' => $key . $form->ID, 'title' => $form->post_title, 'section' => $key );
-        do_action('wpmodules_inline_element_gui', $element);
-    }
-
-    // placeholder
-    public static function addFormContentMetaBox( $form )
-    {
-
-    }
-
-	/**
-	 * @param $form
-	 * @param $args
-     *
-     * @deprecated 1.9.3 use CRED_Page_Extension_Form_Settings_Meta_Box
-	 */
-    public static function addFormSettingsMetaBox( $form, $args )
-    {
-        //Form Settings
-	    $settings = $args[ 'args' ][ 'form_settings' ]->form;
-
-	    $default_empty_action_post_type_label = esc_attr( __( '- - Select post type - -', 'wp-cred' ) );
-	    $default_empty_action_post_label = esc_attr( __( '- - Select post - -', 'wp-cred' ) );
-
-	    //Post Types
-	    $post_types = get_post_types(array('public' => true, 'publicly_queryable' => true, 'show_in_nav_menus' => true), 'names');
-	    $post_types = array_merge( array( '' => $default_empty_action_post_type_label ), $post_types );
-
-	    $current_action_post = null;
-	    ob_start();
-	    ?>
-	    <option value=""><?php echo $default_empty_action_post_label; ?></option>
-        <?php
-	    if (isset($settings['action_post'])
-            && !empty($settings['action_post'])) {
-		    $post = get_post( $settings['action_post'] );
-		    $current_action_post = $post;
-		    ?>
-		    <option value="<?php echo esc_attr($post->ID); ?>"><?php echo $post->post_title; ?></option>
-            <?php
-	    }
-	    $form_current_custom_post = ob_get_clean();
-
-	    ob_start();
-	    foreach ($post_types as $post_type_key => $post_type_value) {
-            ?>
-            <option value="<?php echo esc_attr($post_type_key); ?>" <?php selected( isset( $post ) && $post_type_value === $post->post_type ); ?>><?php echo $post_type_value; ?></option>
-            <?php
-	    }
-	    $form_post_types = ob_get_clean();
-
-	    //All Page List
-        $page_query = new WP_Query(array(
-            'post_type' => 'page',
-            'post_status' => 'publish',
-            'posts_per_page' => -1
-        ));
-        ob_start();
-        if ( $page_query->have_posts() ) {
-            while ( $page_query->have_posts() ) {
-                $page_query->the_post();
-                ?>
-                <option value="<?php esc_attr(the_ID()); ?>" <?php selected( isset($settings[ 'action_page' ]) && $settings[ 'action_page' ] == get_the_ID() ); ?>><?php the_title(); ?></option>
-                <?php
-            }
-        }
-        // just in case
-        wp_reset_postdata();
-        $form_action_pages = ob_get_clean();
-
-        //enqueue template script
-	    wp_enqueue_script( 'cred_form_settings_box' );
-	    wp_localize_script( 'cred_form_settings_box', 'cred_form_settings_box', array(
-		    'ajaxurl' => admin_url( 'admin-ajax.php' ),
-		    'form_current_action_post' => $current_action_post,
-		    'has_current_action_post' => isset( $current_action_post ),
-		    'form_current_action_post_id' => isset( $current_action_post ) ? esc_attr($current_action_post->ID) : null,
-		    'form_current_action_post_title' => isset( $current_action_post ) ? $current_action_post->post_title : null,
-		    'default_redirect_custom_post_min_posts_count_for_select2' => 15,
-		    'default_empty_action_post_type' => $default_empty_action_post_type_label,
-		    'default_empty_action_post' => $default_empty_action_post_label,
-		    'default_select2_placeholder' => esc_attr( __( 'Type some characters..', 'wp-cred' ) ),
-		    'form_type' => 'post'
-	    ) );
-
-	    //Print Template
-	    echo CRED_Loader::tpl( 'form-settings-meta-box', array(
-		    'form' => $form,
-		    'settings' => $settings,
-		    'post_types' => CRED_Loader::get( 'MODEL/Fields' )->getPostTypes(),
-		    'form_post_types' => $form_post_types,
-		    'form_current_custom_post' => $form_current_custom_post,
-		    'default_empty_action_post_type' => $default_empty_action_post_type_label,
-		    'default_empty_action_post' => $default_empty_action_post_label,
-		    'form_action_pages' => $form_action_pages,
-		    'help' => CRED_CRED::$help,
-		    'help_target' => CRED_CRED::$help_link_target,
-	    ) );
-    }
-
-	/**
-	 * @param $form
-	 * @param $args
-	 *
-	 * @deprecated 1.9.4 use CRED_Page_Extension_Form_Settings_Meta_Box
-	 */
-    public static function addUserFormSettingsMetaBox( $form, $args )
-    {
-	    //Form Settings
-        $settings = $args[ 'args' ][ 'form_settings' ]->form;
-
-	    //Post Types
-	    $default_empty_action_post_type_label = esc_attr( __( '- - Select post type - -', 'wp-cred' ) );
-	    $default_empty_action_post_label = esc_attr( __( '- - Select post - -', 'wp-cred' ) );
-
-	    //Post Types
-	    $post_types = get_post_types(array('public' => true, 'publicly_queryable' => true, 'show_in_nav_menus' => true), 'names');
-	    $post_types = array_merge( array( '' => $default_empty_action_post_type_label ), $post_types );
-
-	    $current_action_post = null;
-	    ob_start();
-	    ?>
-        <option value=""><?php echo $default_empty_action_post_label; ?></option>
-	    <?php
-	    if (isset($settings['action_post'])
-		    && !empty($settings['action_post'])) {
-		    $post = get_post( $settings['action_post'] );
-		    $current_action_post = $post;
-		    ?>
-            <option value="<?php echo esc_attr($post->ID); ?>"><?php echo $post->post_title; ?></option>
-		    <?php
-	    }
-	    $form_current_custom_post = ob_get_clean();
-
-	    ob_start();
-	    foreach ($post_types as $post_type_key => $post_type_value) {
-		    ?>
-            <option value="<?php echo esc_attr($post_type_key); ?>" <?php selected( isset( $post ) && $post_type_value === $post->post_type ); ?>><?php echo $post_type_value; ?></option>
-		    <?php
-	    }
-	    $form_post_types = ob_get_clean();
-
-	    //All Page List
-	    $page_query = new WP_Query(array(
-            'post_type' => 'page',
-            'post_status' => 'publish',
-            'posts_per_page' => -1
-        ));
-        ob_start();
-        if ( $page_query->have_posts() ) {
-            while ( $page_query->have_posts() ) {
-                $page_query->the_post();
-                ?>
-                <option value="<?php the_ID() ?>" <?php selected( isset($settings[ 'action_page' ]) && $settings[ 'action_page' ] == get_the_ID() ); ?>><?php the_title(); ?></option>
-                <?php
-            }
-        }
-        global $wp_roles;
-        // just in case
-        wp_reset_postdata();
-        $form_action_pages = ob_get_clean();
-
-	    $selected_user_roles = array();
-	    if ( isset( $settings['user_role'] ) && ! empty( $settings['user_role'] ) ) {
-		    $selected_user_roles = json_decode( $settings['user_role'], true );
-		    if ( is_array( $selected_user_roles ) ) {
-			    array_filter( $selected_user_roles );
-		    }
-	    }
-
-	    //enqueue template script
-	    wp_enqueue_script( 'cred_form_settings_box' );
-	    wp_localize_script( 'cred_form_settings_box', 'cred_form_settings_box', array(
-		    'ajaxurl' => admin_url( 'admin-ajax.php' ),
-		    'form_current_action_post' => $current_action_post,
-		    'has_current_action_post' => isset( $current_action_post ),
-		    'form_current_action_post_id' => isset( $current_action_post ) ? esc_attr($current_action_post->ID) : null,
-		    'form_current_action_post_title' => isset( $current_action_post ) ? $current_action_post->post_title : null,
-		    'default_redirect_custom_post_min_posts_count_for_select2' => 15,
-		    'default_empty_action_post_type' => $default_empty_action_post_type_label,
-		    'default_empty_action_post' => $default_empty_action_post_label,
-		    'default_select2_placeholder' => esc_attr( __( 'Type some characters..', 'wp-cred' ) ),
-		    'settings_form_type' =>  $settings['type'],
-		    'user_roles' => $wp_roles->roles,
-		    'selected_user_roles' => $selected_user_roles,
-            'form_type' => 'user'
-	    ) );
-
-        echo CRED_Loader::tpl('user-form-settings-meta-box', array(
-            'form' => $form,
-            'settings' => $settings,
-	        'post_types' => CRED_Loader::get( 'MODEL/Fields' )->getPostTypes(),
-	        'form_post_types' => $form_post_types,
-	        'form_current_custom_post' => $form_current_custom_post,
-	        'default_empty_action_post_type' => $default_empty_action_post_type_label,
-	        'default_empty_action_post' => $default_empty_action_post_label,
-            'form_action_pages' => $form_action_pages,
-            'user_roles' => $wp_roles->roles,
-            'help' => CRED_CRED::$help,
-            'help_target' => CRED_CRED::$help_link_target
-        ));
-    }
-
-    /**
-     * @deprecated since 1.8
-     *
-     * @param type $form
-     * @param type $args
-     */
-    public static function addPostTypeMetaBox( $form, $args )
-    {
-        $settings = $args[ 'args' ][ 'form_settings' ];
-        echo CRED_Loader::tpl('post-type-meta-box', array(
-            'post_types' => CRED_Loader::get('MODEL/Fields')->getPostTypes(),
-            'settings' => $settings,
-            'help' => CRED_CRED::$help,
-            'help_target' => CRED_CRED::$help_link_target
-        ));
-    }
-
-    public static function addNotificationMetaBox( $form, $args )
-    {
-        $notification = $args[ 'args' ][ 'notification' ];
-        $enable = ( isset($notification->enable) && $notification->enable ) ? 1 : 0;
-        $notts = isset($notification->notifications) ? (array)$notification->notifications : array();
-
-        echo CRED_Loader::tpl('notification-meta-box', array(
-            'form' => $form,
-            'enable' => $enable,
-            'notifications' => $notts,
-            'enableTestMail' => !CRED_Helper::$currentPage->isCustomPostNew,
-            'help' => CRED_CRED::$help,
-            'help_target' => CRED_CRED::$help_link_target
-        ));
-    }
-
-    public static function addNotificationMetaBox2( $form, $args )
-    {
-        $notification = $args[ 'args' ][ 'notification' ];
-        $enable = ( isset($notification->enable) && $notification->enable ) ? 1 : 0;
-        $notts = isset($notification->notifications) ? (array)$notification->notifications : array();
-
-        echo CRED_Loader::tpl('notification-user-meta-box', array(
-            'form' => $form,
-            'enable' => $enable,
-            'notifications' => $notts,
-            'enableTestMail' => !CRED_Helper::$currentPage->isCustomPostNew,
-            'help' => CRED_CRED::$help,
-            'help_target' => CRED_CRED::$help_link_target
-        ));
-    }
-
-    /**
-     * @deprecated since version 1.8
-     *
-     * @param type $form
-     * @param type $args
-     */
-    public static function addExtraAssetsMetaBox( $form, $args )
-    {
-        $extra = $args[ 'args' ][ 'extra' ];
-
-        echo CRED_Loader::tpl('extra-meta-box', array(
-            'css' => isset($extra->css) ? $extra->css : '',
-            'js' => isset($extra->js) ? $extra->js : '',
-            'help' => CRED_CRED::$help,
-            'help_target' => CRED_CRED::$help_link_target
-        ));
-    }
-
-    /**
-     * @added since version 1.8
-     *
-     * @param type $form
-     * @param type $args
-     */
-    public static function addExtraCSSMetaBox( $form, $args )
-    {
-        $extra = $args[ 'args' ][ 'extra' ];
-        echo CRED_Loader::tpl('extra-css-meta-box', array(
-            'css' => isset($extra->css) ? $extra->css : '',
-            'js' => isset($extra->js) ? $extra->js : '',
-            'help' => CRED_CRED::$help,
-            'help_target' => CRED_CRED::$help_link_target
-        ));
-    }
-
-    /**
-     * @added since 1.8
-     *
-     * @param type $form
-     * @param type $args
-     */
-    public static function addExtraJSMetaBox( $form, $args )
-    {
-        $extra = $args[ 'args' ][ 'extra' ];
-
-        echo CRED_Loader::tpl('extra-js-meta-box', array(
-            'css' => isset($extra->css) ? $extra->css : '',
-            'js' => isset($extra->js) ? $extra->js : '',
-            'help' => CRED_CRED::$help,
-            'help_target' => CRED_CRED::$help_link_target
-        ));
-    }
-
     public static function addMessagesMetaBox( $form, $args )
     {
         $extra = $args[ 'args' ][ 'extra' ];
@@ -1293,36 +985,11 @@ final class CRED_Admin_Helper
         ));
     }
 
-    public static function addCredAccessMessagesMetaBox( $form, $args )
-    {
-        global $wpcf_access;
-        $is_access_active = ( isset($wpcf_access) && !empty($wpcf_access) );
-
-	    $form_saved =
-		    (
-			    $args["args"]["form_settings"]->post["post_type"] != null ||
-			    (
-				    isset( $args["args"]["form_settings"]->form["user_role"] ) &&
-				    (
-					    ! empty($args["args"]["form_settings"]->form["user_role"]) &&
-					    $args["args"]["form_settings"]->form["user_role"] != "[]"
-				    )
-			    )
-		    );
-
-        echo CRED_Loader::tpl('text-access-meta-box', array(
-            'is_access_active' => $is_access_active,
-            'form_type' => @$form->post_type,
-            'form_saved'=> $form_saved
-        ));
-    }
-
-    public static function addSaveMetaBox( $form, $args )
-    {
-        echo CRED_Loader::tpl('save-form-meta-box', array(
-            'delete_link' => do_shortcode("[cred_delete_post_link class='submitdelete deletion' text='Move to Trash' action='delete' message='" . __("Are you sure you want to delete this form?", "wp-cred") . "' message_show='1']"),
-        ));
-    }
+	public static function add_how_to_display_meta_box( $form, $args )
+	{
+        // @deprecated Seems to not be called from anywhere in this plugin
+		echo CRED_Loader::tpl('how-to-display-meta-box', array());
+	}
 
     public static function handlePostFormDeletionJS()
     {

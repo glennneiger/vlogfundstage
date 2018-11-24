@@ -273,7 +273,7 @@ class CRED_Association_Form_Relationship_API_Helper {
 	public function handle_field_save( $field_slug, $field_value ) {
 		$post = $this->get_intermediary_post();
 
-		if ( $post instanceof Toolset_Post === false ) {
+		if ( $post instanceof IToolset_Element === false ) {
 			return false;
 		}
 
@@ -333,7 +333,7 @@ class CRED_Association_Form_Relationship_API_Helper {
 	}
 
 	/**
-	 * @return null/Toolset_Post
+	 * @return null/IToolset_Element
 	 */
 	public function get_intermediary_post() {
 		if ( ! $this->association ) {

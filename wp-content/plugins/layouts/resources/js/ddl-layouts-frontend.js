@@ -4,7 +4,6 @@ jQuery(document).ready( function () {
     
    var video_embed = new DDLayout.EmbeddedManager(),
 	   menu_fix = new DDLayout.DropDownMenuFix();
-       tabs = new DDLayout.TabsHandler();
 });
 
 DDLayout.EmbeddedManager = function()
@@ -108,32 +107,4 @@ DDLayout.DropDownMenuFix = function()
 	};
 
 	self.init();
-};
-
-DDLayout.TabsHandler = function(){
-	var self = this, $disabled;
-	self.init = function(){
-        $disabled = jQuery('ul.nav li.disabled a');
-        self.handle_disabled_link();
-    };
-
-    self.handle_disabled_link = function(){
-        $disabled.on('click', function(event){
-            event.stopImmediatePropagation();
-            return false;
-        });
-    };
-	self.init();
-
-//Select first tab on load
-/*	setTimeout(function(){
-        jQuery(jQuery("ul.nav-tabs  a").get().reverse()).each(function(index, value) {
-            jQuery(value).trigger('click');
-        });
-	}, 10);
-
-    setTimeout(function(){
-        jQuery('.nav-tabs').css('display', 'block');
-        jQuery('.tab-content').css('display', 'block');
-    }, 20); */
 };

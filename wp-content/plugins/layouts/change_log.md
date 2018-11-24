@@ -1,4 +1,76 @@
-﻿Version 2.2
+﻿Version 2.4.3
+ - Feature: New options to allow user to decide whether Layouts CSS and/or JS should be loaded site-wide or only when the page renders with Layouts
+ - Performance: Implemented routines to programmatically clean-up cached CSS and JS files from upload directory
+ - Bug-fix: Fixed issue with save layout settings flow to prevent record duplication
+ - Bug-fix: Fixed issue with WPML Packages list always showing previous layout data version rather than updated one
+ - Bug-fix: Fixed issue with "wpv-post-body" shortcode in Content Template cell when renders a selected page in Content Layout context
+
+Version 2.4.2
+ - Feature: Added new option to Comments cell to let the user decide to print comments navigation either before or after the comments list.
+ - Usability: Added tooltips to explain the difference between Layouts file system export and theme directory exports functionality.
+ - Usability: Added feedback messages for when settings are imported successfully.
+  - Performance: Reviewed and made sure all our scripts and styles in front end are loaded only when strictly necessary (used).
+ - Bug-fix: Makes sure special characters are not converted to entities when Layouts cells text fields are escaped, while still stripping tags and sanitise strings for security.
+ - Bug-fix: Makes sure Layouts settings .JSON file is handled on import also when uploaded as a single file out of a .zip file context.
+ - Bug-fix: Makes sure Layouts settings .js file is handled on export/import also when uploaded as a single file out of a .zip file context.
+ - Bug-fix: Fixes editing issues with Front End editor when multiple levels of parenthood are present in the same page: e.g. Layout Ancestor, Layout Parent, Layout Child etc.
+ - Bug-fix: Fixed issue with password protected posts form with integrated themes rendering multiple times.
+ - Documentation: Updated help links for Toolset Forms
+
+
+Version 2.4.1
+ - Compatibility: Made Layouts Options API compatible with Multisite and made sure cached values refresh when the blog is switched
+ - Compatibility: Made Layouts custom cells repeating fields render in [wpml-strings] when in Content Layout context to force translation even if rendered content is cached
+ - Compatibility: Added query string variable "?ver=VERSION" to script loaded with Head.js to prevent cached version loading when plugin updates 
+ - Bug-fix: Made sure save overlay is removed - or not printed at all - if the layout cell/row don't require an ajax re-render when edited with front end editor
+ - Bug-fix: Fixed warnings when layouts list misses has NULL items or items in the list miss some default properties, in Layouts listing page preventing Backbone.Model to parse JSON correctly
+ - Bug-fix: Made sure Relationship Form cell short-code is parsed correctly when the cell renders in front-end
+
+
+Version 2.4
+ - Feature: Re-design Layouts listing page moving previous sections into tabs for a better and more organised design and performance improvement
+ - Compatibility: Fixed issue with Layouts Archives preview when Woocommerce is active
+
+Version 2.3.1
+ - Compatibility: Ensured strings translated with "wpml-string" short code are exported and imported in new site correctly preserving their status in String Translation table and rendering in Front-end
+ - Compatibility: Fixed issue with row/cell data (tags, classes and id) missing in WPML Content Layouts translations
+ - Compatibility: Ensured Dynamic Sidebars created with Widget Area cells work in WPML tranlsations too 
+ - Compatibility: Ensured compatibility with Virtue theme
+ - Compatibility: Ensured compatibility with Wordpress feeds / RSS templates
+ - Bug-fix: Fixed issue with Views Grid cell when rendering  parametric form and results in the same page into 2 different cells using Content Layout
+ - Bug-fix: Fixed issue with posts and pages loosing their individually assigned Template Layout when their Content Layout is saved, in favour of the Template Layout assigned to their entire post type
+ - Bug-fix: Fixed issue with Toolset Maps short code not rendering correctly when used in a Visual Editor cell edited with Front-end editor
+ - Bug-fix: Fixed issue with Front-end editor not rendering overlays and editing controls for Content Layout
+ - Bug-fix: Fixed issue with invalid JSON for Content Layout when copied / pasted to a new post
+ - Bug-fix: Fixed other small cosmetic issues in editor and Front-end editor
+
+
+Version 2.3
+  - Usability: Explicitly marked layout kind icon as clickable and providing options
+  - Usability: Improved usability for auto-suggest functionality for Tag Classes control in Layouts cells dialog
+  - Usability: Removed elements that are not necessary in Views cell dialog to make more space
+  - Usability: Added new tooltip to explain hierarchy settings icon
+  - Compatibility: Fixed issue with WPML String shortcode context and name attributes not working in Layouts
+  - Compatibility: ensure Bootstrap Tabs first tab is not marked as "active" when Tabs are not rendered by Layouts in a Layouts rendered page  
+  - Bug-fix: Fixed issue with invalid Content Layouts JSON upon copy paste to a new or existing post
+  - Bug-fix: Fixed issue with Theme Options sections not expanding correctly on slide-down
+  - Bug-fix: Fixed issue with add shortcode button hidden in some popups
+  - Bug-fix: Fixed issue with users with "assign layout to content" capabilities not able to un-assign a Layout after being assigned
+  - Bug-fix: Fixed issue with Visual Editor Cell rendering 3rd party content more than once
+  - Bug-fix: Fixes issue with copy clipboard when JSON textarea is not empty
+  - Bug-fix: Moved all iFrame dialogs 40px to top to prevent button bar to be hidden behind outer dialog footer
+  - Bug-fix: Raised execution priority to print admin pages to make sure that Layouts pages are printed after CRED
+  - Bug-fix: Fixes issue with 'Stop using this Layout' link when user can only assign Layout
+  - Bug-fix: Fixed issue with inserting css classes in Layout cells.
+  - Bug-fix: Fixed several notices related to issues when using PHP 7.x
+  - Bug-fix: Fixed problem with assigning Layout to archive, it was issue only with PHP 7+
+  - User-interface: Renamed CRED to Toolset Forms
+  - Feature: Added setting to enable/disable the_content filter from GUI
+  - Feature: New Layouts cell implemented - CRED Relationship forms. It is possible now to insert CRED Relationship Form directly from Layouts using new cell.
+  - Feature: Provide integration with Wordpress post password protection feature for Integrated Themes
+
+
+Version 2.2
   - Bug-fix: Fixed issue with keeping old value in css editor in case when browser is reopened before without refresh
   - Bug-fix: Fixed issue with registering URL inside Image Box Cell for translation
   - Bug-fix: Fixed problem with missing ending semicolons for HTML special char "&quot"
@@ -8,7 +80,7 @@
   - Usability: Implemented "Save" button that will keep you on Content layout editor after saving instead of redirecting back to post editor
   - User-interface: Few typos fixed
   - Theme Compatibility: Fixed problem with OceanWP theme option to hide sidebar for WooCommerce product page
-  
+
 
 Version 2.1
  - Theme Compatibility: Improved compatibility layer for Genesis, Divi, Avada, Astra, Generate Press and Ocean WP themes  
@@ -31,11 +103,11 @@ Version 2.1
   - Security: Prevent script tag to be used inside comments text area in Comments cell
   - Security:Prevent script tag to be used inside Layouts custom CSS editor
 
- 
+
 Version 2.1-b1
 
  - Theme Compatibility: Added controls to hide/show elements such as header, sidebar, featured image, title etc per layout, in Astra, Generate Press and Ocean WP themes
- 
+
 Version 2.0.3
 
  - Peformance: Included in CSS classes and CSS id scanning only published template layouts to reduce memory usage on large websites
@@ -68,7 +140,7 @@ Version 2.0.2
   - Bug-fix: Fixed wrong help video alignment in Content Layout when user sets high resolution
   - Bug-fix: Fixes bug of Layouts assigned to Archives not working when the main query didn't have at least one post, even if the layout was displaying other content
   - Bug-fix: Fixes bug with Slider cell autoplay option
-  
+
 
 Version 2.0.1
 
@@ -85,7 +157,7 @@ Version 2.0
  - User-interface: Added GUI to control Bootstrap columns size per Layout
  - User-interface: Added icon and tooltip to quickly provide markup and attributes information about cells
  - User-interface: Removed distracting elements from Views iFrame and button to save Views elements from main dialog
- - Cosmetics: Changed Slider cell previous and next buttons icons from text only elements to Boostrap library icons in a placeholder 
+ - Cosmetics: Changed Slider cell previous and next buttons icons from text only elements to Boostrap library icons in a placeholder
  - Compatibility: Fixed compatibility problem with Woocommerce and Woocommerce Views causing infinite loop when rendering in the same Layout wpv-post-body and wpv-woo-display-tabs Views short codes
  - Compatibility: Fixed issue with Woocommerce product loosing Template Layout when updated
  - Compatibility: Added the possiblity to define a layout to display a CRED Post/User form on demand
@@ -154,7 +226,7 @@ Version 1.9
  - Fixed an issue with PHP notices in a fresh WordPress install.
  - Fixed compatibility issues with PHP 5.2.
  - Fixed compatibility issue with Divi theme about Toolset dialogs.
-  
+
 Version 1.8.9
 
   - Feature: Accordion cell title are clickable to expand/collapse the collapsible item
@@ -180,7 +252,7 @@ Version 1.8.6
 Version 1.8.5
 
   - Bug-fix: Fixes Type error when user creates new row with given columns in Grid cell
-  
+
 Version 1.8.4
 
   - Feature: Added control to add / remove 15px left and right padding from containers elements
@@ -291,7 +363,7 @@ Version 1.6
   - Bug-fix: Fixed Input field for cell class tag is too wide in iframe editors visual bug
   - Bug-fix: Fixed important bug when we have multiple levels of nested shortcodes and some of them are displaying a form textarea
   - Bug-fix: various bug fixing
-  
+
 -------------------------------------------------------------------------------------------------------------------
 
 Version 1.5.1
@@ -300,7 +372,7 @@ Version 1.5.1
 - Feature: Menu cell placeholder message when no menu is defined in the theme
 - Feature: Full Integration API
 - Feature: Layouts Options API
-- Bug-fix: Fixed Module Manager compatibility issue on layouts import 
+- Bug-fix: Fixed Module Manager compatibility issue on layouts import
 
 -------------------------------------------------------------------------------------------------------------------
 
@@ -333,9 +405,9 @@ Version 1.4.3
 
 Version 1.4.2
   - Bug-fix: Added case for widget translation for when title sub-field is not explicitly declared
-  
+
 -------------------------------------------------------------------------------------------------------------------
- 
+
 Version 1.4.1
   - Feature: Added "show more" functionality to "Show where used" box in Layouts editor to show paginated assignment
   - Compatibility: Addeded generic handler for save post hook to handle automatic layouts assignment regardless the post is created
@@ -345,7 +417,7 @@ Version 1.4.1
   - Compatibility: Addeded filter to force assignment dialog to render single posts and pages even if no compatible templates are present in theme's folder
   - Refactoring: Rewritten all default Layouts cells in Object Oriented Programming style
   - Bug-fix: Fixed bug in CSS sanitisation
-  
+
 -------------------------------------------------------------------------------------------------------------------
 
 Version 1.4
@@ -367,25 +439,25 @@ Version 1.4
   - Bug-fix: various bug fixing
   - Security: Added programmatic sanitization of Layouts properties against SSI injection
   - Security: Improved editor nonce/referrer check when layout data is saved to the database
- 
-------------------------------------------------------------------------------------------------------------------- 
-  
+
+-------------------------------------------------------------------------------------------------------------------
+
 Version 1.3.3
   - Bug-fix: Fixed compatibility problem with CRED 1.4.x
-    
-------------------------------------------------------------------------------------------------------------------- 
+
+-------------------------------------------------------------------------------------------------------------------
 
 Version 1.3.2
   - Bug-fix: Fixed undefined index in Layouts renderer when Content Template cell does not exist in current Layout rendered
 
-------------------------------------------------------------------------------------------------------------------- 
+-------------------------------------------------------------------------------------------------------------------
 
 Version 1.3.1
   - Bug-fix: Fixed problem with Fields dialog positioning when opened in iFrame
   - Bug-fix: Fixed javascript error when Content Template cell has been deleted outside of Layouts
-  - Bug-fix: Prevented javascript errors when Cells have a numeric name or name is not of string type 
-  
-------------------------------------------------------------------------------------------------------------------- 
+  - Bug-fix: Prevented javascript errors when Cells have a numeric name or name is not of string type
+
+-------------------------------------------------------------------------------------------------------------------
 
 Version 1.3
   - Feature: Brand new CRED User Form cell
@@ -541,7 +613,7 @@ Version 0.9.2
    - Fix: CRED forms not working with Layouts
    - Fix: Grid size selector of 6
    - Fix: Remove calls to Multibyte string library
-   
+
 
 -------------------------------------------------------------------------------------------------------------------
 Version 0.9.1
@@ -560,7 +632,7 @@ Version 0.9.1
    - Fix: handling of class names in CSS editor
    - Fix: many PHP warnings
    - Fix: importing of CSS from themes
-   
+
 
 
 -------------------------------------------------------------------------------------------------------------------

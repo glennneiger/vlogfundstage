@@ -18,17 +18,35 @@ class Toolset_Addon_Maps_Views {
 	static $is_wpv_embedded	= false;
 	static $corrected_map_ids = array();
 
+	protected $shortcode_generator;
+
+	protected $api_used = Toolset_Addon_Maps_Common::API_GOOGLE;
+
 	function __construct() {
 		
+		// Needs to run after after_setup_theme::999
+		add_action( 'after_setup_theme', array( $this, 'register_shortcodes_within_views' ), 9999 );
+
 		add_action( 'init',			array( $this, 'init' ) );
 		add_action( 'admin_init',	array( $this, 'admin_init' ) );
-		
-		// Shortcodes in the Fields and Views dialog
-		// Primary groups get registered at -10, then Google Maps, Types meta fields get there at -1
-		add_action( 'init',			array( $this, 'register_shortcodes_dialog_groups' ), -5 );
-		
+
 		$this->enqueue_marker_clusterer_script = false;
-		
+
+		$this->api_used = apply_filters( 'toolset_maps_get_api_used', '' );
+	}
+
+	public function register_shortcodes_within_views() {
+		if ( apply_filters( 'wpv_filter_wpv_get_shortcodes_api_version', 0 ) < 260000 ) {
+			// Shortcodes in the Fields and Views dialog, legacy pre-2.6
+			// Primary groups get registered at -10, then Google Maps, Types meta fields get there at -1
+			add_action( 'init', array( $this, 'register_shortcodes_dialog_groups' ), -5 );
+		} else {
+			// Since Views 2.6 (Shortcodes API version 260000)
+			// we use a dedicated action and better priorities management
+			// TODO new action callback with the proper registration action and elements
+			// TODO move legacy to a dedicated compatibility class
+			add_action( 'wpv_action_collect_shortcode_groups', array( $this, 'register_shortcodes_dialog_groups' ), 3 );
+		}
 	}
 
 	function init() {
@@ -65,6 +83,8 @@ class Toolset_Addon_Maps_Views {
 		add_filter( 'wpv_filter_wpv_editor_addon_keep_default_registered_menus_for_taxonomy', array( $this,	'group_to_gui' ) );
 		add_filter( 'wpv_filter_wpv_editor_addon_keep_default_registered_menus_for_users', array( $this, 'group_to_gui'	) );
 		// Fallback callbacks for the suggest actions for postmeta, termmeta and usermeta field keys
+		// This should be deprecated as of Maps 1.5+
+		// So we use select2_suggest_meta instead
 		add_action( 'wp_ajax_wpv_suggest_wpv_post_field_name',				array( $this, 'suggest_post_field_name' ) );
 		add_action( 'wp_ajax_nopriv_wpv_suggest_wpv_post_field_name',		array( $this, 'suggest_post_field_name' ) );
 		add_action(
@@ -83,6 +103,10 @@ class Toolset_Addon_Maps_Views {
 
 		// Force disable a View cache when it contains a map shortcode
 		add_filter( 'wpv_filter_disable_caching', array( $this, 'disable_views_caching' ), 10, 2 );
+
+		// Init shortcode generator
+		$this->shortcode_generator = new Toolset_Maps_Shortcode_Generator( $this );
+		$this->shortcode_generator->initialize();
 	}
 
 	function admin_init() {
@@ -146,19 +170,23 @@ class Toolset_Addon_Maps_Views {
             );
 		}
 
-
 	}
 
 	function register_assets() {
 		$toolset_maps_dialogs_dependencies = array(
             'jquery', 'underscore', 'wp-util', 'jquery-ui-dialog', 'jquery-ui-tabs', 'views-shortcodes-gui-script',
-            'jquery-geocomplete', 'icl_media-manager-js', 'views-addon-maps-preview-script'
+            'icl_media-manager-js', 'views-addon-maps-preview-script'
         );
 		if ( is_admin() ) {
 			// 'wp-color-picker'  is an asset only available for wp-admin
 			// SO it becomes an optional dependency, and the script itself chcks its existence
 			// before initializing it on the map background selector.
 			$toolset_maps_dialogs_dependencies[] = 'wp-color-picker';
+		}
+		if ( $this->api_used === Toolset_Addon_Maps_Common::API_GOOGLE ) {
+			$toolset_maps_dialogs_dependencies[] = 'jquery-geocomplete';
+		} else {
+			$toolset_maps_dialogs_dependencies[] = 'toolset-maps-address-autocomplete';
 		}
 		wp_register_script( 'views-addon-maps-dialogs-script', TOOLSET_ADDON_MAPS_URL . '/resources/js/wpv_addon_maps_dialogs.js', $toolset_maps_dialogs_dependencies, TOOLSET_ADDON_MAPS_VERSION, true );
 		$types_postmeta_fields = apply_filters( 'toolset_filter_toolset_maps_get_types_postmeta_fields', array() );
@@ -220,9 +248,7 @@ class Toolset_Addon_Maps_Views {
 			'nonce'					=> wp_create_nonce( 'toolset_views_addon_maps_dialogs' ),
 			'global_nonce'			=> wp_create_nonce( 'toolset_views_addon_maps_global' ),
             'add_style_json'        => __( 'Upload a different map style (JSON file)', 'toolset-maps' ),
-            'default_json'          => array_search( $this->get_saved_option( 'default_map_style' ), $this->get_style_options() ),
-            'unsecure_no_geolocation' => __( 'Your site is running on unsecure HTTP, so you cannot get the location of visitors. If you want to run searches based on the visitors’ location, you need to switch the site to HTTPS.', 'toolset-maps' ),
-            'how_to_move_site'      => __( 'How to move the site to HTTPS', 'toolset-maps' )
+            'default_json'          => array_search( $this->get_saved_option( 'default_map_style' ), $this->get_style_options() )
 		);
 		wp_localize_script( 'views-addon-maps-dialogs-script', 'wpv_addon_maps_dialogs_local', $wpv_addon_maps_dialogs_localization );
 	}
@@ -444,8 +470,8 @@ class Toolset_Addon_Maps_Views {
             <!-- wp.template -->
             <script type="text/html" id="tmpl-toolset-views-maps-dialogs-no-geolocation-message">
                 <div class="custom-combo-target">
-                    <p>{{{ data.unsecure_no_geolocation }}}</p>
-                    <p><a href="https://css-tricks.com/moving-to-https-on-wordpress/" target="_blank">{{{ data.how_to_move_site }}}</a></p>
+                    <p><?php _e( 'Your site is running on unsecure HTTP, so you cannot get the location of visitors.', 'toolset-maps' ); ?></p>
+                    <p><a href="https://css-tricks.com/moving-to-https-on-wordpress/" target="_blank"><?php echo esc_html( __( 'How to move the site to HTTPS', 'toolset-maps' ) ); ?></a></p>
                 </div>
             </script>
             <script type="text/html" id="tmpl-toolset-views-maps-dialogs-upload-button-template">
@@ -453,6 +479,36 @@ class Toolset_Addon_Maps_Views {
                 <button class="button button-secondary js-wpv-toolset-maps-media-manager js-wpv-media-manager" data-content="js-wpv-toolset-maps-add-{{{ data.context }}}-{{{ data.type }}}" data-id="0">
                     <i class="icon-plus fa fa-plus"></i> {{{ data.button_text }}}
                 </button>
+            </script>
+            <script type="text/html" id="tmpl-toolset-views-maps-dialogs-street-view">
+                <div class="wpv-shortcode-gui-attribute-wrapper js-wpv-shortcode-gui-attribute-wrapper js-wpv-shortcode-gui-attribute-wrapper-for-location" data-type="radio" data-attribute="location" style="display:none">
+                    <h3><?php _e('Open Street View on this location', 'toolset-maps') ?></h3>
+                    <ul id="wpv-map-render-location">
+                        <li>
+                            <label><input type="radio" name="wpv-map-render-location" value="marker_id" class="js-shortcode-gui-field" checked="checked"><?php _e('Marker Id', 'toolset-maps') ?></label>
+                            <div style="" class="custom-combo-target">
+                                <label for="wpv-map-render-marker_id" class="toolset-google-map-label"><?php _e('Id', 'toolset-maps') ?></label>
+                                <input id="wpv-map-render-marker_id" type="text" value="street-view" name="wpv-map-render-marker_id" data-type="text" data-attribute="marker_id" data-default class="js-shortcode-gui-field" />
+                                <p class="description"><?php _e('Location will come from marker with this Id.', 'toolset-maps') ?></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label><input type="radio" name="wpv-map-render-location" value="first" class="js-shortcode-gui-field"><?php _e('First marker on the map', 'toolset-maps') ?></label>
+                            <div style="display:none" class="custom-combo-target">
+                                <p class="description"><?php _e('Location will come from first marker added to this map.', 'toolset-maps') ?></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label><input type="radio" name="wpv-map-render-location" value="address" class="js-shortcode-gui-field"><?php _e('Address', 'toolset-maps') ?></label>
+                            <div style="display:none" class="custom-combo-target">
+                                <label for="wpv-map-street-view-address" class="toolset-google-map-label"><?php _e('Address', 'toolset-maps') ?></label>
+                                <input id="wpv-map-street-view-address" type="text" autocomplete="off" name="wpv-map-street-view-address" class="js-shortcode-gui-field" data-type="text"/>
+                                <p class="description"><?php _e('Street View will open on this address.', 'toolset-maps') ?></p>
+                            </div>
+                        </li>
+                    </ul>
+                    <p class="description"><?php _e('If you choose a marker to provide location for Street View, this special marker will not be shown on map as an usual marker.', 'toolset-maps') ?></p>
+                </div>
             </script>
 
 			<?php
@@ -764,7 +820,7 @@ class Toolset_Addon_Maps_Views {
 			<p>
 				<?php
 				echo sprintf( 
-					__( 'A Google Maps API key is <strong>required</strong> to use Toolset Maps. You will need to create a <a href="%1$s" target="_blank">project in the Developers console</a>, then create an API key and enable it for some specific API services.', 'toolset-maps' ),
+					__( 'An API key is <strong>required</strong> to use Toolset Maps. You will need to create a <a href="%1$s" target="_blank">project in the Developers console</a>, then create an API key and enable it for some specific API services.', 'toolset-maps' ),
 					'https://console.developers.google.com'
 				);
 				?>
@@ -779,7 +835,7 @@ class Toolset_Addon_Maps_Views {
 				);
 				echo sprintf(
 					__( 'You can find more information in %1$sour documentation%2$s.', 'toolset-maps' ),
-					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), 'https://wp-types.com/documentation/user-guides/display-on-google-maps/' ) . '" target="_blank">',
+					'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), TOOLSET_ADDON_MAPS_DOC_LINK ) . '" target="_blank">',
 					'</a>'
 				);
 				?>
@@ -826,7 +882,7 @@ class Toolset_Addon_Maps_Views {
 			);
 			echo sprintf(
 				__( 'You can find more information in %1$sour documentation%2$s.', 'toolset-maps' ),
-				'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings ), 'https://wp-types.com/documentation/user-guides/data-caching-for-google-maps-addresses/' ) . '" target="_blank">',
+				'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings ), 'https://toolset.com/documentation/user-guides/data-caching-for-google-maps-addresses/' ) . '" target="_blank">',
 				'</a>'
 			);
 			?>
@@ -1174,6 +1230,7 @@ class Toolset_Addon_Maps_Views {
 		
 		if ( ! wp_script_is( 'views-addon-maps-script' ) ) {
 			wp_enqueue_script( 'views-addon-maps-script' );
+			Toolset_Addon_Maps_Common::maybe_enqueue_azure_css();
 		}
 
 		if ( $cluster == 'on' ) {
@@ -1221,7 +1278,13 @@ class Toolset_Addon_Maps_Views {
 				'cluster_click_zoom'	=> $cluster_click_zoom,
 				'cluster_min_size'		=> $cluster_min_size,
                 'style_json'            => $style_json,
-                'spiderfy'              => $spiderfy
+                'spiderfy'              => $spiderfy,
+                'street_view'           => $map_atts['street_view'],
+                'marker_id'             => $map_atts['marker_id'],
+                'location'              => $map_atts['location'],
+                'address'               => $map_atts['address'],
+				'heading'               => $map_atts['heading'],
+				'pitch'                 => $map_atts['pitch'],
 			),
             $content
 		);
@@ -1240,28 +1303,50 @@ class Toolset_Addon_Maps_Views {
 	}
 
 	function marker_shortcode( $atts, $content = null ) {
-		extract(
-			shortcode_atts(
-				array(
-					'map_id'			=> '',
-					'marker_id'			=> '',
-					'marker_title'		=> '',
-					'marker_field'		=> '',
-					'marker_termmeta'	=> '',
-					'marker_usermeta'	=> '',
-					'lat'				=> '',
-					'lon'				=> '',
-					'address'			=> '',
-					'marker_icon'		=> '',
-					'marker_icon_hover'	=> '',
-					'id'				=> '',
-					'debug'				=> 'false',
-					'current_visitor_location' => '',
-					'map_render'        => 'immediate'
-				),
-				$atts
-			)
+        $marker_atts = shortcode_atts(
+            array(
+                'map_id'			=> '',
+                'marker_id'			=> '',
+                'marker_title'		=> '',
+                'marker_field'		=> '',
+                'marker_termmeta'	=> '',
+                'marker_usermeta'	=> '',
+                'lat'				=> '',
+                'lon'				=> '',
+                'address'			=> '',
+                'marker_icon'		=> '',
+                'marker_icon_hover'	=> '',
+				'id'				=> '',
+				'item'              => '',
+                'debug'				=> 'false',
+                'current_visitor_location' => '',
+                'map_render'        => 'immediate',
+                'street_view'       => 'no'
+            ),
+            $atts
 		);
+
+		$debug = $marker_atts['debug'];
+		$lat = $marker_atts['lat'];
+		$lon = $marker_atts['lon'];
+		$address = $marker_atts['address'];
+		$marker_field = $marker_atts['marker_field'];
+		$marker_usermeta = $marker_atts['marker_usermeta'];
+		$marker_termmeta = $marker_atts['marker_termmeta'];
+		$current_visitor_location = $marker_atts['current_visitor_location'];
+		$map_render = $marker_atts['map_render'];
+		$marker_title = $marker_atts['marker_title'];
+		$marker_icon = $marker_atts['marker_icon'];
+		$marker_icon_hover = $marker_atts['marker_icon_hover'];
+		$map_id = $marker_atts['map_id'];
+		$marker_id = $marker_atts['marker_id'];
+		$id = $marker_atts['id'];
+		$item = $marker_atts['item'];
+		$street_view = $marker_atts['street_view'];
+
+		if ( ! empty( $id ) ) {
+			$item = $id;
+		}
 
 		$return = '';
 		$markers_array = array();
@@ -1300,22 +1385,49 @@ class Toolset_Addon_Maps_Views {
 			if ( $address != '' ) {
 				$addresss_array[] = $address;
 			} else if ( $marker_field != '' ) {
-				$post_id_atts = new WPV_wpcf_switch_post_from_attr_id( $atts );
-				global $post;
-				if ( ! empty( $post ) ) {
-					$marker_id = ( empty( $marker_id ) ) ? $post->ID : $marker_id;
-					$marker_title = ( empty( $marker_title ) ) ? $post->post_title : $marker_title;
-					$addresss_array = get_post_meta( $post->ID, $marker_field );
+				if (
+					! empty( $item )
+					&& class_exists( 'Toolset_Relationship_Service' )
+				) {
+					// Try to load the new M2M "item" attribute selector
+					// It will take care of the "id" attribute too if needed
+					$relationship_service = new Toolset_Relationship_Service();
+					$attr_item_chain = new Toolset_Shortcode_Attr_Item_M2M(
+						new Toolset_Shortcode_Attr_Item_Legacy(
+							new Toolset_Shortcode_Attr_Item_Id(),
+							$relationship_service
+						),
+						$relationship_service
+					);
+					if ( $item_id = $attr_item_chain->get( $marker_atts ) ) {
+						$item = get_post( $item_id );
+						if ( $item ) {
+							$marker_id = ( empty( $marker_id ) ) ? $item->ID : $marker_id;
+							$marker_title = ( empty( $marker_title ) ) ? $item->post_title : $marker_title;
+							$addresss_array = get_post_meta( $item->ID, $marker_field );
+						}
+					}
+				} else {
+					// Use the legacy post selector based on the "id" attribute
+					if ( class_exists( 'WPV_wpcf_switch_post_from_attr_id' ) ) {
+						$post_id_atts = new WPV_wpcf_switch_post_from_attr_id( $atts );
+					}
+					global $post;
+					if ( ! empty( $post ) ) {
+						$marker_id = ( empty( $marker_id ) ) ? $post->ID : $marker_id;
+						$marker_title = ( empty( $marker_title ) ) ? $post->post_title : $marker_title;
+						$addresss_array = get_post_meta( $post->ID, $marker_field );
+					}
 				}
 			} else if ( $marker_termmeta != '' ) {
 				$marker_term = false;
-				if ( empty( $id ) ) {
+				if ( empty( $item ) ) {
 					global $WP_Views;
 					if ( isset( $WP_Views->taxonomy_data['term'] ) ) {
 						$marker_term = $WP_Views->taxonomy_data['term'];
 					}
 				} else {
-					$marker_term = get_term( $id );
+					$marker_term = get_term( $item );
 				}
 				if ( $marker_term ) {
 					$marker_id = ( empty( $marker_id ) ) ? $marker_term->term_id : $marker_id;
@@ -1324,7 +1436,7 @@ class Toolset_Addon_Maps_Views {
 				}
 			} else if ( $marker_usermeta != '' ) {
 				$marker_user = false;
-				if ( empty( $id ) ) {
+				if ( empty( $item ) ) {
 					global $WP_Views;
 					if ( isset( $WP_Views->users_data['term'] ) ) {
 						$marker_user = $WP_Views->users_data['term'];
@@ -1335,7 +1447,7 @@ class Toolset_Addon_Maps_Views {
 						}
 					}
 				} else {
-					switch ( $id ) {
+					switch ( $item ) {
 						case '$author':
 							global $post;
 							$marker_user = get_user_by( 'id', $post->post_author );
@@ -1347,7 +1459,7 @@ class Toolset_Addon_Maps_Views {
 							}
 							break;
 						default:
-							$marker_user = get_user_by( 'id', $id );
+							$marker_user = get_user_by( 'id', $item );
 							break;
 					}
 				}
@@ -1401,6 +1513,7 @@ class Toolset_Addon_Maps_Views {
 					'lon'			=> $marker_candidate['lon'],
 					'icon'			=> $marker_icon,
 					'icon_hover'	=> $marker_icon_hover,
+                    'street_view'   => $street_view
 				),
 				$content
 			);
@@ -1494,9 +1607,10 @@ class Toolset_Addon_Maps_Views {
 		$views_shortcodes['wpv-map-render'] = array(
 			'callback' => array( $this, 'shortcodes_get_map_render_data' )
 		);
-		$views_shortcodes['wpv-map-marker'] = array(
-			'callback' => array( $this, 'shortcodes_get_map_marker_data' )
-		);
+		$views_shortcodes['wpv-geolocation'] = array(
+		    'callback' => array( $this, 'shortcodes_get_geolocation_data' )
+        );
+
 		return $views_shortcodes;
 	}
 
@@ -1646,7 +1760,7 @@ class Toolset_Addon_Maps_Views {
 		$return = '';
 		$return .= '<div class="toolset-alert toolset-alert-wrning">';
 		$return .= '<p>';
-		$return .= __( 'A Google Maps API key is <strong>required</strong> to use Toolset Maps.', 'toolset-maps' );
+		$return .= __( 'An API key is <strong>required</strong> to use Toolset Maps.', 'toolset-maps' );
 		$return .= '</p>';
 		$return .= '<p>';
 		$analytics_strings = array(
@@ -1657,7 +1771,7 @@ class Toolset_Addon_Maps_Views {
 		);
 		$return .= sprintf(
 			__( 'You can find more information in %1$sour documentation%2$s.', 'toolset-maps' ),
-			'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), 'https://wp-types.com/documentation/user-guides/display-on-google-maps/' ) . '" target="_blank">',
+			'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'api-key' ), TOOLSET_ADDON_MAPS_DOC_LINK ) . '" target="_blank">',
 			'</a>'
 		);
 		$return .= '</p>';
@@ -1665,30 +1779,56 @@ class Toolset_Addon_Maps_Views {
 		return $return;
 	}
 
+	/**
+     * @since 1.5
+     *
+	 * @return bool
+	 */
+	public function is_api_key_set() {
+		$api_used = apply_filters( 'toolset_maps_get_api_used', '' );
+
+		if ( Toolset_Addon_Maps_Common::API_GOOGLE === $api_used ) {
+			$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_api_key', '' );
+		} else {
+			$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_azure_api_key', '' );
+		}
+
+		return !empty( $maps_api_key );
+	}
+
+	/**
+     * @since 1.5
+     *
+	 * @param array $data
+	 *
+	 * @return array
+	 */
+	protected function shortcodes_render_missing_key_dialog( array $data ) {
+		$data['attributes']['map-api-key'] = array(
+			'label'			=> __('Google Maps API', 'toolset-maps'),
+			'header'		=> __('Missing an API key', 'toolset-maps'),
+			'fields'		=> array(
+				'missing_api_key' => array(
+					'label'			=> __( 'Missing an API key', 'toolset-maps'),
+					'type'			=> 'callback',
+					'callback'		=> array( $this, 'get_missing_api_key_warning' )
+				),
+			)
+		);
+		return $data;
+    }
+
 	function shortcodes_get_map_render_data() {
 		$can_manage_options = current_user_can( 'manage_options' );
-		$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_api_key', '' );
-		
 		$data = array(
 			'name'			=> __( 'Map', 'toolset-maps' ),
 			'label'			=> __( 'Map', 'toolset-maps' ),
 			'attributes'	=> array()
 		);
-		
-		if ( empty( $maps_api_key ) ) {
-			$data['attributes']['map-api-key'] = array(
-				'label'			=> __('Google Maps API', 'toolset-maps'),
-				'header'		=> __('Missing Google Maps API key', 'toolset-maps'),
-				'fields'		=> array(
-					'missing_api_key' => array(
-						'label'			=> __( 'Missing Google Maps API key', 'toolset-maps'),
-						'type'			=> 'callback',
-						'callback'		=> array( $this, 'get_missing_api_key_warning' )
-					),
-				)
-			);
-			return $data;
-		}
+
+        if ( ! $this->is_api_key_set() ) {
+            return $this->shortcodes_render_missing_key_dialog( $data );
+        }
 		
 		$data['attributes']['map-options'] = array(
 			'label'			=> __('Map', 'toolset-maps'),
@@ -1947,6 +2087,24 @@ class Toolset_Addon_Maps_Views {
 				'</a>'
 			);
 		}
+
+		// Street view tab
+		$data['attributes']['street-view'] = array(
+			'label' => __('Street View', 'toolset-maps'),
+			'header' => __('Street View', 'toolset-maps'),
+			'fields' => array(
+				'street_view' => array(
+					'label' => __('Automatically open Street View when this map loads', 'toolset-maps'),
+					'type'  => 'radio',
+					'options'	=> array(
+						'off'	=> __('No', 'toolset-maps'),
+						'on'	=> __('Yes', 'toolset-maps')
+					),
+					'default'	=> 'off'
+				)
+			)
+		);
+
 		return $data;
 	}
 
@@ -1958,156 +2116,63 @@ class Toolset_Addon_Maps_Views {
 		return ( parse_url( get_home_url(), PHP_URL_SCHEME ) === 'https' );
 	}
 
-	function shortcodes_get_map_marker_data() {
-		$can_manage_options = current_user_can( 'manage_options' );
-		$maps_api_key = apply_filters( 'toolset_filter_toolset_maps_get_api_key', '' );
-		
+	/**
+     * Registers wpv-geolocation shortcode in Views shortcode creation wizard.
+     *
+     * @since 1.5
+     *
+	 * @return array
+	 */
+	public function shortcodes_get_geolocation_data() {
 		$data = array(
-			'name'			=> __( 'Marker', 'toolset-maps' ),
-			'label'			=> __( 'Marker', 'toolset-maps' ),
+			'name'			=> __( 'Geolocation', 'toolset-maps' ),
+			'label'			=> __( 'Geolocation', 'toolset-maps' ),
 			'attributes'	=> array()
 		);
-		
-		if ( empty( $maps_api_key ) ) {
-			$data['attributes']['map-api-key'] = array(
-				'label'			=> __('Google Maps API', 'toolset-maps'),
-				'header'		=> __('Missing Google Maps API key', 'toolset-maps'),
-				'fields'		=> array(
-					'missing_api_key' => array(
-						'label'			=> __( 'Missing Google Maps API key', 'toolset-maps'),
-						'type'			=> 'callback',
-						'callback'		=> array( $this, 'get_missing_api_key_warning' )
-					),
+
+		if ( ! $this->is_api_key_set() ) {
+			return $this->shortcodes_render_missing_key_dialog( $data );
+		}
+
+		$data['attributes']['geolocation-options'] = array(
+			'label' => __('Geolocation', 'toolset-maps'),
+			'header' => __('Geolocation', 'toolset-maps'),
+			'fields' => array(
+				'message_when_missing' => array(
+					'label' => __('Message to show before geolocation is obtained', 'toolset-maps'),
+					'type' => 'text',
+					'default' => __('Your location is needed to show this content.', 'toolset-maps'),
+					'required' => false,
+					'description'	=> __(
+                        'Message to show while waiting for visitor to give permission for geolocation.',
+                        'toolset-maps'
+                    )
 				)
-			);
-			return $data;
-		}
-		
-		$analytics_strings = array(
-			'utm_source'	=> 'toolsetmapsplugin',
-			'utm_campaign'	=> 'toolsetmaps',
-			'utm_medium'	=> 'marker-shortcode-dialog',
-			'utm_term'		=> 'Learn about marker popups'
-		);
-		
-		$data['attributes']['marker-options'] = array(
-			'label' => __('Marker', 'toolset-maps'),
-			'header' => __('Marker', 'toolset-maps'),
-			'fields' => array(
-				'map_id' => array(
-					'label' => __( 'Map ID', 'toolset-maps'),
-					'type' => 'text',
-					'default' => '',
-					'required' => true,
-					'description'	=> __( 'This is the unique identifier for the map that this marker belongs to.', 'toolset-maps' )
-				),
-				'marker_id' => array(
-					'label' => __( 'Marker ID', 'toolset-maps'),
-					'type' => 'text',
-					'default' => '',
-					'required' => true,
-					'description'	=> __( 'This is the marker unique identifier.', 'toolset-maps' )
-				),
-				'marker_position' => array(
-					'label' => __( 'Marker address comes from', 'toolset-maps' ),
-					'type' => 'radiohtml',
-					'options' => array(
-						'types_postmeta_field'	=> __( 'Google Maps post field: ', 'toolset-maps' ),
-						'types_termmeta_field'	=> __( 'Google Maps taxonomy field: ', 'toolset-maps' ),
-						'types_usermeta_field'	=> __( 'Google Maps user field: ', 'toolset-maps' ),
-						'generic_field'	=> __( 'Another custom field', 'toolset-maps' ),
-						'address'		=> __( 'An address', 'toolset-maps' ),
-						'latlon'		=> __( 'A pair of latitude and longitude coordinates', 'toolset-maps' )
-					),
-				),
-			)
-		);
-
-		// In order to avoid user confusion, we'll only offer this option if frontend is served over https
-        $translated_current_visitor_location_text = __( 'The location of the current visitor', 'toolset-maps');
-		if ( $this->is_frontend_served_over_https() ) {
-			$data['attributes']['marker-options']['fields']['marker_position']['options']['browser_geolocation'] =
-				$translated_current_visitor_location_text;
-		} else {
-			$data['attributes']['marker-options']['fields']['marker_position']['options']['browser_geolocation_disabled'] =
-				$translated_current_visitor_location_text;
-        }
-
-		$data['attributes']['data-options'] = array(
-			'label' => __( 'Marker data', 'toolset-maps' ),
-			'header' => __( 'Marker data', 'toolset-maps' ),
-			'documentation' => '<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'marker-title-and-popup' ) ) . '" target="_blank" title="' . esc_attr( __( 'Learn about marker popups', 'toolset-maps' ) ) . '">' . esc_html( __( 'Learn how to display rich content in the marker popups »', 'toolset-maps' ) ) . '</a>',
-			'fields' => array(
-				'marker_title' => array(
-					'label' => __( 'Text to display when hovering over the marker', 'toolset-maps'),
-					'type' => 'text',
-					'default' => '',
-				),
-			),
+            ),
 			'content' => array(
-				'label' => __( 'Popup content', 'toolset-maps' ),
+				'label' => __( 'Content', 'toolset-maps' ),
 				'type'	=> 'textarea',
-				'description' => __( 'This will be displayed as a popup when someone clicks on the marker. You can add HTML and shortcodes here.', 'toolset-maps' ),
-			)
-		);
-		
-		$marker_options = $this->get_marker_options();
-		if ( 
-			count( $marker_options ) > 1 
-			|| $can_manage_options
-		) {
-			$data['attributes']['icon-options'] = array(
-				'label' => __('Marker icons', 'toolset-maps'),
-				'header' => __('Marker icons', 'toolset-maps'),
-				'fields' => array(
-					'marker_inherit' => array(
-						'label'		=> __( 'Use the icons settings from the map', 'toolset-maps' ),
-						'type'		=> 'radio',
-						'options'	=> array(
-											'yes'	=> __( 'Yes', 'toolset-maps' ),
-											'no'	=> __( 'No, use other icons', 'toolset-maps' )
-										),
-						'default_force'	=> 'yes'
-					),
-					'marker_icon' => array(
-						'label' => __( 'Icon for this marker', 'toolset-maps'),
-						'type' => 'radiohtml',
-						'options' => $marker_options,
-						'default' => '',
-					),
-					'marker_icon_hover' => array(
-						'label' => __( 'Icon when hovering this marker', 'toolset-maps'),
-						'type' => 'radiohtml',
-						'options' => $marker_options,
-						'default' => '',
-					),
-				),
-			);
-			$analytics_strings = array(
-				'utm_source'	=> 'toolsetmapsplugin',
-				'utm_campaign'	=> 'toolsetmaps',
-				'utm_medium'	=> 'marker-shortcode-dialog',
-				'utm_term'		=> 'Learn about using custom markers'
-			);
-			$data['attributes']['icon-options']['documentation'] = sprintf(
-				__( '%1$sLearn about using custom markers »%2$s', 'toolset-maps' ),
-				'<a href="' . Toolset_Addon_Maps_Common::get_documentation_promotional_link( array( 'query' => $analytics_strings, 'anchor' => 'marker-icon' ) ) . '" target="_blank" title="' . esc_attr( __( 'Learn about using custom markers', 'toolset-maps' ) ) . '">',
-				'</a>'
-			);
-		}
-		return $data;
+				'description'	=> __(
+					'All shortcodes rendered inside this one will have backend access to geolocation data.',
+					'toolset-maps'
+				)
+            )
+        );
+
+        return $data;
 	}
 
 	function register_shortcodes_dialog_groups() {
 		
 		$group_id	= 'toolset-maps';
 		$group_data	= array(
-			'name'		=> __( 'Google Maps', 'toolset-maps' ),
+			'name'		=> __( 'Toolset Maps', 'toolset-maps' ),
 			'fields'	=> array()
 		);
 		$map_shortcodes = array(
-			'wpv-map-render'	        => __( 'Map', 'toolset-maps' ),
-			'wpv-map-marker'	        => __( 'Marker', 'toolset-maps' )
+			'wpv-map-render'	=> __( 'Map', 'toolset-maps' ),
+            'marker'            => __( 'Marker', 'toolset-maps' ), // This one is just a placeholder for TC one.
+            'wpv-geolocation'   => __( 'Geolocation', 'toolset-maps' )
 		);
 		
 		foreach ( $map_shortcodes as $map_shortcode_slug => $map_shortcode_title ) {
@@ -2130,7 +2195,9 @@ class Toolset_Addon_Maps_Views {
 			'name'		=> __( '"Focus on marker" button', 'toolset-maps' ),
 			'shortcode'	=> '',
 			'callback'	=> "WPViews.addon_maps_dialogs.wpv_open_dialog('focus', '"
-                             . esc_js( __( 'Map focus on marker', 'toolset-maps' ) ) . "')"
+						   /* translators: this is the title of dialog that sets options for focusing map on a marker */
+						   . esc_js( __( 'Map focus on marker', 'toolset-maps' ) )
+						   . "')"
 		);
 		$group_data['fields']['restore'] = array(
 			'name'		=> __( '"Zoom out" button', 'toolset-maps' ),
@@ -2285,21 +2352,21 @@ class Toolset_Addon_Maps_Views {
 				<li>
 					<label for="wpv-frontent-event-map-init-started">
 						<input type="checkbox" id="wpv-frontent-event-map-init-started" value="1" class="js-wpv-frontend-event-gui" data-event="js_event_wpv_addon_maps_init_map_started" />
-						<?php _e( 'The Google Map is going to be inited', 'toolset-maps' ); ?>
+						<?php _e( 'The Google Map is going to be initiated', 'toolset-maps' ); ?>
 					</label>
 					<span class="wpv-helper-text"><?php _e( 'This happens when a map init starts', 'toolset-maps' ); ?></span>
 				</li>
 				<li>
 					<label for="wpv-frontent-event-map-init-inited">
 						<input type="checkbox" id="wpv-frontent-event-map-init-inited" value="1" class="js-wpv-frontend-event-gui" data-event="js_event_wpv_addon_maps_init_map_inited" />
-						<?php _e( 'The Google Map was just inited', 'toolset-maps' ); ?>
+						<?php _e( 'The Google Map was just initiated', 'toolset-maps' ); ?>
 					</label>
-					<span class="wpv-helper-text"><?php _e( 'This happens when a map is inited but before the markers have been inited', 'toolset-maps' ); ?></span>
+					<span class="wpv-helper-text"><?php _e( 'This happens when a map is initiated but before the markers have been initiated', 'toolset-maps' ); ?></span>
 				</li>
 				<li>
 					<label for="wpv-frontent-event-map-init-completed">
 						<input type="checkbox" id="wpv-frontent-event-map-init-completed" value="1" class="js-wpv-frontend-event-gui" data-event="js_event_wpv_addon_maps_init_map_completed" />
-						<?php _e( 'The Google Map was just completely inited', 'toolset-maps' ); ?>
+						<?php _e( 'The Google Map was just completely initiated', 'toolset-maps' ); ?>
 					</label>
 					<span class="wpv-helper-text"><?php _e( 'This happens when a map reload is completely rendered including its markers', 'toolset-maps' ); ?></span>
 				</li>

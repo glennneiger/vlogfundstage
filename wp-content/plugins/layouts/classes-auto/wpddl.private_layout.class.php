@@ -7,12 +7,9 @@ Class WPDDL_Private_Layout{
 	    if ( is_admin() ) {
 		    add_action( 'init', array( $this, 'init' ) );
 		    add_action( 'admin_enqueue_scripts', array( $this, 'private_layout_scripts' ) );
-		    add_action( 'wp_ajax_ddl_update_post_content_for_private_layout', array(
-			    $this,
-			    'update_post_content_for_private_layout_callback'
-		    ) );
 		    add_action( 'admin_notices', array( $this, 'private_layout_enable_bootstrap_msg' ), 1 );
 		    add_action( 'wp_ajax_ddl_dismiss_bootstrap_message', array( $this, 'dismiss_bootstrap_message' ) );
+		    add_action( 'ddl_action_layout_has_been_saved', array( $this, 'layout_has_been_saved_callback'), 10, 3 );
 	    }
         // apply this filter the latter possible in the process to ensure it is not overwritten, let only 'clean_up_empty_paragraphs' callback go afterwards
         add_filter('the_content', array(&$this, 'handle_private_layout_preview'), 99998, 1 );
@@ -27,7 +24,7 @@ Class WPDDL_Private_Layout{
 		add_action( 'wpv_action_wpv_loop_before_display_item', array( $this, 'disable_preview_inside_view_loop') );
 		add_action( 'wpv_action_wpv_loop_after_display_item', array( $this, 'restore_preview_after_view_loop') );
     }
-	
+
 	/**
 	 * Disable the private layout preview from replacing the post content when inside a View loop.
 	 *
@@ -119,7 +116,11 @@ Class WPDDL_Private_Layout{
 	}
 
 	public function is_private_layout_preview_visual_editor( $bool ){
-		return !isset( $_POST['private_layout_preview'] );
+		if( isset( $_POST['private_layout_preview'] ) ){
+		    $bool = false;
+        }
+
+        return $bool;
 	}
 
 	function private_layout_enable_bootstrap_msg(){
@@ -180,6 +181,7 @@ Class WPDDL_Private_Layout{
 	/*
 	 * Ajax callback
 	 * Get private layout data, check for what is layout assigned and call function that will update content with private layout output
+	 * @deprecated
 	 */
 	public function update_post_content_for_private_layout_callback(){
 
@@ -187,19 +189,45 @@ Class WPDDL_Private_Layout{
 			die('verification failed');
 		}
 
-		$post = get_post($_POST['layout_id'] );
-		$post_content =  apply_filters('the_content', $post->post_content);
-		$original_content_meta = get_post_meta($_POST['layout_id'],WPDDL_PRIVATE_LAYOUTS_ORIGINAL_CONTENT_META_KEY,true);
-		if($post_content !='' && $original_content_meta === '') {
-			add_post_meta( $_POST['layout_id'], WPDDL_PRIVATE_LAYOUTS_ORIGINAL_CONTENT_META_KEY, $post->post_content );
-		}
-
-		$update_content = $this->update_post_content_for_private_layout( $_POST['layout_id'] );
-
-		echo $update_content;
+		echo $this->do_post_content_update( $_POST['layout_id'] );
 
 		die();
 	}
+
+	/**
+	 * @param $saved
+	 * @param $layout_id
+	 * @param $json
+	 *
+	 * @return mixed|string|void
+	 */
+	public function layout_has_been_saved_callback( $saved, $layout_id, $json ){
+	    if( apply_filters( 'ddl-is_layout_private', false, $layout_id) === false ){
+	        return null;
+        }
+		return $this->do_post_content_update( $layout_id );
+    }
+
+	/**
+	 * @param $layout_id
+	 *
+	 * @return mixed|string|void
+	 */
+	private function do_post_content_update( $layout_id ){
+
+		$post = get_post( $layout_id );
+		$post_content =  apply_filters('the_content', $post->post_content);
+
+		$original_content_meta = get_post_meta( $layout_id,WPDDL_PRIVATE_LAYOUTS_ORIGINAL_CONTENT_META_KEY,true);
+
+		if( $post_content !='' && $original_content_meta === '' ) {
+			add_post_meta( $layout_id, WPDDL_PRIVATE_LAYOUTS_ORIGINAL_CONTENT_META_KEY, $post->post_content );
+		}
+
+		$update_content = $this->update_post_content_for_private_layout( $layout_id );
+
+		return $update_content;
+    }
 
 	public function update_post_content_for_private_layout( $post_id ){
 
@@ -234,6 +262,7 @@ Class WPDDL_Private_Layout{
 		$result = wp_update_post( apply_filters( 'ddl-private_layout_update_post', $post_data, $this ) );
 		// let users restore manipulated environment after post saves
 		do_action( 'ddl-private_layout_after_post_update');
+
 
 		$status = ( $result === 0 ) ? false : true;
 
@@ -285,6 +314,7 @@ Class WPDDL_Private_Layout{
 		));
 
 		$wpddlayout->localize_script('ddl_private_layout', 'DDL_Private_layout', array(
+		        'user_can_delete_private' => user_can_delete_private_layouts(),
 				'private_layout_nonce' => wp_create_nonce('ddl_update_private_layout_status'),
 				'stop_using_layout_dialog_title' => __('Choose what to have in the WordPress editor','dd-layouts'),
 				'stop_using_layout_dialog_edit' => __('Return to the WordPress editor','dd-layouts'),
@@ -349,13 +379,16 @@ Class WPDDL_Private_Layout{
 		$addon_button = '';
 		$button_label = __( 'Content Layout Editor', 'ddl-layouts' );
 		if(false === $page_has_private_layout){
-			$addon_button = '<a href="#editor" class="button button-primary-toolset js-layout-private-add-new-top" data-layout_type="private" data-post_type="'.$post_type.'" data-content_id="'.$post->ID.'" data-editor="' . esc_attr( $text_area ) . '"><i class="icon-layouts-logo fa fa-wpv-custom ont-icon-18 ont-color-white"></i><span class="button-label">' . $button_label . '</span></a>';
+			$classes = user_can_edit_private_layouts() ? 'button-primary-toolset js-layout-private-add-new-top'  : 'disabled';
+			$addon_button = '<a href="#editor" class="button ' . $classes . '" data-layout_type="private" data-post_type="'.$post_type.'" data-content_id="'.$post->ID.'" data-editor="' . esc_attr( $text_area ) . '"><i class="icon-layouts-logo fa fa-wpv-custom ont-icon-18 ont-color-white"></i><span class="button-label">' . $button_label . '</span></a>';
 		} else if($private_layout_in_use === false && $page_has_private_layout === true){
 			$href = sprintf('%sadmin.php?page=dd_layouts_edit&layout_id=%s&action=edit', admin_url(), $post->ID);
-			$addon_button = '<a href="'.$href.'" class="button button-primary-toolset js-layout-private-use-again" data-layout_type="private" data-layout_id="'.$post->ID.'" data-post_type="'.$post_type.'" data-content_id="'.$post->ID.'" data-editor="' . esc_attr( $text_area ) . '"><i class="icon-layouts-logo fa fa-wpv-custom ont-icon-18 ont-color-white"></i><span class="button-label">' . $button_label . '</span></a>';
+			$classes = user_can_edit_private_layouts() ? 'button-primary-toolset js-layout-private-use-again'  : 'disabled';
+			$addon_button = '<a href="'.$href.'" class="button ' . $classes . '" data-layout_type="private" data-layout_id="'.$post->ID.'" data-post_type="'.$post_type.'" data-content_id="'.$post->ID.'" data-editor="' . esc_attr( $text_area ) . '"><i class="icon-layouts-logo fa fa-wpv-custom ont-icon-18 ont-color-white"></i><span class="button-label">' . $button_label . '</span></a>';
 		} else if($private_layout_in_use === "yes" && $page_has_private_layout === true){
 			$href = sprintf('%sadmin.php?page=dd_layouts_edit&layout_id=%s&action=edit', admin_url(), $post->ID);
-			$addon_button = '<a href="'.$href.'" style="display:none;" class="button button-primary-toolset js-layout-private-use-again" data-layout_type="private" data-layout_id="'.$post->ID.'" data-post_type="'.$post_type.'" data-content_id="'.$post->ID.'" data-editor="' . esc_attr( $text_area ) . '"><i class="icon-layouts-logo fa fa-wpv-custom ont-icon-18 ont-color-white"></i><span class="button-label">' . $button_label . '</span></a>';
+			$classes = user_can_edit_private_layouts() ? 'button-primary-toolset js-layout-private-use-again'  : 'disabled';
+			$addon_button = '<a href="'.$href.'" style="display:none;" class="button ' . $classes . '" data-layout_type="private" data-layout_id="'.$post->ID.'" data-post_type="'.$post_type.'" data-content_id="'.$post->ID.'" data-editor="' . esc_attr( $text_area ) . '"><i class="icon-layouts-logo fa fa-wpv-custom ont-icon-18 ont-color-white"></i><span class="button-label">' . $button_label . '</span></a>';
 		}
 
 		// WP 3.3 changes

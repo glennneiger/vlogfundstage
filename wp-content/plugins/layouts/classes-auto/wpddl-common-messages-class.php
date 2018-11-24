@@ -30,12 +30,12 @@ class WPDDL_Messages
 
     public static function cred_missing_message()
     {
-        return sprintf(self::$message_error, __('The CRED plugin should be activated to display this layout.', 'ddl-layouts'));
+        return sprintf(self::$message_error, __('The Toolset Forms plugin should be activated to display this layout.', 'ddl-layouts'));
     }
 
     public static function cred_form_missing_message()
     {
-        return sprintf(self::$message_error, __('The CRED Post Form could not be found.', 'ddl-layouts'));
+        return sprintf(self::$message_error, __('The Post Form could not be found.', 'ddl-layouts'));
     }
 
     public static function archive_page_needed_message()

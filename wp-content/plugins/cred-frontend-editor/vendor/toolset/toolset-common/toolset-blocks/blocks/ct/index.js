@@ -12,7 +12,6 @@ import Inspector from './inspector/inspector';
 import classnames from 'classnames';
 import CTSelect from './inspector/ct-select';
 import CTPreview from './ct-preview';
-import './styles/style.scss';
 import './styles/editor.scss';
 
 /**
@@ -34,7 +33,7 @@ const {
 	RawHTML,
 } = wp.element;
 
-const name = 'toolset/ct';
+const name = window.toolset_ct_block_strings.block_name;
 
 const settings = {
 	title: __( 'Content Template' ),
@@ -46,13 +45,6 @@ const settings = {
 		__( 'Content Template' ),
 		__( 'Shortcode' ),
 	],
-
-	attributes: {
-		ct: {
-			type: 'string',
-			default: '',
-		},
-	},
 
 	edit: props => {
 		const onChangeCT = ( event ) => {
@@ -66,7 +58,6 @@ const settings = {
 			) && (
 				<Inspector
 					key="wpv-gutenberg-ct-block-render-inspector"
-					className={ classnames( 'wp-block-toolset-ct-inspector' ) }
 					attributes={
 						{
 							ct: props.attributes.ct,
@@ -93,7 +84,7 @@ const settings = {
 									ct: props.attributes.ct,
 								}
 							}
-							className={ classnames( 'blocks-select-control__input' ) }
+							className={ classnames( 'components-select-control__input' ) }
 							onChangeCT={ onChangeCT }
 						/>
 					</Placeholder> :

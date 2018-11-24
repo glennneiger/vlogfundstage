@@ -97,14 +97,14 @@ if ($doaction) {
     <table class="wpcf-types-form-table widefat js-wpcf-slugize-container">
         <thead>
             <tr>
-                <th><?php _e('Manage non-Toolset User Fields with CRED', 'wp-cred'); ?></th>
+                <th><?php _e('Manage non-Toolset User Fields with Toolset Forms', 'wp-cred'); ?></th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>
                     <p>
-                        <?php _e('You can manage non-Toolset User Fields by setting field type and assign field attributes. Then you can use them in CRED forms.', 'wp-cred'); ?>
+                        <?php _e('You can manage non-Toolset User Fields by setting field type and assign field attributes. Then you can use them in Toolset Forms.', 'wp-cred'); ?>
                         <?php
                         $fields_control_url = esc_url(
                                 add_query_arg(
@@ -113,6 +113,22 @@ if ($doaction) {
                         );
                         ?>
                         <a class="button" href="<?php echo $fields_control_url; ?>"><?php _e('Manage non-Toolset User Fields', 'wp-cred'); ?></a>
+                        <?php
+                        $documentation_link_args = array(
+                            'utm_source'	=> 'credplugin',
+                            'utm_campaign'	=> 'cred',
+                            'utm_medium'	=> 'manage-non-toolset-usermeta-fields',
+                            'utm_term'		=> 'Check our documentation'
+                        );
+                        $documentation_link = add_query_arg( $documentation_link_args, CRED_DOC_LINK_NON_TOOLSET_FIELDS_CONTROL );
+                        echo sprintf(
+                            '<a href="%1$s" title="%2$s" target="_blank">%3$s %4$s</a>.',
+                            esc_url( $documentation_link ),
+                            esc_attr( __( 'Check our documentation', 'wp-cred' ) ),
+                            __( 'Check our documentation', 'wp-cred' ),
+                            '<i class="fa fa-external-link"></i>'
+                        );
+                        ?>
                     </p>
                 </td>
             </tr>

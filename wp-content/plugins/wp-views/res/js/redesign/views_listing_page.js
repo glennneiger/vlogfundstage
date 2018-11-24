@@ -3,6 +3,8 @@ var WPViews = WPViews || {};
 WPViews.ViewsListingScreen = function( $ ) {
 	
 	var self = this;
+
+	self.i18n = views_listing_texts;
 	
 	self.shortcodeDialogSpinnerContent = $(
         '<div style="min-height: 150px;">' +
@@ -44,9 +46,9 @@ WPViews.ViewsListingScreen = function( $ ) {
 			postsList = $('<ul class="posts-list">'),
 			spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertAfter( thiz ).show(),
             data = {
-				action: 'wpv_scan_view_usage',
+				action: self.i18n.ajax.action.scan_view_usage,
 				id: view_id,
-				wpnonce : $( '#work_views_listing' ).val()
+				wpnonce : self.i18n.ajax.nonce.scan_view_usage_nonce
             };
             thiz
                 .data( 'loading', true )
@@ -629,10 +631,12 @@ WPViews.ViewsListingScreen = function( $ ) {
 			},
 			open: function( event, ui ) {
 				$( 'body' ).addClass( 'modal-open' );
-				$( '.js-new-post_title' ).focus().val( '' );
-				if ( 0 < $('input.js-wpv-purpose:checked').length)  {
+				$( '.js-new-post_title' ).val( '' );
+
+				if ( 0 < $('input.js-wpv-purpose:checked').length && ! views_listing_texts.is_views_lite ) {
 					$( 'input.js-wpv-purpose:checked' ).prop('checked', false);
 				}
+
 				disablePrimaryButton( $( '.js-wpv-create-new-view' ) );
 				$( '#js-wpv-create-view-form-dialog .toolset-alert' ).remove();
                 $( '#js-wpv-create-view-form-dialog' ).find( '.toolset-alert' ).remove();
@@ -640,6 +644,7 @@ WPViews.ViewsListingScreen = function( $ ) {
 			},
 			close: function( event, ui ) {
 				$( 'body' ).removeClass( 'modal-open' );
+				self.closeAllPointerTooltips();
 			},
 			buttons:[
 				{
@@ -654,6 +659,7 @@ WPViews.ViewsListingScreen = function( $ ) {
 					text: views_listing_texts.dialog_cancel,
 					click: function() {
 						$( this ).dialog( "close" );
+                        self.closeAllPointerTooltips();
 					}
 				}
 			]
@@ -739,11 +745,71 @@ WPViews.ViewsListingScreen = function( $ ) {
 				}
 			]
 		});
-		
+
 	};
-	
+
+    self.initPointerTooltipsForDisabledOptions = function () {
+
+    	var pricingOutput = '<p><a href="'+views_listing_texts.tooltipPriceLinkURL+'" target="_blank">'+views_listing_texts.tooltipPriceLinkTitle+'</a></p>';
+
+    	// set default
+    	var disabledPaginationTooltip = jQuery('#wpv_pagination_disabled_pointer').pointer({
+            pointerClass: 'wp-toolset-pointer wpv-pointer-inside-dialog',
+            content: '<h3>'+views_listing_texts.viewsLiteTooltipTitle+'</h3><p>'+views_listing_texts.tooltipPaginationDisabled+'</p>'+pricingOutput,
+            position: {
+                edge: 'left',
+                align: 'left',
+            }
+        });
+
+    	var disabledSliderTooltip = jQuery('#wpv_slider_disabled_pointer').pointer({
+            pointerClass: 'wp-toolset-pointer wpv-pointer-inside-dialog',
+            content: '<h3>'+views_listing_texts.viewsLiteTooltipTitle+'</h3><p>'+views_listing_texts.tooltipSliderDisabled+'</p>'+pricingOutput,
+            position: {
+                edge: 'left',
+                align: 'left',
+            }
+        });
+
+    	var disabledCustomSearchTooltip = jQuery('#wpv_custom_search_disabled_pointer').pointer({
+            pointerClass: 'wp-toolset-pointer wpv-pointer-inside-dialog',
+            content: '<h3>'+views_listing_texts.viewsLiteTooltipTitle+'</h3><p>'+views_listing_texts.tooltipCustomSearchDisabled+'</p>'+pricingOutput,
+            position: {
+                edge: 'left',
+                align: 'center',
+            }
+        });
+
+        jQuery('#wpv_pagination_disabled_pointer').on( 'click', function( e ) {
+            self.closeAllPointerTooltips();
+            disabledPaginationTooltip.pointer('open');
+            jQuery('.wpv-pointer-inside-dialog').css({"z-index": "999999"});
+        });
+        jQuery('#wpv_slider_disabled_pointer').on( 'click', function( e ) {
+            self.closeAllPointerTooltips();
+            disabledSliderTooltip.pointer('open');
+            jQuery('.wpv-pointer-inside-dialog').css({"z-index": "999999"});
+        });
+        jQuery('#wpv_custom_search_disabled_pointer').on( 'click', function( e ) {
+            self.closeAllPointerTooltips();
+            disabledCustomSearchTooltip.pointer('open');
+            jQuery('.wpv-pointer-inside-dialog').css({"z-index": "999999"});
+        });
+
+    };
+
+    self.closeAllPointerTooltips = function () {
+        jQuery('#wpv_pagination_disabled_pointer').pointer('close');
+        jQuery('#wpv_slider_disabled_pointer').pointer('close');
+        jQuery('#wpv_custom_search_disabled_pointer').pointer('close');
+    };
+
 	self.init = function() {
 		self.init_dialogs();
+		if( views_listing_texts.is_views_lite ){
+            self.initPointerTooltipsForDisabledOptions();
+		}
+
 	};
 	
 	self.init();

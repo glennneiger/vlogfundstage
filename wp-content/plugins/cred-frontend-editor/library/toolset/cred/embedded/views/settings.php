@@ -116,11 +116,11 @@ if ($doaction) {
                         <table style="margin-left:-18px;">
                             <tr>
                                 <td width="20%">
-                                    <strong><?php _e('CRED Wizard', 'wp-cred'); ?></strong>
+                                    <strong><?php _e('Toolset Forms Wizard', 'wp-cred'); ?></strong>
                                 </td>
                                 <td>
                                     <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[wizard]" value="1" <?php if (isset($settings['wizard']) && $settings['wizard']) echo "checked='checked'"; ?> /><span class='cred-checkbox-replace'></span>
-                                        <span><?php _e('Create new forms using the CRED Wizard', 'wp-cred'); ?></span></label>
+                                        <span><?php _e('Create new forms using the Toolset Forms Wizard', 'wp-cred'); ?></span></label>
                                 </td>
                             </tr>
 
@@ -130,10 +130,10 @@ if ($doaction) {
                                 </td>
                                 <td>
                                     <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[export_settings]" value="1" <?php if (isset($settings['export_settings']) && $settings['export_settings']) echo "checked='checked'"; ?> /><span class='cred-checkbox-replace'></span>
-                                        <span><?php _e('Export also settings when exporting CRED Forms', 'wp-cred'); ?></span></label>
+                                        <span><?php _e('Export also settings when exporting Toolset Forms', 'wp-cred'); ?></span></label>
                                     <div style="clear: both;"></div>
                                     <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[export_custom_fields]" value="1" <?php if (isset($settings['export_custom_fields']) && $settings['export_custom_fields']) echo "checked='checked'"; ?> /><span class='cred-checkbox-replace'></span>
-                                        <span><?php _e('Export also Custom Fields when exporting CRED Forms', 'wp-cred'); ?></span></label>
+                                        <span><?php _e('Export also Custom Fields when exporting Toolset Forms', 'wp-cred'); ?></span></label>
 
                                 </td>
                             </tr>
@@ -144,20 +144,20 @@ if ($doaction) {
                                 </td>
                                 <td>
 									<?php
-	                                /* CRED 1.8.8 back compatibility */
+	                                /* Toolset Forms 1.8.8 back compatibility */
 	                                if ( isset( $settings['use_bootstrap'] ) )
 	                                { ?>
                                         <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[use_bootstrap]" value="1" <?php if ( isset( $settings['use_bootstrap'] ) && $settings['use_bootstrap'] ) {
 				                                echo "checked='checked'";
 			                                } ?> /><span class='cred-checkbox-replace'></span>
-                                            <span><?php _e( 'Use bootstrap in CRED Forms', 'wp-cred' ); ?></span></label>
+                                            <span><?php _e( 'Use bootstrap in Toolset Forms', 'wp-cred' ); ?></span></label>
                                         <div style="clear: both;"></div>
 	                                <?php } ?>
                                     <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[dont_load_bootstrap_cred_css]" value="1" <?php checked( $settings['dont_load_bootstrap_cred_css'], 1, true ); ?> /><span class='cred-checkbox-replace'></span>
-                                            <span><?php _e('Do not load CRED style sheets on front-end', 'wp-cred'); ?></span></label>
+                                            <span><?php _e('Do not load Toolset Forms style sheets on front-end', 'wp-cred'); ?></span></label>
                                     <div style="clear: both;"></div>
                                     <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[dont_load_cred_css]" value="0" <?php checked( $settings['dont_load_cred_css'], 0, true ); ?> /><span class='cred-checkbox-replace'></span>
-                                        <span><?php _e('Load CRED legacy style sheets on front-end (used for old CRED forms)', 'wp-cred'); ?></span></label>
+                                        <span><?php _e('Load Toolset Forms legacy style sheets on front-end (used for old Toolset Forms)', 'wp-cred'); ?></span></label>
                                 </td>
                             </tr>
 
@@ -167,7 +167,7 @@ if ($doaction) {
                                 </td>
                                 <td>                                    
                                     <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[syntax_highlight]" value="1" <?php if (isset($settings['syntax_highlight']) && $settings['syntax_highlight']) echo "checked='checked'"; ?> /><span class='cred-checkbox-replace'></span>
-                                        <span><?php _e('Enable Syntax Highlight for CRED Forms', 'wp-cred'); ?></span></label>
+                                        <span><?php _e('Enable Syntax Highlight for Toolset Forms', 'wp-cred'); ?></span></label>
                                     <div style="clear: both;"></div>
                                     <?php
                                     // CRED_PostExpiration
@@ -185,7 +185,7 @@ if ($doaction) {
                                         <tr>
                                             <td colspan="3">
                                                 <p>
-                                                    <?php _e('If you are willing to use reCAPTCHA to protect your CRED Forms against bots\' entries please provide public and private keys for reCAPTCHA API:', 'wp-cred'); ?>
+                                                    <?php _e('If you are willing to use reCAPTCHA to protect your Toolset Forms against bots\' entries please provide public and private keys for reCAPTCHA API:', 'wp-cred'); ?>
                                                 </p>
                                             </td>
                                         </tr>
@@ -217,7 +217,7 @@ if ($doaction) {
                                     <strong><?php _e('Content Filter', 'wp-cred'); ?></strong>
                                 </td>
                                 <td>
-                                    <?php _e('CRED filters the content that is submitted by a form.', 'wp-cred'); ?>
+                                    <?php _e('Toolset Forms filters the content that is submitted by a form.', 'wp-cred'); ?>
                                     <div style="clear: both;"></div>
                                     <div style="margin: 5px;">
                                         <input type="button" name="show_hide_allowed_tags" onclick="cred_settings_check_allowed_popup()" value="<?php echo esc_attr(__('Select allowed HTML tags', 'wp-cred')); ?>" class="button button-secondary button-large"/>

@@ -1,5 +1,6 @@
 DDLayout.listing.views.ListingGroupView = Backbone.View.extend({
 	tagName:'tbody',
+    appended: [],
 	initialize:function(options)
 	{
 		var self = this;
@@ -50,7 +51,7 @@ DDLayout.listing.views.ListingGroupView = Backbone.View.extend({
 		options.status = DDLayout_settings.DDL_JS.ddl_listing_status;
 
 		self.$el.html( self.template(_.extend( options, self.model.toJSON() ) ) );
-
+        self.appended = [];
 		//console.log( DDLayout_settings.DDL_JS.ddl_listing_status );
 
 		if( self.model.get('items') && self.model.get('items').models.length > 0 )
@@ -64,6 +65,9 @@ DDLayout.listing.views.ListingGroupView = Backbone.View.extend({
 
 				if( options.status === 'publish' )
 				{
+				    // prevent duplication if layout already appended because found through its parent
+				    if( self.appended.indexOf( v.get('id') ) !== -1 ) return;
+
 					if( v.get('is_parent') && v.get('is_child') && v.has_active_children() === true )
 					{
 						return;
@@ -105,16 +109,16 @@ DDLayout.listing.views.ListingGroupView = Backbone.View.extend({
 
 						_.each(children_here, function(c){
 							var child = new DDLayout.listing.views.ListingItemView( {model:c, group:self.model.get('id')});
-							child.$el.addClass('children-depth_'+ c.get('depth'));
-							fragment.appendChild( child.el )
-							fragment.appendChild( self.nested_children( c, options) );
+                                child.$el.addClass('children-depth_'+ c.get('depth'));
+                                fragment.appendChild( child.el )
+                                fragment.appendChild( self.nested_children( c, options) );
+                                self.appended.push( c.get('id') );
 						});
 					}
 				}
 				else if( options.status === 'trash' )
 				{
 					groups_view = new DDLayout.listing.views.ListingItemView( options );
-
 					fragment.appendChild( groups_view.el );
 				}
 
@@ -151,7 +155,7 @@ DDLayout.listing.views.ListingGroupView = Backbone.View.extend({
 	nested_parents: function( id )
 	{
 		var self = this,
-			parent = DDLayout.listing.models.ListingTable.get_instance().get_by_id( id),
+			parent = DDLayout.listing.models.ListingTable.get_instance().get_by_id( id ),
 			fragment = document.createDocumentFragment();
 
 		if( !parent ) return null;

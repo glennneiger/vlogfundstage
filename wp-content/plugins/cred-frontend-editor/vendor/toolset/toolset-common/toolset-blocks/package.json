@@ -17,8 +17,10 @@
     "browser-sync": "^2.23.5",
     "browser-sync-webpack-plugin": "^1.2.0",
     "classnames": "^2.2.5",
+    "copy-webpack-plugin": "^4.5.0",
     "cross-env": "^5.1.1",
     "css-loader": "^0.28.9",
+    "cssnano": "^3.10.0",
     "eslint": "^4.16.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-config-wordpress": "^2.0.0",
@@ -43,6 +45,8 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "interpolate-components": "^1.1.1"
+    "interpolate-components": "^1.1.1",
+    "querystringify": "^1.0.0",
+    "react-select": "^1.2.1"
   }
 }

@@ -1,7 +1,7 @@
 <?php
 /*
  * CRED cell type.
- * Displays CRED User Form
+ * Displays User Form
  *
  */
 
@@ -11,8 +11,10 @@ if( ddl_has_feature('cred-user-cell') === false ){
     return;
 }
 
-if (!class_exists('CRED_User_Cell')) {
+if( ! class_exists( 'CRED_User_Cell', false ) )  {
     class CRED_User_Cell extends Layouts_toolset_based_cell
+
+
     {
         protected $cell_type = 'cred-user-cell';
 
@@ -29,13 +31,13 @@ if (!class_exists('CRED_User_Cell')) {
             if (function_exists('register_dd_layout_cell_type')) {
                 register_dd_layout_cell_type($this->cell_type,
                     array(
-                        'name' => __('CRED User Form', 'ddl-layouts'),
-                        'description' => __('Display the CRED User Form which allows users to create and edit users from the front-end.', 'ddl-layouts'),
+                        'name' => __('User Form', 'ddl-layouts'),
+                        'description' => __('Display the User Form which allows users to create and edit users from the front-end.', 'ddl-layouts'),
                         'category' => __('Forms', 'ddl-layouts'),
                         'cell-image-url' => DDL_ICONS_SVG_REL_PATH . 'cred-user-form.svg',
-                        'button-text' => __('Assign CRED User Form cell', 'ddl-layouts'),
-                        'dialog-title-create' => __('Create new CRED User Form cell', 'ddl-layouts'),
-                        'dialog-title-edit' => __('Edit CRED User Form cell', 'ddl-layouts'),
+                        'button-text' => __('Assign User Form cell', 'ddl-layouts'),
+                        'dialog-title-create' => __('Create new User Form cell', 'ddl-layouts'),
+                        'dialog-title-edit' => __('Edit User Form cell', 'ddl-layouts'),
                         'dialog-template-callback' => array(&$this,'cell_dialogs_callback'),
                         'cell-content-callback' => array(&$this,'cred_user_cell_content_callback'),
                         'cell-template-callback' => array(&$this,'cred_user_cell_template_callback'),
@@ -88,7 +90,7 @@ if (!class_exists('CRED_User_Cell')) {
                                     <?php _e('Create a new User Form', 'ddl-layouts'); ?>
                                 </label>
                                 <span
-                                    class="desc ddl-form-indent js-ddl-newcred"><?php _e('CRED User Forms allow you to create users. Choose what you want this form to do and the user role you want to assign.', 'ddl-layouts'); ?></span>
+                                    class="desc ddl-form-indent js-ddl-newcred"><?php _e('User Forms allow you to create users. Choose what you want this form to do and the user role you want to assign.', 'ddl-layouts'); ?></span>
                                 <br class="js-ddl-newcred"/>
                             </div>
                         </fieldset>
@@ -218,12 +220,12 @@ if (!class_exists('CRED_User_Cell')) {
                         <fieldset>
                             <div class="fields-group">
                                 <div class="toolset-alert toolset-alert-info">
-                                    <?php _e('You are using the embedded version of CRED. Install and activate the full version of CRED and you will be able to create custom forms.', 'ddl-layouts'); ?>
+                                    <?php _e('You are using the embedded version of Toolset Forms. Install and activate the full version of Toolset Forms and you will be able to create custom forms.', 'ddl-layouts'); ?>
                                     <br>
                                     <a class="fieldset-inputs"
-                                       href="http://wp-types.com/home/cred/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=cred-user-cell&utm_term=get-cred"
+                                       href="https://toolset.com/home/cred/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=cred-user-cell&utm_term=get-cred"
                                        target="_blank">
-                                        <?php _e('About CRED', 'ddl-layouts'); ?>
+                                        <?php _e('About Toolset Forms', 'ddl-layouts'); ?>
                                     </a>
 
                                 </div>
@@ -237,15 +239,15 @@ if (!class_exists('CRED_User_Cell')) {
                     <div class="toolset-alert toolset-alert-info js-ddl-cred-user-not-activated">
                         <p>
                             <i class="icon-cred-logo ont-color-orange ont-icon-24"></i>
-                            <?php _e('This cell requires the CRED plugin. Install and activate the CRED plugin and you will be able to create custom forms for creating and editing content.', 'ddl-layouts'); ?>
+                            <?php _e('This cell requires the Toolset Forms plugin. Install and activate the Toolset Forms plugin and you will be able to create custom forms for creating and editing content.', 'ddl-layouts'); ?>
                             <br>
                             <br>
 
                             &nbsp;&nbsp;
                             <a class="fieldset-inputs"
-                               href="http://wp-types.com/home/cred/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=cred-user-cell&utm_term=get-cred"
+                               href="https://toolset.com/home/cred/?utm_source=layoutsplugin&utm_campaign=layouts&utm_medium=cred-user-cell&utm_term=get-cred"
                                target="_blank">
-                                <?php _e('About CRED', 'ddl-layouts'); ?>
+                                <?php _e('About Toolset Forms', 'ddl-layouts'); ?>
                             </a>
 
                         </p>
@@ -253,7 +255,7 @@ if (!class_exists('CRED_User_Cell')) {
                 <?php endif; ?>
 
                 <div class="ddl-learn-more alignleft from-top-20">
-                    <?php ddl_add_help_link_to_dialog(WPDLL_CRED_CELL, __('Learn about the CRED cell', 'ddl-layouts')); ?>
+                    <?php ddl_add_help_link_to_dialog(WPDLL_CRED_CELL, __('Learn about the User Forms cell ', 'ddl-layouts')); ?>
                 </div>
 
 
@@ -268,7 +270,7 @@ if (!class_exists('CRED_User_Cell')) {
             </div>
 
             <div id="ddl-cred-user-preview-cred-user-not-found" style="display:none">
-                <div class="ddl-center-align"><?php _e('The CRED User Form was not found. It may have been deleted or CRED plugin is not active.', 'ddl-layouts'); ?></div>
+                <div class="ddl-center-align"><?php _e('The User Form was not found. It may have been deleted or Toolset Forms plugin is not active.', 'ddl-layouts'); ?></div>
             </div>
 
             <?php
@@ -285,7 +287,7 @@ if (!class_exists('CRED_User_Cell')) {
             ?>
             <div class="cell-content">
 
-                <p class="cell-name"><?php _e('CRED User Form', 'ddl-layouts'); ?>: {{ name }}</p>
+                <p class="cell-name"><?php _e('User Form', 'ddl-layouts'); ?>: {{ name }}</p>
 
                 <div class="cell-preview">
                     <#
@@ -350,7 +352,7 @@ if (!class_exists('CRED_User_Cell')) {
                 if ($id) {
                     $result['option'] = $this->ddl_cred_user_get_option_element($id, $_POST['name'], $_POST['mode'], $_POST['post_type'], $_POST['user_role']);
                 } else {
-                    $result['error'] = __('Could not create the CRED User form', 'ddl-layouts');
+                    $result['error'] = __('Could not create the User form', 'ddl-layouts');
                 }
             }
 

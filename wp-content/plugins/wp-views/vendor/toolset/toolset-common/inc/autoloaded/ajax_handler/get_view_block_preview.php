@@ -6,7 +6,32 @@
  * @since m2m
  */
 class Toolset_Ajax_Handler_Get_View_Block_Preview extends Toolset_Ajax_Handler_Abstract {
+	private $constants;
 
+	private $toolset_renderer;
+
+	/**
+	 * Toolset_Ajax_Handler_Get_View_Block_Preview constructor.
+	 *
+	 * @param Toolset_Ajax $ajax_manager
+	 * @param Toolset_Constants|null $constants
+	 * @param Toolset_Renderer|null $toolset_renderer
+	 */
+	public function __construct(
+		Toolset_Ajax $ajax_manager,
+		\Toolset_Constants $constants = null,
+		\Toolset_Renderer $toolset_renderer = null
+	) {
+		parent::__construct( $ajax_manager );
+
+		$this->constants = $constants
+			? $constants
+			: new \Toolset_Constants();
+
+		$this->toolset_renderer = $toolset_renderer
+			? $toolset_renderer
+			: \Toolset_Renderer::get_instance();
+	}
 
 	/**
 	 * @param array $arguments Original action arguments.
@@ -141,21 +166,28 @@ class Toolset_Ajax_Handler_Get_View_Block_Preview extends Toolset_Ajax_Handler_A
 		$this->ajax_finish( array( 'message' => sprintf( __( 'Error while retrieving the View preview. The selected View (ID: %s) was not found.', 'wpv-views' ), $view_id ) ), false );
 	}
 
+	/**
+	 * Renders the Toolset View Gutenberg block overlay for the block preview on the editor.
+	 *
+	 * @param string $view_id    The ID of the selected View.
+	 * @param string $view_title The title of the selected View.
+	 *
+	 * @return bool|string
+	 */
 	public function render_view_block_overlay( $view_id, $view_title ) {
-		$overlay_atts = array(
-			'title' => $view_title,
-			'type' => 'View',
-			'link' => admin_url( 'admin.php?page=views-editor&view_id=' . $view_id ),
+		$renderer = $this->toolset_renderer;
+		$template_repository = \Toolset_Output_Template_Repository::get_instance();
+		$context = array(
+			'module_title' => $view_title,
+			'module_type' => __( 'View', 'wpv-view' ),
+			'edit_link' => admin_url( 'admin.php?page=views-editor&view_id=' . $view_id ),
+		);
+		$html = $renderer->render(
+			$template_repository->get( $this->constants->constant( 'Toolset_Output_Template_Repository::PAGE_BUILDER_MODULES_OVERLAY' ) ),
+			$context,
+			false
 		);
 
-		ob_start();
-
-		require( TOOLSET_COMMON_PATH . '/toolset-blocks/blocks/common/block-overlay.phtml' );
-
-		$overlay = ob_get_contents();
-
-		ob_end_clean();
-
-		return $overlay;
+		return $html;
 	}
 }

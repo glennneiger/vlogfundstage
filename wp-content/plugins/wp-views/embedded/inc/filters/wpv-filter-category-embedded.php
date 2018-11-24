@@ -660,6 +660,16 @@ class WPV_Taxonomy_Frontend_Filter {
 		$aux_array = apply_filters( 'wpv_filter_wpv_get_rendered_views_ids', array() );
 		$view_name = get_post_field( 'post_name', end( $aux_array ) );
 		$view_settings = apply_filters( 'wpv_filter_wpv_get_object_settings', array() );
+
+		// Translate the default label if any
+		if ( ! empty( $atts['default_label'] ) ) {
+			$atts['default_label'] = wpv_translate( $atts['url_param'] . '_default_label', $atts['default_label'], false, 'View ' . $view_name );
+		}
+
+		// Translate the value format if any
+		if ( ! empty( $atts['format'] ) ) {
+			$atts['format'] = wpv_translate( $atts['url_param'] . '_format', $atts['format'], false, 'View ' . $view_name );
+		}
 		
 		$walker_args = array(
 			'name'				=> $atts['url_param'],
@@ -678,11 +688,6 @@ class WPV_Taxonomy_Frontend_Filter {
 			'operator'			=> 'IN',
 			'query_cache'		=> array()
 		);
-		
-		// Translate the default label if any
-		if ( ! empty( $atts['default_label'] ) ) {
-			$atts['default_label'] = wpv_translate( $atts['url_param'] . '_default_label', $atts['default_label'], false, 'View ' . $view_name );
-		}
 		
 		// Set selected values
 		$walker_args = WPV_Taxonomy_Frontend_Filter::set_selected_values( $walker_args, $atts, $view_settings );

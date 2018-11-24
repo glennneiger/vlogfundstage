@@ -3,6 +3,8 @@
 class Toolset_User_Editors_Editor_Screen_Basic_Backend
 	extends Toolset_User_Editors_Editor_Screen_Abstract {
 
+	const BASIC_SCREEN_ID = 'basic';
+
 	/**
 	 * @var Toolset_Constants
 	 */
@@ -18,6 +20,9 @@ class Toolset_User_Editors_Editor_Screen_Basic_Backend
 			? $constants
 			: new Toolset_Constants();
 
+		// The global definition of this constant is no longer needed. It's only here because it was left for a Forms release,
+		// 2.1.2 that needed to be released before Views 2.7.0.
+		// Delete it before releasing Views 2.7.0
 		$this->constants->define( 'BASIC_SCREEN_ID', 'basic' );
 	}
 
@@ -133,7 +138,7 @@ class Toolset_User_Editors_Editor_Screen_Basic_Backend
 	*/
 	
 	public function layout_template_attribute( $attributes, $content_template, $view_id ) {
-		$content_template_has_basic = ( in_array( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ), array( '', $this->constants->constant( 'BASIC_SCREEN_ID' ) ) ) );
+		$content_template_has_basic = ( in_array( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ), array( '', self::BASIC_SCREEN_ID ) ) );
 		if ( $content_template_has_basic ) {
 			$attributes['builder'] = $this->editor->get_id();
 		}
@@ -172,7 +177,7 @@ class Toolset_User_Editors_Editor_Screen_Basic_Backend
 		}
 		
 		$ct_id = (int) $_POST['ct_id'];
-		$editor = isset( $_POST['editor'] ) ? sanitize_text_field( $_POST['editor'] ) : $this->constants->constant( 'BASIC_SCREEN_ID' );
+		$editor = isset( $_POST['editor'] ) ? sanitize_text_field( $_POST['editor'] ) : self::BASIC_SCREEN_ID;
 		update_post_meta( $ct_id, '_toolset_user_editors_editor_choice', $editor );
 
 		do_action( 'toolset_set_layout_template_user_editor_' . $editor );

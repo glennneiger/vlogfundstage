@@ -145,14 +145,14 @@ Toolset.Gui.ItemViewModel = function(model, itemActions) {
     });
 
 
-		/**
-		 * Simulates a link when displayNameLink exists
-		 *
-		 * @since 2.3
-		 */
-		self.onDisplayNameClick = function() {
-			if (!_.isUndefined(model.editLink)) {
-				document.location = model.editLink;
-			}
-		}
+    /**
+     * Simulates a link when displayNameLink exists
+     *
+     * @since 2.3
+     */
+    self.onDisplayNameClick = function() {
+        if (!_.isUndefined(model.editLink)) {
+            document.location = model.editLink;
+        }
+    }
 };

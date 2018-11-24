@@ -26,6 +26,12 @@
 }
 .toolset-ui-dialog .ui-dialog-title {
 	float: none !important;
+    display: block;
+    white-space: nowrap;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
 }
 .toolset-ui-dialog .ui-widget{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", "Open Sans", sans-serif;
@@ -166,6 +172,14 @@
 	font-size: 11px !important;
 	letter-spacing: normal;
 }
+.toolset-ui-dialog .toolset-option-helper-text {
+	display: block;
+	color: #999;
+	font-size: 0.9em;
+}
+.toolset-ui-dialog .toolset-option-label-disabled {
+	color: #999;
+}
 /**
  * Shortcodes dialogs styles: listing dialog.
  */
@@ -178,6 +192,24 @@
 /**
  * Shortcodes dialogs styles: shortcodes dialog.
  */
+.toolset-shortcode-gui-dialog h4,
+.wpv-fields-and-views-dialog h4 {
+	font-size: 1em;
+	font-weight: 600;
+}
+
+.toolset-shortcode-gui-dialog-container h2 {
+	font-weight: 600;
+}
+
+.toolset-shortcode-gui-dialog-container ul {
+	list-style: none;
+}
+
+.toolset-shortcode-gui-dialog-container label {
+	font-weight: normal;
+}
+
 .toolset-shortcode-gui-dialog-container .ui-tabs-nav {
     padding: .2em .1em .2em .2em;
     border: none;
@@ -319,12 +351,72 @@
 .toolset-shortcode-gui-dialog-container .toolset-mightlong-list {
     margin: 0;
 }
-.toolset-shortcode-gui-dialog-container  .toolset-mightlong-list > li {
+.toolset-shortcode-gui-dialog-container .toolset-mightlong-list > li {
     min-height: 24px;
     min-width: 45%;
     float: left;
     padding-right: 4%;
     margin: 0 0 6px;
+}
+/**
+ * Shortcodes dialogs styles: shortcodes wizard.
+ */
+.toolset-shortcode-gui-wizard-options-container {
+	display: flex;
+	text-align: center;
+}
+.toolset-shortcode-gui-wizard-option {
+	position: relative;
+	flex: 1;
+	margin: 0 10px 0 0;
+	padding: 10px;
+	background: #fafafa;
+	border: solid 1px #ccc;
+	border-radius: 5px;
+	vertical-align: top;
+}
+.toolset-shortcode-gui-wizard-option:last-child {
+	margin: 0;
+}
+.toolset-shortcode-gui-wizard-option-selected.toolset-shortcode-gui-wizard-option-has-settings::before,
+.toolset-shortcode-gui-wizard-option-selected.toolset-shortcode-gui-wizard-option-has-settings::after{
+    content: '';
+    position: absolute;
+    left: 42%;
+    top: 100%;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #e4e4e4;
+    clear: both;
+}
+.toolset-shortcode-gui-wizard-option-selected.toolset-shortcode-gui-wizard-option-has-settings::before {
+	border-color: #999 transparent transparent transparent;
+    border-width: 21px;
+}
+	.toolset-shortcode-gui-wizard-option input[type="radio"].toolset-shortcode-gui-wizard-option-hidden {
+		display: none;
+	}
+.toolset-shortcode-gui-wizard-option-selected {
+	background: #e4e4e4;
+	border-color: #999;
+}
+.toolset-shortcode-gui-wizard-option-disabled {
+	background: #fff;
+}
+	.toolset-shortcode-gui-wizard-option-disabled * {
+		color: #999;
+	}
+.toolset-shortcode-gui-wizard-option-icon {
+	display: inline-block;
+	width: 100%;
+	padding-bottom: 10px;
+}
+.toolset-shortcode-gui-wizard-option-extra {
+	padding: 0 30px;
+	margin-top: 30px;
+	border-top: solid 1px #ccc;
 }
 /*********************************************
 Toolset Confirmation Dialog
@@ -333,14 +425,13 @@ Toolset Confirmation Dialog
 
  *********************************************/
 .toolset-confirmation-dialog {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
 }
 .toolset-confirmation-dialog-icon {
     padding: 17px 15px 20px;
-    box-sizing: border-box;
-}
-.toolset-confirmation-dialog-content {
-    padding: 15px;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
 @media (min-width: 768px) {
@@ -350,5 +441,81 @@ Toolset Confirmation Dialog
     }
 }
 .toolset-confirmation-dialog-content {
-
+    padding: 15px;
+    box-sizing: border-box;
 }
+.toolset-confirmation-dialog-content > :first-child {
+    margin-top: 0;
+}
+
+/* Fields and Views in generic inputs */
+a.toolset-shortcode-in-page-builder-input {
+	position: absolute;
+	display: none;
+	top: 0;
+	left: -20px;
+	color: #fff !important;
+	font-weight: bold;
+	font-size: 14px !important;
+	width: 17px;
+	height: 17px;
+	line-height: 15px;
+	text-align:center;
+	background: #f05a29;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	cursor: pointer;
+	text-decoration: none !important;
+}
+
+/* Skype Settings */
+#toolset-attribute-skype-preview,
+#toolset-attribute-skype-preview-loaded {
+    position: relative;
+}
+
+#toolset-attribute-skype-preview-loaded,
+#toolset-attribute-skype-preview-offline {
+    display: none;
+}
+
+#toolset-attribute-skype-preview-loaded table {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+#toolset-attribute-skype-preview-loaded table td {
+    vertical-align: top;
+}
+
+#toolset-attribute-skype-preview-loaded table tr td:nth-child(1) {
+    width: 100px;
+    font-weight: bold;
+}
+
+#toolset-attribute-skype-preview-loaded table tr:nth-child(1) td {
+    height: 85px;
+}
+
+#toolset-attribute-skype-preview-loaded .lwc-chat-button {
+    position: static;
+}
+
+.js-toolset-shortcode-gui-attribute-group-for-skype_button_style select,
+.js-toolset-shortcode-gui-attribute-group-for-skype_button_style_enhanced select,
+.js-toolset-shortcode-gui-attribute-wrapper-for-receiver select {
+    width: 98%;
+    width: calc( 100% - 5px );
+}
+
+.js-toolset-shortcode-gui-attribute-group-for-skype_button_style_enhanced li {
+    box-sizing: border-box;
+    padding-top: 5px!important;
+}
+
+.js-toolset-shortcode-gui-attribute-group-for-skype_button_style_enhanced {
+    display: none;
+}
+
+

@@ -5,29 +5,20 @@
  *
  * @since 2.6.0
  */
-class Toolset_Blocks_Content_Template {
+class Toolset_Blocks_Content_Template implements Toolset_Gutenberg_Block_Interface {
+
+	const BLOCK_NAME = 'toolset/ct';
 
 	public function init_hooks() {
+		add_action( 'init', array( $this, 'register_block_editor_assets' ) );
 
-		// "toolset_register_block_editor_assets" and "toolset_register_block_type" are hooked on "init" with priority 111
-		// because "wpv_generic_register_secondary_shortcodes_dialog_groups" that registers the transient for published Content
-		// Templates used there, is hooked on "init" with priority 110.
-		add_action( 'init', array( $this, 'toolset_register_block_editor_assets' ), 111 );
-
-		add_action( 'init', array( $this, 'toolset_register_block_type' ), 111 );
-
-		// Hook scripts function into block editor hook
-		add_action( 'enqueue_block_editor_assets', array( $this, 'toolset_blocks_editor_scripts' ) );
-
-		// Hook scripts function into block editor hook
-		add_action( 'enqueue_block_assets', array( $this, 'toolset_blocks_scripts' ) );
+		add_action( 'init', array( $this, 'register_block_type' ) );
 	}
 
 	/**
 	 * Register the needed assets for the Toolset Gutenberg blocks
-	 *
 	 */
-	public function toolset_register_block_editor_assets() {
+	public function register_block_editor_assets() {
 		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
 
 		$toolset_assets_manager->register_script(
@@ -42,30 +33,17 @@ class Toolset_Blocks_Content_Template {
 			'toolset-ct-block-js',
 			'toolset_ct_block_strings',
 			array(
+				'block_name' => self::BLOCK_NAME,
 				'published_cts' => $this->get_available_cts(),
 				'wpnonce' => wp_create_nonce( Toolset_Ajax::CALLBACK_GET_CONTENT_TEMPLATE_BLOCK_PREVIEW ),
 				'actionName' => $toolset_ajax_controller->get_action_js_name( Toolset_Ajax::CALLBACK_GET_CONTENT_TEMPLATE_BLOCK_PREVIEW ),
 			)
 		);
 
-		$toolset_assets_manager->register_script(
-			'toolset-ct-block-frontend-js',
-			TOOLSET_COMMON_URL . '/toolset-blocks/assets/js/ct.block.frontend.js',
-			array( 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-api' ),
-			TOOLSET_COMMON_VERSION
-		);
-
 		$toolset_assets_manager->register_style(
 			'toolset-ct-block-editor-css',
 			TOOLSET_COMMON_URL . '/toolset-blocks/assets/css/ct.block.editor.css',
-			array( 'wp-blocks', 'wp-edit-blocks' ),
-			TOOLSET_COMMON_VERSION
-		);
-
-		$toolset_assets_manager->register_style(
-			'toolset-ct-block-editor-frontend-css',
-			TOOLSET_COMMON_URL . '/toolset-blocks/assets/css/ct.block.style.css',
-			array( 'wp-blocks', 'wp-edit-blocks' ),
+			array(),
 			TOOLSET_COMMON_VERSION
 		);
 	}
@@ -74,47 +52,40 @@ class Toolset_Blocks_Content_Template {
 	 * Register block type. We can use this method to register the editor & frontend scripts as well as the render callback.
 	 *
 	 * @note For now the scripts registration is disabled as it creates console errors on the classic editor.
-	 *
 	 */
-	public function toolset_register_block_type() {
-		register_block_type( 'toolset/ct', array(
+	public function register_block_type() {
+		register_block_type(
+			self::BLOCK_NAME,
+			array(
+				'attributes' => array(
+					'ct'      => array(
+						'type' => 'string',
+						'default' => '',
+					),
+				),
+				'editor_script' => 'toolset-ct-block-js', // Editor script.
+				'editor_style' => 'toolset-ct-block-editor-css', // Editor style.
 				'render_callback' => array( $this, 'wpv_gutenberg_ct_block_render' ),
-		) );
+			)
+		);
 	}
 
 	/**
-	 * Enqueue assets, needed on the editor side, for the Toolset Gutenberg blocks
-	 *
-	 */
-	public function toolset_blocks_editor_scripts() {
-		do_action( 'toolset_enqueue_scripts', array( 'toolset-ct-block-js' ) );
-		do_action( 'toolset_enqueue_styles', array( 'toolset-ct-block-editor-css' ) );
-	}
-
-	/**
-	 * Enqueue assets, needed on the frontend side, for the Toolset Gutenberg blocks
-	 *
-	 */
-	public function toolset_blocks_scripts() {
-		return;
-	}
-
-	/**
+	 * Retrieve the published Content Templates
 	 *
 	 * @return array|mixed
 	 */
 	public function get_available_cts() {
 		global $pagenow;
-		$ct_objects = get_transient( 'wpv_transient_published_cts' );
+		$ct_objects = apply_filters( 'wpv_get_available_content_templates', array() );
 
 		if ( ! $ct_objects ) {
 			$ct_objects = array();
 		}
-		
+
 		$values_to_exclude = array();
 
-		// Exclude current Content Template
-
+		// Exclude current Content Template.
 		$action = toolset_getget( 'action', null );
 		$action = null === $action ? toolset_getpost( 'action', null ) : $action;
 
@@ -131,12 +102,12 @@ class Toolset_Blocks_Content_Template {
 			$values_to_exclude[] = $post_id;
 		}
 
-		// Exclude all Loop Templates
+		// Exclude all Loop Templates.
 		$exclude_loop_templates_ids = wpv_get_loop_content_template_ids();
 		if ( count( $exclude_loop_templates_ids ) > 0 ) {
 			$exclude_loop_templates_ids_sanitized = array_map( 'esc_attr', $exclude_loop_templates_ids );
 			$exclude_loop_templates_ids_sanitized = array_map( 'trim', $exclude_loop_templates_ids_sanitized );
-			// is_numeric + intval does sanitization
+			// is_numeric + intval does sanitization.
 			$exclude_loop_templates_ids_sanitized = array_filter( $exclude_loop_templates_ids_sanitized, 'is_numeric' );
 			$exclude_loop_templates_ids_sanitized = array_map( 'intval', $exclude_loop_templates_ids_sanitized );
 			if ( count( $exclude_loop_templates_ids_sanitized ) > 0 ) {
@@ -161,7 +132,6 @@ class Toolset_Blocks_Content_Template {
 	 *
 	 * @param  array $attributes The attributes of the block.
 	 * @return The output of the block. In this case the block renders a Content Template shortcode.
-	 *
 	 */
 	public function wpv_gutenberg_ct_block_render( $attributes ) {
 		$defaults = array(

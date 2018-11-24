@@ -11,6 +11,7 @@
  * $LastChangedRevision: 26052 $
  * $LastChangedBy: riccardo $
  *
+ * @deprecated Use OTGS\Toolset\CRED\Model\Settings instead
  */
 class CRED_Settings_Model extends CRED_Abstract_Model implements CRED_Singleton
 {
@@ -20,15 +21,6 @@ class CRED_Settings_Model extends CRED_Abstract_Model implements CRED_Singleton
 	public function get_object_fields( $object_field, $include_fields_only = null ) {
 		return;
 	}
-
-    /**
-     * Class constructor
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        add_action('admin_notices', array( $this, 'updateSettingsMessage' ));
-    }
 
     public function prepareDB()
     {
@@ -71,14 +63,5 @@ class CRED_Settings_Model extends CRED_Abstract_Model implements CRED_Singleton
     public function updateSettings( $settings )
     {
         return update_option($this->option_name, $settings);
-    }
-
-    public function updateSettingsMessage()
-    {
-        if ( array_key_exists('settings', $_POST) ) {
-            echo '<div class="updated"><p><strong>';
-            _e('Settings saved.', 'wp-cred');
-            echo '</strong></p></div>';
-        }
     }
 }

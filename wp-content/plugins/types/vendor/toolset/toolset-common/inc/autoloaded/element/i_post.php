@@ -23,13 +23,6 @@ interface IToolset_Post extends IToolset_Element {
 
 
 	/**
-	 * @return string Post title
-	 * @since m2m
-	 */
-	public function get_title();
-
-
-	/**
 	 * @param string $title New post title
 	 *
 	 * @return void

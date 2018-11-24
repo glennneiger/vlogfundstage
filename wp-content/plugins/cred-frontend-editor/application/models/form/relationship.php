@@ -121,7 +121,7 @@ class CRED_Form_Relationship {
 		$role = $this->get_role_from_post_type( $definition, $post->post_type );
 
 		if ( ! isset( $field[ 'cardinality' ][ $role ][ 'max' ] ) ) {
-			return __( 'Relationship does\'t have a valid cardinality', 'wp-cred' );
+			return __( 'Relationship doesn\'t have a valid cardinality', 'wp-cred' );
 		}
 
 		// The role belonging to the related post.
@@ -147,11 +147,11 @@ class CRED_Form_Relationship {
 		}
 
 		// get association
-		$associations = $this->association->get_associations( $post_id, $definition );
+		$associations = $this->association->get_associations( $post_id, $definition, $role );
 		$association = array_shift( $associations );
 		if ( ! empty( $association ) ) {
 			// There is a stored association
-			$is_current_association_different_to_stored = $this->association->get_parent_id( $association ) != $value;
+			$is_current_association_different_to_stored = $this->association->get_associated_object_id_by_role( $association, $field[ 'role' ] ) != $value;
 
 			if ( $is_current_association_different_to_stored ) {
 				// associated post has changed, delete previous
@@ -165,10 +165,17 @@ class CRED_Form_Relationship {
 
 		if ( ! empty( $value ) ) {
 			try {
-				// user has set a new parent, store it
+				// set the right object in the right place, as create_association minds the order
+				$parent_to_connect = ( Toolset_Relationship_Role::CHILD === $field[ 'role' ] ) 
+					? $post
+					: get_post( $value );
+				$child_to_connect = ( Toolset_Relationship_Role::CHILD === $field[ 'role' ] ) 
+					? get_post( $value )
+					: $post;
+				// user has set a new relationship, store it
 				$result = $definition->create_association(
-					get_post( $value ),
-					$post
+					$parent_to_connect,
+					$child_to_connect
 				);
 
 				//If result is instance of Toolset Result means that is a error
@@ -326,14 +333,19 @@ class CRED_Form_Relationship {
 	 * @throws Exception
 	 */
 	public function get_relationships( $post_type_object ) {
+		$relationships = array();
+
+		if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			return $relationships;
+		}
+
 		$relationship_query = new Toolset_Relationship_Query_V2();
+		do_action( 'toolset_do_m2m_full_init' );
 
 		if (
-			apply_filters( 'toolset_is_m2m_enabled', false )
-			&& property_exists( $post_type_object, Toolset_Post_Type_From_Types::DEF_IS_REPEATING_FIELD_GROUP )
+			property_exists( $post_type_object, Toolset_Post_Type_From_Types::DEF_IS_REPEATING_FIELD_GROUP )
 			&& $post_type_object->{Toolset_Post_Type_From_Types::DEF_IS_REPEATING_FIELD_GROUP}
 		) {
-			do_action( 'toolset_do_m2m_full_init' );
 			$relationship_query_result = $relationship_query
 				->do_not_add_default_conditions()
 				->add( $relationship_query->has_domain_and_type( $post_type_object->name, Toolset_Element_Domain::POSTS ) )
@@ -346,7 +358,7 @@ class CRED_Form_Relationship {
 				->get_results();
 		}
 
-		$relationships = array();
+		
 		foreach ( $relationship_query_result as $relationship ) {
 			$relationship_array = $this->relationship_definition_to_array( $relationship, $post_type_object );
 			//TODO: remove this once we want to enable the parent side childs handler

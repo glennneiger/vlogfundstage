@@ -319,7 +319,6 @@ WPViews.WPAListingScreen = function( $ ) {
 			success: function( response ) {
 				if ( response.success ) {
 					self.dialog_create_wpa.html( response.data.dialog_content );
-					$( '.js-wpv-new-archive-name' ).focus();
 					disablePrimaryButton( $( '.js-wpv-create-new-wpa' ) );
 				}
 			},
@@ -960,6 +959,7 @@ WPViews.WPAListingScreen = function( $ ) {
 			close: function( event, ui ) {
 				$( 'body' ).removeClass( 'modal-open' );
 				self.dialog_create_or_change_usage = '';
+                self.closePointerTooltip();
 			},
 			buttons:[
 				{
@@ -974,6 +974,7 @@ WPViews.WPAListingScreen = function( $ ) {
 					text: wpa_listing_texts.dialog_cancel,
 					click: function() {
 						$( this ).dialog( "close" );
+                        self.closePointerTooltip();
 					}
 				}
 			]
@@ -1035,7 +1036,8 @@ WPViews.WPAListingScreen = function( $ ) {
 				$( 'body' ).removeClass( 'modal-open' );
 				self.creating_archive_loop_title = '';
 				self.creating_archive_loop = '';
-			},
+                self.closePointerTooltip();
+            },
 			buttons:[
 				{
 					class: 'toolset-shortcode-gui-dialog-button-align-right button-primary js-wpv-add-wp-archive-for-loop',
@@ -1049,7 +1051,8 @@ WPViews.WPAListingScreen = function( $ ) {
 					text: wpa_listing_texts.dialog_cancel,
 					click: function() {
 						$( this ).dialog( "close" );
-					}
+                        self.closePointerTooltip();
+                    }
 				}
 			]
 		});
@@ -1220,10 +1223,40 @@ WPViews.WPAListingScreen = function( $ ) {
         });
 		
 	};
-	
+
+	self.initPointerTooltipForDisabledOption = function () {
+
+        $( document ).on( 'click', '#wpv_parametric_disabled_pointer', function( e ){
+
+            var pricingOutput = '<p><a href="'+wpa_listing_texts.tooltipPriceLinkURL+'" target="_blank">'+wpa_listing_texts.tooltipPriceLinkTitle+'</a></p>';
+            // set default
+            var disabledPaginationTooltip = jQuery('#wpv_parametric_disabled_pointer').pointer({
+                pointerClass: 'wp-toolset-pointer wpv-pointer-inside-dialog',
+                content: '<h3>'+wpa_listing_texts.viewsLiteTooltipTitle+'</h3><p>'+wpa_listing_texts.tooltipParametricDisabled+'</p>'+pricingOutput,
+                position: {
+                    edge: 'left',
+                    align: 'left',
+                }
+            });
+            disabledPaginationTooltip.pointer('open');
+            jQuery('.wpv-pointer-inside-dialog').css({"z-index": "999999"});
+        });
+
+	};
+
+    self.closePointerTooltip = function () {
+        if( wpa_listing_texts.is_views_lite ){
+            jQuery('#wpv_parametric_disabled_pointer').pointer().pointer('close');
+        }
+    };
+
 	self.init = function() {
 		$('.js-list-views-action option').removeAttr('selected');
 		self.init_dialogs();
+
+        if( wpa_listing_texts.is_views_lite ){
+            self.initPointerTooltipForDisabledOption();
+        }
 	};
 	
 	self.init();

@@ -85,11 +85,12 @@ class WPV_Walker_Postmeta_Radios extends WPV_Walker_Control_Base {
 	}
 
 	public function start_el( &$output, $meta_object, $depth = 0, $args = array(), $current_object_id = 0 ) {
+		$format = 'default' !== $meta_object->meta_key ? $this->walker_args['format'] : '%%NAME%%';
 		
 		$meta_object->meta_option = str_replace( 
 			'%%NAME%%', 
-			$meta_object->display_value, 
-			$this->walker_args['format'] 
+			$meta_object->display_value,
+			$format
 		);
 		
 		$el_args = array(

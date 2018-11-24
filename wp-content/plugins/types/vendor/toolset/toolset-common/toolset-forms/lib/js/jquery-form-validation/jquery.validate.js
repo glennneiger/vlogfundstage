@@ -116,6 +116,10 @@
             var element = this[0];
 
             if (command) {
+                if( ! element.form || ! $.data(element.form, 'validator') ) {
+                    // no validator for the form
+                    return;
+                }
                 var settings = $.data(element.form, 'validator').settings;
                 var staticRules = settings.rules;
                 var existingRules = $.validator.staticRules(element);

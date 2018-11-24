@@ -11,7 +11,7 @@
 WPV_Taxonomy_Term_Filter::on_load();
 
 /**
-* WPV_Post_Relationship_Filter
+* WPV_Taxonomy_Term_Filter
 *
 * Views Taxonomy Term Filter Class
 *

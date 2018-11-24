@@ -10,9 +10,10 @@ DDLayout.listing.views.ListingItemView = Backbone.View.extend({
         self.can_edit = DDLayout_settings.DDL_JS.user_can_edit;
         self.can_create = DDLayout_settings.DDL_JS.user_can_create;
 
-		self.listenTo(self.eventDispatcher, 'ddl-duplicate-trigger', self.duplicate_listener)
+		_.bindAll( self, 'render', 'afterRender', 'duplicate_listener', 'markUnassignedTabForChanges');
 
-		_.bindAll( self, 'render', 'afterRender', 'duplicate_listener');
+        self.listenTo(self.eventDispatcher, 'ddl-duplicate-trigger', self.duplicate_listener);
+        self.listenTo( self.eventDispatcher, 'tell-group-element-duplicated', self.markUnassignedTabForChanges );
 
 		self.render = _.wrap(self.render, function(render, args) {
 			render(args);
@@ -38,10 +39,6 @@ DDLayout.listing.views.ListingItemView = Backbone.View.extend({
 	{
 		var self = this,
 			options = option || {};
-
-		/*if( this.model.get('layout') && this.model.get('layout').get('name') === 'Simpleone'){
-			console.log('render item', this.model.get('layout') )
-		}*/
 
 
 		if( DDLayout_settings.DDL_JS.ddl_listing_status === 'publish')
@@ -470,4 +467,7 @@ DDLayout.listing.views.ListingItemView = Backbone.View.extend({
             params = {post_types : DDLayout.listing_manager.listing_table_view.model.getPostTypesAssigned()};
         self.model.get_data_from_server(params, callback);
     },
+    markUnassignedTabForChanges: function( ){
+        DDLayout.listing_manager.markUnassignedTabForChanges( 1 );
+    }
 });

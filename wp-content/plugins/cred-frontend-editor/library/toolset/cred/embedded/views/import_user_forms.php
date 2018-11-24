@@ -26,7 +26,7 @@ if (!current_user_can(CRED_CAPABILITY)) {
 			<label class="cred-label">
 				<input id="checkbox-5" type="checkbox" class="cred-checkbox-invalid" name="cred-overwrite-settings" value="1" />
 				<span class="cred-checkbox-replace"></span>
-				<span><?php _e('Import and Overwrite CRED Settings', 'wp-cred'); ?></span></label>
+				<span><?php _e('Import and Overwrite Forms Settings', 'wp-cred'); ?></span></label>
 		</li>
 	</ul>
 	<p class="toolset-update-button-wrap">

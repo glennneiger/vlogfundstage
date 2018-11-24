@@ -2,7 +2,7 @@
 
 /**
  * Toolset Common Library upgrade mechanism.
- * 
+ *
  * Compares a number of the library version in database with the current one. If the current version is lower,
  * it executes all the commands defined in get_upgrade_commands() and updates the database.
  *
@@ -16,7 +16,7 @@ class Toolset_Upgrade_Controller {
 
 
 	/** Name of the option used to store version number. */
-	const DATABASE_VERSION_OPTION = 'toolset_database_version';
+	const DATABASE_VERSION_OPTION_NUMBER = 'toolset_data_structure_version';
 
 
 	/** @var Toolset_Upgrade_Controller */
@@ -92,9 +92,9 @@ class Toolset_Upgrade_Controller {
 			}
 
 			// This is required by the tcl-status plugin.
-			if( apply_filters( 'toolset_disable_upgrade_routine', false ) ) {
-				return;
-			}
+			// if( apply_filters( 'toolset_disable_upgrade_routine', false ) ) {
+			//	return;
+			// }
 
 			$this->do_upgrade( $database_version, $library_version );
 		}
@@ -109,8 +109,8 @@ class Toolset_Upgrade_Controller {
 	 */
 	private function get_library_version() {
 		$version = (
-			$this->constants->defined( 'TOOLSET_COMMON_VERSION_NUMBER' )
-				? (int) $this->constants->constant( 'TOOLSET_COMMON_VERSION_NUMBER' )
+			$this->constants->defined( 'TOOLSET_DATA_STRUCTURE_VERSION' )
+				? (int) $this->constants->constant( 'TOOLSET_DATA_STRUCTURE_VERSION' )
 				: 0
 		);
 
@@ -125,7 +125,7 @@ class Toolset_Upgrade_Controller {
 	 * @since m2m
 	 */
 	private function get_database_version() {
-		$version = (int) get_option( self::DATABASE_VERSION_OPTION, 0 );
+		$version = (int) get_option( self::DATABASE_VERSION_OPTION_NUMBER, 0 );
 
 		return $version;
 	}
@@ -139,22 +139,21 @@ class Toolset_Upgrade_Controller {
 	 */
 	private function update_database_version( $version_number ) {
 		if( is_numeric( $version_number ) ) {
-			update_option( self::DATABASE_VERSION_OPTION, (int) $version_number, true );
+			update_option( self::DATABASE_VERSION_OPTION_NUMBER, (int) $version_number, true );
 		}
 	}
 
 
 	/**
 	 * Perform the actual upgrade.
-	 * 
+	 *
 	 * @param int $from_version
 	 * @param int $to_version
 	 */
 	private function do_upgrade( $from_version, $to_version ) {
 
-		$this->update_database_version( $to_version );
-
 		$command_definitions = $this->get_upgrade_commands();
+		$final_result = new Toolset_Result_Set();
 
 		foreach ( $command_definitions as $command_definition ) {
 
@@ -169,22 +168,70 @@ class Toolset_Upgrade_Controller {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 
 				$command = $command_definition->get_command();
-				$command->run();
+				$result = $command->run();
 
 			} else {
 				// Ignore errors as we don't have a proper way to display any output from this yet.
 				try {
 					$command = $command_definition->get_command();
-					$command->run();
+					$result = $command->run();
 				} catch ( Throwable $e ) {
 					// PHP 7
-				} catch ( Exception $e ) {
+					$result = new Toolset_Result( $e );
+				} /** @noinspection PhpRedundantCatchClauseInspection */
+				/** @noinspection PhpWrongCatchClausesOrderInspection */
+				catch ( Exception $e ) {
 					// PHP 5
+					$result = new Toolset_Result( $e );
 				}
 			}
 
-			$this->get_executed_commands()->add_executed_command( $command_definition->get_command_name() );
+			$is_success = (
+				( $result instanceof Toolset_Result && $result->is_success() )
+				|| ( $result instanceof Toolset_Result_Set && $result->is_complete_success() )
+			);
+
+			if( $is_success ) {
+				$this->get_executed_commands()->add_executed_command( $command_definition->get_command_name() );
+			}
+
+			$final_result->add( $result );
 		}
+
+		// Only consider the database updated when everything has succeeded.
+		if( ! $final_result->has_results() || $final_result->is_complete_success() ) {
+			$this->update_database_version( $to_version );
+		} else {
+			$this->show_error_notice( $final_result );
+		}
+	}
+
+
+	/**
+	 * Show an undismissible temporary error message with upgrade results.
+	 *
+	 * @param Toolset_Result_Set $results
+	 * @since 2.6.4
+	 */
+	private function show_error_notice( Toolset_Result_Set $results ) {
+		$notice = new Toolset_Admin_Notice_Error(
+			'toolset-database-upgrade-error',
+			'<p>'
+				. __( 'Oops! There\'s been a problem when upgrading Toolset data structures. Please make sure your current configuration allows WordPress to alter database tables.', 'wpcf' )
+				. sprintf(
+					__( 'If the problem persists, please don\'t hesitate to contact %sour support%s with this technical information:', 'wpcf' ),
+					'<a href="https://toolset.com/forums/forum/professional-support/" target="_blank">',
+					' <i class="fa fa-external-link"></i></a>'
+				)
+			. '</p>'
+			. '<p><code>' . $results->concat_messages( "\n" ) . '</code></p>'
+		);
+
+		$notice->set_is_dismissible_permanent( false );
+		$notice->set_is_dismissible_globally( false );
+		$notice->set_is_only_for_administrators( true );
+
+		Toolset_Admin_Notices_Manager::add_notice( $notice );
 	}
 
 
@@ -211,7 +258,7 @@ class Toolset_Upgrade_Controller {
 	 */
 	public function get_executed_commands() {
 		if( null === $this->_executed_commands ) {
-			$this->_executed_commands = new Toolset_Upgrade_Executed_Commands();
+			$this->_executed_commands = Toolset_Singleton_Factory::get( 'Toolset_Upgrade_Executed_Commands' );
 		}
 
 		return $this->_executed_commands;

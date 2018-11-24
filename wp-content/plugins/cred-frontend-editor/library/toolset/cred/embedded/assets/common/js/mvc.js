@@ -1,6 +1,10 @@
 CRED = {};
 CRED.suggest_cache = false;
 
+/**
+ * Framework heavily inspired on, or base for, https://jsperf.com/js-mvc-frameworks
+ */
+
 (function (window, $, undefined) {
     var thisExportName = 'cred_mvc';
 
@@ -368,11 +372,6 @@ CRED.suggest_cache = false;
         return !isNaN(n - 0) && n !== null && n !== "" && n !== false;
     }
 
-    /*function isInt(n)
-     {
-     return n % 1 === 0;
-     } */
-
     // http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
     var _specials = [
             // order matters for these
@@ -567,7 +566,7 @@ CRED.suggest_cache = false;
                 {
                     results.func = m[3].substring(1);
                 }
-                results.op = $.trim(m[4])/*.toLowerCase()*/;
+                results.op = $.trim(m[4]);
                 results.val = m[5];
                 // value is array of values
                 if (
@@ -1059,10 +1058,6 @@ CRED.suggest_cache = false;
                                 return this;
                         }
                         val = o[p];
-                        //o[p]=undefined;
-                        /*if (isArrayIndex(p))
-                         o.splice(+p, 1);
-                         else*/
                         delete o[p]; // not re-arrange indexes
 
                         if (pub) {
@@ -1100,6 +1095,13 @@ CRED.suggest_cache = false;
                             }
                         });
                     },
+                    'requiredWarning': function( $el, data ) {
+                        if ( '' == $el.val() ) {
+                            $el.addClass( 'cred-required-warning' );
+                        } else {
+                            $el.removeClass( 'cred-required-warning' );
+                        }
+                    },
                     // show/hide validation messages according to binding/result
                     'validationMessage': function ($el, data) {
                         if (!data.bind)
@@ -1121,8 +1123,6 @@ CRED.suggest_cache = false;
                             if (undefined !== data.validationResult) {
                                 if (data.validationResult)
                                     $el.hide();
-                                /*else
-                                 $el.show();*/
                             }
                         }
 
@@ -1136,7 +1136,6 @@ CRED.suggest_cache = false;
                         data = data.bind;
                         if (data['domRef']) {
                             $el = $(data['domRef']);
-                            //console.log(data['domRef']);
                         }
 
                         if (data['delay'])
@@ -1148,10 +1147,9 @@ CRED.suggest_cache = false;
                                 if (data['condition'])
                                     action = 'show';
                                 else
-                                    action = 'hide'; //?$el.show():$el.hide();
+                                    action = 'hide';
                             }
                         } else {
-                            //$el.show();
                             action = 'show'
                         }
 
@@ -1190,12 +1188,10 @@ CRED.suggest_cache = false;
                                 if (data['condition'])
                                     action = 'hide';
                                 else
-                                    action = 'show'; //?$el.show():$el.hide();
-                                //(data['condition'])?$el.hide():$el.show();
+                                    action = 'show';
                             }
                         } else {
                             action = 'hide';
-                            //$el.hide();
                         }
 
                         if (delay) {
@@ -1247,27 +1243,16 @@ CRED.suggest_cache = false;
                             {
                                 rr = data['replace'];
                                 for (__i__ = 0, __repl__ = 1, ll = rr.length; __repl__ < ll; __i__ += 2, __repl__ = __i__ + 1) {
-                                    //if (hasOwn(rr, __i__))
-                                    {
-                                        if (rr[__repl__].next) {
-                                            key2 = rr[__repl__].next;
-                                            key2 = removePrefix(model.id, key2);
-                                            // recursively replace previous values in key
-                                            /*for (var prev__i in map)
-                                             {
-                                             if (hasOwn(map, prev__i))
-                                             key2=key2.replace(map[prev__i].rxp, ''+map[prev__i].val);
-                                             }*/
-                                            rr[__repl__] = model.next(key2);
-                                        }
-
-                                        rxp = new RegExp(escapeRegExp('' + rr[__i__]), 'g');
-                                        item = item.replace(rxp, '' + rr[__repl__]);
-                                        // replace in key also
-                                        key = key.replace(rxp, '' + rr[__repl__]);
-                                        // store previous values to replace recursively
-                                        //map[rr[__i__]]={rxp: rxp, val: rr[__repl__]};
+                                    if (rr[__repl__].next) {
+                                        key2 = rr[__repl__].next;
+                                        key2 = removePrefix(model.id, key2);
+                                        rr[__repl__] = model.next(key2);
                                     }
+
+                                    rxp = new RegExp(escapeRegExp('' + rr[__i__]), 'g');
+                                    item = item.replace(rxp, '' + rr[__repl__]);
+                                    // replace in key also
+                                    key = key.replace(rxp, '' + rr[__repl__]);
                                 }
                             }
                             item = $(item);                   // make it dom element
@@ -1275,16 +1260,10 @@ CRED.suggest_cache = false;
                             container.append(item.hide());  // append item to container
                             model.mergeDom(key, item);      // merge item into model, silently
                             view.clearCaches();
-                            model.trigger('change', {key: key, value: {}});   // trigger events
+                            model.trigger('change', {key: key, value: {}, triggerer: 'addItem'});   // trigger events
                             view.sync(item);  // synchronize the view
                             item.fadeIn('slow');    // show new item with effect
                             check_cred_form_type_for_notification();
-
-                            //move body shortcode button to editor
-                            var $body_codes_button = item.find('.cred-body-codes-button');
-                            if (!$body_codes_button.parent().hasClass('.wp-media-buttons')) {
-                                $body_codes_button.parent().find('.wp-media-buttons').append($body_codes_button);
-                            }
                         }
                     },
                     // remove item from view/model
@@ -1306,7 +1285,7 @@ CRED.suggest_cache = false;
                                         key = removePrefix(model.id, key);
                                         model.del(key);
                                         view.clearCaches();
-                                        model.trigger('change', {key: key, value: {}});
+                                        model.trigger('change', {key: key, value: {}, triggerer: 'removeItem'});
                                         $(row).fadeOut('slow', function () {
                                             $(row).remove();
                                             view.updateForm();
@@ -1320,7 +1299,7 @@ CRED.suggest_cache = false;
                                     key = removePrefix(model.id, key);
                                     model.del(key);
                                     view.clearCaches();
-                                    model.trigger('change', {key: key, value: {}});
+                                    model.trigger('change', {key: key, value: {}, triggerer: 'removeItem'});
                                     $(row).fadeOut('slow', function () {
                                         $(row).remove();
                                         view.updateForm();
@@ -1420,18 +1399,12 @@ CRED.suggest_cache = false;
 
                                             for (var ii = 0; ii < value.length; ii++) {
                                                 if (value[ii] && value[ii].label)
-                                                //group.append('<option value="'+value[ii].value+'">'+value[ii].label+'</option>');
                                                     _options += '<option value="' + value[ii].value + '">' + value[ii].label + '</option>';
                                                 else
-                                                //group.append('<option value="'+value[ii]+'">'+value[ii]+'</option>');
                                                     _options += '<option value="' + value[ii] + '">' + value[ii] + '</option>';
                                             }
                                             group.append(_options);
-                                            $el.val(sel); // select the appropriate option
-                                            /*group.find('option').each(function(){
-                                             if (sel==$(this).attr('value'))
-                                             $(this).attr('selected', 'selected');
-                                             });*/
+                                            $el.val(sel);
                                         }
                                         break;
                                     case 'html':
@@ -1512,7 +1485,6 @@ CRED.suggest_cache = false;
                                 if ($el.is(':radio')) {
                                     if (value == val) {
                                         view.getElements('input[name="' + name + '"]').not($el).prop('checked', false);
-                                        //view.$dom.find('input[name="'+name+'"]').not($el).prop('checked', false);
                                         $el.prop('checked', true);
                                     }
                                 } else if ($el.is(':checkbox')) {
@@ -1645,61 +1617,7 @@ CRED.suggest_cache = false;
                     // http://docs.jquery.com/Plugins/Validation/Methods/equalTo
                     equalTo: function ($el, v, p) {
                         return v === $(p).val();
-                    }/*,
-
-                     // http://docs.jquery.com/Plugins/Validation/Methods/remote
-                     remote: function( value, element, param ) {
-                     if ( _validatorUtils.optional(element) ) {
-                     return "dependency-mismatch";
-                     }
-
-                     var previous = this.previousValue(element);
-                     if (!this.settings.messages[element.name] ) {
-                     this.settings.messages[element.name] = {};
-                     }
-                     previous.originalMessage = this.settings.messages[element.name].remote;
-                     this.settings.messages[element.name].remote = previous.message;
-
-                     param = typeof param === "string" && {url:param} || param;
-
-                     if ( previous.old === value ) {
-                     return previous.valid;
-                     }
-
-                     previous.old = value;
-                     var validator = this;
-                     this.startRequest(element);
-                     var data = {};
-                     data[element.name] = value;
-                     $.ajax($.extend(true, {
-                     url: param,
-                     mode: "abort",
-                     port: "validate" + element.name,
-                     dataType: "json",
-                     data: data,
-                     success: function( response ) {
-                     validator.settings.messages[element.name].remote = previous.originalMessage;
-                     var valid = response === true || response === "true";
-                     if ( valid ) {
-                     var submitted = validator.formSubmitted;
-                     validator.prepareElement(element);
-                     validator.formSubmitted = submitted;
-                     validator.successList.push(element);
-                     delete validator.invalid[element.name];
-                     validator.showErrors();
-                     } else {
-                     var errors = {};
-                     var message = response || validator.defaultMessage( element, "remote" );
-                     errors[element.name] = previous.message = $.isFunction(message) ? message(value) : message;
-                     validator.invalid[element.name] = true;
-                     validator.showErrors(errors);
-                     }
-                     previous.valid = valid;
-                     validator.stopRequest(element, valid);
-                     }
-                     }, param));
-                     return "pending";
-                     }*/
+                    }
                 },
                 Events: {
                     'view': {
@@ -1715,8 +1633,6 @@ CRED.suggest_cache = false;
                                 if ('change' == e.type && view._autoBind && data.el.is('input, textarea, select')) {
                                     name = data.el.attr('name') || '';
                                     key = removePrefix(model.id, name);
-                                    //console.log(name, key);
-                                    //console.log(model._data);
                                     if (model.has(key)) {
                                         if (data.el.is(':checkbox')) {
                                             var thischeckbox = view.getElements('input[type="checkbox"][name="' + name + '"]'); //view.$dom.find('input[type="checkbox"][name="'+name+'"]');
@@ -1736,7 +1652,6 @@ CRED.suggest_cache = false;
                                         } else
                                             val = data.el.val();
 
-                                        //console.log(val);
                                         model.set(key, val, true);
                                     }
                                 }
@@ -1757,15 +1672,7 @@ CRED.suggest_cache = false;
                                 view.trigger('change', data);
                             }
 
-                        ]/*,
-
-                         'add' : [
-
-                         ],
-
-                         'remove' : [
-
-                         ]*/
+                        ]
                     },
                     'model': {
                         // these are arrays
@@ -1776,7 +1683,6 @@ CRED.suggest_cache = false;
                                     autobindSelector = 'input[name="' + name + '"], textarea[name="' + name + '"], select[name="' + name + '"]';
 
                                 // do actions ..
-                                //console.log(name);
                                 // do view bind action first
                                 view._doAction(view.getElements(bindSelector) /*view.$dom.find(bindSelector)*/, {
                                     event: e,
@@ -1790,15 +1696,7 @@ CRED.suggest_cache = false;
                                 });
                             }
 
-                        ]/*,
-
-                         'add' : [
-
-                         ],
-
-                         'remove' : [
-
-                         ]*/
+                        ]
                     }
                 },
                 Functions: {
@@ -1817,7 +1715,6 @@ CRED.suggest_cache = false;
                             var $el = $(this),
                                 bind = view.get($el, 'bind');
 
-                            //console.log($el.attr('data-cred-bind'), bind);
                             // during sync, dont do any actions based on events
                             if (
                                 data.sync &&
@@ -1853,21 +1750,8 @@ CRED.suggest_cache = false;
                             var $el = $(this),
                                 bind = view.get($el, 'bind');
 
-                            //console.log($el.attr('data-cred-bind'), bind);
-                            // during sync, dont do any actions based on events
-                            /*if (
-                             data.sync && 
-                             (
-                             !bind || 
-                             (bind && bind.event && bind.event!='change')
-                             )
-                             ) 
-                             return;*/
-
                             // do validation if needed
-                            //console.log(bind);
                             if (bind.validate) {
-                                //console.log($el);
                                 var validators = bind.validate, vv, result = true, a, l,
                                     v = _validatorUtils.getValue($el);
 
@@ -1887,7 +1771,6 @@ CRED.suggest_cache = false;
                                         }
                                     }
 
-                                    //console.log(result);
                                     if (!result)
                                         return; // exit
                                 }
@@ -1917,7 +1800,6 @@ CRED.suggest_cache = false;
                     },
                     _doAutoBindAction: function ($els, data) {
                         var view = this, model = view._model;
-                        //return;
                         if (view._actions['bind']) {
                             $els.each(function () {
 
@@ -1926,7 +1808,6 @@ CRED.suggest_cache = false;
                                     key = (data && data.key) ? data.key : removePrefix(model.id, name),
                                     value;
 
-                                //console.log($el.attr('data-cred-bind') || '');
                                 if (data && data.value) // action is called from model, so key value are already there
                                     value = data.value;
                                 else if (model.has(key))
@@ -2081,9 +1962,7 @@ CRED.suggest_cache = false;
                             url: document.location,
                             data: this.serialize('#post'),
                             type: 'post',
-                            success: function () {
-                                //console.log("form updated");
-                            }
+                            success: function () {}
                         });
                     },
                     serialize: function (what) {
@@ -2224,11 +2103,6 @@ CRED.suggest_cache = false;
                         }
                         return this;
                     },
-                    /*triggerAction : function() {
-                     var view=this, model=view._model;
-
-                     },*/
-
                     trigger: function (evt, o) {
                         o = o || {target: this};
                         _.EventManager.publish(_.Event(this, evt), o);
@@ -2243,14 +2117,6 @@ CRED.suggest_cache = false;
 
                 $.extend(proto, props);
                 object = Object.create(proto);
-                /*if (props)
-                 {
-                 for (var p in props)
-                 {
-                 if (hasOwn(props, p))
-                 object[p]=props[p];
-                 }
-                 }*/
                 return object;
             }
         },
@@ -2291,7 +2157,6 @@ CRED.suggest_cache = false;
                 _data: data, //null,
                 _functions: _.Builder.Model.Functions
             });
-            //self.data(data);
             return self;
         },
         View: function (id, model /*, extend, .. */) {
@@ -2321,13 +2186,6 @@ CRED.suggest_cache = false;
                 $.extend(proto, extendArgs[ii]);
 
             self = _.Builder.create(proto, props);
-            //self
-            //  .model(model)
-            //.actions(_.Builder.View.Actions)
-            //.validators(_.Builder.View.Validators)
-            //.events(_.Builder.View.Events)
-            //.functions(_.Builder.View.Functions)
-            //;
             return self;
         },
         add: function (type, id, obj) {

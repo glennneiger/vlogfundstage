@@ -22,7 +22,7 @@ class WPDDL_Admin{
             add_action( 'admin_head', array( $this, 'add_layouts_videos_help_tab_in_admin_head' ) );
             $this->init_layouts_css();
         }
-        add_filter( 'toolset_filter_register_menu_pages', array(&$this, 'register_custom_pages_in_menu'), 50, 1 );
+        add_filter( 'toolset_filter_register_menu_pages', array(&$this, 'register_custom_pages_in_menu'), 51, 1 );
         add_action('wp_ajax_ddl_remove_layouts_loop_pagination_links', array($this,'remove_layouts_loop_pagination_links'));
     }
 
@@ -35,7 +35,7 @@ class WPDDL_Admin{
             'DDL_JS' => array(
                 'no_file_selected' => __('No file selected. Please select one file to import Layouts data from.', 'ddl-layouts'),
                 'file_to_big' => __('File is bigger than maximum allowed in your php configuration.', 'ddl-layouts'),
-                'file_type_wrong' => __('Only .zip, .ddl and .css files can be imported.', 'ddl-layouts')
+                'file_type_wrong' => __('Only .zip, .ddl, .json and .css files can be imported.', 'ddl-layouts')
             )
         ));
     }
@@ -89,6 +89,12 @@ class WPDDL_Admin{
             'title'		=> __( 'Show cell details', 'ddl-layouts' ),
             'callback' => array($this->layouts_settings, 'ddl_show_layout_cell_details' )
         );
+
+	    $sections['toolset-css-js-settings'] = array(
+		    'slug'		=> 'toolset-css-js-settings',
+		    'title'		=> __( 'CSS and JS settings', 'ddl-layouts' ),
+		    'callback' => array($this->layouts_settings, 'ddl_show_layout_scripts_options_gui' )
+	    );
 
         return apply_filters( 'ddl-get_layouts_settings_sections_array', $sections, $this->layouts_settings );
     }
@@ -158,16 +164,12 @@ class WPDDL_Admin{
     }
 
     private function change_cap_for_content_layout( $layout_id ){
-        $cap = DDL_EDIT;
 
-        if( !isset($layout_id) ){
-            return $cap;
+        if( ! $layout_id || ! WPDD_Utils::is_private( $layout_id ) ){
+            return DDL_EDIT;
         }
 
-        if( user_can_edit_content_layouts( $layout_id ) ){
-            $cap = 'delete_others_pages';
-        }
-        return $cap;
+        return DDL_EDIT_PRIVATE;
     }
 
     private function init_layouts_css(){
@@ -198,6 +200,8 @@ class WPDDL_Admin{
             <button disabled class="add-new-disabled"><?php _e('Add New', 'ddl-layouts');?></button>
             <?php
         endif;
+
+        do_action('ddl-add-gui-buttons-in-listing-page-top');
     }
 
     protected function add_tutorial_video()

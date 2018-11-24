@@ -200,5 +200,4 @@ abstract class Toolset_Relationship_Role {
 		return $role_or_name->get_name();
 	}
 
-
 }

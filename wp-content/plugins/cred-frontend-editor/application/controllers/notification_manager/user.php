@@ -51,6 +51,12 @@ class CRED_Notification_Manager_User extends CRED_Notification_Manager_Base {
 		$notification = false;
 		foreach ( $attachedData as $form_id => $data ) {
 			$notification = $model->getFormCustomField( $form_id, 'notification' );
+			$snapshot_unfolded = $this->unfold( $attachedData[ $form_id ]['current']['snapshot'] );
+			foreach ( $snapshot_unfolded as $field_slug => $field_hash ) {
+				$snapshot_unfolded[ $field_slug ] = get_user_meta( $user_id, $field_slug, true );
+			}
+			$attachedData[ $form_id ]['current']['snapshot'] = $this->fold( $this->do_hash( $snapshot_unfolded ) );
+
 			break;
 		}
 
@@ -59,7 +65,7 @@ class CRED_Notification_Manager_User extends CRED_Notification_Manager_Base {
 				'notification' => $notification,
 				'form_id' => $form_id,
 				'post' => $user,
-			) );
+			), $attachedData );
 		}
 		// keep up-to-date with notification settings for form and post field values
 		$this->update( $user_id, $form_id );
@@ -240,6 +246,8 @@ class CRED_Notification_Manager_User extends CRED_Notification_Manager_Base {
 				continue;
 			}
 
+			$single_notification['form_id'] = $form_id;
+
 			$snapshot = isset( $attached_data[ $form_id ] ) ? $attached_data[ $form_id ][ 'current' ] : array();
 
 			$is_correct_notification_event_type = ( $single_notification[ 'event' ][ 'type' ] == $this->event );
@@ -297,8 +305,22 @@ class CRED_Notification_Manager_User extends CRED_Notification_Manager_Base {
 		}
 
 		if ( ! empty( $notifications_to_send ) ) {
-			$this->send_notifications( $user_id, $form_id, $notifications_to_send );
+			$this->enqueue_notifications( $user_id, $form_id, $notifications_to_send );
 		}
+	}
+
+
+	/**
+	 * Checks fist_name and second_name updates
+	 *
+	 * @param int $user_id User ID.
+	 * @param string $meta_key Meta key.
+	 * @param string $_meta_value Meta value.
+	 * @since 2.0.1
+	 */
+	public function check_for_notifications_for_user_meta( $user_id, $meta_key, $_meta_value ) {
+		$user = get_userdata( $user_id );
+		$this->check_for_notifications( $user_id, $user );
 	}
 
 
@@ -453,12 +475,12 @@ class CRED_Notification_Manager_User extends CRED_Notification_Manager_Base {
 				require_once WPCF_EMBEDDED_ABSPATH . '/frontend.php';
 			}
 
-			// parse shortcodes if necessary relative to $post_id
-			$subject = $this->render_with_post( $subject, $post_id, false );
+			// parse shortcodes if necessary
+			$subject = do_shortcode( $subject );
 			$subject = stripslashes( $subject );
 
-			// parse shortcodes/rich text if necessary relative to $post_id
-			$body = $this->render_with_post( $body, $post_id );
+			// pseudo the_content filter
+			$body = apply_filters( \OTGS\Toolset\Common\BasicFormatting::FILTER_NAME, $body );
 			$body = stripslashes( $body );
 
 			$mailer->setSubject( $subject );
@@ -498,32 +520,24 @@ class CRED_Notification_Manager_User extends CRED_Notification_Manager_Base {
 	protected function try_add_author_to_recipients( $user_id, $form_id, $notification, &$recipients ) {
 		if ( isset( $notification[ 'to' ][ 'author' ] )
 			&& 'author' == $notification[ 'to' ][ 'author' ]
+			&& $user_id
 		) {
-			$author_id = $user_id;
-			$author_post_id = isset( $_POST[ 'form_' . $form_id . '_referrer_post_id' ] ) ? $_POST[ 'form_' . $form_id . '_referrer_post_id' ] : 0;
-			if ( 0 != $author_post_id ) {
-				$author_post = get_post( $author_post_id );
-				$author_id = $author_post->post_author;
-			}
+			$_to_type = 'to';
+			$user_info = get_userdata( $user_id );
 
-			if ( $author_id ) {
-				$_to_type = 'to';
-				$user_info = get_userdata( $author_id );
+			$_addr_name = ( isset( $user_info ) && isset( $user_info->user_firstname ) && ! empty( $user_info->user_firstname ) ) ? $user_info->user_firstname : false;
+			$_addr_lastname = ( isset( $user_info ) && isset( $user_info->user_lasttname ) && ! empty( $user_info->user_lasttname ) ) ? $user_info->user_lastname : false;
+			$_addr = $user_info->user_email;
 
-				$_addr_name = ( isset( $user_info ) && isset( $user_info->user_firstname ) && ! empty( $user_info->user_firstname ) ) ? $user_info->user_firstname : false;
-				$_addr_lastname = ( isset( $user_info ) && isset( $user_info->user_lasttname ) && ! empty( $user_info->user_lasttname ) ) ? $user_info->user_lastname : false;
-				$_addr = $user_info->user_email;
+			if ( isset( $_addr ) ) {
+				$recipients[] = array(
+					'to' => $_to_type,
+					'address' => $_addr,
+					'name' => $_addr_name,
+					'lastname' => $_addr_lastname,
+				);
 
-				if ( isset( $_addr ) ) {
-					$recipients[] = array(
-						'to' => $_to_type,
-						'address' => $_addr,
-						'name' => $_addr_name,
-						'lastname' => $_addr_lastname,
-					);
-
-					return true;
-				}
+				return true;
 			}
 		}
 
@@ -625,25 +639,27 @@ class CRED_Notification_Manager_User extends CRED_Notification_Manager_Base {
 				$_to_type = $notification[ 'to' ][ 'user_id_field' ][ 'to_type' ];
 			}
 
-			$user_info = get_userdata( $user_id );
-			if ( $user_info ) {
-				$_addr = ( isset( $user_info->user_email ) && ! empty( $user_info->user_email ) ) ? $user_info->user_email : false;
-				$_addr_name = ( isset( $user_info->user_firstname ) && ! empty( $user_info->user_firstname ) ) ? $user_info->user_firstname : false;
-				$_addr_lastname = ( isset( $user_info->user_lasttname ) && ! empty( $user_info->user_lasttname ) ) ? $user_info->user_lastname : false;
+			$recipient_user_id = @trim( $this->model->getUserMeta( $user_id, $notification[ 'to' ][ 'user_id_field' ][ 'field_name' ] ) );
+			if ( $recipient_user_id ) {
+			$user_info = get_userdata( $recipient_user_id );
+				if ( $user_info ) {
+					$_addr = ( isset( $user_info->user_email ) && ! empty( $user_info->user_email ) ) ? $user_info->user_email : false;
+					$_addr_name = ( isset( $user_info->user_firstname ) && ! empty( $user_info->user_firstname ) ) ? $user_info->user_firstname : false;
+					$_addr_lastname = ( isset( $user_info->user_lasttname ) && ! empty( $user_info->user_lasttname ) ) ? $user_info->user_lastname : false;
 
-				// add to recipients
-				$recipients[] = array(
-					'to' => $_to_type,
-					'address' => $_addr,
-					'name' => $_addr_name,
-					'lastname' => $_addr_lastname,
-				);
+					// add to recipients
+					$recipients[] = array(
+						'to' => $_to_type,
+						'address' => $_addr,
+						'name' => $_addr_name,
+						'lastname' => $_addr_lastname,
+					);
 
-				return true;
+					return true;
+				}
 			}
 		}
 
 		return false;
 	}
-
 }

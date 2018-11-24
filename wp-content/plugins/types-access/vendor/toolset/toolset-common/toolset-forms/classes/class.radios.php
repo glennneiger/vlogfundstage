@@ -66,10 +66,10 @@ class WPToolset_Field_Radios extends FieldFactory {
             $options[] = $one_option_data;
         }
         /**
-         * for user fields we reset title and description to avoid double 
+         * for user fields we reset title and description to avoid double
          * display
          */
-        $title = $this->getTitle();
+        $title = $this->getTitle( false, true );
         if (empty($title)) {
             $title = $this->getTitle(true);
         }

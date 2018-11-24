@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Featured_Image implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Featured_Image extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-featured-image';
 
@@ -90,18 +90,17 @@ class WPV_Shortcode_Post_Featured_Image implements WPV_Shortcode_Interface {
 		// END LEGACY - backwards compatibility
 		
 		$out = '';
-		
-		$item = get_post( $item_id );
 
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
 		
 		if ( 'img' == $this->user_atts['output'] ) {
-			$out = $this->get_featured_image( $item_id );
+			$out = $this->get_featured_image( $item->ID );
 		} else {
-			$out = $this->get_featured_image_data( $item_id );
+			$out = $this->get_featured_image_data( $item->ID );
 		}
 		$out = apply_filters( 'wpv-post-featured-image', $out );
 
@@ -300,6 +299,4 @@ class WPV_Shortcode_Post_Featured_Image implements WPV_Shortcode_Interface {
 
 		return $image;
 	}
-	
-	
 }

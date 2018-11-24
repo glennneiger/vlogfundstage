@@ -1,11 +1,9 @@
 <?php
 
 /**
- * ########################################
  * Common internal compatibility
  *
  * @since 2.3.0
- * ########################################
  */
 
 if ( ! class_exists( 'Toolset_Internal_Compatibility' ) ) {

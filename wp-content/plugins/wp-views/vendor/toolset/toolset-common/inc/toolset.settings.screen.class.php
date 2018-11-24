@@ -309,7 +309,7 @@ if ( ! class_exists( 'Toolset_Settings_Screen', false ) ) {
 				<?php
 				echo sprintf(
 					__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ),
-					'https://wp-types.com/documentation/user-guides/view-layouts-101/' ,
+					'https://toolset.com/documentation/user-guides/view-layouts-101/' ,
 					esc_attr( __( 'Documentation on the Bootstrap Layouts', 'wpv-views' ) )
 				);
 				?>

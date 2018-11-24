@@ -111,7 +111,7 @@ class WPDD_Layouts_IndividualAssignmentManager
             //$this->remove_layout_from_post_db( $_POST['post_id'] );
             global $wpddlayout;
             $this->current_layout = $_POST['layout_id'];
-            $send = $wpddlayout->listing_page->get_send('publish', $_POST['html'], $this->current_layout, '', $_POST);
+            $send = $wpddlayout->listing_page->get_send('publish', $_POST['html'], $this->current_layout, array(), $_POST);
             die($send);
         }
     }
@@ -132,7 +132,7 @@ class WPDD_Layouts_IndividualAssignmentManager
             $this->current_layout = $_POST['layout_id'];
 
             $wpddlayout->post_types_manager->update_post_meta_for_post_type($_POST['posts'], $this->current_layout);
-            $send = $wpddlayout->listing_page->get_send('publish', $_POST['html'], $this->current_layout, '', $_POST);
+            $send = $wpddlayout->listing_page->get_send('publish', $_POST['html'], $this->current_layout, array(), $_POST);
             die($send);
         }
     }

@@ -1,14 +1,14 @@
 <?php
 // make sure it is unique
 if (!class_exists('TAccess_Loader', false))
-{ 
+{
 /**
  *  TAccess_Loader
- * 
+ *
  *  This class is responsible for loading/including all files and getting instances of all objects
  *  in an efficient and abstract manner, abstracts all hardcoded paths and dependencies and manages singleton instances
  */
- 
+
 // define interfaces used to implement design patterns
 if (!interface_exists('TAccess_Singleton', false))
 {
@@ -24,12 +24,12 @@ final class TAccess_Loader
 {
     // pool of singleton instances, implement singleton factory, tag with singleton interface
     private static $__singleton_instances__ = array();
-    
+
     // some dependencies here
     private static $__dependencies__=array();
     private static $__loaded_dependencies__=array();
     private static $__assets__=array();
-    
+
     public static function init()
     {
         
@@ -38,7 +38,7 @@ final class TAccess_Loader
         add_action( 'plugins_loaded', array( __CLASS__, '_init_' ), 7 );
         add_action( 'init', array( __CLASS__, '_register_assets_' ) );
     }
-    
+
     public static function _init_()
     {
 		$access_constants = new Access_Constants();
@@ -131,10 +131,10 @@ final class TAccess_Loader
 					)
                 )
             );
-        }        
-        
+        }
+
     }
-	
+
 	public static function _register_assets_() {
 		// init assets
         if (empty(self::$__assets__))
@@ -237,7 +237,7 @@ final class TAccess_Loader
                         'version'=>WPCF_ACCESS_VERSION,
                         'dependencies'=>null,
                         'path'=>TACCESS_ASSETS_URL.'/css/pre.css'
-                    ),                    
+                    ),
                     'wpcf-access-dev'=>array(
                         'version'=>WPCF_ACCESS_VERSION,
                         'dependencies'=>array('font-awesome', 'wp-pointer', 'wp-jquery-ui-dialog', 'toolset-colorbox' ),
@@ -262,12 +262,12 @@ final class TAccess_Loader
             );
         }
 	}
-    
+
     public static function loadLocale($id, $locale_file)
     {
         load_textdomain($id, TACCESS_LOCALE_PATH . '/' . $locale_file);
     }
-    
+
     // load an asset with dependencies
     public static function loadAsset($qclass, $registerAs=false, $enqueueIt=true)
     {
@@ -317,7 +317,7 @@ final class TAccess_Loader
             }
         }
     }
-    
+
     // include a php file
     private static function getFile($path, $_in='require_once')
     {
@@ -326,26 +326,26 @@ final class TAccess_Loader
             printf(__('File "%s" doesn\'t exist!', 'wpcf-access'), $path);
             return false;
         }
-        
+
         switch ($_in)
         {
             case 'include':
                 include $path;
                 break;
-            
+
             case 'include_once':
                 include_once $path;
                 break;
-                
+
             case 'require':
                 require $path;
                 break;
-            
+
             case 'require_once':
                 require_once $path;
                 break;
         }
-        
+
         return true;
     }
 
@@ -353,87 +353,28 @@ final class TAccess_Loader
     private static function getClass($class, $path, $_in='require_once')
     {
         if ( !class_exists( $class, false ) )
-            self::getFile( $path, $_in );    
+            self::getFile( $path, $_in );
     }
-    
-    public static function loadScoped($qclass, $__glo__=true, $_in='require_once')
-    {
-        list($type, $class)=explode('/', $qclass, 2);
-        
-        if ( 
-            isset(self::$__dependencies__[$type]) && 
-            isset(self::$__dependencies__[$type][$class]) 
-        )
-        {
-            
-            if ($__glo__)
-            {
-                // auto-register globals in scope
-                foreach (array_diff(array_keys($GLOBALS), array('GLOBALS', '_POST', '_GET', '_COOKIES', '_SERVER', '_FILES') ) as $__v)
-                    global $$__v;
-            }
-            
-            $_type=&self::$__dependencies__[$type];
-            $_class=&$_type[$class];
-            if ( isset($_type['%%PARENT%%']) && is_array($_type['%%PARENT%%']) )
-            {
-                $_parent=&$_type['%%PARENT%%'];
-                foreach ($_parent as $_dep)
-                {
-                    if (isset($_dep['class']))
-                        self::getClass($_dep['class'], $_dep['path']);
-                    else
-                        self::getFile($_dep['path']);
-                }
-            }
-            foreach ($_class as $_dep)
-            {
-                if (isset($_dep['class']))
-                    self::getClass($_dep['class'], $_dep['path']);
-                else
-                {
-                    switch ($_in)
-                    {
-                        case 'include':
-                            include $_dep['path'];
-                            break;
-                        
-                        case 'include_once':
-                            include_once $_dep['path'];
-                            break;
-                            
-                        case 'require':
-                            require $_dep['path'];
-                            break;
-                        
-                        case 'require_once':
-                            require_once $_dep['path'];
-                            break;
-                    }
-                }
-            }
-        }
-    }
-    
+
     // load a class with dependencies if needed
     public static function load($qclass)
     {
         list($type, $class)=explode('/', $qclass, 2);
-        
+
         // try to optimize a little bit
         if ( isset(self::$__loaded_dependencies__[$qclass]) )
         {
             $is_loaded=true;
         }
-        else 
+        else
         {
             $is_loaded=false;
             self::$__loaded_dependencies__[$qclass]=1;
         }
-            
-        if ( 
-            isset(self::$__dependencies__[$type]) && 
-            isset(self::$__dependencies__[$type][$class]) 
+
+        if (
+            isset(self::$__dependencies__[$type]) &&
+            isset(self::$__dependencies__[$type][$class])
         )
         {
             $_type=&self::$__dependencies__[$type];
@@ -470,7 +411,7 @@ final class TAccess_Loader
         }
         return array(false, $class);
    }
-    
+
     // singleton factory pattern, to enable singleton in php 5.2, etc..
     // http://stackoverflow.com/questions/7902586/extend-a-singleton-with-php-5-2-x
     // http://stackoverflow.com/questions/7987313/how-to-subclass-a-singleton-in-php
@@ -482,9 +423,9 @@ final class TAccess_Loader
         // if instance is in pool, return it immediately, only singletons are in the pool
         if ( isset(self::$__singleton_instances__[$qclass]) )
             return self::$__singleton_instances__[$qclass];
-        
+
         $instance = null;
-        
+
         // load it if needed
         list($type, $class) = self::load($qclass);
         // make sure it is loaded (exists) and is not interface
@@ -530,12 +471,12 @@ final class TAccess_Loader
         // sth failed, no instance, return null here finally
         return null;
     }
-    
+
     // USE WP Object_Cache API to cache templates (so 3rd-party cache plugins can be used also)
     public static function tpl($template, array $args=array(), $cache=false)
     {
         $template_path = TACCESS_TEMPLATES_PATH . DIRECTORY_SEPARATOR . $template . '.tpl.php';
-        
+
         // NEW use caching of templates
         $output=false;
         if ($cache)
@@ -544,7 +485,7 @@ final class TAccess_Loader
             $key=md5(serialize(array($template_path, $args)));
             $output=wp_cache_get( $key, $group );
         }
-        
+
         if (false === $output)
         {
             if (!is_file($template_path))
@@ -557,7 +498,7 @@ final class TAccess_Loader
         }
         return $output;
     }
-    
+
     private static function getTpl($______templatepath________, array $______args______=array())
     {
         ob_start();
@@ -565,7 +506,7 @@ final class TAccess_Loader
             include($______templatepath________);
         return ob_get_clean();
     }
-	
+
 }
 
 // init on load

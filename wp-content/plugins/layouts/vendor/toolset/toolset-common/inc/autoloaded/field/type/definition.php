@@ -101,9 +101,9 @@ class Toolset_Field_Type_Definition {
 
 	/**
 	 * Retrieve CSS classes for a field type icon.
-	 * 
+	 *
 	 * To be placed in the i tag.
-	 * 
+	 *
 	 * @return string One or more CSS classes separated by spaces.
 	 * @since 2.0
 	 */
@@ -112,19 +112,19 @@ class Toolset_Field_Type_Definition {
 		if( null != $fa_class ) {
 			return sprintf( 'fa fa-%s', esc_attr( $fa_class ) );
 		}
-		
+
 		$types_class = $this->get_args( 'types-field-image', null );
 		if( null != $types_class ) {
 			return sprintf( 'types-field-icon types-field-icon-%s', esc_attr( $types_class ) );
 		}
-		
-		return '';		
+
+		return '';
 	}
 
 
 	/**
 	 * Perform field type-specific sanitization of the field definition array.
-	 * 
+	 *
 	 * @link https://git.onthegosystems.com/toolset/types/wikis/database-layer/field-definition-arrays
 	 * @param $definition_array
 	 * @return array Sanitized definition array
@@ -175,7 +175,7 @@ class Toolset_Field_Type_Definition {
 
 	/**
 	 * Make sure that the field definition array contains all necessary information.
-	 * 
+	 *
 	 * Note: This is a WIP, currently it sanitizes only very specific cases. It should be extended in the future.
 	 *
 	 * @link https://git.onthegosystems.com/toolset/types/wikis/database-layer/field-definition-arrays
@@ -199,9 +199,9 @@ class Toolset_Field_Type_Definition {
 		$definition_array = $this->sanitize_field_definition_array_generic( $definition_array );
 
 		$definition_array = $this->sanitize_numeric_validation( $definition_array );
-		
+
 		$definition_array = $this->sanitize_field_definition_array_type_specific( $definition_array );
-		
+
 		/**
 		 * types_post_sanitize_field_definition_array
 		 *
@@ -212,16 +212,16 @@ class Toolset_Field_Type_Definition {
 		 * @since 2.1
 		 */
 		$definition_array = toolset_ensarr( apply_filters( 'types_post_sanitize_field_definition_array', $definition_array ) );
-		
+
 		return $definition_array;
 	}
 
 
 	/**
 	 * For all fields, remove the "number" validation option.
-	 * 
+	 *
 	 * Numeric field will override this and do the opposite instead.
-	 * 
+	 *
 	 * @param array $definition_array
 	 * @return array
 	 * @since 2.0
@@ -239,11 +239,11 @@ class Toolset_Field_Type_Definition {
 
 	/**
 	 * Perform a basic "isset" sanitization of an array element.
-	 * 
-	 * @param array $source 
+	 *
+	 * @param array $source
 	 * @param string $element_name Name of the element to sanitize.
 	 * @param string $default Default value for the element if not set or invalid.
-	 * @param null|array $allowed If an array, defines the set of allowed values for the element. 
+	 * @param null|array $allowed If an array, defines the set of allowed values for the element.
 	 * @param null|string $nested_key If not null, the element will be taken from $source[$nested_key][$element_name].
 	 * @return array Updated source array.
 	 * @since 2.1
@@ -251,13 +251,13 @@ class Toolset_Field_Type_Definition {
 	protected function sanitize_element_isset( $source, $element_name, $default = '', $allowed = null, $nested_key = null ) {
 		$src_array = ( null == $nested_key ? $source : $source[ $nested_key ] );
 		$value = toolset_getarr( $src_array, $element_name, $default, $allowed );
-		
+
 		if( null == $nested_key ) {
 			$source[ $element_name ] = $value;
 		} else {
 			$source[ $nested_key ][ $element_name ] = $value;
 		}
-		
+
 		return $source;
 	}
 
@@ -308,6 +308,9 @@ class Toolset_Field_Type_Definition {
 
 					case Toolset_Field_Type_Definition_Factory::SKYPE:
 						return new Toolset_Field_Renderer_Preview_Skype( $field, $renderer_args );
+
+					case Toolset_Field_Type_Definition_Factory::POST:
+						return new Toolset_Field_Renderer_Preview_Post( $field, $renderer_args );
 
 					default:
 						return new Toolset_Field_Renderer_Preview_Textfield( $field, $renderer_args );

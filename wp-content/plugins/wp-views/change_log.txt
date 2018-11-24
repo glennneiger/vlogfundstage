@@ -1,3 +1,91 @@
+Toolset Views 2.6.4.2
+	- Fixed a PHP parse error related to the compatibility with Elementor, with PHP 5.x versions.
+	
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.6.4.1
+	- Fixed an issue with Elementor where "Header" and "Footer" templates designed with the page builder stopped working.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.6.4
+	- Added the Toolset View Elementor widget.
+	- Added an option to allow complete omission of the wrapping HTML element around a View.
+	- Added a new Loop output style in the loop wizard for Views to allow the output styled as a list with separators.
+	- Removed the ability to filter a View by a Types checkboxes field when it is set to store zero on unchecked items.
+	- Fixed an issue with Content Template that could not be applied to posts designed with Elementor.
+	- Fixed an issue with the blacklisting of the Views WordPress widget causing sites to loose content.
+	- Fixed an issue with the exporting of Views when the View setting become corrupted or when imaged used in Views no longer exist.
+	- Fixed an issue where the CSS and JS of a Content Template, set by the native Content Template editor, was applied even when a page builder was used to build the Content Template.
+	- Fixed an issue where the "default" option of a custom search fields, displayed as radio buttons, wasn't rendered.
+	- Fixed an issue where the "default" option of a custom search fields, displayed as select or radio buttons, was added automatically for the case of manually entered field values.
+	- Fixed an issue with broken conditional statements when used inside page builders.
+	- Fixed an issue with Fusion Builder, the columns' width of which where different between pages and Content Templates, both built with the builder.
+	- Fixed an issue with the WP Views Filter when used within Beaver Builder where the post suggestion control for target pages wasn't returning suggestions.
+	- Fixed a performance issue with custom fields containing spaces and/or dots in their meta key when they are used in query filters.
+	- Fixed an issue with the modification of the filter shortcodes when changing from manually entered values to values coming from database.
+	- Fixed an issue with the updating of the edit link of a Content Template, designed using a page builder, when modifying the Content Template parameters.
+	- Fixed a PHP Fatal error happening when importing a zip containing Views.
+	- Fixed several issues related to the Views importing/exporting when using either the native functionality or doing it through the Module Manager.
+	- Fixed a compatibility issue where a View listing "Events" from the "The Events Calendar" plugin was returning no results.
+	- Changed the type of control for the AJAX pagination delay customization and the transition duration.
+	
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.6.3
+	- Elementor compatibility: add a Views widget to Elementor.
+	- Elementor compatibility: ensure that the Toolset edit links work properly with Elementor templates.
+	- Removed deprecated assets no longer in use.
+	- Fixed the path for the default spinner for AJAX pagination in WordPress Archives.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.6.2
+	- Added the ability to disable the conditional output Quicktag button from all editors in a page.
+	- Improved the translation of shortcode attributes that support it.
+	- Fixed the compatibility with Visual Composer 5.5+.
+	- Fixed the compatibility with Beaver Builder.
+	- Fixed the Toolset Forms edit links when used with our alternative shortcode syntax inside page builders.
+	- Fixed WordPress Archives for native taxonomies when assigned to custom post types.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.6.1
+	- Added support for translation of the "format" shortcode attribute for the Views frontend filters.
+	- Improved some queries related to the filters by the new many-to-many relationships.
+	- Fixed an issue with the "wpv-post-link" shortcode where the inline style set as a shortcode attribute wasn't applied.
+	- Fixed an issue with sortable table output mode for a View not including the fields labels as table headers.
+	- Fixed a typo that had an effect on Content Templates translations.
+	- Fixed the usage of the Toolset.hooks javascript library.
+	- Fixed some redundant HTML on the dialog to insert a conditional output shortcode.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.6.0 AKA Harry Potter
+	- Added compatibility with the many-to-many project on the query filter by post relationship, and improved its usability.
+	- Added compatibility with the many-to-many project on the frontend search filters by post relationship, with complete backwards compatibility and support for chained relationships.
+	- Added compatibility with the many-to-many project on the shortcodes GUI.
+	- Added initial compatibility with Gutenberg.
+	- Added the ability to display data from post reference fields.
+	- Added the ability to list repeatable field groups with Views.
+	- Improved the usability of the Views editor page.
+	- Improved the usability of the Content Templates editor page.
+	- Improved the specific post and user selectors in the shortcodes GUI.
+	- Improved the Toolset help box styles by defaulting to the Toolset Common shared ones.
+	- Extended the GUI for inserting data from a related post to display data from related posts from their intermediary post, or for inerting data from the intermediary post when the relationship is well defined.
+	- Provided compatibility for conditional shortcodes using legacy Types postmeta keys that stored relationships.
+	- Updated documentation links to point to toolset.com.
+	- Fixed the filter by post relationships on taxonomy archive pages.
+	- Fixed an issue with the wpv-post-body shortcode when displaying data from a related post.
+	- Fixed an issue with the cred-form-message shortcode when redireting to a page after submitting a CRED form.
+	- Fixed a compatibility issue with product taxonomy archives when using WooCommerce with a theme not declaring explicit support for it.
+	- Fixed an issue with the wpv-post-ield shortcode when trying to render a field index that does not exist.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.5.3
+	- Fixed an issue with the frontend sorting that was not working for non-Types defined custom fields.
+	- Fixed an issue with an SQL error when scanning for View usage and WPML is enabled.
+	- Added a new filter wpv_filter_get_fake_shortcodes_for_attributes_translation to allow third-party shortcode's attribute translation when used in the Filter or Loop Output editor.
+	- Added the ability to use nested Beaver Builder designed content.
+	- Added the missing mandatory $id argument for the "the_title" filter, when it is applied in Views.
+	- Removed the "type" attribute for the style element generated by the Content Template's extra CSS.
+	- Fixed an issue with Content Templates in pages used as target by CRED edit post links.
+
+-------------------------------------------------------------------------------------------------------------------
 Toolset Views 2.5.2
 	- Fixed an issue where the Scan button in Views wasn't detecting pages which were holder shortcodes of Views following the new shortcodes format.
 	- Fixed multiple issues on the sorting controls when combined with pagination.
@@ -9,11 +97,16 @@ Toolset Views 2.5.2
 	- Improved the compatibility with the latest versions of Fusion Builder, Beaver Builder and WPBakery Page Builder for WordPress (formerly Visual Composer).
 
 -------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.5.2
+	- Fixed an issue where the Scan button in Views wasn't detecting pages which were holder shortcodes of Views following the new shortcodes format.
+
+-------------------------------------------------------------------------------------------------------------------
 Toolset Views 2.5.1
 	- Prepared the theme settings integration for Avada theme to allow users to control theme elements from Views editors.
 	- Fixed an inconsistency by passing the outcome of the "render_view" API function over the "wpv_filter_wpv_view_shortcode_output" filter.
 	- Fixed several compatibility issues with Visual Composer.
-	
+
+
 -------------------------------------------------------------------------------------------------------------------
 Toolset Views 2.5.0 AKA Professor James Moriarty
 	- Added the ability to control the settings from selected themes in a Content Template or WordPress Archive.
@@ -450,13 +543,10 @@ Views 1.8.1
 	- Fixed an inconsistency on query filters getting values from shortcode attributes - empty values should apply no filter.
 	- Fixed the export workflow - some setting were not exported.
 	- Fixed an issue about old Views which do not have a "view-query-mode" setting that can not be edited.
-	  https://wp-types.com/forums/topic/after-1-8-update-i-get-this-msg-you-tried-to-edit-a-view-that-doesnt-exist/ 
-	  https://wp-types.com/forums/topic/the-latest-update-of-wp-views-1-8-is-preventing-me-editing-existing-views/
 	- Fixed a bug about removing inline Content Templates from a View.
 	- Fixed a bug about bulk trashing two or more CT when one of them has posts assigned - there was a PHP error for a $nonce variable not set.
 	- Fixed a bug on Views listing users and filtering by specific users set on a URL parameter.
 	- Fixed a bug about "lower than" options on the query filters by custom field, usermeta field and post date.
-	  https://wp-types.com/forums/topic/custom-date-filter-stopped-working/
 	- Fixed the frameworks integration - frameworks using an option to store values were not registered correctly.
 	- Fixed an issue about Content Templates saved without slug.
 	- Fixed an issue that avoided changing the WordPress Archive assigned to an archive loop from the admin listing page.
@@ -517,19 +607,13 @@ Views 1.7.0, AKA Zaphod Beeblebrox
 	- Disabled the Distraction Free Writing button on Content Template edit screens.
 	- Fixed the use of manual added values on a parametric search filter by a custom field when one value is empty.
 	- Fixed the default date in datepickers in parametric searches: if that value was not set, make it default to empty.
-	  https://wp-types.com/forums/topic/parametric-datepicker-starts-with-date-already-can-it-start-cleared/
-	  https://wp-types.com/forums/topic/parametric-datepicker-starts-with-date-already/
 	- Fixed a bug when filtering by a taxonomy using a shortcode attribute and passing a non existing value.
-	  https://wp-types.com/forums/topic/passing-arguments-to-views-wrong-argument-display-all/
 	- Fixed a bug when filtering by post IDs using an URL parameter and it has an empty value.
-	  https://wp-types.com/forums/topic/how-to-search-byfor-id/
 	- Fixed a problem with custom functions inside conditionals: wpv-if shortcodes executed after a View may inherit settings from it but without needed data.
 	- Fixed a problem about functions used inside wpv-if conditional shortcodes: added support for Views listing users, adjusted default values to match the ones in our documentation, prevented loading some data when no View was being displayed.
 	- Fixed a problem with assets loaded in the frontend when is_ssl() is false but FORCE_SSL_ADMIN is true.
 	- Fixed a problem with wpv-post-body shortcodes used inside wpv-if conditionals.
-	  http://wp-types.com/forums/topic/urgent-after-updating-content-templatesviews-are-broken/
 	- Fixed a problem with AJAX pagination on sites pointing to a folder and installed in a subfolder.
-	  http://wp-types.com/forums/topic/unable-to-find-wpv-ajax-pagination-folder/
 	- Fixed a compatibility issue with Layouts: some filters were producing PHP errors in Views previews (basically, because they needed data from current page, and it was not set).
 	- Fixed trashing Views and WordPress Archives from their edit screens - prevent unsaved sections from stopping the redirect to listing screens after trashing.
 	- Fixed a small styling incompatibility between the Views datepicker filter and Bootstrap 3.
@@ -545,19 +629,13 @@ Views 1.7.0, AKA Zaphod Beeblebrox
 Views 1.6.4
     - Added the clear date field values in a parametric search.
     - Fixed a problem that the wpv-post-url and wpv-post-link shortcodes were having with WPML slug translation.
-	  http://wp-types.com/forums/topic/wpv-post-url-doesnt-generate-url-when-wpml-string-translation-is-activated/
     - Fixed the wpv-control shortcodes which should be useful to create generic inputs on a form.
-	  http://wp-types.com/forums/topic/vpv-control-not-working-anymore-after-update/
     - Fixed a problem with a parameter needed for creating a layout using the wizard by adding a default value for it.
     - Fixed the compatibility of wpv-post-body shortcode with WPML post switcher for availability in other languages.
     - Fixed a problem where editing a filter by a Types custom field resulted in a duplicated filter.
     - Added a fix to avoid problems with plugins setting ajaxSetup data defaults that can mess up our pagination script.
-	  http://wp-types.com/forums/topic/ajax-pagination-does-not-work-with-wc-german-market/
     - Fixed the PHP errors that were caused by the “filter by post relationship” under some circumstances.
-	  http://wp-types.com/forums/topic/php-warning-from-parent-searching-warning-explode-expects-parameter-2/
     - Fixed a problem which prevented comparing to empty values when filtering by custom fields (if not using URL parameters or shortcode attributes).
-	  http://wp-types.com/forums/topic/filter-by-image-field-not-empty/
-	  http://wp-types.com/forums/topic/filtering-no-longer-works/
 
 -------------------------------------------------------------------------------------------------------------------
 Views 1.6.3

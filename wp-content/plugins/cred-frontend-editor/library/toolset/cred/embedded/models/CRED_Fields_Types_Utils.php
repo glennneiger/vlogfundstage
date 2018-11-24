@@ -2,6 +2,12 @@
 
 /**
  * Wrapper Class used by Toolset Forms in order to get fields data info related to Types
+ * 
+ * Currently used mostrly, but not only, by CRED_Fields_Model::getFields, which is used
+ * later to print the form and validate it on submission, among other things.
+ *
+ * All the new mechanism to get form fields for the new editor should be enforced instead,
+ * step by step.
  *
  * @since 1.9.5
  */
@@ -111,54 +117,6 @@ class CRED_Fields_Types_Utils {
 		);
 	}
 
-
-	/**
-	 * Retrieve relationships array in order to translate Types relationships into cred forms scaffold shortcodes
-	 *
-	 * @param $post_type
-	 *
-	 * @return array
-	 *
-	 * @todo See if needed, not used anywhere, see CRED_Form_Relationship::get_relationships
-	 * @deprecated maybe
-	 */
-	public function get_relationships( $post_type ) {
-		do_action( 'toolset_do_m2m_full_init' );
-		$relationship_query = new Toolset_Relationship_Query_V2();
-		$relationship_query_result = $relationship_query->add( $relationship_query->has_type( $post_type ) )
-			->add( $relationship_query->is_active( true ) )
-			->get_results();
-
-		$relationships = array();
-		foreach ( $relationship_query_result as $relationship ) {
-			$relationship_array = array(
-				'id' => $relationship->get_row_id(),
-				'type' => 'relationship',
-				'label' => $relationship->get_display_name(),
-				'slug' => $relationship->get_slug(),
-				'name' => $relationship->get_display_name_singular(),
-				'parent' => $relationship->get_parent_type()->get_types(),
-				'child' => $relationship->get_child_type()->get_types(),
-				'parent_domain' => $relationship->get_parent_domain(),
-				'child_domain' => $relationship->get_child_domain(),
-				'cardinality' => $relationship->get_cardinality()->get_definition_array(),
-				'is_relationship' => true,
-			);
-			$target_role = ( $post_type == $relationship->get_parent_type()->get_types() ) ? 'child' : 'parent';
-			$key = '@' . $relationship->get_slug() . '.' . $target_role;
-			$target_role_types_array = $relationship->{"get_" . $target_role . "_type"}()->get_types();
-			//TODO: in the future we should consider multiple post types relations
-			$target_post_type = reset( $target_role_types_array );
-			$relationship_array[ 'role' ] = $target_role;
-			$relationship_array[ 'key' ] = $key;
-			$relationship_array[ 'data' ] = array( 'post_type' => $target_post_type );
-			$relationship_array[ 'description' ] = "Set {$target_post_type}";
-			$relationships[ $key ] = $relationship_array;
-		}
-
-		return $relationships;
-	}
-
 	/**
 	 * Get List of post fields
 	 *
@@ -265,60 +223,6 @@ class CRED_Fields_Types_Utils {
 		);
 
 		return $extra_fields;
-	}
-
-	/**
-	 * Get post ids
-	 *
-	 * @param $post_type
-	 *
-	 * @return array
-	 */
-	public function get_post_ids( $post_type ) {
-		if ( ( defined( 'TYPES_VERSION' )
-				&& version_compare( TYPES_VERSION, '2.0', '<' )
-			)
-			|| ! defined( 'TYPES_VERSION' )
-		) {
-			global $wpdb;
-			$sql = 'SELECT post_id FROM ' . $wpdb->postmeta . '
-                    WHERE meta_key="_wp_types_group_post_types"
-                    AND (meta_value LIKE %s OR meta_value="all")
-                    ORDER BY post_id ASC';
-			$post_ids = $wpdb->get_col( $wpdb->prepare( $sql, $post_type ) );
-		} else {
-			/**
-			 * types_filter_get_field_group_ids_by_post_type filter used to add arbitrary post_ids if types is not enabled
-			 *
-			 * @var array $post_ids
-			 * @var string $post_type
-			 *
-			 * @since 1.3
-			 */
-			$post_ids = apply_filters( 'types_filter_get_field_group_ids_by_post_type', array(), $post_type );
-		}
-
-		return $post_ids;
-	}
-
-	/**
-	 * Get wpcf custom types
-	 *
-	 * @return array|mixed|void
-	 */
-	public function get_wpcf_custom_types() {
-		if ( class_exists( 'Toolset_Post_Type_Query' ) ) {
-			$wpcf_custom_types = array();
-			$query = new Toolset_Post_Type_Query( array( 'from_types' => true ) );
-			$types_registered_cpts = $query->get_results();
-			foreach ( $types_registered_cpts as $types_registered_cpt ) {
-				$wpcf_custom_types[ $types_registered_cpt->get_slug() ] = (array) $types_registered_cpt->get_wp_object();
-			}
-		} else {
-			$wpcf_custom_types = get_option( 'wpcf-custom-types' );
-		}
-
-		return $wpcf_custom_types;
 	}
 
 	/**

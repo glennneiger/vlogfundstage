@@ -1,5 +1,10 @@
 <?php
 
+use \OTGS\Toolset\Common\WpQueryFactory;
+
+use \OTGS\Toolset\Common\WpPostFactory;
+
+
 /**
  * Abstract factory for field group classes.
  *
@@ -11,6 +16,13 @@
  * @since 1.9
  */
 abstract class Toolset_Field_Group_Factory {
+
+
+	/** @var WpQueryFactory  */
+	protected $wp_query_factory;
+
+	/** @var WpPostFactory  */
+	protected $wp_post_factory;
 
 
 	/**
@@ -29,12 +41,12 @@ abstract class Toolset_Field_Group_Factory {
 	}
 
 
-	protected function __construct() {
+	protected function __construct( WpQueryFactory $wp_query_factory = null, WpPostFactory $wp_post_factory = null ) {
+		$this->wp_query_factory = $wp_query_factory ?: new WpQueryFactory();
+		$this->wp_post_factory = $wp_post_factory ?: new WpPostFactory();
+
 		add_action( 'wpcf_field_group_renamed', array( $this, 'field_group_renamed' ), 10, 2 );
 	}
-
-
-	final private function __clone() { }
 
 
 	/**
@@ -77,22 +89,26 @@ abstract class Toolset_Field_Group_Factory {
 	 *
 	 * @param int|string|WP_Post $field_group Numeric ID of the post, post slug or a post object.
 	 *
+	 * @param bool $force_query_by_name Useful to query field groups with numbers only title
+	 *
 	 * @return null|WP_Post Requested post object when the post exists and has correct post type. Null otherwise.
 	 */
-	final protected function get_post( $field_group ) {
+	final protected function get_post( $field_group, $force_query_by_name = false ) {
 
 		$fg_post = null;
 
-		// http://stackoverflow.com/questions/2559923/shortest-way-to-check-if-a-variable-contains-positive-integer-using-php
-		if ( is_scalar( $field_group ) && ( $field_group == (int) $field_group ) && ( (int) $field_group > 0 ) ) {
-			$fg_post = WP_Post::get_instance( $field_group );
-		} else if ( is_string( $field_group ) ) {
-			$query = new WP_Query( array( 'post_type' => $this->get_post_type(), 'name' => $field_group, 'posts_per_page' => 1 ) );
-			if( $query->have_posts() ) {
-				$fg_post = $query->get_posts();
-				$fg_post = $fg_post[0];
-			}
+		// when $force_query_by_name is not used, check if a post id is given
+		if ( ! $force_query_by_name && ( ctype_digit( $field_group ) || is_int( $field_group ) ) && (int) $field_group > 0 ) {
+			// query by post id
+			$fg_post = $this->wp_post_factory->load( $field_group );
+		} else if ( $fg_post = $this->get_field_group_by_name( $field_group ) ) {
+			// field group found
+			return $fg_post;
+		} else if ( $rfg_post = $this->get_repeatable_field_group_by_name( $field_group ) ) {
+			// rfg found
+			return $rfg_post;
 		} else {
+			// object is already given
 			$fg_post = $field_group;
 		}
 
@@ -101,6 +117,59 @@ abstract class Toolset_Field_Group_Factory {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Get Field Group by name (does not include RFGs)
+	 * @param $field_group_name
+	 *
+	 * @return false|WP_Post
+	 */
+	private function get_field_group_by_name( $field_group_name ) {
+		return $this->_get_group_post_by_name( $field_group_name );
+	}
+
+	/**
+	 * Get RFG by name
+	 * @param $field_group_name
+	 *
+	 * @return false|WP_Post
+	 */
+	private function get_repeatable_field_group_by_name( $field_group_name ) {
+		return $this->_get_group_post_by_name( $field_group_name, true );
+	}
+
+	/**
+	 * Returns post for field group or false if no field group is found.
+	 * To search for a RFG the second paramaeter must be true
+	 *
+	 * @param $field_group_name
+	 * @param bool $rfg Search for RFG
+	 *
+	 * @return false|WP_Post
+	 */
+	private function _get_group_post_by_name( $field_group_name, $rfg = false ) {
+		if( is_object( $field_group_name ) ) {
+			return false;
+		}
+		$query_args = array(
+			'post_type' => $this->get_post_type(),
+			'name' => $field_group_name,
+			'posts_per_page' => 1
+		);
+
+		if( $rfg ) {
+			// rfgs have the post status 'hidden'
+			$query_args['post_status'] = 'hidden';
+		}
+
+		$query = $this->wp_query_factory->create( $query_args );
+		if( ! $query->have_posts() ) {
+			return false;
+		}
+
+		$fg_post = $query->get_posts();
+		return $fg_post[0];
 	}
 
 
@@ -144,9 +213,11 @@ abstract class Toolset_Field_Group_Factory {
 	 *
 	 * @param int|string|WP_Post $field_group_source Post ID of the field group, it's name or a WP_Post object.
 	 *
+	 * @param bool $force_query_by_name
+	 *
 	 * @return null|Toolset_Field_Group Field group or null if it can't be loaded.
 	 */
-	final public function load_field_group( $field_group_source ) {
+	final public function load_field_group( $field_group_source, $force_query_by_name = false ) {
 
 		$post = null;
 
@@ -170,7 +241,7 @@ abstract class Toolset_Field_Group_Factory {
 
 		// We might already have the post by now.
 		if( null == $post ) {
-			$post = $this->get_post( $field_group_source );
+			$post = $this->get_post( $field_group_source, $force_query_by_name );
 		}
 
 		// There is no such post (or has wrong type).
@@ -187,6 +258,7 @@ abstract class Toolset_Field_Group_Factory {
 		}
 
 		$this->save_to_cache( $field_group );
+
 		return $field_group;
 	}
 
@@ -285,7 +357,7 @@ abstract class Toolset_Field_Group_Factory {
 		$meta_query = array();
 
 		// Group's "activeness" is defined by the post status.
-		if( null !== $is_active ) {
+		if( null !== $is_active && ! isset( $query_args['post_status'] ) ) {
 			unset( $query_args['is_active'] );
 			$query_args['post_status'] = ( $is_active ? 'publish' : 'draft' );
 		}
@@ -314,7 +386,9 @@ abstract class Toolset_Field_Group_Factory {
 			$query_args['meta_query'] = $meta_query;
 		}
 
-		$query = new WP_Query( $query_args );
+		$query_args['ignore_sticky_posts'] = true;
+
+		$query = $this->wp_query_factory->create( $query_args );
 		$posts = $query->get_posts();
 
 		// Transform posts into Toolset_Field_Group

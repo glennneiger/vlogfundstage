@@ -54,7 +54,6 @@ class Toolset_Relationship_Service {
 	 * @param IToolset_Relationship_Definition $relationship
 	 * @param $child_id
 	 * @param null $parent_slug
-	 *s
 	 *
 	 * @return bool|int[]|IToolset_Association[]|IToolset_Element[]
 	 */
@@ -66,19 +65,68 @@ class Toolset_Relationship_Service {
 		if( ! $this->is_m2m_enabled() ) {
 			return false;
 		}
-
-		$qry_args = array(
-			Toolset_Association_Query::QUERY_RELATIONSHIP_SLUG => $relationship->get_slug(),
-			Toolset_Association_Query::QUERY_CHILD_ID          => $child_id,
-			Toolset_Association_Query::OPTION_RETURN           => Toolset_Association_Query::RETURN_PARENT_IDS
-		);
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->relationship( $relationship ) );
+		$query->add( $query->child_id( $child_id, Toolset_Element_Domain::POSTS ) );
 
 		if ( $parent_slug ) {
-			$qry_args['parent_query'] = array( 'post_type' => $parent_slug );
+			$query->add( $query->has_domain_and_type( Toolset_Element_Domain::POSTS, $parent_slug, new Toolset_Relationship_Role_Parent() ) );
+		}
+		
+		$results = $query
+			->return_element_ids( new Toolset_Relationship_Role_Parent() )
+			->limit( 1 )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return false;
 		}
 
-		return $this->query_association( $qry_args );
+		return $results;
 	}
+
+	/**
+	 * Function to find parent ID by relationship and intermediary post ID
+	 * @param IToolset_Relationship_Definition $relationship
+	 * @param $intermediary_post_id
+	 * @param null $parent_slug
+	 *
+	 * @return bool|int[]|IToolset_Association[]|IToolset_Element[]
+	 *
+	 * @since 2.6.7
+	 */
+	public function find_parent_id_by_relationship_and_intermediary_post_id(
+		IToolset_Relationship_Definition $relationship,
+		$intermediary_post_id,
+		$parent_slug = null
+	) {
+		if( ! $this->is_m2m_enabled() ) {
+			return false;
+		}
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->relationship( $relationship ) );
+		$query->add( $query->intermediary_id( $intermediary_post_id ) );
+
+		if ( $parent_slug ) {
+			$query->add( $query->has_domain_and_type( Toolset_Element_Domain::POSTS, $parent_slug, new Toolset_Relationship_Role_Parent() ) );
+		}
+		
+		$results = $query
+			->return_element_ids( new Toolset_Relationship_Role_Parent() )
+			->limit( 1 )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return false;
+		}
+
+		return $results;
+	}
+
 
 	/**
 	 * Function to find parend id by relationship and child id
@@ -97,64 +145,129 @@ class Toolset_Relationship_Service {
 		if( ! $this->is_m2m_enabled() ) {
 			return false;
 		}
-
-		$qry_args = array(
-			Toolset_Association_Query::QUERY_RELATIONSHIP_SLUG => $relationship->get_slug(),
-			Toolset_Association_Query::QUERY_PARENT_ID         => $parent_id,
-			Toolset_Association_Query::OPTION_RETURN           => Toolset_Association_Query::RETURN_CHILD_IDS
-		);
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->relationship( $relationship ) );
+		$query->add( $query->parent_id( $parent_id, Toolset_Element_Domain::POSTS ) );
 
 		if ( $child_slug ) {
-			$qry_args[ Toolset_Association_Query::QUERY_CHILD_QUERY ] = array( 'post_type' => $child_slug );
+			$query->add( $query->has_domain_and_type( Toolset_Element_Domain::POSTS, $child_slug, new Toolset_Relationship_Role_Child() ) );
+		}
+		
+		$results = $query
+			->return_element_ids( new Toolset_Relationship_Role_Child() )
+			->limit( 1 )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return false;
 		}
 
-		return $this->query_association( $qry_args );
+		return $results;
 	}
 
 	/**
 	 * Function to find intermediary post id by relationship and child id
 	 *
 	 * @param IToolset_Relationship_Definition $relationship
-	 * @param $post_id
+	 * @param $child_id
 	 *
 	 * @return bool|int[]|IToolset_Association[]|IToolset_Element[]
 	 *
 	 */
-	public function find_intermediary_by_relationship_and_child_id( IToolset_Relationship_Definition $relationship, $post_id ) {
+	public function find_intermediary_by_relationship_and_child_id( IToolset_Relationship_Definition $relationship, $child_id ) {
 		if( ! $this->is_m2m_enabled() ) {
 			return false;
 		}
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->relationship( $relationship ) );
+		$query->add( $query->child_id( $child_id, Toolset_Element_Domain::POSTS ) );
+		
+		$results = $query
+			->return_association_instances()
+			->limit( 1 )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return false;
+		}
 
-		$qry_args = array(
-			Toolset_Association_Query::QUERY_RELATIONSHIP_SLUG => $relationship->get_slug(),
-			Toolset_Association_Query::QUERY_CHILD_ID          => $post_id,
-			Toolset_Association_Query::OPTION_RETURN           => Toolset_Association_Query::RETURN_ASSOCIATIONS
-		);
+		return $results;
+	}
 
-		return $this->query_association( $qry_args );
+	/**
+	 * Function to find Child ID by relationship and intermediary post ID
+	 *
+	 * @param IToolset_Relationship_Definition $relationship
+	 * @param $intermediary_post_id
+	 * @param null $child_slug
+	 *
+	 * @return bool|int[]|IToolset_Association[]|IToolset_Element[]
+	 *
+	 * @since 2.6.7
+	 */
+	public function find_child_id_by_relationship_and_intermediary_post_id(
+		IToolset_Relationship_Definition $relationship,
+		$intermediary_post_id,
+		$child_slug = null
+	) {
+		if( ! $this->is_m2m_enabled() ) {
+			return false;
+		}
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->relationship( $relationship ) );
+		$query->add( $query->intermediary_id( $intermediary_post_id ) );
+
+		if ( $child_slug ) {
+			$query->add( $query->has_domain_and_type( Toolset_Element_Domain::POSTS, $child_slug, new Toolset_Relationship_Role_Child() ) );
+		}
+		
+		$results = $query
+			->return_element_ids( new Toolset_Relationship_Role_Child() )
+			->limit( 1 )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return false;
+		}
+
+		return $results;
 	}
 
 	/**
 	 * Function to find intermediary post id by relationship and parent id
 	 *
 	 * @param IToolset_Relationship_Definition $relationship
-	 * @param $post_id
+	 * @param $parent_id
 	 *
 	 * @return bool|int[]|IToolset_Association[]|IToolset_Element[]
 	 *
 	 */
-	public function find_intermediary_by_relationship_and_parent_id( IToolset_Relationship_Definition $relationship, $post_id ) {
+	public function find_intermediary_by_relationship_and_parent_id( IToolset_Relationship_Definition $relationship, $parent_id ) {
 		if( ! $this->is_m2m_enabled() ) {
 			return false;
 		}
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->relationship( $relationship ) );
+		$query->add( $query->parent_id( $parent_id, Toolset_Element_Domain::POSTS ) );
+		
+		$results = $query
+			->return_association_instances()
+			->limit( 1 )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return false;
+		}
 
-		$qry_args = array(
-			Toolset_Association_Query::QUERY_RELATIONSHIP_SLUG => $relationship->get_slug(),
-			Toolset_Association_Query::QUERY_PARENT_ID         => $post_id,
-			Toolset_Association_Query::OPTION_RETURN           => Toolset_Association_Query::RETURN_ASSOCIATIONS
-		);
-
-		return $this->query_association( $qry_args );
+		return $results;
 	}
 
 	/**
@@ -189,21 +302,21 @@ class Toolset_Relationship_Service {
 		if( ! $this->is_m2m_enabled() ) {
 			return false;
 		}
-
-		$children_args = wp_parse_args( $children_args, array(
-			'post_type' => 'any',
-			'post_status' => 'publish',
-			'numberposts' => -1,
-			'suppress_filters' => 0,
-		) );
-
-		$qry_args = array(
-			Toolset_Association_Query::QUERY_PARENT_ID   => $parent_id,
-			Toolset_Association_Query::OPTION_RETURN     => Toolset_Association_Query::RETURN_CHILD_IDS,
-			Toolset_Association_Query::QUERY_CHILD_QUERY => $children_args,
-		);
-
-		return $this->query_association( $qry_args );
+		
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->parent_id( $parent_id, Toolset_Element_Domain::POSTS ) );
+		
+		$results = $query
+			->return_element_ids( new Toolset_Relationship_Role_Child() )
+			->limit( PHP_INT_MAX )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return false;
+		}
+		
+		return $results;
 	}
 
 	/**
@@ -225,41 +338,49 @@ class Toolset_Relationship_Service {
 	/**
 	 * Find associations (IToolset_Associations[]) by parent id
 	 *
-	 * @param $id
+	 * @param $parent_id
 	 *
 	 * @return IToolset_Association[]
 	 */
-	private function find_associations_by_parent_id( $id ) {
-		$qry_args = array(
-			Toolset_Association_Query::QUERY_PARENT_ID => $id,
-			Toolset_Association_Query::OPTION_RETURN   => Toolset_Association_Query::RETURN_ASSOCIATIONS
-		);
+	private function find_associations_by_parent_id( $parent_id ) {
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->parent_id( $parent_id, Toolset_Element_Domain::POSTS ) );
+		
+		$results = $query
+			->return_association_instances()
+			->limit( PHP_INT_MAX )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return array();
+		}
 
-		$associations_parent = $this->query_association( $qry_args );
-
-		return is_array( $associations_parent )
-			? $associations_parent
-			: array();
+		return $results;
 	}
 
 	/**
 	 * Find associations (IToolset_Associations[]) by child id
 	 *
-	 * @param $id
+	 * @param $child_id
 	 *
 	 * @return IToolset_Association[]
 	 */
-	private function find_associations_by_child_id( $id ) {
-		$qry_args = array(
-			Toolset_Association_Query::QUERY_CHILD_ID => $id,
-			Toolset_Association_Query::OPTION_RETURN  => Toolset_Association_Query::RETURN_ASSOCIATIONS
-		);
+	private function find_associations_by_child_id( $child_id ) {
+		$query = new Toolset_Association_Query_V2();
+		
+		$query->add( $query->child_id( $child_id, Toolset_Element_Domain::POSTS ) );
+		
+		$results = $query
+			->return_association_instances()
+			->limit( PHP_INT_MAX )
+			->get_results();
+		
+		if ( ! $results || empty( $results ) ) {
+			return array();
+		}
 
-		$associations_child = $this->query_association( $qry_args );
-
-		return is_array( $associations_child )
-			? $associations_child
-			: array();
+		return $results;
 	}
 
 	/**
@@ -305,7 +426,7 @@ class Toolset_Relationship_Service {
 	 * @return bool|int
 	 */
 	public function legacy_find_parent_id_by_child_id_and_parent_slug( $child_id, $parent_slug ) {
-		if( ! $this->is_m2m_enabled() ) {
+		if( $this->is_m2m_enabled() ) {
 			return false;
 		}
 

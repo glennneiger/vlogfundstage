@@ -20,6 +20,10 @@ class WPV_Layout_Embedded {
 		add_action( 'init',		array( $this, 'init' ) );
 		
 		add_filter( 'wpv_filter_wpv_has_default_loop_output', array( $this, 'has_default_loop_output' ), 10, 3 );
+
+		add_filter( 'wpv_filter_wpv_is_wrapper_div_required', array( $this, 'is_wrapper_div_required' ), 10, 2 );
+
+		add_filter( 'wpv_filter_wpv_is_separators_list_layout_selected', array( $this, 'is_separators_list_layout_selected' ), 10, 2 );
     }
 	
 	function init() {
@@ -45,6 +49,44 @@ class WPV_Layout_Embedded {
 			}
 		}
 		return $state;
+	}
+
+	/**
+	 * Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+	 *
+	 * @param bool     $required True if the list with separators is selected as the View layout.
+	 * @param null|int $view_id  The ID of the View or null.
+	 *
+	 * @return bool
+	 */
+	public function is_wrapper_div_required( $required = true, $view_id = null ) {
+		$view_settings = apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $view_id );
+
+		// Check if the View wrapper is disabled in the View settings.
+		if ( 'true' === toolset_getnest( $view_settings, array( 'disable_view_wrapper' ), 'false' ) ) {
+			return false;
+		}
+
+		return $required;
+	}
+
+	/**
+	 * Checks if the list with separators is selected as the View layout.
+	 *
+	 * @param bool     $selected True if the list with separators is selected as the View layout.
+	 * @param null|int $view_id  The ID of the View or null.
+	 *
+	 * @return bool
+	 */
+	public function is_separators_list_layout_selected( $selected = false, $view_id = null ) {
+		$view_meta = apply_filters( 'wpv_filter_wpv_get_view_layout_settings', array(), $view_id );
+
+		// Check if the selected layout for the View is the separated list.
+		if ( 'separators_list' === toolset_getnest( $view_meta, array( 'style' ), '' ) ) {
+			return true;
+		}
+
+		return $selected;
 	}
 }
 
@@ -226,10 +268,24 @@ function wpv_header_shortcode( $atts, $value ) {
 }
 
 add_shortcode('wpv-layout-start', 'wpv_layout_start_shortcode');
-function wpv_layout_start_shortcode($atts){
-    
+function wpv_layout_start_shortcode( $atts ){
 	$view_id				= apply_filters( 'wpv_filter_wpv_get_current_view', null );
     $view_settings			= apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
+
+	/**
+	 * wpv_filter_wpv_is_wrapper_div_required
+	 *
+	 * Allow for overriding the requirement of the View wrapper DIV (and the filter FORM along with the pagination).
+	 *
+	 * @param bool     $is_wrapper_div_required
+	 * @param null|int $view_id                 The ID of the View to check.
+	 *
+	 * @since 2.6.4
+	 */
+	if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+		return '';
+	}
+
 	$view_number			= apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
 	$pagination_data		= apply_filters( 'wpv_filter_wpv_get_pagination_settings', array(), $view_settings );
 	$pagination_permalinks	= apply_filters( 'wpv_filter_wpv_get_pagination_permalinks', array(), $view_settings, $view_id );
@@ -290,7 +346,12 @@ function wpv_layout_start_shortcode($atts){
 }
 
 add_shortcode('wpv-layout-end', 'wpv_layout_end_shortcode');
-function wpv_layout_end_shortcode($atts){
+function wpv_layout_end_shortcode( $atts ){
+	// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
+	/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
+	if ( ! apply_filters( 'wpv_filter_wpv_is_wrapper_div_required', true ) ) {
+		return '';
+	}
 	return '</div>';
 }
 

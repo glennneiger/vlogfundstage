@@ -28,6 +28,14 @@ class Toolset_Wp_Query_Adjustments_M2m extends Toolset_Wp_Query_Adjustments {
 	private $_query_factory;
 
 
+	/** @var null|Toolset_Relationship_Definition_Repository */
+	private $_definition_repository;
+
+
+	/** @var Toolset_Wp_Query_Adjustments_Table_Join_Manager_Factory */
+	private $table_join_factory;
+
+
 	/**
 	 * Toolset_Wp_Query_Adjustments_M2m constructor.
 	 *
@@ -35,17 +43,23 @@ class Toolset_Wp_Query_Adjustments_M2m extends Toolset_Wp_Query_Adjustments {
 	 * @param Toolset_Relationship_Database_Operations|null $database_operations_di
 	 * @param Toolset_Element_Factory|null $element_factory_di
 	 * @param Toolset_Relationship_Query_Factory|null $query_factory_di
+	 * @param Toolset_Relationship_Definition_Repository|null $definition_repository_di
+	 * @param Toolset_Wp_Query_Adjustments_Table_Join_Manager_Factory|null $table_join_factory_di
 	 */
 	public function __construct(
 		wpdb $wpdb_di = null,
 		Toolset_Relationship_Database_Operations $database_operations_di = null,
 		Toolset_Element_Factory $element_factory_di = null,
-		Toolset_Relationship_Query_Factory $query_factory_di = null
+		Toolset_Relationship_Query_Factory $query_factory_di = null,
+		Toolset_Relationship_Definition_Repository $definition_repository_di = null,
+		Toolset_Wp_Query_Adjustments_Table_Join_Manager_Factory $table_join_factory_di = null
 	) {
 		parent::__construct( $wpdb_di );
 		$this->_database_operations = $database_operations_di;
 		$this->_element_factory = $element_factory_di;
 		$this->_query_factory = $query_factory_di;
+		$this->_definition_repository = $definition_repository_di;
+		$this->table_join_factory = $table_join_factory_di ?: new Toolset_Wp_Query_Adjustments_Table_Join_Manager_Factory();
 	}
 
 
@@ -181,13 +195,13 @@ class Toolset_Wp_Query_Adjustments_M2m extends Toolset_Wp_Query_Adjustments {
 				throw new InvalidArgumentException( 'Invalid relationship query argument.' );
 			}
 
-			$relationship_definition = Toolset_Relationship_Definition_Repository::get_instance()->get_legacy_definition(
+			$relationship_definition = $this->get_definition_repository()->get_legacy_definition(
 				$relationship[0], $relationship[1]
 			);
 		} elseif( ! is_string( $relationship ) || empty( $relationship ) ) {
 			throw new InvalidArgumentException( 'Invalid relationship query argument.' );
 		} else {
-			$relationship_definition = Toolset_Relationship_Definition_Repository::get_instance()->get_definition( $relationship );
+			$relationship_definition = $this->get_definition_repository()->get_definition( $relationship );
 		}
 
 		if( null === $relationship_definition ) {
@@ -254,6 +268,15 @@ class Toolset_Wp_Query_Adjustments_M2m extends Toolset_Wp_Query_Adjustments {
 	}
 
 
+	private function get_definition_repository() {
+		if( null === $this->_definition_repository ) {
+			$this->_definition_repository = Toolset_Relationship_Definition_Repository::get_instance();
+		}
+
+		return $this->_definition_repository;
+	}
+
+
 	/**
 	 * Get the "related_to" post from the query condition array.
 	 *
@@ -279,6 +302,25 @@ class Toolset_Wp_Query_Adjustments_M2m extends Toolset_Wp_Query_Adjustments {
 
 		return $post;
 	}
+
+
+	/**
+	 * Get the table join manager object attached to the WP_Query instance or create and attach a new one.
+	 *
+	 * @param WP_Query $query
+	 *
+	 * @return Toolset_Wp_Query_Adjustments_Table_Join_Manager
+	 */
+	protected function get_table_join_manager( WP_Query $query ) {
+		// This is a dirty hack but still cleanest considering we need to use this object
+		// in different callbacks from WP_Query.
+		$property_name = 'toolset_join_manager';
+		if( ! property_exists( $query, $property_name ) ) {
+			$query->{$property_name} = $this->table_join_factory->create();
+		}
+		return $query->{$property_name};
+	}
+
 
 
 	/**

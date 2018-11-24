@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Format implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Format extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-format';
 
@@ -65,25 +65,22 @@ class WPV_Shortcode_Post_Format implements WPV_Shortcode_Interface {
 		}
 		
 		$out = '';
-		
-		$item = get_post( $item_id );
 
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
-		
-		$item_format = get_post_format( $item_id );
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
+
+		$item_format = get_post_format( $item->ID );
         if ( $item_format !== false ) {
-            $out = $item_format;
+            $out .= $item_format;
         } else {
-            $out = 'standard';
+            $out .= 'standard';
         }
 
 		apply_filters( 'wpv_shortcode_debug', 'wpv-post-format', json_encode( $this->user_atts ), '', 'Data received from cache', $out );
 
 		return $out;
 	}
-	
-	
 }

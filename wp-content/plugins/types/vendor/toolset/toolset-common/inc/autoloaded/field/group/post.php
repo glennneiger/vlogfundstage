@@ -152,8 +152,7 @@ class Toolset_Field_Group_Post extends Toolset_Field_Group {
 	 * @deprecated Use is_assigned_to_type() instead.
 	 */
 	public function has_associated_post_type( $post_type_slug ) {
-
-			return $this->is_assigned_to_type( $post_type_slug);
+		return $this->is_assigned_to_type( $post_type_slug );
 	}
 
 

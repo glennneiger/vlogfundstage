@@ -13,6 +13,10 @@ DDLayout.listing.models.ListingItem = Backbone.Model.extend({
             delete data.layout;
 
         }
+
+        if( typeof data.ID !== 'undefined' ){
+            this.set( 'id', data.ID );
+        }
         return data;
     },
 	has_parent: function()

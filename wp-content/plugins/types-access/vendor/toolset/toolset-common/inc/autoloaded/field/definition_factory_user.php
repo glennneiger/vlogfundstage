@@ -5,7 +5,7 @@
  *
  * @since 2.0
  */
-final class Toolset_Field_Definition_Factory_User extends Toolset_Field_Definition_Factory {
+class Toolset_Field_Definition_Factory_User extends Toolset_Field_Definition_Factory {
 
 
 	/** Name of the option used to store field definitions. */

@@ -120,7 +120,7 @@ interface IToolset_Post_Type {
 	/**
 	 * Check if the post type can be used in a relationship.
 	 *
-	 * @return bool
+	 * @return Toolset_Result
 	 * @since 2.5.10
 	 */
 	public function can_be_used_in_relationship();

@@ -567,17 +567,24 @@ abstract class Toolset_Theme_Integration_Settings_Abstract_Controller{
 	public function get_layout_assignment_type( $layout_id ) {
 		$archives     = apply_filters( 'ddl-get_layout_loops', $layout_id );
 		$single       = apply_filters( 'ddl-layout_at_least_one_single_assignment', $layout_id );
+		$assigned_to_post_types  = apply_filters('ddl-get_layout_post_types_object', $layout_id , true);
 		$section_type = null;
 
 		if ( $this->helper->has_theme_setting_by_key( 'toolset_layout_to_cred_form' ) ) {
 			$section_type = $this->helper->get_current_settings_by_key( 'toolset_layout_to_cred_form' );
 		}
 
-		if ( count( $archives ) > 0 ) {
+		if ( is_array( $archives ) && count( $archives ) > 0 ) {
 			$section_type = 'archive';
 		}
 
-		if ( $single === true ) {
+		if (
+			$single === true
+			|| (
+				is_array( $assigned_to_post_types )
+				&& count( $assigned_to_post_types ) > 0
+			)
+		) {
 			$section_type = ( $section_type == 'archive' ) ? 'shared' : 'posts';
 		}
 

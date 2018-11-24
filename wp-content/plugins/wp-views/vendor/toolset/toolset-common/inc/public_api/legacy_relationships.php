@@ -52,7 +52,7 @@ function toolset_get_related_posts(
 		throw new InvalidArgumentException( 'The relationship must be an array containing parent post type and child post type.' );
 	}
 	if ( ! get_post_type_object( $relationship[0] ) ||  ! get_post_type_object( $relationship[1] ) ) {
-		throw new InvalidArgumentException( 'Invalid relationship post type, please make sure they are valid post types.' );
+		return array();
 	}
 	if ( ! in_array( $query_by_role_name, array( 'parent', 'child', 'intermediary' ) ) ) {
 		throw new InvalidArgumentException( 'The role name to query by is not valid. Allowed values are: "parent", "child"' );
@@ -292,7 +292,7 @@ function toolset_get_related_post( $post, $relationship, $role_name_to_return = 
 		throw new InvalidArgumentException( 'The relationship must be an array containing parent post type and child post type.' );
 	}
 	if ( ! get_post_type_object( $relationship[0] ) ||  ! get_post_type_object( $relationship[1] ) ) {
-		throw new InvalidArgumentException( 'Invalid relationship post type, please make sure they are valid post types.' );
+		return 0;
 	}
 	if( ! in_array( $role_name_to_return, array( 'parent', 'child' ) ) ) {
 		throw new InvalidArgumentException( 'The role name to return is not valid. Allowed values are: "parent", "child".' );

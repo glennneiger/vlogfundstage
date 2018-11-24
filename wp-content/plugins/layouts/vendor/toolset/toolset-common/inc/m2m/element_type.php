@@ -84,7 +84,7 @@ class Toolset_Relationship_Element_Type {
 	 * @since m2m
 	 */
 	private static function get_available_domains() {
-		return array( self::DOMAIN_POSTS );
+		return array( Toolset_Element_Domain::POSTS );
 	}
 
 
@@ -132,7 +132,7 @@ class Toolset_Relationship_Element_Type {
 	public static function build_for_post_type( $post_type_slug ) {
 		return new self(
 			array(
-				self::DA_DOMAIN => self::DOMAIN_POSTS,
+				self::DA_DOMAIN => Toolset_Element_Domain::POSTS,
 				self::DA_TYPES => array( $post_type_slug )
 			)
 		);
@@ -148,11 +148,11 @@ class Toolset_Relationship_Element_Type {
 	 */
 	public function is_match( $element ) {
 
-		if( ! $element instanceof Toolset_Element ) {
+		if( ! $element instanceof IToolset_Element ) {
 			throw new InvalidArgumentException( 'Invalid element provided.' );
 		}
 
-		if( $element->get_domain() != $this->get_domain() ) {
+		if( $element->get_domain() !== $this->get_domain() ) {
 			return false;
 		}
 
@@ -188,7 +188,7 @@ class Toolset_Relationship_Element_Type {
 
 			$this->is_translatable = false;
 
-			if( Toolset_Field_Utils::DOMAIN_POSTS == $this->get_domain() ) {
+			if( Toolset_Element_Domain::POSTS === $this->get_domain() ) {
 				foreach( $this->get_types() as $post_type_slug ) {
 					if( Toolset_Wpml_Utils::is_post_type_translatable( $post_type_slug ) ) {
 						$this->is_translatable = true;

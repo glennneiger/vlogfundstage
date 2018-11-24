@@ -38,7 +38,7 @@
 	.wpv-dialog-content {
 		overflow-y: auto;
 		padding-right: 20px;
-		max-height: 400px;
+		max-height: 550px;
 		border-width: 0 1px 0 0;
 		background: #fff;
 	}
@@ -603,9 +603,9 @@
 
 }
 
-.toolset-shortcode-gui-dialog-container.wpv-shortcode-gui-dialog-container {
-	position: relative;
-}
+	.wpv-shortcode-gui-dialog-container .wpv-dialog {
+		position: relative;
+	}
 
 	.wpv-shortcode-gui-dialog-container .wpv-shortcode-gui-dialog-hijack-content {
 		height: 200px;

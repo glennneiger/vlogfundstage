@@ -82,7 +82,8 @@ class WPV_template{
 
 		add_action('save_post', array($this, 'set_default_template'), 10, 2);
 		
-		add_filter( 'wpv_filter_wpv_disable_post_content_template_metabox', array( $this, 'maybe_disable_post_content_template_metabox' ), 10, 2 );
+		add_filter( 'wpv_filter_wpv_disable_post_content_template_metabox', array( $this, 'maybe_disable_post_content_template_metabox_for_layouts' ), 10, 2 );
+		add_filter( 'wpv_filter_wpv_disable_post_content_template_metabox', array( $this, 'maybe_disable_post_content_template_metabox_for_page_builders' ), 10, 2 );
 
     }
 
@@ -132,7 +133,7 @@ class WPV_template{
 	 * @since 2.3.0
 	 */
 	
-	function maybe_disable_post_content_template_metabox( $status, $post ) {
+	function maybe_disable_post_content_template_metabox_for_layouts( $status, $post ) {
 		if ( 
 			! $post instanceof WP_Post 
 			|| ! class_exists( 'WPDD_PostEditPageManager' )
@@ -185,6 +186,25 @@ class WPV_template{
 			return true;
 		}
 	}
+
+	/**
+	 * Disable the Content Template metabox from edit pages that belong to page builders backend editors.
+	 *
+	 * @param boolean $status
+	 * @param WP_Post $post
+	 * @return boolean
+	 * @since 2.6.3
+	 */
+	public function maybe_disable_post_content_template_metabox_for_page_builders( $status, $post ) {
+		$page_builder_post_types = array( 'elementor_library' );
+
+		if ( in_array( $post->post_type, $page_builder_post_types ) ) {
+			return true;
+		}
+
+		return $status;
+	}
+
 
 
 	/**
@@ -281,7 +301,7 @@ class WPV_template{
 			} else if ( $content_templates_translatable ) {
 				// Current language is the original language and CTs are translatable, so get only the ones in this original language
 				$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-				$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s ";
+				$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
 				$values_to_prepare[] = $wpml_current_language;
 			}
 			
@@ -516,14 +536,37 @@ class WPV_template{
 		
 		$wpv_global_settings = WPV_Settings::get_instance();
 
-		// core functions that we accept calls from.
-		$the_content_core = array( 'the_content', 'the_excerpt_for_archives', 'wpv_shortcode_wpv_post_body' );
-		// known theme functions that we accept calls from.
-		$the_content_themes = array( 'wptouch_the_content' );
-		// known funcions that we should not allow
-		$the_content_blacklist = array( 'require', 'require_once', 'include', 'include_once', 'locate_template', 'load_template', 'apply_filters', 'call_user_func_array', 'wpcf_fields_wysiwyg_view' );
+		// Core functions that we accept calls from.
+		// since 2.6.0 we render the wpv-post-body using the WPV_Shortcode_Post_Body::get_value method
+		$the_content_core = array( 
+				'the_content', 
+				'the_excerpt_for_archives', 'WPV_template::the_excerpt_for_archives', 
+				'wpv_shortcode_wpv_post_body', 'WPV_Shortcode_Post_Body::get_value'
+		);
+		// Known theme functions that we accept calls from.
+		$the_content_themes = array( 
+			// WPTouch theme(s)
+			'wptouch_the_content' 
+		);
+		// Known plugin functions that we accept calls from.
+		$the_content_plugins = array( 
+			// Elementor Pro content widget
+			'ElementorPro\Modules\ThemeBuilder\Widgets\Post_Content::render' 
+		);
 
-        $db = debug_backtrace();
+		$the_content_blacklist = array( 
+				'require', 'require_once', 'include', 'include_once', 
+				'locate_template', 'load_template', 
+				'apply_filters', 'call_user_func_array', 
+				'wpcf_fields_wysiwyg_view' 
+		);
+
+        if ( version_compare( PHP_VERSION, '5.4.0' ) >= 0 ) {
+			$db = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 6 );
+		} else {
+			$db = debug_backtrace();
+		}
+
 		$function_candidate = array();
 
 		// From php7 debug_backtrace() has changed, and the target function might be at index 2 instead of 3 as in php < 7
@@ -532,23 +575,43 @@ class WPV_template{
 		// Note: we might want to add a pluk and filter here, maybe...
 		
 		if ( isset( $db[5]['function'] ) ) {
-			$function_candidate[] = $db[5]['function'];
+			if ( isset( $db[5]['class'] ) ) {
+				$function_candidate[] = $db[5]['class'] . '::' . $db[5]['function'] ;
+			} else {
+				$function_candidate[] = $db[5]['function'];
+			}
 		}
 		
 		if ( isset( $db[4]['function'] ) ) {
-			$function_candidate[] = $db[4]['function'];
+			if ( isset( $db[4]['class'] ) ) {
+				$function_candidate[] = $db[4]['class'] . '::' . $db[4]['function'] ;
+			} else {
+				$function_candidate[] = $db[4]['function'];
+			}
 		}
 		
 		if ( isset( $db[3]['function'] ) ) {
-			$function_candidate[] = $db[3]['function'];
+			if ( isset( $db[3]['class'] ) ) {
+				$function_candidate[] = $db[3]['class'] . '::' . $db[3]['function'] ;
+			} else {
+				$function_candidate[] = $db[3]['function'];
+			}
 		}
 		
 		if ( isset( $db[2]['function'] ) ) {
-			$function_candidate[] = $db[2]['function'];
+			if ( isset( $db[2]['class'] ) ) {
+				$function_candidate[] = $db[2]['class'] . '::' . $db[2]['function'] ;
+			} else {
+				$function_candidate[] = $db[2]['function'];
+			}
 		}
 		
 		if ( isset( $db[1]['function'] ) ) {
-			$function_candidate[] = $db[1]['function'];
+			if ( isset( $db[1]['class'] ) ) {
+				$function_candidate[] = $db[1]['class'] . '::' . $db[1]['function'] ;
+			} else {
+				$function_candidate[] = $db[1]['function'];
+			}
 		}
 		
 		$function_candidate = array_diff( $function_candidate, $the_content_blacklist );
@@ -579,6 +642,7 @@ class WPV_template{
 			if ( 
 				in_array( $function_candidate_for_content, $the_content_core ) 
 				|| in_array( $function_candidate_for_content, $the_content_themes )
+				|| in_array( $function_candidate_for_content, $the_content_plugins )
 			) {
 				$function_ok = true;
 			}
@@ -708,7 +772,13 @@ class WPV_template{
 		$template_selected = 0;
 		$template_apply_filter = true;
 		$template_extra_override = false;
-		if ( 
+		if ( isset( $post->view_template_override ) ) {
+			if ( strtolower( $post->view_template_override ) == 'none' ) {
+				$template_selected = 0;
+			} else {
+				$template_selected = $this->get_template_id( $post->view_template_override );
+			}
+		} else if ( 
 			isset( $_GET['view-template'] ) 
 			&& $_GET['view-template'] != ''
 		) {
@@ -738,13 +808,7 @@ class WPV_template{
 				$template_apply_filter = false;
 			}
 		} else {
-			if ( isset( $post->view_template_override ) ) {
-				if ( strtolower( $post->view_template_override ) == 'none' ) {
-					$template_selected = 0;
-				} else {
-					$template_selected = $this->get_template_id( $post->view_template_override );
-				}
-			} else if ( $archive_loop ) {
+			if ( $archive_loop ) {
 				if (
 					isset( $wpv_global_settings[ $archive_loop ] ) 
 					&& $wpv_global_settings[ $archive_loop ] > 0
@@ -852,6 +916,11 @@ class WPV_template{
 	function remove_wpautop() {
 		remove_filter('the_content', 'wpautop');
 		remove_filter('the_content', 'shortcode_unautop');
+		// Remove the autop behavior introduced by Gutenberg when the content does not contain blocks.
+		// The relevant filter is documented in gutenberg/lib/compat.php
+        if ( function_exists( 'gutenberg_wpautop' ) ) {
+			remove_filter( 'the_content', 'gutenberg_wpautop', 8 );
+		}
 		remove_filter( 'wpv_filter_wpv_the_content_suppressed', 'wpautop' );
 		remove_filter( 'wpv_filter_wpv_the_content_suppressed', 'shortcode_unautop' );
 		remove_filter('the_excerpt', 'wpautop');
@@ -864,6 +933,11 @@ class WPV_template{
 		if ( $this->wpautop_removed ) {
 			add_filter('the_content', 'wpautop');
 			add_filter('the_content', 'shortcode_unautop');
+			// Restore the autop behavior introduced by Gutenberg when the content does not contain blocks.
+			// The relevant filter is documented in gutenberg/lib/compat.php
+			if ( function_exists( 'gutenberg_wpautop' ) ) {
+				add_filter( 'the_content', 'gutenberg_wpautop', 8 );
+			}
 			add_filter( 'wpv_filter_wpv_the_content_suppressed', 'wpautop' );
 			add_filter( 'wpv_filter_wpv_the_content_suppressed', 'shortcode_unautop' );
 			add_filter('the_excerpt', 'wpautop');
@@ -1037,7 +1111,19 @@ class WPV_template{
 		$view_templates_ids = array_unique( $this->view_template_used_ids );
 		$cssout = '';
 		foreach ( $view_templates_ids as $view_template_id ) {
-			$extra_css = get_post_meta($view_template_id, '_wpv_view_template_extra_css', true);
+			$extra_css = '';
+
+			$view_template = WPV_Content_Template::get_instance( $view_template_id );
+
+			if ( null === $view_template ) {
+				continue;
+			}
+
+			// If the Content Template is built using a page builder, skip the custom CSS code written in the Views
+			// Content Template editor.
+			if ( $view_template->is_using_standard_editor() ) {
+				$extra_css = $view_template->get_template_extra_css();
+			}
 
 			/**
 			 * Get third party CSS code added inside a page builder or elsewhere.
@@ -1048,16 +1134,16 @@ class WPV_template{
 			 */
 			$extra_third_party_css = apply_filters( 'wpv_filter_wpv_get_third_party_css', '', $view_template_id );
 
-			$extra_css .= "\n" . $extra_third_party_css;
-			if ( 
-				isset( $extra_css ) 
-				&& '' != $extra_css
+			if (
+				! empty( $extra_css ) ||
+				! empty( $extra_third_party_css )
 			) {
 				$cssout_item_title = get_the_title( $view_template_id );
 				$cssout .= "/* ----------------------------------------- */\n";
 				$cssout .= "/* " . sprintf( __( 'Content Template: %s - start', 'wpv-views' ), $cssout_item_title ) . " */\n";
 				$cssout .= "/* ----------------------------------------- */\n";
-				$cssout .= $extra_css . "\n";
+				$cssout .= ! empty( $extra_css ) ? $extra_css . "\n" : '';
+				$cssout .= ! empty( $extra_third_party_css ) ? $extra_third_party_css . "\n" : '';
 				$cssout .= "/* ----------------------------------------- */\n";
 				$cssout .= "/* " . sprintf( __( 'Content Template: %s - end', 'wpv-views' ), $cssout_item_title ) . " */\n";
 				$cssout .= "/* ----------------------------------------- */\n";
@@ -1067,7 +1153,7 @@ class WPV_template{
             echo "\n<div id=\"ct-extra-css\" style=\"display:none;\" aria-hidden=\"true\">\n" . $cssout . "</div>\n";
 
             $js_for_css_out = "jQuery( document ).ready( function( $ ) {\n"
-                . "\t\t$( 'head' ).append( '<style style=\"text/css\" media=\"screen\">' + $( \"#ct-extra-css\" ).text() + '</style>' );\n"
+                . "\t\t$( 'head' ).append( '<style>' + $( \"#ct-extra-css\" ).text() + '</style>' );\n"
                 . "\t\t$( \"#ct-extra-css\" ).remove();"
                 . "});\n";
 
@@ -1080,7 +1166,20 @@ class WPV_template{
 		$view_templates_ids = array_unique( $this->view_template_used_ids );
 		$jsout = '';
 		foreach ( $view_templates_ids as $view_template_id ) {
-			$extra_js = get_post_meta($view_template_id, '_wpv_view_template_extra_js', true);
+			$extra_js = '';
+
+			$view_template = WPV_Content_Template::get_instance( $view_template_id );
+
+			if ( null === $view_template ) {
+				continue;
+			}
+
+			// If the Content Template is built using a page builder, skip the custom JS code written in the Views
+			// Content Template editor.
+			if ( $view_template->is_using_standard_editor() ) {
+				$extra_js = $view_template->get_template_extra_js();
+			}
+
 			if ( 
 				isset( $extra_js ) 
 				&& '' != $extra_js

@@ -33,62 +33,135 @@
  * - Override get_callback_names().
  * - Override additional_ajax_init() if you need to.
  *
+ * @refactoring Alternatively, allow namespace usage for handler classes (also considering subclasses of Toolset_Ajax).
+ *
  * @since m2m
  */
 class Toolset_Ajax {
-	
+
+
 	/** Prefix for the callback method name */
 	const CALLBACK_PREFIX = 'callback_';
-	
+
+
 	const DELIMITER = '_';
+
+
+	const CALLBACK_MIGRATE_TO_M2M = 'migrate_to_m2m';
+	const CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE = 'select2_suggest_posts_by_title';
+	const CALLBACK_SELECT2_SUGGEST_POSTS_BY_POST_TYPE = 'select2_suggest_posts_by_post_type';
+	const CALLBACK_SELECT2_SUGGEST_TERMS = 'select2_suggest_terms';
+	const CALLBACK_SELECT2_SUGGEST_USERS = 'select2_suggest_users';
+	const CALLBACK_GET_POST_BY_ID = 'get_post_by_id';
+	const CALLBACK_GET_TERM_BY_ID = 'get_term_by_id';
+	const CALLBACK_GET_USER_BY_ID = 'get_user_by_id';
+	const CALLBACK_GET_VIEW_BLOCK_PREVIEW = 'get_view_block_preview';
+	const CALLBACK_GET_CONTENT_TEMPLATE_BLOCK_PREVIEW = 'get_content_template_block_preview';
+	const CALLBACK_GET_CRED_FORM_BLOCK_PREVIEW = 'get_cred_form_block_preview';
+	const CALLBACK_INTERMEDIARY_POST_CLEANUP = 'intermediary_post_cleanup';
+	const CALLBACK_CODE_SNIPPETS_ACTION = 'code_snippets_action';
+	const CALLBACK_GET_VIEW_CUSTOM_SEARCH_STATUS = 'get_view_custom_search_status';
+
+
+	/** @var Toolset_Ajax */
+	private static $instance;
+
 
 	/**
 	 * @return Toolset_Ajax|false
 	 */
-	final public static function get_instance() {
-		static $instances = array();
-		$called_class = get_called_class();
-
-		if ( isset( $instances[ $called_class ] ) ) {
-			return $instances[ $called_class ];
-		} else {
-			if ( class_exists( $called_class ) ) {
-				$instances[ $called_class ] = new $called_class();
-
-				return $instances[ $called_class ];
-			} else {
-				// This can unfortunately happen when the get_called_class() workaround for PHP 5.2 misbehaves.
-				return false;
-			}
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
 		}
+
+		return self::$instance;
 	}
 
 
 	public static function initialize() {
-		$instance = self::get_instance();
+		$called_class = get_called_class();
+		/** @var Toolset_Ajax $instance */
+		$instance = call_user_func( array( $called_class, 'get_instance' ) );
 
 		$instance->register_callbacks();
 		$instance->additional_ajax_init();
 	}
 
-
-	private function __clone() { }
-
-
-	private function __construct() { }
-
-
-	const CALLBACK_MIGRATE_TO_M2M = 'migrate_to_m2m';
-		
-
 	protected function get_callback_names() {
 		return array(
-			self::CALLBACK_MIGRATE_TO_M2M
+			self::CALLBACK_MIGRATE_TO_M2M,
+			self::CALLBACK_INTERMEDIARY_POST_CLEANUP,
+			self::CALLBACK_GET_VIEW_BLOCK_PREVIEW,
+			self::CALLBACK_GET_CONTENT_TEMPLATE_BLOCK_PREVIEW,
+			self::CALLBACK_GET_CRED_FORM_BLOCK_PREVIEW,
+			self::CALLBACK_CODE_SNIPPETS_ACTION,
+			self::CALLBACK_GET_VIEW_CUSTOM_SEARCH_STATUS,
 		);
 	}
 
 
-	private $callbacks_registered = false;
+	protected function get_public_callback_names() {
+		return array(
+			self::CALLBACK_SELECT2_SUGGEST_POSTS_BY_POST_TYPE,
+			self::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE,
+			self::CALLBACK_SELECT2_SUGGEST_TERMS,
+			self::CALLBACK_SELECT2_SUGGEST_USERS,
+			self::CALLBACK_GET_POST_BY_ID,
+			self::CALLBACK_GET_TERM_BY_ID,
+			self::CALLBACK_GET_USER_BY_ID,
+			self::CALLBACK_GET_VIEW_CUSTOM_SEARCH_STATUS,
+		);
+	}
+
+
+	protected $callbacks_registered = false;
+
+
+	/**
+	 * Register privileged callbacks.
+	 *
+	 * Each callback is registered as a "{$plugin_slug}_{$callback}" action and needs to have a "callback_{$callback_name}"
+	 * method in this class.
+	 *
+	 * Valid for AJAX callbacks executed by logged in users.
+	 *
+	 * @since m2m
+	 *
+	 * @param string[] $callback_names
+	 */
+	private function register_priv_callbacks( $callback_names ) {
+		foreach ( $callback_names as $callback_name ) {
+			$action_name = 'wp_ajax_' . $this->get_plugin_slug() . self::DELIMITER . $callback_name;
+			add_action(
+				$action_name,
+				array( $this, self::CALLBACK_PREFIX . $callback_name )
+			);
+		}
+	}
+
+
+	/**
+	 * Register unprivileged callbacks.
+	 *
+	 * Each callback is registered as a "{$plugin_slug}_{$callback}" action and needs to have a "callback_{$callback_name}"
+	 * method in this class.
+	 *
+	 * Valid for AJAX callbacks executed by not logged in users.
+	 *
+	 * @since m2m
+	 *
+	 * @param string[] $callback_names
+	 */
+	private function register_nopriv_callbacks( $callback_names ) {
+		foreach ( $callback_names as $callback_name ) {
+			$action_name = 'wp_ajax_nopriv_' . $this->get_plugin_slug() . self::DELIMITER . $callback_name;
+			add_action(
+				$action_name,
+				array( $this, self::CALLBACK_PREFIX . $callback_name )
+			);
+		}
+	}
 
 
 	/**
@@ -101,34 +174,32 @@ class Toolset_Ajax {
 	 */
 	private function register_callbacks() {
 
-		if( $this->callbacks_registered ) {
+		if ( $this->callbacks_registered ) {
 			return;
 		}
 
 		$callback_names = $this->get_callback_names();
-		foreach( $callback_names as $callback_name ) {
-			$action_name = 'wp_ajax_' . $this->get_plugin_slug() . self::DELIMITER . $callback_name;
-			add_action(
-				$action_name,
-				array( $this, self::CALLBACK_PREFIX . $callback_name ) 
-			);
-		}
+		$this->register_priv_callbacks( $callback_names );
+
+		$public_callback_names = $this->get_public_callback_names();
+		$this->register_priv_callbacks( $public_callback_names );
+		$this->register_nopriv_callbacks( $public_callback_names );
 
 		$this->callbacks_registered = true;
 
 	}
-	
-	
+
+
 	protected function get_plugin_slug( $capitalized = false ) {
 		return ( $capitalized ? 'Toolset' : 'toolset' );
 	}
-	
-	
+
+
 	protected function get_handler_class_prefix() {
-		return $this->get_plugin_slug( true ) . '_Ajax_Handler_';    
+		return $this->get_plugin_slug( true ) . '_Ajax_Handler_';
 	}
 
-	
+
 	public function get_action_js_name( $action ) {
 		return $this->get_plugin_slug( false ) . self::DELIMITER . $action;
 	}
@@ -139,12 +210,13 @@ class Toolset_Ajax {
 	 *
 	 * @param string $name Method name.
 	 * @param array $parameters Method parameters.
+	 *
 	 * @since 2.1
 	 */
 	public function __call( $name, $parameters ) {
 		// Check for the callback prefix in the method name
 		$name_parts = explode( self::DELIMITER, $name );
-		if( 0 !== strcmp( $name_parts[0] . self::DELIMITER, self::CALLBACK_PREFIX ) ) {
+		if ( 0 !== strcmp( $name_parts[0] . self::DELIMITER, self::CALLBACK_PREFIX ) ) {
 			// Not a callback, resign.
 			return;
 		}
@@ -153,14 +225,27 @@ class Toolset_Ajax {
 		unset( $name_parts[0] );
 		$class_name = implode( self::DELIMITER, $name_parts );
 		$class_name = strtolower( $class_name );
-		$class_name = mb_convert_case( $class_name, MB_CASE_TITLE );
+		$class_name = Toolset_Utils::resolve_callback_class_name( $class_name );
 		$class_name = $this->get_handler_class_prefix() . $class_name;
 
 		// Obtain an instance of the handler class.
 		try {
-			/** @var Toolset_Ajax_Handler_Interface $handler */
+			/** @var \OTGS\Toolset\Common\Auryn\Injector $dic */
+			$dic = apply_filters( 'toolset_dic', false );
+			// This is pretty important because $this may be a subclass of Toolset_Ajax, not Toolset_Ajax itself.
+			$dic->share( $this );
+			// If the handler doesn't override the constructor, it will have "Toolset_Ajax $ajax_manager" as the
+			// first parameter. But when the handler belongs to a plugin, we want to inject the plugin's AJAX manager
+			// and not the one from Toolset Common.
+			$handler = $dic->make( $class_name, array( ':ajax_manager' => $this ) );
+		} catch ( \OTGS\Toolset\Common\Auryn\InjectionException $injection_exception ) {
+			// For some reason, we're unable to instantiate the class with DIC. Use the old way, assuming
+			// the handler constructor is handling everything on its own.
+			//
+			// This happens mostly when the constructor contains other parameters than just the $ajax_manager, and
+			// these parameters have typehints or missing default values, which the DIC is unable to solve.
 			$handler = new $class_name( $this );
-		} catch( Exception $e ) {
+		} catch ( Exception $e ) {
 			// The handler class could not have been instantiated, resign.
 			return;
 		}
@@ -170,7 +255,6 @@ class Toolset_Ajax {
 	}
 
 
-
 	/**
 	 * Perform basic authentication check.
 	 *
@@ -178,14 +262,17 @@ class Toolset_Ajax {
 	 * is not successful.
 	 *
 	 * @param array $args Arguments (
-	 *     @type string $nonce Name of the nonce that should be verified. Mandatory
-	 *     @type string $nonce_parameter Name of the parameter containing nonce value.
+	 *
+	 * @type string $nonce Name of the nonce that should be verified. Mandatory
+	 * @type string $nonce_parameter Name of the parameter containing nonce value.
 	 *         Optional, defaults to "wpnonce".
-	 *     @type string $parameter_source Determines where the function should look for the nonce parameter.
+	 * @type string $parameter_source Determines where the function should look for the nonce parameter.
 	 *         Allowed values are 'get' and 'post'. Optional, defaults to 'post'.
-	 *     @type string $capability_needed Capability that user has to have in order to pass the check.
+	 * @type string $capability_needed Capability that user has to have in order to pass the check.
 	 *         Optional, default is "manage_options".
-	 *     @type string $type_of_death How to indicate failure:
+	 * @type bool $is_public Whether the action is publicly available without capability checks.
+	 *         Optional, default is FALSE.
+	 * @type string $type_of_death How to indicate failure:
 	 *         - 'die': Call wp_json_error with array( 'type' => 'capability'|'nonce', 'message' => $error_message )
 	 *         - 'return': Do not die, just return the error array as above.
 	 *         Optional, default is 'die'.
@@ -201,6 +288,7 @@ class Toolset_Ajax {
 		$nonce_name = toolset_getarr( $args, 'nonce' );
 		$nonce_parameter = toolset_getarr( $args, 'nonce_parameter', 'wpnonce' );
 		$capability_needed = toolset_getarr( $args, 'capability_needed', 'manage_options' );
+		$is_public = toolset_getarr( $args, 'is_public', false );
 		$parameter_source_name = toolset_getarr( $args, 'parameter_source', 'post', array( 'get', 'post' ) );
 		$parameter_source = ( $parameter_source_name == 'get' ) ? $_GET : $_POST;
 
@@ -209,22 +297,22 @@ class Toolset_Ajax {
 		$error_type = null;
 
 		// Check permissions
-		if ( ! current_user_can( $capability_needed ) ) {
+		if ( ! $is_public && ! current_user_can( $capability_needed ) ) {
 			$error_message = __( 'You do not have permissions for that.', 'wpv-views' );
 			$error_type = 'capability';
 			$is_error = true;
 		}
 
 		// Check nonce
-		if ( !$is_error && !wp_verify_nonce( toolset_getarr( $parameter_source, $nonce_parameter, '' ), $nonce_name ) ) {
+		if ( ! $is_error && ! wp_verify_nonce( toolset_getarr( $parameter_source, $nonce_parameter, '' ), $nonce_name ) ) {
 			$error_message = __( 'Your security credentials have expired. Please reload the page to get new ones.', 'wpv-views' );
 			$error_type = 'nonce';
 			$is_error = true;
 		}
 
-		if( $is_error ) {
+		if ( $is_error ) {
 			$error_description = array( 'type' => $error_type, 'message' => $error_message );
-			switch( $type_of_death ) {
+			switch ( $type_of_death ) {
 
 				case 'die':
 					wp_send_json_error( $error_description );
@@ -246,6 +334,7 @@ class Toolset_Ajax {
 	 * To be extended in the future.
 	 *
 	 * @param array $args See ajax_authenticate for details
+	 *
 	 * @return mixed
 	 * @since 2.0
 	 */
@@ -263,10 +352,11 @@ class Toolset_Ajax {
 	 *
 	 * @param array $response Custom response data
 	 * @param bool $is_success
+	 *
 	 * @since 2.0
 	 */
 	public function ajax_finish( $response, $is_success = true ) {
-		if( $is_success ) {
+		if ( $is_success ) {
 			wp_send_json_success( $response );
 		} else {
 			wp_send_json_error( $response );
@@ -275,13 +365,14 @@ class Toolset_Ajax {
 
 
 	/**
-	 * Handles all initialization of except AJAX callbacks itself that is needed when
-	 * we're DOING_AJAX.
-	 *
-	 * Since this is executed on every AJAX call, make sure it's as lightweight as possible.
+	 * Handles all initialization that is needed when doing AJAX,
+	 * except the actual AJAX callbacks.
+	 * 
+	 * Note that this gets fired when the class is intialized, not only during AJAX calls.
 	 *
 	 * @since m2m
 	 */
-	protected function additional_ajax_init() { }
-	
+	protected function additional_ajax_init() {
+	}
+
 }

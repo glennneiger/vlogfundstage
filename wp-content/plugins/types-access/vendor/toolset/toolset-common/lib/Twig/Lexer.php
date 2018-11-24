@@ -77,12 +77,7 @@ class Twig_Lexer implements Twig_LexerInterface
      */
     public function tokenize($code, $filename = null)
     {
-        if (function_exists('mb_internal_encoding') && ((int) ini_get('mbstring.func_overload')) & 2) {
-            $mbEncoding = mb_internal_encoding();
-            mb_internal_encoding('ASCII');
-        } else {
-            $mbEncoding = null;
-        }
+    	$mbEncoding = null;
 
         $this->code = str_replace(array("\r\n", "\r"), "\n", $code);
         $this->filename = $filename;

@@ -100,7 +100,7 @@ final class Access_Ajax_Helper
 
 			$output .= '<div class="wpcf-access-reassign-role-popup">';
 			$users = get_users('role=' . $role . '&number=5');
-			$users_txt = '';
+			$users_txt = array();
 			foreach ($users as $user)
 			{
 				$users_txt[] = $user->display_name;
@@ -1233,7 +1233,7 @@ final class Access_Ajax_Helper
 
 				$checked = ( isset($_POST['cur_archivetype']) && $_POST['cur_archivetype'] == 'error_ct' )?' checked="checked" ':'';
 				$has_items = wpv_check_views_exists('archive');
-				if ( count($has_items) > 0 ){
+				if ( $has_items ){
 						$archive_out .= '<p><label>
 						<input type="radio" value="error_ct" name="archive_error_type" '.$checked.'class="js-wpcf-access-type-archive">
 						'. __('Choose a different WordPress archive for people without read permission','wpcf-access') .'<br />';
@@ -2446,7 +2446,7 @@ final class Access_Ajax_Helper
 
         $out .= '<li><a href="#plugin_' . md5( __( 'Custom capabilities' ,'wpcf-access' ) ) . '">' . __( 'Custom capabilities' ,'wpcf-access' ) . '</a></li>';
 		$caps .= '<div id="plugin_'. md5( __( 'Custom capabilities' ,'wpcf-access' ) ) . '"><h3>' . __( 'Custom capabilities' ,'wpcf-access' ) . '</h3>';
-		$custom_caps = get_option('wpcf_access_custom_caps');
+		$custom_caps = get_option( 'wpcf_access_custom_caps', array() );
 		$caps .= '<div class="js-wpcf-list-custom-caps">';
 		if ( is_array( $custom_caps ) && count( $custom_caps ) > 0 ){
 			foreach ( $custom_caps as $cap => $cap_info ){

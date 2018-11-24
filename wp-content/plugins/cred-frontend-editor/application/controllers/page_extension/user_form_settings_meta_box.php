@@ -1,13 +1,16 @@
 <?php
 
 /**
- * Class responsible to create Form Settings Meta Box
+ * Class Responsible to create Form Settings Meta Box
  *
  * @since 1.9.4
  */
 class CRED_Page_Extension_User_Form_Settings_Meta_Box extends CRED_Page_Extension_Form_Settings_Meta_Box_Base {
 
 	private static $instance;
+
+	public function __construct() {
+	}
 
 	public static function get_instance() {
 		if ( null == self::$instance ) {
@@ -38,6 +41,23 @@ class CRED_Page_Extension_User_Form_Settings_Meta_Box extends CRED_Page_Extensio
 
 		//Selected User Roles
 		$selected_user_roles = $this->get_selected_user_roles( $settings );
+		
+		$form_actions = apply_filters( 'cred_admin_submit_action_options', array(
+			"form" => __( 'Keep displaying this form', 'wp-cred' ),
+			"message" => __( 'Display a message instead of the form...', 'wp-cred' ),
+			"custom_post" => __( 'Go to a specific post...', 'wp-cred' ),
+			//"user" => __('Display the user', 'wp-cred'),
+			"page" => __( 'Go to a page...', 'wp-cred' ),
+		), $settings['action'], $form );
+
+		$fix_settings_action = false;
+		if (
+			isset( $settings['action'] )
+			&& $settings['action'] == 'user'
+		) {
+			$settings['action'] = 'form';
+			$fix_settings_action = true;
+		}
 
 		//Enqueue scripts
 		$enqueue_scripts_settings = array(
@@ -54,12 +74,14 @@ class CRED_Page_Extension_User_Form_Settings_Meta_Box extends CRED_Page_Extensio
 			'user_roles' => $all_user_roles,
 			'selected_user_roles' => $selected_user_roles,
 			'form_type' => 'user',
+			'fix_settings_action' => $fix_settings_action,
 		);
 		$this->enqueue_scripts( $enqueue_scripts_settings );
 
 		//Print Template
 		echo CRED_Loader::tpl( 'user-form-settings-meta-box', array(
 			'form' => $form,
+			'form_actions' => $form_actions,
 			'settings' => $settings,
 			'post_types' => CRED_Loader::get( 'MODEL/Fields' )->getPostTypes(),
 			'form_post_types' => $form_post_types,
@@ -86,7 +108,7 @@ class CRED_Page_Extension_User_Form_Settings_Meta_Box extends CRED_Page_Extensio
 				array_filter( $selected_user_roles );
 			}
 		}
-
-		return $selected_user_roles;
+		//fix array indexing
+		return array_values($selected_user_roles);
 	}
 }

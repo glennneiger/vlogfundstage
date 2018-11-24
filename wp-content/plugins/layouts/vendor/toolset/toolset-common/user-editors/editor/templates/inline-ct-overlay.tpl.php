@@ -1,4 +1,8 @@
-<script type="text/html" id="js-wpv-layout-template-overlay-template">
+<?php
+  /*
+   * Overlay Template
+   */
+?><script type="text/html" id="js-wpv-layout-template-overlay-template">
 	<div class='wpv-setting-overlay js-wpv-layout-template-overlay' style='top:36px'>
         <div class='wpv-transparency' style='opacity:0.9'></div>
         <div class='wpv-layout-template-overlay-info toolset-alert toolset-alert-info'>

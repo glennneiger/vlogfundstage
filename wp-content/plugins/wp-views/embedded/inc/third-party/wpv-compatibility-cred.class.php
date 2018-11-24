@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Miscellanneous Views-specific adjustments for compatibility with CRED.
+ * Miscellanneous Views-specific adjustments for compatibility with Toolset Forms.
  *
  * This class is a singleton that gets initialized on the plugin bootstrap.
  * It contains two shortcodes to generate edit links, which upon click should force some resources 
- * (Content Template or layout) that contains a CRED edit form.
+ * (Content Template or layout) that contains an edit form.
  * It contains a shortcode to generate a conditional message upon redirect 
  * after a form is submitted, by listening to an URL attribute.
  *
@@ -22,7 +22,7 @@ class WPV_Compatibility_CRED {
 	private $content_templates_to_forms;
 	private $layouts_to_forms;
 	
-	const EDIT_LINK_DOCUMENTATION	= 'https://wp-types.com/documentation/user-guides/displaying-cred-editing-forms/';
+	const EDIT_LINK_DOCUMENTATION	= 'https://toolset.com/documentation/user-guides/displaying-cred-editing-forms/';
 
 
 	/**
@@ -42,7 +42,7 @@ class WPV_Compatibility_CRED {
 		
 		add_action( 'plugins_loaded',	array( $this, 'plugins_loaded' ), 99 );
 		
-		add_action( 'init',				array( $this, 'register_shortcodes_in_dialogs' ), -5 );
+		add_action( 'wpv_action_collect_shortcode_groups', array( $this, 'register_shortcodes_in_dialogs' ), 5 );
 		
 		add_shortcode( 'toolset-edit-post-link',	array( $this, 'edit_post_link_shortcode' ) );
 		add_filter( 'wpv_filter_wpv_shortcodes_gui_data', array( $this, 'register_toolset_edit_post_link_data' ) );
@@ -75,7 +75,7 @@ class WPV_Compatibility_CRED {
 	}
 	
 	/**
-	 * Register the CRED-related shortcodes in the Fields and Views dialog.
+	 * Register the Forms-related shortcodes in the Fields and Views dialog.
 	 *
 	 * @since 2.4.0
 	 */
@@ -86,34 +86,37 @@ class WPV_Compatibility_CRED {
 	
 		$group_id	= 'toolset-edit-links';
 		$group_data	= array(
-			'name'		=> __( 'CRED Editing', 'wpv-views' ),
+			'name'		=> __( 'Forms Editing', 'wpv-views' ),
 			'fields'	=> array(
 				'toolset-edit-post-link' => array(
-					'name'		=> __( 'CRED edit-post link', 'wpv-views' ),
-					'shortcode'	=> 'toolset-edit-post-link',
-					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'toolset-edit-post-link', title: '" . esc_js( __( 'CRED edit-post link', 'wpv-views' ) ) . "' })"
+					'name'		=> __( 'Forms edit-post link', 'wpv-views' ),
+					'handle'    => 'toolset-edit-post-link',
+					'shortcode'	=> '[toolset-edit-post-link]',
+					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'toolset-edit-post-link', title: '" . esc_js( __( 'Forms edit-post link', 'wpv-views' ) ) . "' })"
 				),
 				'toolset-edit-user-link' => array(
-					'name'		=> __( 'CRED edit-user link', 'wpv-views' ),
-					'shortcode'	=> 'toolset-edit-user-link',
-					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'toolset-edit-user-link', title: '" . esc_js( __( 'CRED edit-user link', 'wpv-views' ) ) . "' })"
+					'name'		=> __( 'Forms edit-user link', 'wpv-views' ),
+					'handle'    => 'toolset-edit-user-link',
+					'shortcode'	=> '[toolset-edit-user-link]',
+					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'toolset-edit-user-link', title: '" . esc_js( __( 'Forms edit-user link', 'wpv-views' ) ) . "' })"
 				),
 				'cred-form-message' => array(
-					'name'		=> __( 'CRED form message', 'wpv-views' ),
-					'shortcode'	=> 'cred-form-message',
-					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'cred-form-message', title: '" . esc_js( __( 'CRED form message', 'wpv-views' ) ) . "' })"
+					'name'		=> __( 'Forms message', 'wpv-views' ),
+					'handle'    => 'cred-form-message',
+					'shortcode'	=> '[cred-form-message]',
+					'callback'	=> "WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'cred-form-message', title: '" . esc_js( __( 'Forms message', 'wpv-views' ) ) . "' })"
 				)
 			)
 		);
 		
-		do_action( 'wpv_action_wpv_register_dialog_group', $group_id, $group_data );
+		do_action( 'wpv_action_register_shortcode_group', $group_id, $group_data );
 		
 	}
 	
 	/**
 	 * Callback for the toolset-edit-post-link shortcode.
 	 *
-	 * Generates a link to edit the current global, or a given, post, using the CRED post edit form 
+	 * Generates a link to edit the current global, or a given, post, using the post edit form 
 	 * located in one resource (Content Template or layout), that will be forcedly displayed 
 	 * when clicking that link.
 	 *
@@ -138,15 +141,15 @@ class WPV_Compatibility_CRED {
 			return;
 		}
 		
-		$post_id_atts = new WPV_wpcf_switch_post_from_attr_id( $atts );
-		
 		$atts = shortcode_atts(
 			array(
 				'content_template_slug'	=> '',
 				'layout_slug'			=> '',
 				'target'	=> 'self',
 				'style'		=> '',
-                'class'		=> ''
+				'class'		=> '',
+				'id' => '',
+				'item' => ''
 			),
 			$atts
 		);
@@ -157,6 +160,22 @@ class WPV_Compatibility_CRED {
 		) {
 			return;
 		}
+
+		$relationship_service = new Toolset_Relationship_Service();
+		$attr_item_chain = new Toolset_Shortcode_Attr_Item_M2M(
+			new Toolset_Shortcode_Attr_Item_Legacy(
+				new Toolset_Shortcode_Attr_Item_Id(),
+				$relationship_service
+			),
+			$relationship_service
+		);
+		
+		if ( ! $item_id = $attr_item_chain->get( $atts ) ) {
+			// no valid item
+			return;
+		}
+		
+		$item_post = get_post( $item_id );
 		
 		$out = '';
 		$form_id = 0;
@@ -204,20 +223,20 @@ class WPV_Compatibility_CRED {
 				return;
 			}
 			
-			$post_orig_id = $post->ID;
+			$post_orig_id = $item_post->ID;
 			
 			// Adjust for WPML support
 			// If WPML is enabled, $post_id should contain the right ID for the current post in the current language
 			// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-			$post_id = apply_filters( 'translate_object_id', $post_orig_id, $post->post_type, true, null );
+			$post_id = apply_filters( 'translate_object_id', $post_orig_id, $item_post->post_type, true, null );
 			
-			$post_type = ( $post_orig_id == $post_id ) ? $post->post_type : get_post_type( $post_id );
+			$post_type = ( $post_orig_id == $post_id ) ? $item_post->post_type : get_post_type( $post_id );
 			
 			if ( $post_type != $form_settings['post']['post_type'] ) {
 				return $out;
 			}
 			
-			$post_author = ( $post_orig_id == $post_id ) ? $post->post_author : get_post_field( 'post_author', $post_id );
+			$post_author = ( $post_orig_id == $post_id ) ? $item_post->post_author : get_post_field( 'post_author', $post_id );
 			
 			if ( 
 				! current_user_can( 'edit_own_posts_with_cred_' . $form_id ) 
@@ -232,7 +251,7 @@ class WPV_Compatibility_CRED {
 				return $out;
 			}
 			
-			$post_status = ( $post_orig_id == $post_id ) ? $post->post_status : get_post_status( $post_id );
+			$post_status = ( $post_orig_id == $post_id ) ? $item_post->post_status : get_post_status( $post_id );
 			$supported_extra_post_statuses = array( 'future', 'draft', 'pending', 'private' );
 			/**
 			 * Filter the array of allowed post statuses to be supported by the Toolst edit post links.
@@ -249,7 +268,53 @@ class WPV_Compatibility_CRED {
 			$supported_extra_post_statuses = apply_filters( 'toolset_filter_edit_post_link_extra_statuses_allowed', $supported_extra_post_statuses, $form_id );
 			$link = false;
 			
-			if ( 'publish' == $post_status ) {
+			$rfg_post_type_query_factory = new Toolset_Post_Type_Query_Factory();
+			$rfg_post_type_query = $rfg_post_type_query_factory->create(
+				array(
+					Toolset_Post_Type_Query::IS_REPEATING_FIELD_GROUP => true,
+					Toolset_Post_Type_Query::RETURN_TYPE => 'slug'
+				)
+			);
+			
+			$rfg_post_types = $rfg_post_type_query->get_results();
+			if ( in_array( $post_type, $rfg_post_types ) ) {
+				if ( 
+					! apply_filters( 'toolset_is_m2m_enabled', false ) 
+					|| 'publish' != $post_status
+				) {
+					return $out;
+				}
+				do_action( 'toolset_do_m2m_full_init' );
+				
+				$association_query = new Toolset_Association_Query_V2();
+				$associations = $association_query
+					->limit( 1 )
+					->add( $association_query->element_id_and_domain( $post_id, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() ) )
+					->return_element_ids( new Toolset_Relationship_Role_Parent() )
+					->get_results();
+					
+				if ( 
+					is_array( $associations ) 
+					&& count( $associations ) 
+				) {
+					$post_belongs_id = reset( $associations );
+					$post_belongs_status = get_post_status( $post_belongs_id );
+					
+					if ( 'publish' == $post_belongs_status ) {
+						$link = get_permalink( $post_belongs_id );
+					} else if ( 
+						in_array( $post_belongs_status, $supported_extra_post_statuses ) 
+						&& current_user_can( 'edit_post', $post_belongs_id ) 
+						&& function_exists( 'get_preview_post_link' )
+						
+					) {
+						$link = get_preview_post_link( $post_belongs_id );
+					}
+					
+					$link_attributes['cred_action'] = 'edit_rfg';
+					$link_attributes['cred_rfg_id'] = $post_id;
+				}
+			} else if ( 'publish' == $post_status ) {
 				$link = get_permalink( $post_id );
 			} else if ( 
 				in_array( $post_status, $supported_extra_post_statuses ) 
@@ -270,8 +335,8 @@ class WPV_Compatibility_CRED {
 			
 			$content = wpv_translate( $translate_name, $content, true, 'Toolset Shortcodes' );
 			
-			$content = str_replace( '%%POST_TITLE%%', $post->post_title, $content );
-			$content = str_replace( '%%POST_ID%%', $post->ID, $content );
+			$content = str_replace( '%%POST_TITLE%%', $item_post->post_title, $content );
+			$content = str_replace( '%%POST_ID%%', $item_post->ID, $content );
 			
 			$out .= '<a'
 				. ' href="' . esc_url( $link ) . '"' 
@@ -317,8 +382,8 @@ class WPV_Compatibility_CRED {
 	function edit_post_link_data() {
 		
 		$data = array(
-			'name' => __( 'CRED edit-post link', 'wpv-views' ),
-			'label' => __( 'CRED edit-post link', 'wpv-views' ),
+			'name' => __( 'Forms edit-post link', 'wpv-views' ),
+			'label' => __( 'Forms edit-post link', 'wpv-views' ),
 			'post-selection' => true,
 		);
 		
@@ -344,7 +409,7 @@ class WPV_Compatibility_CRED {
 	/**
 	 * Callback for the toolset-edit-user-link shortcode.
 	 *
-	 * Generates a link to edit the current, or a given, user, using the CRED user edit form 
+	 * Generates a link to edit the current, or a given, user, using the user edit form 
 	 * located in one resource (Content Template or layout), that will be forcedly displayed 
 	 * when clicking that link.
 	 *
@@ -543,8 +608,8 @@ class WPV_Compatibility_CRED {
 	function edit_user_link_data() {
 		
 		$data = array(
-			'name' => __( 'CRED edit-user link', 'wpv-views' ),
-			'label' => __( 'CRED edit-user link', 'wpv-views' ),
+			'name' => __( 'Forms edit-user link', 'wpv-views' ),
+			'label' => __( 'Forms edit-user link', 'wpv-views' ),
 			'user-selection' => true,
 		);
 		
@@ -570,13 +635,13 @@ class WPV_Compatibility_CRED {
 	/**
 	 * Callback for the cred-form-message shortcode.
 	 *
-	 * Generates a conditional output for the selected message that belongs to the CRED form which ID 
+	 * Generates a conditional output for the selected message that belongs to the form which ID 
 	 * is passed over the cred_referrer_form_id parameter of the current page URL.
-	 * Any customization or HTML markup in the message should be included in the CRED messages GUI.
+	 * Any customization or HTML markup in the message should be included in the messages GUI.
 	 *
 	 * @param array  $atts    List of attributes passed to the shortcode
 	 *     form_id 	int    The ID of the form to use in case there is no URL parameter, not in use at this point
-	 *     message  string The key of the CRED message as stored in the form settings
+	 *     message  string The key of the message as stored in the form settings
 	 *
 	 * @return string
 	 *
@@ -600,15 +665,12 @@ class WPV_Compatibility_CRED {
 		
 		if (
 			$atts['form_id'] == '' 
-			&& (
-				! isset( $_GET['cred_referrer_form_id'] ) 
-				|| $_GET['cred_referrer_form_id'] == ''
-			)
+			&& '' == toolset_getget( 'cred_referrer_form_id' )
 		) {
 			return;
 		}
 		
-		$cred_referrer_form_id = (int) $_GET['cred_referrer_form_id'];
+		$cred_referrer_form_id = (int) toolset_getget( 'cred_referrer_form_id' );
 		$cred_messages = apply_filters( 'toolset_cred_form_messages', array(), $cred_referrer_form_id );
 		if ( empty( $cred_messages ) ) {
 			return;
@@ -671,8 +733,8 @@ class WPV_Compatibility_CRED {
 	public function form_message_data() {
 		
 		$data = array(
-			'name' => __( 'CRED form message', 'wpv-views' ),
-			'label' => __( 'CRED form message', 'wpv-views' ),
+			'name' => __( 'Forms message', 'wpv-views' ),
+			'label' => __( 'Forms message', 'wpv-views' ),
 		);
 
 		$attributes = array(
@@ -683,10 +745,10 @@ class WPV_Compatibility_CRED {
 					'information'	=> array(
 						'type'		=> 'message',
 						'content'	=> '<p class="toolset-alert toolset-alert-info">'
-										. __( 'CRED forms can redirect to the edited post or user, or to a specific page, after they are submitted.', 'wpv-views' )
+										. __( 'Forms can redirect to the edited post or user, or to a specific page, after they are submitted.', 'wpv-views' )
 										. '<br />'
 										. '<br />'
-										. __( 'Add this shortcode to the redirect target to get a message from the CRED form that just edited it.', 'wpv-views' )
+										. __( 'Add this shortcode to the redirect target to get a message from the form that just edited it.', 'wpv-views' )
 										. '</p>'
 					)
 				)
@@ -808,7 +870,7 @@ class WPV_Compatibility_CRED {
 						'type'		=> 'select',
 						'options'	=> $available_options,
 						'default'	=> '',
-						'description'	=> __( 'Select a layout that contains a CRED form cell', 'wpv-views' ),
+						'description'	=> __( 'Select a layout that contains a form cell', 'wpv-views' ),
 						'documentation'	=> '<a href="' . self::EDIT_LINK_DOCUMENTATION . '" target="_blank">' . __( 'Toolset edit links', 'wpv-views' ) . '</a>',
 						'required'	=> true,
 					)
@@ -821,7 +883,7 @@ class WPV_Compatibility_CRED {
 					'information'	=> array(
 						'type'		=> 'message',
 						'content'	=> '<p>' 
-										. __( 'Create a new Layout that will include the CRED editing form. You can start from scratch or copy the template you use to display the content and modify it.', 'wpv-views' )
+										. __( 'Create a new Layout that will include the editing form. You can start from scratch or copy the template you use to display the content and modify it.', 'wpv-views' )
 										. '</p>'
 										. '<p>'
 										. '<a href="' . self::EDIT_LINK_DOCUMENTATION . '" target="_blank">' . __( 'Documentation on Toolset edit links', 'wpv-views' ) . '</a>'
@@ -851,7 +913,7 @@ class WPV_Compatibility_CRED {
 						'type'		=> 'select',
 						'options'	=> $available_options,
 						'default'	=> '',
-						'description'	=> __( 'Select a Content Template that contains a CRED form shortcode', 'wpv-views' ),
+						'description'	=> __( 'Select a Content Template that contains a form shortcode', 'wpv-views' ),
 						'documentation'	=> '<a href="' . self::EDIT_LINK_DOCUMENTATION . '" target="_blank">' . __( 'Toolset edit links', 'wpv-views' ) . '</a>',
 						'required'	=> true,
 					)
@@ -864,7 +926,7 @@ class WPV_Compatibility_CRED {
 					'information'	=> array(
 						'type'		=> 'message',
 						'content'	=> '<p>'
-										. __( 'Create a new Content Template that will include the CRED editing form. You can start from scratch or copy the template you use to display the content and modify it.', 'wpv-views' )
+										. __( 'Create a new Content Template that will include the editing form. You can start from scratch or copy the template you use to display the content and modify it.', 'wpv-views' )
 										. '</p>'
 										. '<p>'
 										. '<a href="' . self::EDIT_LINK_DOCUMENTATION . '" target="_blank">' . __( 'Documentation on Toolset edit links', 'wpv-views' ) . '</a>'
@@ -887,7 +949,7 @@ class WPV_Compatibility_CRED {
 	}
 	
 	/**
-	 * Auxiliar method to get Content Templates that contain a CRED form shortcode.
+	 * Auxiliar method to get Content Templates that contain a form shortcode.
 	 *
 	 * Used by toolset-edit-post-link and toolset-edit-user-link shortcodes, to get 
 	 * Content Templates that contain [cred_form or [cred_user_form shortcodes
@@ -929,16 +991,18 @@ class WPV_Compatibility_CRED {
 		if ( $content_templates_translatable ) {
 			$wpml_current_language = apply_filters( 'wpml_current_language', '' );
 			$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-			$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s ";
+			$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
 			$values_to_prepare[] = $wpml_current_language;
 		}
 		
 		switch ( $form_type ) {
 			case 'post':
 				$values_to_prepare[] = '%[cred_form %';
+				$values_to_prepare[] = '%{!{cred_form %';
 				break;
 			case 'user':
 				$values_to_prepare[] = '%[cred_user_form %';
+				$values_to_prepare[] = '%{!{cred_user_form %';
 				break;
 		}
 		
@@ -949,7 +1013,7 @@ class WPV_Compatibility_CRED {
 				FROM {$wpdb->posts} p {$wpml_join} 
 				WHERE p.post_status = 'publish' 
 				{$wpml_where} 
-				AND p.post_content LIKE '%s'
+				AND ( p.post_content LIKE '%s' OR p.post_content LIKE '%s' ) 
 				AND p.post_type = %s 
 				ORDER BY p.post_title",
 				$values_to_prepare
@@ -974,6 +1038,7 @@ class WPV_Compatibility_CRED {
 	 * @uses $this->content_templates_to_forms
 	 *
 	 * @since 2.4.0
+	 * @since 2.6.1 Add support for forms shortcodes in alternative syntax.
 	 */
 	public function get_form_in_content_template( $ct_id, $form_type = 'post' ) {
 		
@@ -996,6 +1061,7 @@ class WPV_Compatibility_CRED {
 		if ( 
 			'post' == $form_type 
 			&& strpos( $ct_content, '[cred_form ' ) === false 
+			&& strpos( $ct_content, '{!{cred_form ' ) === false 
 		) {
 			return $form_id;
 		}
@@ -1003,9 +1069,13 @@ class WPV_Compatibility_CRED {
 		if ( 
 			'user' == $form_type 
 			&& strpos( $ct_content, '[cred_user_form ' ) === false 
+			&& strpos( $ct_content, '{!{cred_user_form ' ) === false 
 		) {
 			return $form_id;
 		}
+
+		// Make sure we can parse shortcodes in alternative syntax
+		$ct_content = apply_filters( 'toolset_transform_shortcode_format', $ct_content );
 		
 		$this->current_content_template = $ct_id;
 		

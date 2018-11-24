@@ -1,15 +1,7 @@
 <?php
 
-/**
- *   CRED XML Processor
- *   handles import-export to/from XML
- *
- * $HeadURL: https://www.onthegosystems.com/misc_svn/crud/trunk_new/embedded/classes/common/XML_Processor.php $
- * $LastChangedDate: 2015-03-17 08:25:16 +0100 (mar, 17 mar 2015) $
- * $LastChangedRevision: 32390 $
- * $LastChangedBy: gen $
- *
- */
+use OTGS\Toolset\CRED\Controller\FieldsControl\Db;
+
 final class CRED_XML_Processor {
 
 	public static $use_zip_if_available = true;
@@ -445,6 +437,7 @@ final class CRED_XML_Processor {
 
 				$set_to_integer_hashing = array(
 					'has_media_button',
+					'has_toolset_buttons',
 					'hide_comments',
 					'include_captcha_scaffold',
 					'include_wpml_scaffold',
@@ -873,6 +866,7 @@ final class CRED_XML_Processor {
 				$fields['form_settings']->include_captcha_scaffold = ( isset( $form_data['meta']['form_settings']['include_captcha_scaffold'] ) && $form_data['meta']['form_settings']['include_captcha_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->include_wpml_scaffold = ( isset( $form_data['meta']['form_settings']['include_wpml_scaffold'] ) && $form_data['meta']['form_settings']['include_wpml_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->has_media_button = ( isset( $form_data['meta']['form_settings']['has_media_button'] ) && $form_data['meta']['form_settings']['has_media_button'] == '1' ) ? 1 : 0;
+				$fields['form_settings']->has_toolset_buttons = ( isset( $form_data['meta']['form_settings']['has_toolset_buttons'] ) && $form_data['meta']['form_settings']['has_toolset_buttons'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->post_type = isset( $form_data['meta']['form_settings']['post_type'] ) ? $form_data['meta']['form_settings']['post_type'] : '';
 				$fields['form_settings']->post_status = isset( $form_data['meta']['form_settings']['post_status'] ) ? $form_data['meta']['form_settings']['post_status'] : 'draft';
 				$fields['form_settings']->cred_theme_css = isset( $form_data['meta']['form_settings']['cred_theme_css'] ) ? $form_data['meta']['form_settings']['cred_theme_css'] : 'minimal';
@@ -939,6 +933,7 @@ final class CRED_XML_Processor {
 				$fields['form_settings']->form['include_captcha_scaffold'] = ( isset( $form_data['meta']['form_settings']['form']['include_captcha_scaffold'] ) && $form_data['meta']['form_settings']['form']['include_captcha_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->form['include_wpml_scaffold'] = ( isset( $form_data['meta']['form_settings']['form']['include_wpml_scaffold'] ) && $form_data['meta']['form_settings']['form']['include_wpml_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->form['has_media_button'] = ( isset( $form_data['meta']['form_settings']['form']['has_media_button'] ) && $form_data['meta']['form_settings']['form']['has_media_button'] == '1' ) ? 1 : 0;
+				$fields['form_settings']->form['has_toolset_buttons'] = ( isset( $form_data['meta']['form_settings']['form']['has_toolset_buttons'] ) && $form_data['meta']['form_settings']['form']['has_toolset_buttons'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->post['post_type'] = isset( $form_data['meta']['form_settings']['post']['post_type'] ) ? $form_data['meta']['form_settings']['post']['post_type'] : '';
 				$fields['form_settings']->post['post_status'] = isset( $form_data['meta']['form_settings']['post']['post_status'] ) ? $form_data['meta']['form_settings']['post']['post_status'] : 'draft';
 				$fields['form_settings']->form['theme'] = isset( $form_data['meta']['form_settings']['form']['theme'] ) ? $form_data['meta']['form_settings']['form']['theme'] : 'minimal';
@@ -954,7 +949,7 @@ final class CRED_XML_Processor {
 				$fields['extra']->css = isset( $form_data['meta']['extra']['css'] ) ? $form_data['meta']['extra']['css'] : '';
 				$fields['extra']->js = isset( $form_data['meta']['extra']['js'] ) ? $form_data['meta']['extra']['js'] : '';
 
-				//EMERSON: Fix bug on Form text messages value not imported in CRED 1.2.2
+				//EMERSON: Fix bug on Form text messages value not imported in Toolset Forms 1.2.2
 				//This will cause the hash to be different after import,e.g. in Module manager 1.1
 				//Commented are old codes
 				/* START */
@@ -1019,13 +1014,14 @@ final class CRED_XML_Processor {
 						// add new fields From Addr, From Name
 						$tmp['from'] = isset( $notif['from'] ) ? $notif['from'] : array();
 						$tmp['mail'] = isset( $notif['mail'] ) ? $notif['mail'] : array();
-						$tmp['name'] = isset( $notif['name'] ) ? $notif['name'] : array();
+						$tmp['name'] = isset( $notif['name'] ) ? $notif['name'] : '(notification-name)';
+						$tmp[ 'disabled' ] = ( isset( $notif[ 'disabled' ] ) && $notif[ 'disabled' ] == 1 ) ? $notif[ 'disabled' ] : 0;
 						$fields['notification']->notifications[] = $tmp;
 					}
 				}
 				$fields['notification']->enable = ( isset( $form_data['meta']['notification']['enable'] ) && $form_data['meta']['notification']['enable'] == '1' ) ? 1 : 0;
 
-				//CRED post expiration import (new version 1.2.6)
+				// Toolset Forms post expiration import (new version 1.2.6)
 				/* START */
 
 				$fields['post_expiration'] = array(
@@ -1151,6 +1147,7 @@ final class CRED_XML_Processor {
 				$fields['form_settings']->include_captcha_scaffold = ( isset( $form_data['meta']['form_settings']['include_captcha_scaffold'] ) && $form_data['meta']['form_settings']['include_captcha_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->include_wpml_scaffold = ( isset( $form_data['meta']['form_settings']['include_wpml_scaffold'] ) && $form_data['meta']['form_settings']['include_wpml_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->has_media_button = ( isset( $form_data['meta']['form_settings']['has_media_button'] ) && $form_data['meta']['form_settings']['has_media_button'] == '1' ) ? 1 : 0;
+				$fields['form_settings']->has_toolset_buttons = ( isset( $form_data['meta']['form_settings']['has_toolset_buttons'] ) && $form_data['meta']['form_settings']['has_toolset_buttons'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->post_type = isset( $form_data['meta']['form_settings']['post_type'] ) ? $form_data['meta']['form_settings']['post_type'] : '';
 				$fields['form_settings']->post_status = isset( $form_data['meta']['form_settings']['post_status'] ) ? $form_data['meta']['form_settings']['post_status'] : 'draft';
 				$fields['form_settings']->cred_theme_css = isset( $form_data['meta']['form_settings']['cred_theme_css'] ) ? $form_data['meta']['form_settings']['cred_theme_css'] : 'minimal';
@@ -1222,6 +1219,7 @@ final class CRED_XML_Processor {
 				$fields['form_settings']->form['include_captcha_scaffold'] = ( isset( $form_data['meta']['form_settings']['form']['include_captcha_scaffold'] ) && $form_data['meta']['form_settings']['form']['include_captcha_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->form['include_wpml_scaffold'] = ( isset( $form_data['meta']['form_settings']['form']['include_wpml_scaffold'] ) && $form_data['meta']['form_settings']['form']['include_wpml_scaffold'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->form['has_media_button'] = ( isset( $form_data['meta']['form_settings']['form']['has_media_button'] ) && $form_data['meta']['form_settings']['form']['has_media_button'] == '1' ) ? 1 : 0;
+				$fields['form_settings']->form['has_toolset_buttons'] = ( isset( $form_data['meta']['form_settings']['form']['has_toolset_buttons'] ) && $form_data['meta']['form_settings']['form']['has_toolset_buttons'] == '1' ) ? 1 : 0;
 				$fields['form_settings']->form['user_role'] = isset( $form_data['meta']['form_settings']['form']['user_role'] ) ? $form_data['meta']['form_settings']['form']['user_role'] : 'subscriber';
 				$fields['form_settings']->post['post_type'] = isset( $form_data['meta']['form_settings']['post']['post_type'] ) ? $form_data['meta']['form_settings']['post']['post_type'] : '';
 				$fields['form_settings']->post['post_status'] = isset( $form_data['meta']['form_settings']['post']['post_status'] ) ? $form_data['meta']['form_settings']['post']['post_status'] : 'draft';
@@ -1238,7 +1236,7 @@ final class CRED_XML_Processor {
 				$fields['extra']->css = isset( $form_data['meta']['extra']['css'] ) ? $form_data['meta']['extra']['css'] : '';
 				$fields['extra']->js = isset( $form_data['meta']['extra']['js'] ) ? $form_data['meta']['extra']['js'] : '';
 
-				//EMERSON: Fix bug on Form text messages value not imported in CRED 1.2.2
+				//EMERSON: Fix bug on Form text messages value not imported in Toolset Forms 1.2.2
 				//This will cause the hash to be different after import,e.g. in Module manager 1.1
 				//Commented are old codes
 				/* START */
@@ -1303,12 +1301,14 @@ final class CRED_XML_Processor {
 						// add new fields From Addr, From Name
 						$tmp['from'] = isset( $notif['from'] ) ? $notif['from'] : array();
 						$tmp['mail'] = isset( $notif['mail'] ) ? $notif['mail'] : array();
+						$tmp['name'] = isset( $notif['name'] ) ? $notif['name'] : '(notification-name)';
+						$tmp[ 'disabled' ] = ( isset( $notif[ 'disabled' ] ) && $notif[ 'disabled' ] == 1 ) ? $notif[ 'disabled' ] : 0;
 						$fields['notification']->notifications[] = $tmp;
 					}
 				}
 				$fields['notification']->enable = ( isset( $form_data['meta']['notification']['enable'] ) && $form_data['meta']['notification']['enable'] == '1' ) ? 1 : 0;
 
-				//CRED post expiration import (new version 1.2.6)
+				// Toolset Forms post expiration import (new version 1.2.6)
 				/* START */
 
 				$fields['post_expiration'] = array(
@@ -1462,7 +1462,7 @@ final class CRED_XML_Processor {
 		if ( isset( $data['settings'] ) && isset( $options['overwrite_settings'] ) && $options['overwrite_settings'] ) {
 			$new_settings = self::updateSettings( $data );
 
-			//Import CRED Post Expiration to options table
+			// Import Toolset Forms Post Expiration to options table
 			global $cred_post_expiration;
 			if ( $new_settings['enable_post_expiration'] && isset( $data['post_expiration_settings'] ) && ! ( empty( $data['post_expiration_settings'] ) ) ) {
 				$oldsettings_expiration = $cred_post_expiration->getCredPESettings();
@@ -1493,15 +1493,13 @@ final class CRED_XML_Processor {
 		}
 
 		if ( isset( $data['custom_fields'] ) && isset( $options['overwrite_custom_fields'] ) && $options['overwrite_custom_fields'] ) {
-			$custom_fields_model = CRED_Loader::get( 'MODEL/Fields' );
-			$old_custom_fields = $custom_fields_model->getCustomFields();
+			$fields_control_db_manager = new Db();
 			foreach ( $data['custom_fields'] as $post_type => $field ) {
 				foreach ( $field as $field_slug => $field_data ) {
-					$custom_fields_model->setCustomField( $field_data );
+					$fields_control_db_manager->set_field( $field_data, $post_type );
 					$results['custom_fields']++;
 				}
 			}
-			unset( $old_custom_fields );
 		}
 
 		if ( isset( $data['custom_fields'] ) ) {
@@ -1561,8 +1559,6 @@ final class CRED_XML_Processor {
 				}
 
 				$_form_id = self::importSingleForm( $form_data, $form_model, $options, $results );
-
-
 
 				if ( $_form_id ) {
 					//Remove is_edited flag
@@ -1633,7 +1629,7 @@ final class CRED_XML_Processor {
 		if ( isset( $data['settings'] ) && isset( $options['overwrite_settings'] ) && $options['overwrite_settings'] ) {
 			$new_settings = self::updateSettings( $data );
 
-			//Import CRED Post Expiration to options table
+			//Import Toolset Forms Post Expiration to options table
 			global $cred_post_expiration;
 			if ( $new_settings['enable_post_expiration'] && isset( $data['post_expiration_settings'] ) && ! ( empty( $data['post_expiration_settings'] ) ) ) {
 				$oldsettings_expiration = $cred_post_expiration->getCredPESettings();
@@ -1664,16 +1660,13 @@ final class CRED_XML_Processor {
 		}
 
 		if ( isset( $data['custom_fields'] ) && isset( $options['overwrite_custom_fields'] ) && $options['overwrite_custom_fields'] ) {
-			$custom_fields_model = CRED_Loader::get( 'MODEL/UserFields' );
-			$old_custom_fields = $custom_fields_model->getCustomFields();
+			$fields_control_db_manager = new Db();
 			foreach ( $data['custom_fields'] as $post_type => $field ) {
 				foreach ( $field as $field_slug => $field_data ) {
-					//TODO: complete custom fields in user
-					//$custom_fields_model->setCustomField($field_data);
+					$fields_control_db_manager->set_field( $field_data, $post_type );
 					$results['custom_fields']++;
 				}
 			}
-			unset( $old_custom_fields );
 		}
 
 		if ( isset( $data['custom_fields'] ) ) {
@@ -1732,7 +1725,6 @@ final class CRED_XML_Processor {
 				if ( false !== $items && ! in_array( $form_data['ID'], $items ) ) {
 					continue;
 				}
-
 				$_form_id = self::importSingleUserForm( $form_data, $user_form_model, $options, $results );
 
 				if ( $_form_id ) {
@@ -1990,7 +1982,7 @@ final class CRED_XML_Processor {
 		$data = self::getSelectedUserFormsForExport( $forms, array( 'media' => true ), $mode );
 		$setts = CRED_Loader::get( 'MODEL/Settings' )->getSettings();
 
-		// Export CRED post expiration settings
+		// Export Toolset Forms post expiration settings
 		global $cred_post_expiration;
 		$cred_post_expiration_setts = $cred_post_expiration->getCredPESettings();
 
@@ -2019,7 +2011,7 @@ final class CRED_XML_Processor {
 		$data = self::getSelectedFormsForExport( $forms, array( 'media' => true ), $mode );
 		$setts = CRED_Loader::get( 'MODEL/Settings' )->getSettings();
 
-		// Export CRED post expiration settings
+		// Export Toolset Forms post expiration settings
 		global $cred_post_expiration;
 		$cred_post_expiration_setts = $cred_post_expiration->getCredPESettings();
 
@@ -2052,7 +2044,7 @@ final class CRED_XML_Processor {
 		$data = self::getSelectedFormsForExport( $forms, $options, $mode, $extra );
 		$setts = CRED_Loader::get( 'MODEL/Settings' )->getSettings();
 
-		// Export CRED post expiration settings
+		// Export Toolset Forms post expiration settings
 		global $cred_post_expiration;
 		$cred_post_expiration_setts = $cred_post_expiration->getCredPESettings();
 

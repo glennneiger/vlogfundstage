@@ -5,7 +5,7 @@
  *
  * @since 2.5.4
  */
-abstract class Toolset_Element_Domain {
+class Toolset_Element_Domain {
 
 	const POSTS = 'posts';
 	const USERS = 'users';

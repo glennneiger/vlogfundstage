@@ -342,6 +342,15 @@ class Toolset_Common_Bootstrap {
 				new Toolset_Controller_Admin_Notices();
             }
 
+			// Load Toolset Singleton Factory based on PHP_Version
+			if( ! class_exists( 'Toolset_Singleton_Factory', false ) ) {
+				if( version_compare( PHP_VERSION, '5.6.0', '>=' ) ) {
+					require_once( TOOLSET_COMMON_PATH . '/utility/singleton_factory.php' );
+				} else {
+					require_once( TOOLSET_COMMON_PATH . '/utility/singleton_factory_pre_php_5_6.php' );
+				}
+			}
+
 			require_once( TOOLSET_COMMON_PATH . '/inc/toolset.compatibility.php' );
 			require_once( TOOLSET_COMMON_PATH . '/inc/toolset.function.helpers.php' );
 			require_once( TOOLSET_COMMON_PATH . '/deprecated.php' );
@@ -375,6 +384,19 @@ class Toolset_Common_Bootstrap {
 
 			$wp_query_adjustments = new Toolset_Wp_Query_Adjustments_Loader();
 			$wp_query_adjustments->initialize();
+
+			$interop_mediator = new \OTGS\Toolset\Common\Interop\Mediator();
+			$interop_mediator->initialize();
+			
+			/** 
+			 * Avoid the initialization of this class.
+			 *
+			 * @since m2m
+			 */
+			if ( ! apply_filters( 'toolset_disable_legacy_relationships_meta_access', false ) ) {
+				$postmeta_access = new Toolset_Postmeta_Access_Loader();
+				$postmeta_access->initialize();
+			}
 
 			$this->apply_filters_on_sections_loaded( 'toolset_register_include_section' );
 		}

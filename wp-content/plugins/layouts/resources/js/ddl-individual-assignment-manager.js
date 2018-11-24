@@ -265,7 +265,12 @@ DDLayout.IndividualAssignmentManager = function($)
 		DDLayout.changeLayoutUseHelper.eventDispatcher.trigger('data_sent_to_server', $(event.target).closest('div.js-change-wrap-box'), DDLayout_settings.DDL_OPN.INDIVIDUAL_POSTS_OPTION, response.message, function () {
 		    self.set_radio_post_type_checked();
 		});
-		self.set_radio_post_type_checked();
+			self.set_radio_post_type_checked();
+
+			if( DDLayout.listing_manager.listing_table_view.model.activeGroup !== 'single' ){
+                self.markUnassignedTabForChanges( 2 );
+			}
+
 	    });
 	}
 	else
@@ -281,6 +286,11 @@ DDLayout.IndividualAssignmentManager = function($)
 		self.set_radio_post_type_checked();
 	    }, 'json');
 	}
+    };
+
+    self.markUnassignedTabForChanges = function( group ){
+        var $tab = jQuery('div#layout-listing-tabs ul li[data-group="'+group+'"]');
+        $tab.append('<i class="fa fa-exclamation-triangle js-tab-alert-icon tab-alert-icon"></i>');
     };
 
 

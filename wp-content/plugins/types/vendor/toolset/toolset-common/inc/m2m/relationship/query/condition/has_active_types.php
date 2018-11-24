@@ -100,7 +100,8 @@ class Toolset_Relationship_Query_Condition_Has_Active_Types extends Toolset_Rela
 
 		$post_type_query = $this->post_type_query_factory->create( array(
 			Toolset_Post_Type_Query::IS_REGISTERED => true,
-			Toolset_Post_Type_Query::RETURN_TYPE => 'slug'
+			Toolset_Post_Type_Query::RETURN_TYPE => 'slug',
+			Toolset_Post_Type_Query::HAS_SPECIAL_PURPOSE => null
 		) );
 
 		$active_post_types = $post_type_query->get_results();

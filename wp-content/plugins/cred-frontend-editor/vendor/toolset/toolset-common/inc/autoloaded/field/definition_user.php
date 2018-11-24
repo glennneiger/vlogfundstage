@@ -79,4 +79,12 @@ class Toolset_Field_Definition_User extends Toolset_Field_Definition {
 		throw new RuntimeException( 'Not implemented.' );
 	}
 
+
+	/**
+	 * @return string Domain where this field belongs to.
+	 * @since 2.5.8
+	 */
+	public function get_domain() {
+		return Toolset_Element_Domain::USERS;
+	}
 }

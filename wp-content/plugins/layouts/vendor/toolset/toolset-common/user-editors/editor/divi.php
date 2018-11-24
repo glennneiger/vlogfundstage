@@ -13,11 +13,33 @@ class Toolset_User_Editors_Editor_Divi
 	const DIVI_BUILDER_OPTION_NAME = '_et_pb_use_builder';
 	const DIVI_BUILDER_OPTION_VALUE = 'on';
 
+	/**
+	 * @var Toolset_Constants
+	 */
+	private $constants;
+
+	/**
+	 * @var Toolset_Common_Bootstrap
+	 */
+	private $tc_bootstrap;
+
 	protected $id = 'divi';
 	protected $name = 'Divi Builder';
 	protected $option_name = '_toolset_user_editors_divi_template';
 
 	protected $logo_class = 'toolset-divi-logo-for-ct-button';
+
+	public function __construct( Toolset_User_Editors_Medium_Interface $medium, Toolset_Common_Bootstrap $tc_bootstrap = null, Toolset_Constants $constants = null ) {
+		parent::__construct( $medium );
+
+		$this->constants = $constants
+			? $constants
+			: new Toolset_Constants();
+
+		$this->tc_bootstrap = $tc_bootstrap
+			? $tc_bootstrap
+			: Toolset_Common_Bootstrap::get_instance();
+	}
 
 	public function initialize() {
 		if ( apply_filters( 'wpv_filter_is_native_editor_for_cts', false ) ) {
@@ -31,6 +53,8 @@ class Toolset_User_Editors_Editor_Divi
 		add_action( 'toolset_update_divi_builder_post_meta', array( $this, 'update_divi_builder_post_meta' ), 10, 2 );
 
 		add_action( 'wp_loaded', array( $this, 'add_filter_for_divi_modules_for_cts' ) );
+
+		add_filter( 'get_post_metadata', array( $this, 'maybe_post_uses_divi_built_ct' ), 10, 4 );
 
 		if (
 			isset( $this->medium )
@@ -91,4 +115,33 @@ class Toolset_User_Editors_Editor_Divi
 		return $allowed_types;
 	}
 
+	/**
+	 * Hijack the "get_post_meta( $post_id, '_et_pb_use_builder', true )" call that checks if the post with ID equals to
+	 * $post_id is built with Divi builder. The hijacking relates to checking on posts/pages that use content templates
+	 * built with Divi. In this case, the post will be identified as one that uses Divi builder.
+	 *
+	 * @param  string $meta_value The value of the meta.
+	 * @param  int    $post_id    The current post ID.
+	 * @param  string $meta_key   The key of the meta.
+	 * @param  bool   $single     Whether to return a single value.
+	 * @return mixed
+	 *
+	 * @since 3.0.1 Narrow down the cases where this hijacking is applied as it is basically needed only on the frontend.
+	 *              The problem was that when the hijacking also happened in the backend, Divi builder was force-used for
+	 *              post/pages that don't actually use the builder but were assigned to a Content Template that is built
+	 *              with it.
+	 */
+	public function maybe_post_uses_divi_built_ct( $meta_value, $post_id, $meta_key, $single ) {
+		if (
+			$this->tc_bootstrap->get_request_mode() === $this->constants->constant( 'Toolset_Common_Bootstrap::MODE_FRONTEND' ) &&
+			$meta_key === $this->constants->constant( 'Toolset_User_Editors_Editor_Divi::DIVI_BUILDER_OPTION_NAME' )
+		) {
+			$ct_id = get_post_meta( $post_id, '_views_template', true );
+			if ( $ct_id ) {
+				$meta_value = get_post_meta( $ct_id, self::DIVI_BUILDER_OPTION_NAME, true );
+			}
+		}
+
+		return $meta_value;
+	}
 }

@@ -287,10 +287,10 @@ if( !class_exists('CRED_Relationship_Cell') )
 
 			$is_private_layout = get_ddl_field('is_private_layout' );
 			if( $is_private_layout ===true ){
-				return  urldecode( get_ddl_field('ddl_layout_cred_relationship_shortcode' ) );
+				return  html_entity_decode( urldecode( get_ddl_field('ddl_layout_cred_relationship_shortcode' ) ), ENT_QUOTES );
 			}
 
-            return do_shortcode( urldecode( get_ddl_field('ddl_layout_cred_relationship_shortcode' ) ) );
+            return do_shortcode( html_entity_decode( urldecode( get_ddl_field('ddl_layout_cred_relationship_shortcode' ) ), ENT_QUOTES )  );
 		}
 
 		function cell_template_callback(){

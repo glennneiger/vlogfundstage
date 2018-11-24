@@ -6,19 +6,21 @@
  *
  * @since 2.6.0
  */
-class Toolset_Blocks_Custom_HTML {
+class Toolset_Blocks_Custom_HTML implements Toolset_Gutenberg_Block_Interface {
+
+	const BLOCK_NAME = 'toolset/custom-html';
 
 	public function init_hooks() {
 
-		add_action( 'init', array( $this, 'toolset_register_block_editor_assets' ) );
+		add_action( 'init', array( $this, 'register_block_editor_assets' ) );
 
-//		add_action( 'init', array( $this, 'toolset_register_block_type' ) );
-
-		// Hook scripts function into block editor hook
-		add_action( 'enqueue_block_editor_assets', array( $this, 'toolset_blocks_editor_scripts' ) );
+		add_action( 'init', array( $this, 'register_block_type' ) );
 
 		// Hook scripts function into block editor hook
-		add_action( 'enqueue_block_assets', array( $this, 'toolset_blocks_scripts' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'blocks_editor_scripts' ) );
+
+		// Hook scripts function into block editor hook
+		add_action( 'enqueue_block_assets', array( $this, 'blocks_scripts' ) );
 	}
 
 	/**
@@ -26,7 +28,7 @@ class Toolset_Blocks_Custom_HTML {
 	 *
 	 * @since 2.6.0
 	 */
-	public function toolset_register_block_editor_assets() {
+	public function register_block_editor_assets() {
 		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
 
 		$toolset_assets_manager->register_script(
@@ -62,7 +64,7 @@ class Toolset_Blocks_Custom_HTML {
 	 *
 	 * @since 2.6.0
 	 */
-	public function toolset_blocks_editor_scripts() {
+	public function blocks_editor_scripts() {
 		do_action( 'toolset_enqueue_scripts', array( 'toolset-custom-html-block-js' ) );
 		do_action( 'toolset_enqueue_styles', array( 'toolset-custom-html-block-editor-css' ) );
 	}
@@ -72,7 +74,18 @@ class Toolset_Blocks_Custom_HTML {
 	 *
 	 * @since 2.6.0
 	 */
-	public function toolset_blocks_scripts() {
+	public function blocks_scripts() {
+		return;
+	}
+
+	/**
+	 * Register block type. We can use this method to register the editor & frontend scripts as well as the render callback.
+	 *
+	 * @note For now the scripts registration is disabled as it creates console errors on the classic editor.
+	 *
+	 * @since 2.6.0
+	 */
+	public function register_block_type() {
 		return;
 	}
 }

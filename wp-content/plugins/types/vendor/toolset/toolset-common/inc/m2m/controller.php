@@ -70,7 +70,7 @@ class Toolset_Relationship_Controller {
 	/**
 	 * We need WPML to fire certain actions when it updates its icl_translations table.
 	 */
-	const MINIMAL_WPML_VERSION = '3.9.0';
+	const MINIMAL_WPML_VERSION = '3.9.3';
 
 
     private $is_autoloader_initialized = false;

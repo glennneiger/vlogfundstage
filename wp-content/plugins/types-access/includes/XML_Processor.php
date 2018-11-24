@@ -609,7 +609,10 @@ final class Access_XML_Processor
 							$key = $items[$i]['item_name'];
 							$group_name = '__FIELDS_GROUP_'.$items[$i]['item_name'];
 							$new_settings['third_party'][$group_type][$group_name] = array();
-							$new_settings['third_party'][$group_type][$group_name]['mode'] = $items[$i]['item_mode'];
+							$new_settings['third_party'][$group_type][$group_name]['mode'] = '';
+							if ( isset($items[$i]['item_mode']) ) {
+								$new_settings['third_party'][$group_type][$group_name]['mode'] = $items[$i]['item_mode'];
+							}
 							if ( isset($items[$i]['permissions']) && is_array($items[$i]['permissions']) ){
 								$new_settings['third_party'][$group_type][$group_name]['permissions'] = array();
 								foreach ($items[$i]['permissions'] as $action => $role){

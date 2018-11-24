@@ -13,10 +13,6 @@ class Toolset_Condition_Plugin_Wpml_Doesnt_Support_M2m implements Toolset_Condit
 	public function is_met() {
 		$m2m_controller = Toolset_Relationship_Controller::get_instance();
 
-		if( ! $m2m_controller->is_m2m_enabled() ) {
-			return false;
-		}
-
 		if( ! Toolset_WPML_Compatibility::get_instance()->is_wpml_active_and_configured() ) {
 			return false;
 		}

@@ -465,6 +465,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 	$attr_value = isset( $data['default'] ) ? $data['default'] : '';
 	$attr_value = isset( $data['default_force'] ) ? $data['default_force'] : $attr_value;
     $content = '';
+	$toolset_ajax = Toolset_Ajax::get_instance();
     /**
      * produce code
      */
@@ -669,10 +670,22 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
         $content .=  __( 'The current post being displayed either directly or in a View loop', 'wpv-views' );
         $content .= '</label>';
         $content .= '</li>';
+		
+		/**
+		 * $current_page in Views
+		 */
+        if ( in_array( toolset_getget('get_page'), array( 'views-editor' ) ) ) {
+            $content .= '<li class="wpv-shortcode-gui-item-selector-option">';
+			$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-current_page">';
+            $content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-current_page" name="wpv_shortcode_gui_object_id" value="$current_page" />';
+            $content .= __( 'The page where this View is shown', 'wpv-views' );
+            $content .= '</label>';
+            $content .= '</li>';
+        }
 
 		/**
-		* Hierarchical
-		*/
+		 * Hierarchical
+		 */
         if ( 
 			is_null( $post_type ) 
 			|| (
@@ -683,118 +696,247 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 		) {
             $content .= '<li class="wpv-shortcode-gui-item-selector-option">';
 			$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-parent">';
-            $content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-parent" name="wpv_shortcode_gui_object_id" value="parent" />';
+            $content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-parent" name="wpv_shortcode_gui_object_id" value="$parent" />';
             $content .= __( 'The parent of the current post in the same post type, set by WordPress hierarchical relationship', 'wpv-views' );
             $content .= '</label>';
             $content .= '</li>';
         }
 
         /**
-		* Types relationships
-		*/
-		
-		$current_post_type_parents = array();
-		$custom_post_types_relations = get_option( 'wpcf-custom-types', array() );
-		
-		if ( is_null( $post_type ) ) {
-			foreach ( $custom_post_types_relations as $cptr_key => $cptr_data ) {
-				if ( isset( $cptr_data['post_relationship']['has'] ) ) {
-					$current_post_type_parents[] = $cptr_key;
+		 * Types relationships
+		 */
+		if( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			// Legacy relationships
+			$current_post_type_parents = array();
+			$custom_post_types_relations = get_option( 'wpcf-custom-types', array() );
+			
+			if ( is_null( $post_type ) ) {
+				foreach ( $custom_post_types_relations as $cptr_key => $cptr_data ) {
+					if ( isset( $cptr_data['post_relationship']['has'] ) ) {
+						$current_post_type_parents[] = $cptr_key;
+					}
+					if ( 
+						isset( $cptr_data['post_relationship']['belongs'] ) 
+						&& is_array( $cptr_data['post_relationship']['belongs'] )
+					) {
+						$this_belongs = array_keys( $cptr_data['post_relationship']['belongs'] );
+						foreach ( $this_belongs as $this_belongs_candidate ) {
+							if ( isset( $custom_post_types_relations[ $this_belongs_candidate ] ) ) {
+								$current_post_type_parents[] = $this_belongs_candidate;
+							}
+						}
+					}
 				}
-				if ( 
-					isset( $cptr_data['post_relationship']['belongs'] ) 
-					&& is_array( $cptr_data['post_relationship']['belongs'] )
-				) {
-					$this_belongs = array_keys( $cptr_data['post_relationship']['belongs'] );
-					foreach ( $this_belongs as $this_belongs_candidate ) {
-						if ( isset( $custom_post_types_relations[ $this_belongs_candidate ] ) ) {
-							$current_post_type_parents[] = $this_belongs_candidate;
+			} else if (
+				is_object( $post_type )
+				&& isset( $post_type->slug )
+			) {
+				// Fix legacy problem, when child CPT has no parents itself, but parent CPT has children
+				foreach ( $custom_post_types_relations as $cptr_key => $cptr_data ) {
+					if ( 
+						isset( $cptr_data['post_relationship']['has'] ) 
+						&& in_array( $post_type->slug, array_keys( $cptr_data['post_relationship']['has'] ) )
+					) {
+						$current_post_type_parents[] = $cptr_key;
+					}
+				}
+				if ( isset( $custom_post_types_relations[$post_type->slug] ) ) {
+					$current_post_type_data = $custom_post_types_relations[$post_type->slug];
+					if (
+						isset( $current_post_type_data['post_relationship'] )
+						&& ! empty( $current_post_type_data['post_relationship'] )
+						&& isset( $current_post_type_data['post_relationship']['belongs'] )
+					) {
+						foreach ( array_keys( $current_post_type_data['post_relationship']['belongs'] ) as $cpt_in_relation) {
+							// Watch out! WE are not currently clearing the has and belongs entries of the relationships when deleting a post type
+							// So make sure the post type does exist
+							if ( isset( $custom_post_types_relations[ $cpt_in_relation ] ) ) {
+								$current_post_type_parents[] = $cpt_in_relation;
+							}
 						}
 					}
 				}
 			}
-		} else if (
-			is_object( $post_type )
-			&& isset( $post_type->slug )
-		) {
-			// Fix legacy problem, when child CPT has no parents itself, but parent CPT has children
-			foreach ( $custom_post_types_relations as $cptr_key => $cptr_data ) {
-				if ( 
-					isset( $cptr_data['post_relationship']['has'] ) 
-					&& in_array( $post_type->slug, array_keys( $cptr_data['post_relationship']['has'] ) )
-				) {
-					$current_post_type_parents[] = $cptr_key;
-				}
-			}
-			if ( isset( $custom_post_types_relations[$post_type->slug] ) ) {
-				$current_post_type_data = $custom_post_types_relations[$post_type->slug];
-				if (
-					isset( $current_post_type_data['post_relationship'] )
-					&& ! empty( $current_post_type_data['post_relationship'] )
-					&& isset( $current_post_type_data['post_relationship']['belongs'] )
-				) {
-					foreach ( array_keys( $current_post_type_data['post_relationship']['belongs'] ) as $cpt_in_relation) {
-						// Watch out! WE are not currently clearing the has and belongs entries of the relationships when deleting a post type
-						// So make sure the post type does exist
-						if ( isset( $custom_post_types_relations[ $cpt_in_relation ] ) ) {
-							$current_post_type_parents[] = $cpt_in_relation;
-						}
-					}
-				}
-			}
-		}
-		
-		$current_post_type_parents = array_values( $current_post_type_parents );
-		$current_post_type_parents = array_unique( $current_post_type_parents );
-		
-		if ( ! empty( $current_post_type_parents) ) {
-			$content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
-			$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-related">';
-			$content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-related" name="wpv_shortcode_gui_object_id" value="related" />';
-			$content .= __( 'The parent of the current post in another post type, set by Types relationship', 'wpv-views' );
-			$content .= '</label>';
-			$content .= '<div class="wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none">';
-			$content .= '<ul class="wpv-advanced-setting wpv-mightlong-list" style="padding-top:15px;margin:5px 0 10px;">';
-			$first = true;
-			foreach ( $current_post_type_parents as $slug  ) {
-				$content .= '<li>';
-				$content .= sprintf( '<label for="wpv-shortcode-gui-item-selector-post-relationship-id-%s">', $slug );
-				$content .= sprintf(
-					'<input type="radio" name="related_object" id="wpv-shortcode-gui-item-selector-post-relationship-id-%s" value="%s" %s />',
-					$slug,
-					$slug,
-					$first ? 'checked="checked"' : ''
-				);
-				$content .= $custom_post_types_relations[$slug]['labels']['singular_name'];
+			
+			$current_post_type_parents = array_values( $current_post_type_parents );
+			$current_post_type_parents = array_unique( $current_post_type_parents );
+			
+			if ( ! empty( $current_post_type_parents) ) {
+				$content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
+				$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-related">';
+				$content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-related" name="wpv_shortcode_gui_object_id" value="related" />';
+				$content .= __( 'The parent of the current post in another post type, set by a Types relationship', 'wpv-views' );
 				$content .= '</label>';
+				$content .= '<div class="wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none">';
+				$content .= '<ul class="wpv-advanced-setting wpv-mightlong-list" style="padding-top:15px;margin:5px 0 10px;">';
+				$first = true;
+				foreach ( $current_post_type_parents as $slug  ) {
+					$content .= '<li>';
+					$content .= sprintf( '<label for="wpv-shortcode-gui-item-selector-post-relationship-id-%s">', $slug );
+					$content .= sprintf(
+						'<input type="radio" name="related_object" id="wpv-shortcode-gui-item-selector-post-relationship-id-%s" value="$%s" %s />',
+						$slug,
+						$slug,
+						checked( $first, true, false )
+					);
+					$content .= $custom_post_types_relations[$slug]['labels']['singular_name'];
+					$content .= '</label>';
+					$content .= '</li>';
+					$first = false;
+				}
+				$content .= '</ul>';
+				$content .= '</div>';
 				$content .= '</li>';
-				$first = false;
 			}
-			$content .= '</ul>';
-			$content .= '</div>';
-			$content .= '</li>';
+		} else {
+			// m2m relationships
+			// Make sure m2m classes are registered in the autoloader
+			do_action( 'toolset_do_m2m_full_init' );
+			$query = new Toolset_Relationship_Query_V2();
+			
+			// Note that we can not use $query->do_if() because it actually runs both branches 
+			// and one of them expects $current_post_type->name to exist
+            if ( $post_type instanceof WP_Post_Type ) {
+	            $relationship_definitions = $query
+		            ->add(
+						$query->do_and(
+							$query->do_or(
+								$query->has_domain_and_type( $post_type->name, Toolset_Element_Domain::POSTS ),
+								$query->intermediary_type( $post_type->name )
+							),
+							$query->do_or(
+								$query->origin( Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ),
+								$query->origin( Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD )
+							)
+						)
+		            )
+		            ->get_results();
+            } else {
+	            $relationship_definitions = $query
+		            ->add(
+						$query->do_or(
+							$query->origin( Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ),
+							$query->origin( Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD )
+						)
+		            )
+		            ->get_results();
+            }
+			
+			$relationship_definitions_per_origin = array(
+				Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD => array(),
+				Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD => array()
+			);
+			
+			$relationship_section_title_per_cardinality = array(
+				'one-to-one' => __( '%s (one-to-one relationship)', 'wpv-views' ),
+				'one-to-many' => __( '%s (one-to-many relationship)', 'wpv-views' ),
+				'many-to-many' => __( '%s (many-to-many relationship)', 'wpv-views' ),
+			);
+			
+			foreach( $relationship_definitions as $relationship_definition ) {
+				$relationship_cardinality = $relationship_definition->get_cardinality();
+				$origin = $relationship_definition->get_origin();
+				
+				$relationship_definitions_per_origin[ $origin->get_origin_keyword() ][] = $relationship_definition;
+			}
+			
+			if ( ! empty( $relationship_definitions_per_origin[ Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ] ) ) {
+				$content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
+				$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-related">';
+				$content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-related" name="wpv_shortcode_gui_object_id" value="related" />';
+				$content .= __( 'A post related to the current post, set by a Types relationship', 'wpv-views' );
+				$content .= '</label>';
+				$content .= '<div class="wpv-advanced-setting wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none;margin-left:20px;">';
+				foreach ( $relationship_definitions_per_origin[ Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ] as $relationship_definition  ) {
+					$cardinality = $relationship_definition->get_cardinality()->get_type();
+					
+					$content .= '<div style="margin:5px 0 0;">';
+					$content .= '<h3>' . sprintf(
+						$relationship_section_title_per_cardinality[ $cardinality ],
+						$relationship_definition->get_display_name()
+					) . '</h3>';
+					$content .= '<ul>';
+					$relationship_selectors_factory = new Toolset_Shortcode_Attr_Item_Gui_Factory(
+						$relationship_definition, $post_type, 'related_object'
+					);
+					$relationship_selectors = $relationship_selectors_factory->get_options();
+					foreach( $relationship_selectors as $relationship_selector_option ) {
+						$content .= '<li style="display:inline-block;width:31%;vertical-align:top;margin-right:1%;">' . $relationship_selector_option . '</li>';
+					}
+					$content .= '</ul></div>';
+				}
+				$content .= '</div>';
+				$content .= '</li>';
+			}
+			
+			if ( ! empty( $relationship_definitions_per_origin[ Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD ] ) ) {
+				$content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
+				$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-referenced">';
+				$content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-referenced" name="wpv_shortcode_gui_object_id" value="referenced" />';
+				$content .= __( 'A post related to the current post, set by a Types post reference field', 'wpv-views' );
+				$content .= '</label>';
+				$content .= '<div class="wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none">';
+				$content .= '<ul class="wpv-advanced-setting wpv-mightlong-list" style="padding-top:15px;margin:5px 0 10px;">';
+				foreach ( $relationship_definitions_per_origin[ Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD ] as $relationship_definition  ) {
+					$relationship_selectors_factory = new Toolset_Shortcode_Attr_Item_Gui_Factory(
+						$relationship_definition, $post_type, 'referenced_object'
+					);
+					$relationship_selectors = $relationship_selectors_factory->get_options();
+					foreach( $relationship_selectors as $relationship_selector_option ) {
+						$content .= '<li>' . $relationship_selector_option . '</li>';
+					}
+				}
+				$content .= '</ul>';
+				$content .= '</div>';
+				$content .= '</li>';
+			}
+			
 		}
 		
 		/**
-		* Specific post selection
-		*/
+		 * Specific post selection
+		 */
 
         $content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
 		$content .= '<label for="wpv-shortcode-gui-item-selector-post-id">';
         $content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id" name="wpv_shortcode_gui_object_id" value="object_id" />';
-        $content .= __( 'A specific post', 'wpv-views' );
+        $content .= __( 'A specific post (search by title)', 'wpv-views' );
         $content .= '</label>';
         $content .= '<div class="wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none">';
         $content .= '<label for="wpv-shortcode-gui-item-selector-post-id-object_id"></label>';
-        $content .= '<input type="text" id="wpv-shortcode-gui-item-selector-post-id-object_id" class="js-wpv-shortcode-gui-attribute-has-placeholder" name="specific_object_id" placeholder="' . esc_attr( __( 'Enter a post ID, eg 15', 'wpv-views' ) ) . '" data-placeholder="' . esc_attr( __( 'Enter a post ID, eg 15', 'wpv-views' ) ) . '" />';
+        $content .= '<select '
+			. 'id="wpv-shortcode-gui-item-selector-post-id-object_id" '
+			. 'class="js-wpv-shortcode-gui-field-ajax-select2" '
+			. 'name="specific_object_id" '
+			. 'data-action="' . esc_attr( $toolset_ajax->get_action_js_name( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE ) ) . '" '
+			. 'data-prefill="' . esc_attr( $toolset_ajax->get_action_js_name( Toolset_Ajax::CALLBACK_GET_POST_BY_ID ) ) . '" '
+			. 'data-nonce="' . wp_create_nonce( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE ) . '" '
+			. 'data-prefill-nonce="' . wp_create_nonce( Toolset_Ajax::CALLBACK_GET_POST_BY_ID ) . '" '
+			. 'data-placeholder="' . esc_attr( __( 'Search for a post by title', 'wpv-views' ) ). '"'
+			. '>'
+			. '</select>';
         $content .= '</div>';
         $content .= '</li>';
+
+	    /**
+	     * Specific post selection by ID
+	     */
+	    $content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
+	    $content .= '<label for="wpv-shortcode-gui-item-selector-post-id-raw">';
+	    $content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-raw" name="wpv_shortcode_gui_object_id" value="object_id_raw" />';
+	    $content .= __( 'A specific post (set by post ID)', 'wpv-views' );
+	    $content .= '</label>';
+	    $content .= '<div class="wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none">';
+	    $content .= '<label for="wpv-shortcode-gui-item-selector-post-id-object_id-raw"></label>';
+	    $content .= '<input type="number" placeholder="' . esc_attr( __( 'Please enter post ID', 'wpv-views' ) ) . '" id="wpv-shortcode-gui-item-selector-post-id-object_id-raw" class="regular-text" name="specific_object_id_raw">';
+	    $content .= '</div>';
+	    $content .= '</li>';
 
 		$content .= '</ul>';
         $content .= '<p class="description">';
         $content .= sprintf(
             __( 'Learn about displaying content from parent and other posts in the %sdocumentation page%s.', 'wpv-views' ),
-            '<a href="http://wp-types.com/documentation/user-guides/displaying-fields-of-parent-pages/" target="_blank">',
+            '<a href="https://toolset.com/documentation/user-guides/displaying-fields-of-parent-pages/" target="_blank">',
             '</a>'
         );
         $content .= '</p>';
@@ -814,8 +956,8 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
         $content .= '</li>';
 		
 		/**
-		* Specific user selection
-		*/
+		 * Specific user selection
+		 */
 
         $content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
 		$content .= '<label for="wpv-shortcode-gui-item-selector-user-id">';
@@ -824,7 +966,17 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
         $content .= '</label>';
         $content .= '<div class="wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none">';
         //$content .= '<label for="wpv-shortcode-gui-item-selector-user-id-object_id"></label>';
-        $content .= '<input type="text" id="wpv-shortcode-gui-item-selector-user-id-object_id" class="js-wpv-shortcode-gui-attribute-has-placeholder" name="specific_object_id" placeholder="' . esc_attr( __( 'Enter an user ID, eg 2', 'wpv-views' ) ) . '" data-placeholder="' . esc_attr( __( 'Enter an user ID, eg 2', 'wpv-views' ) ) . '" />';
+        $content .= '<select '
+			. 'id="wpv-shortcode-gui-item-selector-user-id-object_id" '
+			. 'class="js-wpv-shortcode-gui-field-ajax-select2" '
+			. 'name="specific_object_id" '
+			. 'data-action="' . esc_attr( $toolset_ajax->get_action_js_name( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_USERS ) ) . '" '
+			. 'data-prefill="' . esc_attr( $toolset_ajax->get_action_js_name( Toolset_Ajax::CALLBACK_GET_USER_BY_ID ) ) . '" '
+			. 'data-nonce="' . wp_create_nonce( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_USERS ) . '" '
+			. 'data-prefill-nonce="' . wp_create_nonce( Toolset_Ajax::CALLBACK_GET_USER_BY_ID ) . '" '
+			. 'data-placeholder="' . esc_attr( __( 'Search for a user', 'wpv-views' ) ). '"'
+			. '>'
+			. '</select>';
         $content .= '</div>';
         $content .= '</li>';
 
@@ -832,7 +984,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
         $content .= '<p class="description">';
         $content .= sprintf(
             __( 'Learn about displaying content from specific users in the %sdocumentation page%s.', 'wpv-views' ),
-            '<a href="http://wp-types.com/documentation/user-guides/displaying-fields-of-parent-pages/" target="_blank">',
+            '<a href="https://toolset.com/documentation/user-guides/displaying-fields-of-parent-pages/" target="_blank">',
             '</a>'
         );
         $content .= '</p>';
@@ -924,32 +1076,13 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 	$overrides		= wpv_sanitize_shortcode_forced_data( $overrides );
 	
 	$gui_action		= isset( $_GET['gui_action'] ) ? sanitize_text_field( $_GET['gui_action'] ) : '';
+	
 	/**
-	 * White list of shortcodes.
+	 * Get list of shortcodes with GUI data.
 	 *
-	 * Filter allow to add shortcode definition to white list of allowed shortcodes.
+	 * @param array $views_shortcodes
 	 *
 	 * @since 1.9.0
-	 *
-	 * @param array $views_shortcodes {
-	 *     Complex array with shortcode definition.
-	 *
-	 *     @type string $name Name of shortcode.
-	 *     @type string $label Label displayed as a title of modal popup.
-	 *     @type array $attributes {
-	 *          Allowed attributes of shortode.
-	 *
-	 *          @type string $label Label of field.
-	 *          @type string $type Type of field
-	 *          @type array $options {
-	 *              Optional param with radio or select options. Array keys is 
-	 *              a field name.
-	 *
-	 *              @@type string Label of value.
-	 *
-	 *          }
-	 *     }
-	 * }
 	 */
 	$views_shortcodes_gui_data	= apply_filters( 'wpv_filter_wpv_shortcodes_gui_data', array() );
 	
@@ -983,15 +1116,29 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
         if ( ! isset($options['attributes'] ) ) {
             $options['attributes'] = array();
         }
-        $options['attributes']['post-selection'] = array(
-            'label' => __('Post selection', 'wpv-views'),
-            'header' => __('Display data for:', 'wpv-views'),
-            'fields' => array(
-                'id' => array(
-                    'type' => 'post'
-                ),
-            ),
-        );
+		if( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			// m2m disabled
+			$options['attributes']['post-selection'] = array(
+				'label'  => __( 'Post selection', 'wpv-views' ),
+				'header' => __( 'Display data for:', 'wpv-views' ),
+				'fields' => array(
+					'id' => array(
+						'type' => 'post'
+					),
+				),
+			);
+		} else {
+			// m2m enabled
+			$options['attributes']['post-selection'] = array(
+				'label'  => __( 'Post selection', 'wpv-views' ),
+				'header' => __( 'Display data for:', 'wpv-views' ),
+				'fields' => array(
+					'item' => array(
+						'type' => 'post'
+					),
+				),
+			);
+		}
     }
 	
 	/**
@@ -1177,7 +1324,7 @@ function wpv_suggest_wpv_post_body_view_template() {
 		if ( $content_templates_translatable ) {
 			$wpml_current_language = $sitepress->get_current_language();
 			$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-			$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s ";
+			$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
 			$values_to_prepare[] = $wpml_current_language;
 		}
 	}
@@ -1388,138 +1535,6 @@ function wpv_create_form_target_page() {
 }
 
 /**
-* wpv_force_shortcodes_gui_basic_items
-*
-* Enforce some items on the Basic section of the Fields and Views dialog
-* Even when displaying data for Views listing taxonomy terms or users
-*
-* Right now, we enforce:
-* 'wpv-bloginfo', 'wpv-current-user', 'wpv-search-term', 'wpv-login-form', 'wpv-archive-link',
-* 'wpv-logout-link', 'wpv-forgot-password-link'
-*
-* @since 1.10
-*/
-
-add_filter( 'editor_addon_menus_wpv-views', 'wpv_force_shortcodes_gui_basic_items', 90 );
-
-function wpv_force_shortcodes_gui_basic_items( $menu = array() ) {
-	$basic = __( 'Basic', 'wpv-views' );
-	if ( isset( $menu[$basic] ) ) {
-		$nonce = wp_create_nonce( 'wpv_editor_callback' );
-		// Add wpv-bloginfo
-		$bloginfo_title = __('Site information', 'wpv-views');
-		$menu[$basic][$bloginfo_title] = array( 
-			$bloginfo_title,
-			'wpv-bloginfo',
-			$basic,
-			"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-bloginfo', title: '" . esc_js( $bloginfo_title ) . "' })"
-		);
-		// Add wpv-current-user
-		$current_user_title = __('Current user info', 'wpv-views');
-		$menu[$basic][$current_user_title] = array( 
-			$current_user_title,
-			'wpv-current-user',
-			$basic,
-			"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode:'wpv-current-user', title: '" . esc_js( $current_user_title ) . "' })"
-		);
-		// Add wpv-search-term
-		$search_term_title = __('Search term', 'wpv-views');
-		$menu[$basic][$search_term_title] = array( 
-			$search_term_title,
-			'wpv-search-term',
-			$basic,
-		"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-search-term', title: '" . esc_js( $search_term_title ) . "' })"
-		);
-		// Add wpv-login-form
-		$login_form_title = __('Login form', 'wpv-views');
-		$menu[$basic][$login_form_title] = array(
-			$login_form_title,
-			'wpv-login-form',
-			$basic,
-			"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-login-form', title: '" . esc_js( $login_form_title ) . "' })"
-		);
-		// Add wpv-logout-link
-		$logout_link_title = __('Logout link', 'wpv-views');
-		$menu[$basic][$logout_link_title] = array(
-				$logout_link_title,
-				'wpv-logout-link',
-				$basic,
-				"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-logout-link', title: '" . esc_js( $logout_link_title ) . "' })"
-		);
-		// Add wpv-forgot-password-link
-		/*
-		 * GUI button removed because of new short codes for Forgot/Reset Password.
-		 * However, the short code is left active for backward compatibility.
-		 */
-		/*$forgot_password_link_title = __('Forgot password link', 'wpv-views');
-		$menu[$basic][$forgot_password_link_title] = array(
-			$forgot_password_link_title,
-			'wpv-forgot-password-link',
-			$basic,
-			"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-forgot-password-link', title: '" . esc_js( $forgot_password_link_title ) . "' })"
-		);*/
-		// Add wpv-forgot-password-form
-		$forgot_password_form_title = __('Forgot password form', 'wpv-views');
-		$menu[$basic][$forgot_password_form_title] = array(
-			$forgot_password_form_title,
-			'wpv-forgot-password-form',
-			$basic,
-			"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-forgot-password-form', title: '" . esc_js( $forgot_password_form_title ) . "' })"
-		);
-		// Add wpv-reset-password-form
-		$reset_password_form_title = __('Reset password form', 'wpv-views');
-		$menu[$basic][$reset_password_form_title] = array(
-			$reset_password_form_title,
-			'wpv-reset-password-form',
-			$basic,
-			"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-reset-password-form', title: '" . esc_js( $reset_password_form_title ) . "' })"
-		);
-		// Add wpv-archive-link
-		$archive_link_title = __('Post archive link', 'wpv-views');
-		$menu[$basic][$archive_link_title] = array(
-			$archive_link_title,
-			'wpv-archive-link',
-			$basic,
-			"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-archive-link', title: '" . esc_js( $archive_link_title ) . "' })"
-		);
-	}
-	return $menu;
-}
-
-/**
-* wpv_force_shortcodes_gui_basic_archive_items
-*
-* Enforce some items on the Basic section of the Fields and Views dialog
-* Only when displaying a WPA edit page
-*
-* Right now, we enforce:
-* 'wpv-archive-title'
-*
-* @since 1.10
-* @since 2.3.0 Deprecated
-*/
-
-add_filter( 'editor_addon_menus_wpv-views', 'wpv_force_shortcodes_gui_basic_archive_items', 80 );
-
-function wpv_force_shortcodes_gui_basic_archive_items( $menu = array() ) {
-	$basic = __( 'Basic', 'wpv-views' );
-	if ( 
-		isset( $_GET['page'] )
-		&& $_GET['page'] == 'view-archives-editor'
-		&& isset( $menu[$basic] ) 
-	) {
-		$archive_title_title = __('Archive title', 'wpv-views');
-		$menu[$basic][$archive_title_title] = array(
-			$archive_title_title,
-			'wpv-archive-title',
-			$basic,
-			""
-		);
-	}
-	return $menu;
-}
-
-/**
  * Generates the li items for the Post field section of the shortcodes GUI, on demand
  *
  * @since 1.10.0
@@ -1530,17 +1545,7 @@ function wpv_force_shortcodes_gui_basic_archive_items( $menu = array() ) {
 add_action( 'wp_ajax_wpv_shortcodes_gui_load_post_fields_on_demand', 'wpv_shortcodes_gui_load_post_fields_on_demand' );
 
 function wpv_shortcodes_gui_load_post_fields_on_demand() {
-	global $WP_Views;
 	$cf_keys = apply_filters( 'wpv_filter_wpv_get_postmeta_keys', array() );
-	global $post;
-
-	$post_id = 0;
-	if (
-		is_object( $post )
-		&& isset( $post->ID)
-	) {
-		$post_id = $post->ID;
-	}
 	$native_fields = array();
 	foreach ( $cf_keys as $cf_key ) {
 		if ( ! wpv_is_types_custom_field( $cf_key ) ) {

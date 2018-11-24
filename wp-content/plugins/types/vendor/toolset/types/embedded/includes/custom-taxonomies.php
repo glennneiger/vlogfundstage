@@ -245,6 +245,13 @@ function wpcf_custom_taxonomies_register( $taxonomy, $data ) {
 		$taxonomy_args['name'] = $taxonomy;
 	}
 
+	/**
+	 * Translate (and register with WPML) the taxonomy strings in the correct gettext context
+	 * @link https://onthegosystems.myjetbrains.com/youtrack/issue/types-1323
+	 */
+	$taxonomy_args['labels']['name']          = _x( $taxonomy_args['labels']['name'], 'taxonomy general name', 'Types-TAX' );
+	$taxonomy_args['labels']['singular_name'] = _x( $taxonomy_args['labels']['singular_name'], 'taxonomy singular name', 'Types-TAX' );
+
 	$result = register_taxonomy( $taxonomy, $object_types_filtered, $taxonomy_args );
 
 	$is_success = ( $result instanceof WP_Error ? false : true );

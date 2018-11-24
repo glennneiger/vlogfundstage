@@ -90,4 +90,31 @@ interface IToolset_Association_Query_Element_Selector {
 	 * @return void
 	 */
 	public function request_element_in_results( IToolset_Relationship_Role $role );
+
+
+	/**
+	 * Call this to make sure the association ID and relationship ID will be included in the SELECT clause.
+	 *
+	 * @return void
+	 * @since 2.6.1
+	 */
+	public function request_association_and_relationship_in_results();
+
+
+	/**
+	 * Call this to make sure the DISTINCT keyword will be used.
+	 *
+	 * @return void
+	 * @since 2.6.1
+	 */
+	public function request_distinct_query();
+
+
+	/**
+	 * Get the DISTINCT keyword or an empty string.
+	 *
+	 * @return string
+	 * @since 2.6.1
+	 */
+	public function maybe_get_distinct_modifier();
 }

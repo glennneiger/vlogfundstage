@@ -180,6 +180,21 @@ class Toolset_Theme_Integration_Settings_Helper{
 	}
 
 	/**
+	 * @return bool
+	 * check if we have a object_type and an object_id and in case it's a CT if can be assigned, if not then we might avoid loading settings
+	 */
+	public function check_if_content_template_and_cannot_be_assigned(){
+
+		if( isset( $_GET['page'] ) && $_GET['page'] === 'ct-editor' && isset( $_GET['ct_id'] ) ){
+			$object_id = $_GET['ct_id'];
+			$_view_loop_id = (int) get_post_meta( $object_id, '_view_loop_id', true );
+			return $_view_loop_id !== 0;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param null $post_id
 	 *
 	 * @return array

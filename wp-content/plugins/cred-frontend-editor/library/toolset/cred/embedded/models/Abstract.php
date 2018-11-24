@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Abstract Class that contains common shared methods used by CRED_Forms_Model (CRED Post Forms) and
- * CRED_User_Forms_Model (CRED User Forms) model classes
+ * Abstract Class that contains common shared methods used by CRED_Forms_Model (Toolset Post Forms) and
+ * CRED_User_Forms_Model (Toolset User Forms) model classes
  */
 abstract class CRED_Abstract_Model
 {
@@ -686,7 +686,8 @@ abstract class CRED_Abstract_Model
 		}
 		$fields = $this->esc_meta_data( $fields );
 		foreach ( $fields as $meta_key => $meta_value ) {
-			delete_post_meta( $id, $this->prefix . $meta_key );
+			// Why it was deleted before updated?
+			//delete_post_meta( $id, $this->prefix . $meta_key );
 			update_post_meta( $id, $this->prefix . $meta_key, $meta_value, false /* $unique */ );
 		}
 	}
@@ -697,7 +698,8 @@ abstract class CRED_Abstract_Model
 	 * @param string $value
 	 */
 	public function updateFormCustomField($id, $field, $value) {
-		delete_post_meta( $id, $this->prefix . $field );
+		// Why it was deleted before updated?
+		//delete_post_meta( $id, $this->prefix . $field );
 		update_post_meta( $id, $this->prefix . $field, $this->esc_meta_data( $value ), false );
 		//added postmeta for installer
 		if ( isset( $_REQUEST['action'] )

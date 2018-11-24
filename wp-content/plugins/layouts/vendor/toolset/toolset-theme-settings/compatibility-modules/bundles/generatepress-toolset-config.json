@@ -694,32 +694,6 @@
       },
       "default_value": 0
     },
-	{
-      "name": "toolset_disable_read_more_for_excerpt",
-      "type": [
-        "toolset_custom"
-      ],
-      "group": "Disable Elements",
-      "target": [
-        "single",
-        "archive"
-      ],
-      "gui": {
-        "display_name": "Read more link in excerpt",
-        "type": "select",
-        "values": [
-          {
-            "text": "Disable",
-            "value": 1
-          },
-          {
-            "text": "Enable",
-            "value": 0
-          }
-        ]
-      },
-      "default_value": 0
-    },
     {
       "name": "_generate-disable-headline",
       "type": [

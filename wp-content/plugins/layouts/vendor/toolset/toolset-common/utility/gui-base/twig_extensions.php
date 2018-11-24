@@ -38,6 +38,7 @@ class Toolset_Twig_Extensions {
 		$twig->addFunction( 'unique_name', new Twig_SimpleFunction( 'unique_name', array( $this, 'unique_name' ) ) );
 		$twig->addFunction( 'printf', new Twig_SimpleFunction( 'printf', 'printf' ) );
 		$twig->addFunction( 'sprintf', new Twig_SimpleFunction( 'sprintf', 'sprintf' ) );
+		$twig->addFunction( 'apply_filters', new Twig_SimpleFunction( 'apply_filters', 'apply_filters' ) );
 
 		return $twig;
 	}

@@ -66,39 +66,48 @@ WPViews.WidgetsGUI = function( $ ) {
 			}
 		});
 	};
+
+	self.onSuggestSelect = function() {
+		var t_value = this.value,
+			$widgetContainer = $( this ).closest( '.widget' ), // Container on the Widgets page
+			$flBuilderContainer = $( this ).closest( '.fl-builder-widget-settings' ), // Container on a page or Content Template edited by Beaver Builder.
+			$t_container = 0 !== $widgetContainer.length ? $widgetContainer : $flBuilderContainer,
+			t_split_point = t_value.lastIndexOf(' ['),
+			t_title = t_value.substr( 0, t_split_point ),
+			t_extra = t_value.substr( t_split_point ).split('#'),
+			t_id = t_extra[1].replace(']', ''),
+			$thiz_target_id = $t_container.find( '.js-wpv-widget-form-target-id' ),
+			$thiz_errorbox = $t_container.find( '.js-wpv-incomplete-setup-box' );
+
+		$t_container.find( '.icon-exclamation-sign' ).remove();
+		$t_container.find( '.js-wpv-widget-form-target-suggest-title' ).val( t_title );
+		$thiz_target_id.val( t_id );
+		$thiz_errorbox.hide();
+
+		self.showTargetbox( $t_container, t_id );
+	};
 	
 	// Initialize suggest on the already existing Views Filter widgets
-	
 	self.initialize_suggest = function() {
-		$('#widgets-right .js-wpv-widget-form-target-suggest-title:not(.js-wpv-suggest-on)').suggest( wpv_widgets_gui_texts.ajaxurl + '&action=wpv_suggest_form_targets', {
-			resultsClass: 'ac_results wpv-suggest-results',
-			onSelect: function() {
-				var t_value = this.value,
-				t_container = $( this ).closest( '.widget' ),
-				t_split_point = t_value.lastIndexOf(' ['),
-				t_title = t_value.substr( 0, t_split_point ),
-				t_extra = t_value.substr( t_split_point ).split('#'),
-				t_id = t_extra[1].replace(']', ''),
-				thiz_target_id = t_container.find( '.js-wpv-widget-form-target-id' ),
-				thiz_button = t_container.find( '.widget-control-save' ),
-				thiz_errorbox = t_container.find( '.js-wpv-incomplete-setup-box' ),
-				thiz_targetbox = t_container.find( '.js-wpv-check-target-setup-box' ),
-				thiz_editlink_url = t_container.find( '.js-wpv-check-target-setup-link' ).data( 'editurl' ),
-				thiz_editlink_view = t_container.find( '.js-wpv-view-form-id' ).val();
-				
-				t_container.find( '.icon-exclamation-sign' ).remove();
-				t_container.find( '.js-wpv-widget-form-target-suggest-title' ).val( t_title );
-				thiz_target_id.val( t_id );
-				thiz_errorbox
-					.hide();
-				thiz_targetbox
-					.fadeIn()
-					.find('.js-wpv-check-target-setup-link')
-							.attr( 'href', thiz_editlink_url + t_id + '&action=edit&completeview=' + thiz_editlink_view + '&origid=widget' );
-				
-			}
-		});
-		$('#widgets-right .js-wpv-widget-form-target-suggest-title:not(.js-wpv-suggest-on)').addClass( 'js-wpv-suggest-on' );
+		var $widgetSuggestInput = $( '#widgets-right .js-wpv-widget-form-target-suggest-title:not( .js-wpv-suggest-on )' );
+		var $beaverBuilderWidgetSuggestInput = $( '.fl-builder-widget-settings .js-wpv-widget-form-target-suggest-title:not( .js-wpv-suggest-on )' );
+
+		var suggestionsSource = wpv_widgets_gui_texts.ajaxurl + '&action=wpv_suggest_form_targets';
+		var suggestionsOptions = {
+			resultsClass: 'ac_results wpv-suggest-results toolset-editors-frontend-editor-suggest-results',
+			onSelect: self.onSuggestSelect
+		};
+		var suggestionsOnClass = 'js-wpv-suggest-on';
+
+		if ( 0 < $widgetSuggestInput.length ) {
+			$widgetSuggestInput.suggest( suggestionsSource, suggestionsOptions );
+			$widgetSuggestInput.addClass( suggestionsOnClass );
+		}
+
+		if ( 0 < $beaverBuilderWidgetSuggestInput.length ) {
+			$beaverBuilderWidgetSuggestInput.suggest( suggestionsSource, suggestionsOptions );
+			$beaverBuilderWidgetSuggestInput.addClass( suggestionsOnClass );
+		}
 	};
 	
 	//--------------------
@@ -113,87 +122,150 @@ WPViews.WidgetsGUI = function( $ ) {
 		self.check_incomplete_view_forms();
         self.initialize_suggest();
     });
-	
-	// Manage changes to the title input:
-	// - clean the target ID value
-	// - dsable save button
-	// - add hint to widget title
-	// - manage target and error boxes
-	
-	$( document ).on( 'change input cut paste', '#widgets-right .js-wpv-widget-form-target-suggest-title', function ( e ) {
-		var container = $( this ).closest( '.widget' );
-		self.set_form_widget_data( container, function() {
-			container.find( '.icon-exclamation-sign' ).remove();
-			self.target_id.val( '' );
-			self.widget_button
-				.addClass( 'button-secondary' )
-				.removeClass( 'button-primary' )
-				.prop( 'disabled', true );
-			self.widget_title
-				.append( " <i class='icon-exclamation-sign fa fa-exclamation-circle' style='color:red;margin-top:-2px;font-size:0.85em'></i>" );
-			self.targetbox
-				.hide();
-			self.errorbox
-				.fadeIn();
-		});	
-	});
-	
-	// Manage save button and target/error boxes when changing the used View
-	
-	$( document ).on( 'change', '#widgets-right  .js-wpv-view-form-id', function() {
-		var container = $( this ).closest( '.widget' );
-		self.set_form_widget_data( container, function() {
-			if ( self.target_id.val() != '' ) {
-				self.widget_button
+
+	/**
+	 * Manage changes to the title input:
+	 * - clean the target ID value
+	 * - disable save button
+	 * - add hint to widget title
+	 * - manage target and error boxes
+	 */
+	$( document ).on(
+		'change input cut paste',
+		'#widgets-right .js-wpv-widget-form-target-suggest-title,' +
+		'.fl-builder-widget-settings .js-wpv-widget-form-target-suggest-title',
+		function ( e ) {
+			var $widgetContainer = $( this ).closest( '.widget' ), // Container on the Widgets page
+				$flBuilderContainer = $( this ).closest( '.fl-builder-widget-settings' ),
+				$container = 0 !== $widgetContainer.length ? $widgetContainer : $flBuilderContainer; // Container on a page or Content Template edited by Beaver Builder.
+
+			self.set_form_widget_data( $container, function() {
+				$container.find( '.icon-exclamation-sign' ).remove();
+				self.target_id.val( '' );
+				self.targetbox.hide();
+				self.errorbox.fadeIn();
+
+				if ( $widgetContainer.length > 0 ) {
+					self.widget_button
 						.addClass( 'button-secondary' )
 						.removeClass( 'button-primary' )
 						.prop( 'disabled', true );
-				self.targetbox
-					.fadeIn()
-					.find('.js-wpv-check-target-setup-link')
-						.attr( 'href', self.editlink.data( 'editurl' ) + self.target_id.val() + '&action=edit&completeview=' + self.view_id.val() + '&origid=widget' );
+					self.widget_title.append( " <i class='icon-exclamation-sign fa fa-exclamation-circle' style='color:red;margin-top:-2px;font-size:0.85em'></i>" );
+				}
+			});
+		}
+	);
+	
+	// Manage save button and target/error boxes when changing the used View
+	self.viewSelectionHasFocus = false;
+	$( document ).on(
+		'focus',
+		'#widgets-right .js-wpv-view-form-id,' +
+		'.fl-builder-widget-settings .js-wpv-view-form-id',
+		function () {
+			self.viewSelectionHasFocus = true;
+		}
+	).on(
+		'change',
+		'#widgets-right .js-wpv-view-form-id,' +
+		'.fl-builder-widget-settings .js-wpv-view-form-id',
+		function() {
+			// This is needed because Beaver Builder fires a change event when the controls of the widget first appears.
+			if ( ! self.viewSelectionHasFocus ) {
+				return;
 			}
-		});
-	});
+
+			var $widgetContainer = $( this ).closest( '.widget' ), // Container on the Widgets page
+				$flBuilderContainer = $( this ).closest( '.fl-builder-widget-settings' ),
+				$container = 0 !== $widgetContainer.length ? $widgetContainer : $flBuilderContainer; // Container on a page or Content Template edited by Beaver Builder.
+			self.set_form_widget_data( $container, function() {
+				if ( '' !== self.target_id.val() ) {
+					self.showTargetbox( $container, self.target_id.val() );
+					if ( $widgetContainer.length > 0 ) {
+						self.widget_button
+							.addClass('button-secondary')
+							.removeClass('button-primary')
+							.prop('disabled', true);
+					}
+				}
+
+				self.viewSelectionHasFocus = false;
+			});
+		}
+	);
 	
 	// Click on discard inside target box
-	
-	$( document ).on( 'click', '#widgets-right .js-wpv-discard-target-setup-link', function( e ) {
-		e.preventDefault();
-		var container = $( this ).closest( '.widget' );
-		self.set_form_widget_data( container, function() {
-			self.targetbox
-				.hide();
-			self.widget_button
-				.addClass( 'button-primary' )
-				.removeClass( 'button-secondary' )
-				.prop( 'disabled', false );
-		});
-	});
+	$( document ).on(
+		'click',
+		'#widgets-right .js-wpv-discard-target-setup-link,' +
+		'.fl-builder-widget-settings .js-wpv-discard-target-setup-link',
+		function( e ) {
+			e.preventDefault();
+			self.hideTargetboxAndActivateButton( $( this ) );
+		}
+	);
 	
 	// Click on complete inside target box
-	
-	$( document ).on( 'click', '#widgets-right .js-wpv-check-target-setup-link', function() {
-		var container = $( this ).closest( '.widget' );
-		self.set_form_widget_data( container, function() {
-			self.targetbox
-				.hide();
-			self.widget_button
-				.addClass( 'button-primary' )
-				.removeClass( 'button-secondary' )
-				.prop( 'disabled', false );
+	$( document ).on(
+		'click',
+		'#widgets-right .js-wpv-check-target-setup-link,' +
+		'.fl-builder-widget-settings .js-wpv-check-target-setup-link',
+		function() {
+			self.hideTargetboxAndActivateButton( $( this ) );
+		}
+	);
+
+	// Hide the TargetBox and maybe activate widget buttons.
+	self.hideTargetboxAndActivateButton = function( thiz ) {
+		var $widgetContainer = thiz.closest( '.widget' ), // Container on the Widgets page
+			$flBuilderContainer = thiz.closest( '.fl-builder-widget-settings' ),
+			$container = 0 !== $widgetContainer.length ? $widgetContainer : $flBuilderContainer; // Container on a page or Content Template edited by Beaver Builder.
+
+		self.set_form_widget_data( $container, function() {
+			self.targetbox.hide();
+
+			if ( $widgetContainer.length > 0 ) {
+				self.widget_button
+					.addClass('button-primary')
+					.removeClass('button-secondary')
+					.prop('disabled', false);
+			}
 		});
-	});
+	};
+
+	self.showTargetbox = function( $container, id ) {
+		var $targetbox = $container.find( '.js-wpv-check-target-setup-box' ),
+			editlink_url = $container.find( '.js-wpv-check-target-setup-link' ).data( 'editurl' ),
+			editlink_view = $container.find( '.js-wpv-view-form-id' ).val();
+
+		$targetbox
+			.fadeIn()
+			.find( '.js-wpv-check-target-setup-link' )
+			.attr( 'href', editlink_url + id + '&action=edit&completeview=' + editlink_view + '&origid=widget' );
+
+		if ( 0 < $container.length ) {
+			$targetbox.find( '.js-wpv-check-target-setup-link' ).addClass( 'fl-builder-button fl-builder-done-button' );
+			$targetbox.find( '.js-wpv-discard-target-setup-link' ).addClass( 'fl-builder-button' );
+		}
+	};
 	
 	// Change the name of a dummy hidden input inside the widget to be sure the Customizer will display an "Apply" button instead of automatically saving
 	
-	$( document ).on( 'change input cut paste', '#widgets-right [id*=_wp_views_filter] input, #widgets-right [id*=_wp_views_filter] select', function() {
-		var container = $( this ).closest( '.widget' ),
-		content = container.find( '.widget-content' ),
-		helper = content.find( '.js-wpv-target-customizer-helper' ),
-		randomnumber = Math.floor( Math.random() * 11 );
-		helper.attr( 'name', helper.attr( 'name' ) + randomnumber );
-	});
+	$( document ).on(
+		'change input cut paste',
+		'#widgets-right [id*=_wp_views_filter] input, #widgets-right [id*=_wp_views_filter] select,' +
+		'.fl-builder-widget-settings input[id*=-wp_views_filter], .fl-builder-widget-settings select[id*=-wp_views_filter]',
+		function() {
+			var $widgetContainer = $( this ).closest( '.widget' ), // Container on the Widgets page
+				$flBuilderContainer = $( this ).closest( '.fl-builder-widget-settings' ),
+				$container = 0 !== $widgetContainer.length ? $widgetContainer : $flBuilderContainer, // Container on a page or Content Template edited by Beaver Builder.
+				content = $widgetContainer.length > 0 ? $container.find( '.widget-content' ) : $container.find( '.fl-field-control-wrapper' ),
+				helper = content.find( '.js-wpv-target-customizer-helper' ),
+				randomnumber = Math.floor( Math.random() * 11 );
+
+			helper.attr( 'name', helper.attr( 'name' ) + randomnumber );
+		}
+	);
 	
 	//--------------------
 	// Init

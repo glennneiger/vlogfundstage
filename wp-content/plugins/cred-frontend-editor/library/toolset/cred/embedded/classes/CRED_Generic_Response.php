@@ -60,11 +60,15 @@ class CRED_Generic_Response {
 		switch ( $this->result ) {
 			case self::CRED_GENERIC_RESPONSE_RESULT_OK:
 			case self::CRED_GENERIC_RESPONSE_RESULT_KO:
-
 				if ( $this->is_ajax == self::CRED_GENERIC_RESPONSE_TYPE_JSON ) {
+					$current_select2_fields_list = CRED_Frontend_Select2_Manager::get_instance()->get_select2_fields_list();
 					ob_start();
 					?>
                     <script>
+                        //Update current select2_list_fields if exists
+                        if (typeof cred_select2_frontend_settings !== 'undefined') {
+                            cred_select2_frontend_settings.select2_fields_list = <?php echo json_encode( $current_select2_fields_list ) ?>;
+                        }
 						<?php if ( $this->result == CRED_Generic_Response::CRED_GENERIC_RESPONSE_RESULT_OK ) { ?>
                         if (typeof jQuery('.wpt-form-error') !== 'undefined')
                             jQuery('.wpt-form-error').hide();

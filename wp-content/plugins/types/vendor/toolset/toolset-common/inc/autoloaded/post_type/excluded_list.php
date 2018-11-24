@@ -8,23 +8,24 @@
 class Toolset_Post_Type_Exclude_List {
 
 	private static $initial_list = array(
-		'cred-form',
-		'cred-user-form',
-		'cred_rel_form',
+		Toolset_Post_Type_List::CRED_POST_FORM,
+		Toolset_Post_Type_List::CRED_USER_FORM,
+		Toolset_Post_Type_List::CRED_RELATIONSHIP_FORM,
+		Toolset_Post_Type_List::LAYOUT,
+		Toolset_Post_Type_List::VIEW_OR_WPA,
+		Toolset_Post_Type_List::CONTENT_TEMPLATE,
+		Toolset_Post_Type_List::POST_FIELD_GROUP,
+		Toolset_Post_Type_List::USER_FIELD_GROUP,
+		Toolset_Post_Type_List::TERM_FIELD_GROUP,
 		'custom_css',
 		'customize_changeset',
-		'dd_layouts',
 		'deprecated_log',
 		'mediapage',
 		'nav_menu_item',
 		'revision',
-		'view',
-		'view-template',
-		'wp-types-group',
-		'wp-types-user-group',
-		'wp-types-term-group',
 		'acf-field-group',
-		'acf'
+		'acf',
+		'otgs_ps_bundles',
 	);
 
 

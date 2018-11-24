@@ -175,9 +175,10 @@ function wpcf_translate( $name, $string, $context = 'plugin Types' )
 /**
  * Registers WPML translation string.
  *
- * @param type $context
- * @param type $name
- * @param type $value
+ * @param string|array $context
+ * @param string $name
+ * @param string $value
+ * @param bool   $allow_empty_value
  */
 function wpcf_translate_register_string( $context, $name, $value,
         $allow_empty_value = false ) {
@@ -627,9 +628,9 @@ function wpcf_custom_taxonimies_register_translation( $taxonomy, $data ) {
 /**
  * Registers labels.
  *
- * @param type $prefix
- * @param type $data
- * @param type $context
+ * @param string $prefix
+ * @param array  $data
+ * @param string $context
  */
 function wpcf_wpml_register_labels( $prefix, $data, $context = 'post' ) {
     foreach ( $data['labels'] as $label => $string ) {
@@ -639,8 +640,9 @@ function wpcf_wpml_register_labels( $prefix, $data, $context = 'post' ) {
             case 'tax':
                 $default = wpcf_custom_taxonomies_default();
                 if ( $label == 'name' || $label == 'singular_name' ) {
-                    wpcf_translate_register_string( 'Types-TAX',
-                            $prefix . ' ' . $label, $string );
+                	$string_context = array( 'domain'  => 'Types-TAX' );
+	                $string_context['context'] = $label === 'name' ? 'taxonomy general name' : 'taxonomy singular name';
+                    wpcf_translate_register_string( $string_context, false, $string );
                     continue;
                 }
                 if ( isset( $default['labels'][$label] ) && $string == $default['labels'][$label] ) {

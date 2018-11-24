@@ -3,7 +3,7 @@
 /**
  * Factory for term field definitions.
  */
-final class Toolset_Field_Definition_Factory_Term extends Toolset_Field_Definition_Factory {
+class Toolset_Field_Definition_Factory_Term extends Toolset_Field_Definition_Factory {
 
 	/**
 	 * Name of the option used to store term field definitions.

@@ -158,16 +158,6 @@ class Toolset_Controller_Admin_Notices {
 		) {
 			$this->notices_compilation_introduction();
 			$this->notice_wpml_version_doesnt_support_m2m();
-
-			if( $this->only_types_active() || $this->is_commercial_active_but_not_registered( false ) ) {
-				// notice: types free version support ends
-				if( $notice = $this->types_free_version_support_ends() ) {
-					if( $current_screen_id == 'toplevel_page_toolset-dashboard'
-					    && Toolset_Admin_Notices_Manager::is_notice_dismissed( $notice ) ) {
-						$this->types_free_version_support_ends_undissmisble();
-					}
-				};
-			}
 		}
 	}
 
@@ -219,11 +209,6 @@ class Toolset_Controller_Admin_Notices {
 
 		$this->notices_compilation_introduction();
 		$this->notice_wpml_version_doesnt_support_m2m();
-
-		if( $this->only_types_active() || $this->is_commercial_active_but_not_registered( false ) ) {
-			// notice: types free version support ends
-			$this->types_free_version_support_ends();
-		}
 	}
 
 	/**
@@ -262,8 +247,6 @@ class Toolset_Controller_Admin_Notices {
 	 */
 	protected function notices_compilation_introduction() {
 		if( $this->only_types_active() ) {
-			$this->notice_how_to_design_with_toolset();
-
 			// notice: theme has native layout support
 			$this->notice_theme_works_best_with_toolset();
 
@@ -272,15 +255,6 @@ class Toolset_Controller_Admin_Notices {
 
 		// commercial plugin active + theme we have an integration plugin for
 		$this->integration_run_installer();
-
-		// + commercial plugin active
-		// + types || views || layouts missing
-		if(  ! $this->is_views_active
-	         || ! $this->is_types_active
-	         || ! $this->is_layouts_active
-		) {
-			$this->types_views_or_layouts_missing();
-		}
 	}
 
 	/**
@@ -300,36 +274,11 @@ class Toolset_Controller_Admin_Notices {
 	/**
 	 * @return Toolset_Admin_Notice_Dismissible
 	 */
-	protected function notice_how_to_design_with_toolset() {
-		$notice = new Toolset_Admin_Notice_Dismissible( 'how-to-design-with-toolset' );
-		$notice->set_content( $this->tpl_path . '/only-types-installed/layouts-support-missing.phtml' );
-		$notice->add_condition( new Toolset_Condition_Theme_Layouts_Support_Native_Missing() );
-		Toolset_Admin_Notices_Manager::add_notice( $notice );
-
-		return $notice;
-	}
-
-	/**
-	 * @return Toolset_Admin_Notice_Dismissible
-	 */
 	protected function notice_theme_works_best_with_toolset() {
 		$notice = new Toolset_Admin_Notice_Dismissible( 'theme-works-best-with-toolset' );
 		$notice->set_content( $this->tpl_path . '/only-types-installed/layouts-support-native.phtml' );
 		$notice->add_condition( new Toolset_Condition_Theme_Layouts_Support_Native_Available() );
 		Toolset_Admin_Notices_Manager::add_notice( $notice );
-	}
-
-	/**
-	 * @return Toolset_Admin_Notice_Dismissible
-	 */
-	protected function types_views_or_layouts_missing() {
-		// The id 'layouts-no-theme-integration' can be irritating as it no longer depends on a theme integration plugin
-		// But changing the id means users have to dismiss the notice again. So we keep 'layouts-no-theme-integration'.
-		$notice = new Toolset_Admin_Notice_Dismissible( 'layouts-no-theme-integration' );
-		$notice->set_content( $this->tpl_path . '/commercial-plugin-installed/types-views-or-layouts-missing.phtml' );
-		Toolset_Admin_Notices_Manager::add_notice( $notice );
-
-		return $notice;
 	}
 
 	/**
@@ -342,45 +291,6 @@ class Toolset_Controller_Admin_Notices {
 	protected function commercial_plugin_installed_but_not_registered() {
 		$notice = new Toolset_Admin_Notice_Undismissible( 'commercial-plugin-installed-not-registered', '', $this->constants );
 		$notice->set_content( $this->tpl_path . '/commercial-plugin-installed/commercial-plugin-installed-but-not-registered.phtml' );
-		Toolset_Admin_Notices_Manager::add_notice( $notice );
-
-		return $notice;
-	}
-
-
-	/**
-	 * @return Toolset_Admin_Notice_Dismissible
-	 */
-	protected function types_free_version_support_ends() {
-		if( class_exists( 'WP_Installer' )
-		    && WP_Installer()->repository_has_valid_subscription( 'toolset' ) ) {
-			return false;
-		}
-
-		$is_m2m_ready = new Toolset_Condition_Plugin_Types_Ready_For_M2M();
-		if ( $is_m2m_ready->is_met() ) {
-			return false;
-		}
-
-		$notice = new Toolset_Admin_Notice_Dismissible( 'types_free_version_support_ends', '', $this->constants );
-		$notice->set_content( $this->tpl_path . '/types-free-version-ends.phtml' );
-		Toolset_Admin_Notices_Manager::add_notice( $notice );
-
-		return $notice;
-	}
-
-	/**
-	 * @return Toolset_Admin_Notice_Undismissible
-	 */
-	protected function types_free_version_support_ends_undissmisble() {
-		if( class_exists( 'WP_Installer' )
-		    && WP_Installer()->repository_has_valid_subscription( 'toolset' ) ) {
-			return false;
-		}
-
-		$notice = new Toolset_Admin_Notice_Undismissible( 'types_free_version_support_ends_undissmisble', '', $this->constants );
-		$notice->set_template_path( $this->tpl_path . '/types-move-to-toolset.phtml' );
-		$notice->set_content( $this->tpl_path . '/types-free-version-ends.phtml' );
 		Toolset_Admin_Notices_Manager::add_notice( $notice );
 
 		return $notice;
@@ -489,7 +399,7 @@ class Toolset_Controller_Admin_Notices {
 		$notice = new Toolset_Admin_Notice_Required_Action(
 				'toolset-wpml-version-doesnt-support-m2m',
 				sprintf(
-					__( 'Many-to-many post relationships in Toolset require WPML %s or newer to work properly with post translations. Please upgrade WPML.', 'wpcf' ),
+					__( 'Post relationships in Toolset require WPML %s or newer to work properly with post translations. Please upgrade WPML.', 'wpcf' ),
 					sanitize_text_field( Toolset_Relationship_Controller::MINIMAL_WPML_VERSION )
 				)
 		);

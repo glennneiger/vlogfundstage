@@ -596,8 +596,11 @@ function wpv_preprocess_wpv_conditional_shortcodes( $content ) {
 
 class WPV_Views_Conditional {
 
-	public function __construct() {
+	public function __construct() {}
+
+	public function initialize() {
 		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'register_conditional_output_quicktag_button' ), 999 );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 	}
 
@@ -611,11 +614,6 @@ class WPV_Views_Conditional {
             'toolset_forms'
 		);
 		$toolset_common_bootstrap->load_sections( $toolset_common_sections );
-		
-		add_filter( "mce_external_plugins", array( $this, "wpv_add_views_conditional_button_scripts" ) );
-		add_filter( "mce_buttons", array( $this, "register_buttons_editor" ) );
-		add_action( 'admin_print_footer_scripts', array( $this, 'add_quicktags' ), 99 );
-		add_action( 'wp_print_footer_scripts', array( $this, 'add_quicktags' ), 99 );
 		
 	}
 
@@ -707,6 +705,33 @@ class WPV_Views_Conditional {
 		apply_filters( 'wpv_shortcode_debug', 'wpv-conditional', json_encode( $attr ), '', 'Data received from cache', $out );
 
 		return $out;
+	}
+
+	/**
+	 * Register the conditional output quicktag button plus its scripts.
+	 * 
+	 * Note that this needs to run late in init:999 so third parties have initialized their own pages.
+	 *
+	 * @since 2.6.1
+	 */
+	public function register_conditional_output_quicktag_button() {
+		/**
+		 * Filter to disable the conditional output quicktag on demand on all editors of the current page.
+		 * 
+		 * @param bool
+		 * 
+		 * @return bool
+		 * 
+		 * @since 2.6.1
+		 */
+		if ( apply_filters( 'wpv_filter_wpv_disable_conditional_output_quicktag', false ) ) {
+			return;
+		}
+
+		add_filter( "mce_external_plugins", array( $this, "wpv_add_views_conditional_button_scripts" ) );
+		add_filter( "mce_buttons", array( $this, "register_buttons_editor" ) );
+		add_action( 'admin_print_footer_scripts', array( $this, 'add_quicktags' ), 99 );
+		add_action( 'wp_print_footer_scripts', array( $this, 'add_quicktags' ), 99 );
 	}
 
 
@@ -821,7 +846,7 @@ class WPV_Views_Conditional {
 		) {
 			$passed = self::evaluateCustom( $evaluate );
 		} else {
-			$evaluate = self::_update_values_in_expression( $evaluate, $fields, $values );
+			$evaluate = self::_update_values_in_expression( $evaluate, $fields, $values, $id );
 			$logging_string .= "\n--------------------\nConverted expression: "
 				. $evaluate
 				. "\n--------------------";
@@ -1040,7 +1065,7 @@ class WPV_Views_Conditional {
 	}
 
 
-	private static function _update_values_in_expression( $evaluate, $fields, $values ) {
+	private static function _update_values_in_expression( $evaluate, $fields, $values, $id ) {
 
 		// use string replace to replace any fields with their values.
 		// Sort by length just in case a field name contians a shorter version of another field name.
@@ -1053,6 +1078,30 @@ class WPV_Views_Conditional {
 			$is_numeric = false;
 			$is_array = false;
 			$value = isset( $values[ $fields[ $key ] ] ) ? $values[ $fields[ $key ] ] : '';
+			
+			if ( ! empty( $id ) ) {
+				/**
+				 * Maybe filter the postmeta value based on its meta key.
+				 *
+				 * This filter mimics the native get_post_metadata filter documented here:
+				 * https://developer.wordpress.org/reference/functions/get_metadata/
+				 * If it returns a not null value, then use the returned value instead of the original.
+				 * It will hijack legacy '_wpcf_belongs_{slug}_id' meta keys and return the current m2m-compatible
+				 * parent value, if any.
+				 *
+				 * @param null
+				 * @param $id int|string The ID of the post that the postmeta belongs to
+				 * @patam $fields[ $key ] string The key of the postmeta
+				 * @param true Return always a single value, not an array
+				 *
+				 * @since m2m
+				 */
+				$postmeta_access_m2m_value = apply_filters( 'toolset_postmeta_access_m2m_get_post_metadata', null, $id, $fields[ $key ], true );
+				$value = ( null === $postmeta_access_m2m_value ) 
+					? $value 
+					: $postmeta_access_m2m_value;
+			}
+			
 			if( $value == '' ) {
 				$value = "''";
 			}
@@ -1140,3 +1189,4 @@ class WPV_Views_Conditional {
 
 global $WPV_Views_Conditional;
 $WPV_Views_Conditional = new WPV_Views_Conditional();
+$WPV_Views_Conditional->initialize();

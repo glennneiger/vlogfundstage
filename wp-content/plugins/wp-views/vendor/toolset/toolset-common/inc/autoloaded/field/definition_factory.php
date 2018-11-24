@@ -7,7 +7,7 @@
  *
  * @since 1.9
  */
-abstract class Toolset_Field_Definition_Factory {
+abstract class Toolset_Field_Definition_Factory implements Toolset_Field_Definition_Factory_Interface {
 
 	/**
 	 * Singleton parent.
@@ -275,9 +275,9 @@ abstract class Toolset_Field_Definition_Factory {
 
 	/**
 	 * Update the option that stores field definitions for current domain with new value.
-	 * 
+	 *
 	 * This is a low-level method. No validation or sanitization is performed whatsoever.
-	 * 
+	 *
 	 * @param array $updated_value New value to be stored.
 	 * @since 2.0
 	 */
@@ -333,7 +333,7 @@ abstract class Toolset_Field_Definition_Factory {
 		foreach ( $field_slugs as $slug ) {
 			$field_definition = $this->load_field_definition( $slug );
 			if ( null != $field_definition ) {
-				$field_definitions[] = $field_definition;
+				$field_definitions[ $slug ] = $field_definition;
 			}
 		}
 
@@ -346,12 +346,6 @@ abstract class Toolset_Field_Definition_Factory {
 	 */
 	protected abstract function get_existing_meta_keys();
 
-
-	/**
-	 * @return Toolset_Field_Group_Factory
-	 * @since 2.0
-	 */
-	public abstract function get_group_factory();
 
 
 	/**
@@ -629,7 +623,7 @@ abstract class Toolset_Field_Definition_Factory {
 			$slug_to_delete = $field_definiton->get_slug();
 			$this->erase_field_definition_from_options( $slug_to_delete );
 		}
-		
+
 		return $is_success;
 	}
 
@@ -686,8 +680,8 @@ abstract class Toolset_Field_Definition_Factory {
 
 
 	/**
-	 * Temporary workaround to access field definitions on a very deep level. 
-	 * 
+	 * Temporary workaround to access field definitions on a very deep level.
+	 *
 	 * @param $field_slug
 	 * @param $definition_array
 	 * @deprecated Do not use, it will be removed.
@@ -701,7 +695,7 @@ abstract class Toolset_Field_Definition_Factory {
 	/**
 	 * Temporary workaround to access field definitions on a very deep level.
 	 * Do not use, it will be removed.
-	 * 
+	 *
 	 * @return string
 	 * @deprecated Do not use, it will be removed.
 	 * @since 2.1

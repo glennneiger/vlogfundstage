@@ -94,6 +94,7 @@ export default class ViewPreview extends Component {
 					] :
 						this.returnEmptyPreview()
 				}
+				<div dangerouslySetInnerHTML={ { __html: this.state.overlay } }></div>
 			</div>
 		);
 	}
@@ -117,7 +118,7 @@ export default class ViewPreview extends Component {
 
 	returnViewDeleted() {
 		return <div className={ classnames( 'wpv-view-info-warning' ) }>
-			{ sprintf( 'Error while retrieving the View preview. The selected View (ID: %s) was not found.', this.props.attributes.view.ID ) }
+			{ sprintf( __( 'Error while retrieving the View preview. The selected View (ID: %s) was not found.' ), this.props.attributes.view.ID ) }
 		</div>;
 	}
 
@@ -207,7 +208,7 @@ export default class ViewPreview extends Component {
 			} );
 			output.push( <div key="more" className={ classnames( 'row-fluid', 'more' ) }>
 				<div className={ classnames( 'span-preset12', 'wpv-view-block-preview' ) }>
-					{ sprintf( 'Plus %s more items', this.state.items.length - 3 ) }
+					{ sprintf( __( 'Plus %s more items' ), this.state.items.length - 3 ) }
 				</div>
 			</div>
 			);
@@ -302,7 +303,8 @@ export default class ViewPreview extends Component {
 							0,
 						hasCustomSearch = response.data.hasCustomSearch,
 						hasSubmit = response.data.hasSubmit,
-						hasExtraAttributes = response.data.hasExtraAttributes;
+						hasExtraAttributes = response.data.hasExtraAttributes,
+						overlay = response.data.overlay;
 
 					newState = {
 						items,
@@ -313,6 +315,7 @@ export default class ViewPreview extends Component {
 						hasCustomSearch,
 						hasSubmit,
 						hasExtraAttributes,
+						overlay,
 					};
 				} else {
 					let message = '';

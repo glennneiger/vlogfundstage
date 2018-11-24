@@ -1,10 +1,20 @@
 var WPViews = WPViews || {};
 
 WPViews.ViewAddonMaps = function( $ ) {
-	
+	const API_GOOGLE = 'google';
+	const API_AZURE  = 'azure';
+
+	/** @var {Object} views_addon_maps_i10n */
+
 	var self = this;
-	
-	self.api = google.maps;
+
+	if ( API_GOOGLE === views_addon_maps_i10n.api_used ) {
+		/** @var {Object} google */
+		self.api = google.maps;
+	} else {
+		/** @var {Object} atlas */
+		self.api = null;
+	}
 
 	self.maps_data = [];
 	self.maps = {};
@@ -40,25 +50,72 @@ WPViews.ViewAddonMaps = function( $ ) {
 
 		$( document ).trigger('js_event_wpv_addon_maps_map_data_collected');
 	};
-	
+
 	/**
-	* collect_map_data
-	*
-	* @since 1.0
-	*/
-	
+	 * Initializes street view mode on given map.
+	 * @param Object map
+	 * @param latlon
+	 * @since 1.5
+	 */
+	self.initStreetView = function( map, latlon ) {
+		var streetViewService = new google.maps.StreetViewService();
+		var panorama = self.maps[ map.map_id ].getStreetView();
+
+		streetViewService.getPanoramaByLocation( latlon, 100, function (streetViewPanoramaData, status) {
+
+			if ( status === google.maps.StreetViewStatus.OK ) {
+				var streetLatlon = streetViewPanoramaData.location.latLng;
+				var heading = ( map.map_options.heading !== '' )
+					? map.map_options.heading
+					: google.maps.geometry.spherical.computeHeading( streetLatlon, latlon);
+				var pitch = ( map.map_options.pitch !== '' ) ? map.map_options.pitch : 0;
+
+				panorama.setPosition( streetLatlon );
+				panorama.setPov({
+					heading: heading,
+					pitch: pitch
+				});
+				panorama.setVisible( true );
+			}
+		});
+	};
+
+	/**
+	 * Sets a trigger to init street view after map is ready. Namespaces trigger so we do this only once per map.
+	 * @param String mapId
+	 * @param jQuery $marker
+	 * @listens js_event_wpv_addon_maps_init_map_completed
+	 * @since 1.5
+	 */
+	self.waitForMapInitThenInitStreetView = function( mapId, $marker ) {
+		$( document ).on( 'js_event_wpv_addon_maps_init_map_completed', function( event, map ) {
+			if ( mapId === map.map_id ){
+				var latlon = new google.maps.LatLng( $marker.data('markerlat'), $marker.data('markerlon') );
+				self.initStreetView( map, latlon );
+			}
+		} );
+	};
+
+	/**
+	 * collect_map_data
+	 *
+	 * @since 1.0
+	 * @since 1.5 handle Street Views
+	 */
 	self.collect_map_data = function( thiz_map ) {
 		var thiz_map_id = thiz_map.data( 'map' ),
 		thiz_map_points = [],
-		thiz_map_options = {},
-		thiz_cluster_options = {},
-		thiz_map_collected = {};
-		
+		thiz_map_options = {};
+		var streetViewMarkerFound = false;
+
 		$( '.js-wpv-addon-maps-markerfor-' + thiz_map_id ).each( function() {
 			var thiz_marker = $( this );
 			// Handle special case when we don't have coordinates, but instead need to ask browser for current users
-			// position
-			if (thiz_marker.data( 'markerlat' ) === 'geo'){
+			// position (only for Google API)
+			if (
+				thiz_marker.data( 'markerlat' ) === 'geo'
+				&& API_GOOGLE === views_addon_maps_i10n.api_used
+			) {
 				// In case map render wait is requested by a marker, add that data to map
 				if (thiz_marker.data( 'markerlon' ) === 'wait') {
 					thiz_map_options['render'] = 'wait';
@@ -67,6 +124,22 @@ WPViews.ViewAddonMaps = function( $ ) {
 					self.add_current_visitor_location_after_init(thiz_map_id, thiz_marker);
 				}
 				return true;
+			}
+
+			// Handle Street View marker as special case (only when using Google API)
+			if (
+				thiz_map.data('streetview') === 'on'
+				&& API_GOOGLE === views_addon_maps_i10n.api_used
+			) {
+				if ( thiz_map.data('markerid') === thiz_marker.data('marker') ) {
+					self.waitForMapInitThenInitStreetView( thiz_map_id, thiz_marker );
+					streetViewMarkerFound = true;
+					return true;
+				} else if ( thiz_map.data('location') === 'first' && !streetViewMarkerFound ) {
+					self.waitForMapInitThenInitStreetView( thiz_map_id, thiz_marker );
+					streetViewMarkerFound = true;
+					return true;
+				}
 			}
 
 			thiz_map_points.push(
@@ -82,7 +155,18 @@ WPViews.ViewAddonMaps = function( $ ) {
 			);
 
 		});
-		
+
+		// Some error catching when street view from marker requested and marker not found
+		if (
+			(
+				thiz_map.data('location') === 'first'
+				|| thiz_map.data('markerid')
+			)
+			&& !streetViewMarkerFound
+		) {
+			console.warn( views_addon_maps_i10n.marker_not_found_warning, thiz_map_id );
+		}
+
 		thiz_map_options['general_zoom'] = thiz_map.data( 'generalzoom' );
 		thiz_map_options['general_center_lat'] = thiz_map.data( 'generalcenterlat' );
 		thiz_map_options['general_center_lon'] = thiz_map.data( 'generalcenterlon' );
@@ -104,8 +188,12 @@ WPViews.ViewAddonMaps = function( $ ) {
 		thiz_map_options['cluster'] = thiz_map.data( 'cluster' );
 		thiz_map_options['style_json'] = thiz_map.data( 'stylejson' );
 		thiz_map_options['spiderfy'] = thiz_map.data( 'spiderfy' );
+		thiz_map_options['lat'] = thiz_map.data( 'lat' );
+		thiz_map_options['long'] = thiz_map.data( 'long' );
+		thiz_map_options['heading'] = thiz_map.data( 'heading' );
+		thiz_map_options['pitch'] = thiz_map.data( 'pitch' );
 
-		thiz_cluster_options = {
+		var thiz_cluster_options = {
 			'cluster':				thiz_map.data( 'cluster' ),
 			'gridSize':				parseInt( thiz_map.data( 'clustergridsize' ) ),
 			'maxZoom':				( parseInt( thiz_map.data( 'clustermaxzoom' ) ) > 0 ) ? parseInt( thiz_map.data( 'clustermaxzoom' ) ) : null,
@@ -123,7 +211,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 			}
 		}
 		
-		thiz_map_collected = {
+		var thiz_map_collected = {
 			'map':				thiz_map_id, 
 			'markers':			thiz_map_points, 
 			'options':			thiz_map_options,
@@ -503,7 +591,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 					function()
 				{
 					self.infowindows[ map.map ].setContent( marker.markerinfowindow );
-					self.infowindows[ map.map ].open( self.maps[ map.map ], self.markers[ map.map ][ marker.marker ] );
+					self.openInfowindowWhenMarkerVisible( map.map, marker.marker );
 				});
 			}
 
@@ -511,10 +599,6 @@ WPViews.ViewAddonMaps = function( $ ) {
 				oms.addMarker( self.markers[ map.map ][ marker.marker ] )
 			}
 		});
-
-		if ( map.options['fitbounds'] == 'on' ) {
-			self.maps[ map.map ].fitBounds( self.bounds[ map.map ] );
-		}
 
 		if ( _.size( map.markers ) == 1 ) {
 			if ( map.options['single_zoom'] != '' ) {
@@ -531,6 +615,10 @@ WPViews.ViewAddonMaps = function( $ ) {
 					break;
 				}
 			}
+		} else if ( _.size( map.markers ) > 1 ) {
+			if ( map.options['fitbounds'] == 'on' ) {
+				self.maps[ map.map ].fitBounds( self.bounds[ map.map ] );
+			}
 		}
 
 		if ( _.contains( self.resize_queue, map.map ) ) {
@@ -541,8 +629,30 @@ WPViews.ViewAddonMaps = function( $ ) {
 		}
 		
 		$( document ).trigger( 'js_event_wpv_addon_maps_init_map_completed', [ event_settings ] );
+
+		// Init Street View overlay if lat and long are provided (coming from address)
+		if ( map.options.lat && map.options.long ) {
+			self.initStreetView( event_settings, new google.maps.LatLng( map.options.lat, map.options.long ) );
+		}
 	};
-	
+	/**
+	 * Make sure that marker is visible (not in cluster) before opening info window. If it isn't, wait until it is.
+	 *
+	 * Because, if marker isn't visible, info window will get wrong location to open (usually another, visible marker).
+	 *
+	 * @param {String} mapId
+	 * @param {String} markerId
+	 * @since 1.5
+	 */
+	self.openInfowindowWhenMarkerVisible = function( mapId, markerId ) {
+		if ( self.markers[mapId][markerId].map ) {
+			self.infowindows[mapId].open( self.maps[mapId], self.markers[mapId][markerId] );
+		} else {
+			_.delay(function () {
+				self.openInfowindowWhenMarkerVisible( mapId, markerId );
+			}, 150);
+		}
+	};
 	/**
 	* clean_map_data
 	*
@@ -583,7 +693,333 @@ WPViews.ViewAddonMaps = function( $ ) {
 		self.api.event.trigger( map, "resize" );
 		map.setCenter( map_iter_center );
 	};
-	
+
+	/**
+	 * Init all maps - Azure API version
+	 * @since 1.5
+	 */
+	self.initMapsAzure = function() {
+		let maps = _.map( self.maps_data, self.resolveGeolocatedMarkerThenInitMapAzure );
+		let mapIds = _.pluck( self.maps_data, 'map' );
+
+		self.maps = _.object( mapIds, maps );
+	};
+
+	/**
+	 * Resolve geolocated marker (if any)
+	 *
+	 * Among markers for a map, there may be a special one which should trigger current visitor geolocation. (It makes
+	 * no sense to have more than one, because the visitor is not a quark). This method checks if there is one such
+	 * marker, if geolocation is available, and if the map rendering should wait for geolocation or if that marker
+	 * should be added after map and other markers render.
+	 *
+	 * @since 1.5
+	 *
+	 * @param {Object} map
+	 */
+	self.resolveGeolocatedMarkerThenInitMapAzure = function( map ) {
+		let geoMarker = _.findWhere( map.markers, {markerlat: 'geo'} );
+		let renderedMap = null;
+
+		if ( geoMarker ) {
+			let geoMarkerIndex = _.indexOf( map.markers, geoMarker );
+
+			if ( "immediate" === geoMarker.markerlon ) {
+				// Render map immediately, marker will be added when and if available, center and bounds adjusted if
+				// needed.
+				renderedMap = self.initMapAzure( map );
+
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(function (position) {
+						map.markers[geoMarkerIndex].markerlat = position.coords.latitude;
+						map.markers[geoMarkerIndex].markerlon = position.coords.longitude;
+
+						if (
+							map.markers.length === 1
+							&& map.options.single_center === "on"
+						) {
+							let mapCenter = [position.coords.longitude, position.coords.latitude];
+							renderedMap.setCamera( {center: mapCenter} );
+						}
+
+						self.maybeFitboundsAzure( map, renderedMap );
+
+						let pin = new atlas.data.Feature(
+							new atlas.data.Point( [position.coords.longitude, position.coords.latitude] ),
+							{title: geoMarker.title, popup: geoMarker.markerinfowindow},
+							geoMarker.marker
+						);
+						renderedMap.addEventListener('load', function() {
+							renderedMap.addPins( [pin], {
+								fontColor: "#000",
+								fontSize: 14,
+								icon: "pin-red",
+								iconSize: 1,
+								name: "default-pin-layer",
+								cluster: ( map.options.cluster === 'on' ),
+								textOffset: [0, 20],
+							});
+						} );
+					});
+				}
+			} else {
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(function (position) {
+						map.markers[geoMarkerIndex].markerlat = position.coords.latitude;
+						map.markers[geoMarkerIndex].markerlon = position.coords.longitude;
+
+						// We now have position for geo marker, render as usual.
+						renderedMap = self.initMapAzure( map );
+					});
+				} else {
+					// No geolocation? Render what we have, without this marker.
+					renderedMap = self.initMapAzure( map );
+				}
+			}
+		} else {
+			// No geomarker, just render as usual.
+			renderedMap = self.initMapAzure( map );
+		}
+
+		return renderedMap;
+	};
+
+	/**
+	 * If there is more than 1 marker and fitbounds is requested for this map, find bound points and set camera bounds.
+	 *
+	 * @since 1.5
+	 *
+	 * @param {Object} map
+	 * @param {atlas.Map} renderedMap
+	 */
+	self.maybeFitboundsAzure = function( map, renderedMap ) {
+		if ( map.markers.length <= 1 || map.options.fitbounds !== "on" ) return;
+
+		let markerLons = _.pluck( map.markers, 'markerlon' );
+		let southernmost = _.min( markerLons );
+		let northernmost = _.max( markerLons );
+		let markerLats = _.pluck( map.markers, 'markerlat' );
+		let westmost = _.min( markerLats );
+		let eastmost = _.max( markerLats );
+
+		renderedMap.setCameraBounds( {
+			bounds: [southernmost, westmost, northernmost, eastmost],
+			padding: 50
+		} );
+	};
+
+	/**
+	 * Map type names are sometimes, but not always the same between Google and Azure.
+	 *
+	 * @since 1.5.3
+	 * @param {string} mapType
+	 * @return {string}
+	 */
+	self.translateMapTypesToAzure = function( mapType ) {
+		const translationTable = {
+			'roadmap': 'road',
+			'hybrid': 'satellite_road_labels',
+			'terrain': 'road' // 'terrain' type is not supported by Azure, so render the closest - 'road'
+		};
+
+		if ( mapType in translationTable ) return translationTable[mapType];
+		// 'satellite' type has the same name, so just falls through.
+		else return mapType;
+	};
+
+	/**
+	 * Returns value for marker icon set from marker, map, or default
+	 *
+	 * @since 1.5.3
+	 * @param {Object} marker
+	 * @param {Object} mapOptions
+	 * @return {string}
+	 */
+	self.getMarkerIconValue = function( marker, mapOptions ) {
+		if ( marker.markericon ) {
+			return marker.markericon;
+		} else if ( mapOptions.marker_icon ) {
+			return mapOptions.marker_icon;
+		} else {
+			return 'pin-red';
+		}
+	};
+
+	/**
+	 * Init a map with Azure API
+	 *
+	 * @since 1.5
+	 *
+	 * @param {Object} map
+	 *
+	 * @return {atlas.Map}
+	 */
+	self.initMapAzure = function( map ) {
+		let event_settings = {
+			map_id:			map.map,
+			map_options:	map.options
+		};
+		$( document ).trigger( 'js_event_wpv_addon_maps_init_map_started', [ event_settings ] );
+
+		// Init defaults from map options
+		let mapCenter = [map.options.general_center_lon, map.options.general_center_lat];
+		let mapZoom = map.options.general_zoom;
+		let cluster = ( map.options.cluster === 'on' );
+
+		// 1 marker logic
+		if ( map.markers.length === 1 ) {
+			if (
+				// marker geolocated and rendered after map, handled in self.resolveGeolocatedMarkerThenInitMapAzure
+				_.isNumber( map.markers[0].markerlon )
+				&& map.options.single_center === "on"
+			) {
+				mapCenter = [map.markers[0].markerlon, map.markers[0].markerlat];
+			}
+
+			mapZoom = map.options.single_zoom;
+		}
+
+		// Remove possible map loading content. Google Maps does it by itself, Azure doesn't
+		$( '#js-wpv-addon-maps-render-' + map.map ).empty();
+
+		// Render map
+		let renderedMap = new atlas.Map( "js-wpv-addon-maps-render-" + map.map, {
+			"subscription-key": views_addon_maps_i10n.azure_api_key,
+			center: mapCenter,
+			zoom: mapZoom,
+			scrollZoomInteraction: ( map.options.scrollwheel === 'on' ),
+			dblClickZoomInteraction: ( map.options.double_click_zoom === 'on' ),
+			dragPanInteraction: ( map.options.draggable === 'on' ),
+			style: self.translateMapTypesToAzure( map.options.map_type ) // Ignored with API 1.1, but works with 1.2
+		} );
+
+		$( document ).trigger( 'js_event_wpv_addon_maps_init_map_inited', [ event_settings ] );
+
+		// Bounds can only be set on an already rendered map with Azure API
+		self.maybeFitboundsAzure( map, renderedMap );
+
+		// Create pins (markers)
+		let pins = _.map( map.markers, function( marker ) {
+			return new atlas.data.Feature(
+				new atlas.data.Point( [marker.markerlon, marker.markerlat] ),
+				{
+					title: marker.title,
+					popup: marker.markerinfowindow,
+					icon: self.getMarkerIconValue( marker, map.options ),
+					iconhover: marker.markericonhover ? marker.markericonhover : map.options.marker_icon_hover,
+					id: marker.marker
+				},
+				marker.marker
+			);
+		} );
+
+		// Create custom icons for pins (if any)
+		let icons = _.filter(
+			_.union(
+				_.pluck( map.markers, 'markericon' ),
+				_.pluck( map.markers, 'markericonhover' ),
+				[map.options.marker_icon, map.options.marker_icon_hover]
+			)
+		);
+
+		// Add markers and their events to map (waiting for load event first, otherwise the library throws a style
+		// rendering warning)
+		renderedMap.addEventListener('load', function() {
+			_.each( icons, function( icon ) {
+				var iconImg = document.getElementById( icon );
+
+				if ( iconImg ) {
+					renderedMap.addIcon( icon, iconImg );
+				}
+			} );
+
+			self.addPins( renderedMap, pins, cluster );
+
+			// FUTURE: this needs Azure Maps API 1.2, which is buggy at the moment and kills some other things. Revisit.
+			// Add controls
+			/*if ( map.options.zoom_control === 'on' ) {
+				renderedMap.addControl(new atlas.control.ZoomControl, {});
+			}
+			if ( map.options.map_type_control === 'on' ) {
+				renderedMap.addControl(new atlas.control.StyleControl, {});
+			}*/
+
+			// Add an event listener for click (popup)
+			renderedMap.addEventListener( 'click', "default-pin-layer", function( event ) {
+				// Does pin have some popup text?
+				if ( ! event.features[0].properties.popup ) return;
+
+				// Create content for popup
+				let popupContentElement = document.createElement("div");
+				popupContentElement.style.padding = "8px";
+				let popupNameElement = document.createElement("div");
+				popupNameElement.innerHTML = event.features[0].properties.popup;
+				popupContentElement.appendChild(popupNameElement);
+
+				// Create a popup
+				let popup = new atlas.Popup( {
+					content: popupContentElement,
+					position: event.features[0].geometry.coordinates,
+					pixelOffset: [0, 0]
+				} );
+
+				popup.open( renderedMap );
+			} );
+
+			// Add event listeners for hover (possible marker icon change)
+			let originalIcon = '';
+			let hoveredPinIndex = 0;
+			renderedMap.addEventListener( 'mouseover', "default-pin-layer", function( event ) {
+				if ( ! event.features[0].properties.iconhover ) return;
+
+				let id = event.features[0].properties.id;
+				let pin = _.findWhere( pins, {id: id} );
+
+				originalIcon = event.features[0].properties.icon;
+				hoveredPinIndex = _.indexOf( pins, pin );
+
+				pin.properties.icon = pin.properties.iconhover;
+				pins[hoveredPinIndex] = pin;
+
+				self.addPins( renderedMap, pins, cluster );
+			} );
+			renderedMap.addEventListener( 'mouseout', "default-pin-layer", function( event ) {
+				if ( ! originalIcon ) return;
+
+				pins[hoveredPinIndex].properties.icon = originalIcon;
+
+				self.addPins( renderedMap, pins, cluster );
+
+				originalIcon = '';
+			} );
+		} );
+
+		$( document ).trigger( 'js_event_wpv_addon_maps_init_map_completed', [ event_settings ] );
+
+		return renderedMap;
+	};
+
+	/**
+	 * Adds (or changes) all the pins for the given map on default pin layer.
+	 *
+	 * (Because you cannot simply change one pin with Azure, you have to change the layer).
+	 *
+	 * @since 1.5.3
+	 * @param atlas.Map map
+	 * @param {array} pins
+	 * @param {bool} cluster
+	 */
+	self.addPins = function( map, pins, cluster ) {
+		map.addPins( pins, {
+			fontColor: "#000",
+			fontSize: 14,
+			name: "default-pin-layer",
+			cluster: cluster,
+			textOffset: [0, 20],
+			overwrite: true
+		} );
+	};
+
 	// ------------------------------------
 	// API
 	// ------------------------------------
@@ -613,8 +1049,8 @@ WPViews.ViewAddonMaps = function( $ ) {
 	* 	data.map_id
 	*
 	* @since 1.0
+	* @since 1.5 supports Azure API
 	*/
-	
 	$( document ).on( 'js_event_wpv_addon_maps_reload_map_triggered', function( event, data ) {
 		var defaults = { 
 			map_id: false
@@ -628,9 +1064,15 @@ WPViews.ViewAddonMaps = function( $ ) {
 		}
 		self.clean_map_data( settings.map_id );
 		var mpdata = self.collect_map_data( $( '#js-wpv-addon-maps-render-' + settings.map_id ) );
-		self.init_map_after_loading_styles( mpdata );
+
+		if ( API_GOOGLE === views_addon_maps_i10n.api_used ) {
+			self.init_map_after_loading_styles( mpdata );
+		} else {
+			$( '#js-wpv-addon-maps-render-' + settings.map_id ).empty();
+			self.maps[settings.map_id] = self.resolveGeolocatedMarkerThenInitMapAzure( mpdata );
+		}
 	});
-	
+
 	/**
 	* WPViews.view_addon_maps.get_map
 	*
@@ -693,8 +1135,8 @@ WPViews.ViewAddonMaps = function( $ ) {
 	* Center on a marker on js-wpv-addon-maps-center-map.click
 	*
 	* @since 1.0
+	* @since 1.5 Azure API supported
 	*/
-	
 	$( document ).on( 'click', '.js-wpv-addon-maps-focus-map', function( e ) {
 		e.preventDefault();
 		var thiz = $( this ),
@@ -707,14 +1149,33 @@ WPViews.ViewAddonMaps = function( $ ) {
 		) {
 			thiz_map = thiz.data( 'map' );
 			thiz_marker = thiz.data( 'marker' );
-			if (
-				thiz_map in self.maps
-				&& thiz_map in self.markers
-				&& thiz_marker in self.markers[ thiz_map ]
-			) {
-			thiz_zoom = ( $( '#js-wpv-addon-maps-render-' + thiz_map ).data( 'singlezoom' ) != '' ) ? $( '#js-wpv-addon-maps-render-' + thiz_map ).data( 'singlezoom' ) : 14;
-			self.maps[ thiz_map ].setCenter( self.markers[ thiz_map ][ thiz_marker ].getPosition() );
-			self.maps[ thiz_map ].setZoom( thiz_zoom );
+
+			if ( API_GOOGLE === views_addon_maps_i10n.api_used ) {
+				if (
+					thiz_map in self.maps
+					&& thiz_map in self.markers
+					&& thiz_marker in self.markers[thiz_map]
+				) {
+					thiz_zoom = ($('#js-wpv-addon-maps-render-' + thiz_map).data('singlezoom') != '')
+						? $('#js-wpv-addon-maps-render-' + thiz_map).data('singlezoom')
+						: 14;
+					self.maps[thiz_map].setCenter(self.markers[thiz_map][thiz_marker].getPosition());
+					self.maps[thiz_map].setZoom(thiz_zoom);
+				}
+			} else {
+				if (
+					thiz_map in self.maps
+				) {
+					thiz_zoom = ($('#js-wpv-addon-maps-render-' + thiz_map).data('singlezoom') != '')
+						? $('#js-wpv-addon-maps-render-' + thiz_map).data('singlezoom')
+						: 14;
+					var $thisMarker = $('.js-wpv-addon-maps-marker-' + thiz_marker);
+
+					self.maps[thiz_map].setCamera({
+						center: [$thisMarker.eq(0).data('markerlon'), $thisMarker.eq(0).data('markerlat')],
+						zoom: thiz_zoom
+					});
+				}
 			}
 		}
 	});
@@ -762,7 +1223,23 @@ WPViews.ViewAddonMaps = function( $ ) {
 					}
 				}
 			}
-			
+
+			if ( API_AZURE === views_addon_maps_i10n.api_used ) {
+				current_map_data_array = _.filter( self.maps_data, function( map_data_unique ) {
+					return map_data_unique.map == thiz_map;
+				});
+				current_map_data = _.first( current_map_data_array );
+
+				if ( _.size( current_map_data.markers ) === 1 ) {
+					var $thisMarker = $('.js-wpv-addon-maps-markerfor-' + thiz_map);
+					self.maps[thiz_map].setCamera({
+						center: [$thisMarker.eq(0).data('markerlon'), $thisMarker.eq(0).data('markerlat')],
+						zoom: current_map_data.options.single_zoom
+					});
+				} else {
+					self.maybeFitboundsAzure(current_map_data, self.maps[thiz_map]);
+				}
+			}
 		}
 	});
 	
@@ -902,23 +1379,24 @@ WPViews.ViewAddonMaps = function( $ ) {
 	// ------------------------------------
 	// Init
 	// ------------------------------------
-	
-	self.init = function() {
-		
-		self.collect_maps_data();
-		
+
+	/**
+	 * Inits Google Maps API specific code paths
+	 * @since 1.5
+	 */
+	self.initGoogle = function() {
 		self.api.event.addDomListener( window, 'load', self.init_maps );
-		
+
 		self.api.event.addDomListener( window, "resize", function() {
 			_.each( self.maps, function( map_iter, map_id ) {
 				self.keep_map_center_and_resize( map_iter );
 			});
 		});
-		
+
 		$( document ).on( 'js_event_wpv_layout_responsive_resize_completed', function( event ) {
 			$( '.js-wpv-layout-responsive .js-wpv-addon-maps-render' ).each( function() {
 				var thiz = $( this ),
-				thiz_map = thiz.data( 'map' );
+					thiz_map = thiz.data( 'map' );
 				if ( thiz_map in self.maps ) {
 					self.keep_map_center_and_resize( self.maps[ thiz_map ] );
 				} else {
@@ -927,11 +1405,49 @@ WPViews.ViewAddonMaps = function( $ ) {
 				}
 			});
 		});
-		
-	}
-	
-	self.init();
 
+		self.maybeInitElementorEditorPreviewFix( self.init_maps );
+	};
+
+	/**
+	 * Inits Microsoft Azure Maps specific code paths
+	 * @since 1.5
+	 */
+	self.initAzure = function() {
+		self.initMapsAzure();
+		self.maybeInitElementorEditorPreviewFix( self.initMapsAzure );
+	};
+
+	/**
+	 * Initialize maps on Elementor widget ready so it works when previewing an Elementor design.
+	 *
+	 * @since 1.5.3
+	 *
+	 * @param {Function} mapInitCallback
+	 */
+	self.maybeInitElementorEditorPreviewFix = function( mapInitCallback ) {
+		if (typeof elementor === 'object' && typeof elementorFrontend === 'object') {
+			elementorFrontend.hooks.addAction('frontend/element_ready/widget', function ($scope) {
+				var mapInScope = $scope.find('div.js-wpv-addon-maps-render');
+				if (mapInScope.length) {
+					self.collect_maps_data();
+					mapInitCallback();
+				}
+			});
+		}
+	};
+
+	self.init = function() {
+		self.collect_maps_data();
+
+		if ( API_GOOGLE === views_addon_maps_i10n.api_used ) {
+			self.initGoogle();
+		} else {
+			self.initAzure();
+		}
+	};
+
+	self.init();
 };
 
 jQuery( document ).ready( function( $ ) {

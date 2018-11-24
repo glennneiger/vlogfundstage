@@ -56,8 +56,12 @@ class Toolset_Relationship_Definition_Translator {
 			'role_name_parent' => $definition->get_role_name( Toolset_Relationship_Role::PARENT ),
 			'role_name_child' => $definition->get_role_name( Toolset_Relationship_Role::CHILD ),
 			'role_name_intermediary' => $definition->get_role_name( Toolset_Relationship_Role::INTERMEDIARY ),
-		  	'needs_legacy_support' => ( $definition->needs_legacy_support() ? 1 : 0 ),
-		  	'is_active' => ( $definition->is_active() ? 1 : 0 ),
+			'role_label_parent_singular' => $definition->get_role_label_singular( Toolset_Relationship_Role::PARENT ),
+			'role_label_child_singular' => $definition->get_role_label_singular( Toolset_Relationship_Role::CHILD ),
+			'role_label_parent_plural' => $definition->get_role_label_plural( Toolset_Relationship_Role::PARENT ),
+			'role_label_child_plural' => $definition->get_role_label_plural( Toolset_Relationship_Role::CHILD ),
+			'needs_legacy_support' => ( $definition->needs_legacy_support() ? 1 : 0 ),
+			'is_active' => ( $definition->is_active() ? 1 : 0 ),
 		);
 
 		return $row;
@@ -110,6 +114,14 @@ class Toolset_Relationship_Definition_Translator {
 				Toolset_Relationship_Role::CHILD => $row->role_name_child,
 				Toolset_Relationship_Role::INTERMEDIARY => $row->role_name_intermediary,
 			),
+			Toolset_Relationship_Definition::DA_ROLE_LABELS_SINGULAR => array(
+				Toolset_Relationship_Role::PARENT => $row->role_label_parent_singular,
+				Toolset_Relationship_Role::CHILD => $row->role_label_child_singular,
+			),
+			Toolset_Relationship_Definition::DA_ROLE_LABELS_PLURAL => array(
+				Toolset_Relationship_Role::PARENT => $row->role_label_parent_plural,
+				Toolset_Relationship_Role::CHILD => $row->role_label_child_plural,
+			),
 			Toolset_Relationship_Definition::DA_NEEDS_LEGACY_SUPPORT => (bool) $row->needs_legacy_support,
 			Toolset_Relationship_Definition::DA_IS_ACTIVE => (bool) $row->is_active,
 			Toolset_Relationship_Definition::DA_ORIGIN => maybe_unserialize( $row->origin ),
@@ -161,6 +173,10 @@ class Toolset_Relationship_Definition_Translator {
 			'%s', // role_name_parent
 			'%s', // role_name_child
 			'%s', // role_name_intermediary
+			'%s', // role_name_parent_singular
+			'%s', // role_name_child_singular
+			'%s', // role_name_parent_plural
+			'%s', // role_name_child_plural
 			'%d', // needs_legacy_support
 			'%d', // is_active
 		);

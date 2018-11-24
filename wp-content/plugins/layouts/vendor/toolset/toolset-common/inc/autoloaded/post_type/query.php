@@ -15,6 +15,7 @@
  *         for arbitrary use like standard post types)? If there's no query for this, is_intermediary
  *         or is_repeating_field_group, this query argument defaults to false. Providing null will return
  *         both special and non-special post types.
+ *     ...
  *
  * Feel free to extend this with new query arguments.
  *
@@ -30,6 +31,8 @@ class Toolset_Post_Type_Query {
 	const IS_EXCLUDED = 'is_excluded';
 	const IS_PUBLIC = 'is_public';
 	const IS_REGISTERED = 'is_registered';
+	const IS_INVOLVED_IN_RELATIONSHIP = 'is_involved_in_relationship';
+	const IS_TRANSLATABLE = 'is_translatable';
 
 	const RETURN_TYPE = 'return';
 
@@ -96,7 +99,15 @@ class Toolset_Post_Type_Query {
 			self::IS_REGISTERED => array(
 				'callback' => array( $this, 'filter_bool_property' ),
 				'filter_args' => 'is_registered'
-			)
+			),
+			self::IS_INVOLVED_IN_RELATIONSHIP => array(
+				'callback' => array( $this, 'filter_bool_property' ),
+				'filter_args' => 'is_involved_in_relationship'
+			),
+			self::IS_TRANSLATABLE => array(
+				'callback' => array( $this, 'filter_bool_property' ),
+				'filter_args' => 'is_translatable'
+			),
 		);
 
 		$this->post_type_repository = (

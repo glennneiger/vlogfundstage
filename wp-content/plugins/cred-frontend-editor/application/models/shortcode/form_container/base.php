@@ -146,8 +146,30 @@ class CRED_Shortcode_Form_Container_Base implements CRED_Shortcode_Interface {
 	protected function build_action() {
 		$this->form_id = $this->get_current_form_id();
 		$this->redirect_to = $this->get_form_setting( $this->form_id, self::REDIRECT_KEY );
+		$this->redirect_to = $this->validate_redirect_to( $this->redirect_to );
+
 		$help_redirect = $this->get_redirect_helper( $this->form_id, $this->redirect_to );
 		return $help_redirect->get_redirect_option();
+	}
+
+	/**
+	 * Validate the action URL to redirect to.
+	 *
+	 * @param string $redirect_to
+	 * @return string
+	 * 
+	 * @since 2.0.1
+	 * @todo This should validate if the target action belongs to the same site, and default to 'form'  otherwise.
+	 */
+	protected function validate_redirect_to( $redirect_to = '' ) {
+		if ( 'redirect_back' != $redirect_to ) {
+			return $redirect_to;
+		}
+		if ( ! isset( $_SERVER['HTTP_REFERER'] ) ) {
+			return 'form';
+		}
+
+		return $redirect_to;
 	}
 
 	/**

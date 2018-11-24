@@ -116,8 +116,11 @@ abstract class WPDD_Layouts_Editor implements WPDD_Layouts_Editor_interface {
 			}
 
 			WPDD_Layouts::register_strings_for_translation( $post_data['layout_id'], $is_private );
-
-			$msg['message']['layout_changed'] = $up;
+			
+			if( $is_private ){
+				do_action( 'ddl_update_translated_posts', $post->ID );
+			}
+			$msg['message']['layout_changed'] = (int) $up !== 0 ? true : false;
 
 			if ( isset( $post_data['silent'] ) && $post_data['silent'] == true ) {
 				$msg['message']['silent'] = true;
@@ -353,10 +356,12 @@ abstract class WPDD_Layouts_Editor implements WPDD_Layouts_Editor_interface {
 			'unassign_layout_and_create_child_button' => __( 'Proceed and remove assignments', 'ddl-layouts' ),
 			'remove_assignments'                      => __( 'Parent layout assignments', 'ddl-layouts' ),
 			'remove_assignments_button'               => __( 'Remove all assignments', 'ddl-layouts' ),
-			'you_cant_use_archive_cell'               => sprintf( __( 'You cannot add an archive cell into a page. To display lists, use the %sView cell%s. Learn more about %sWordPress archives cells%s.', 'ddl-layouts' ), '<a href="https://wp-types.com/documentation/user-guides/view-cell/" target="_blank">', '</a>', '<a href="https://wp-types.com/documentation/user-guides/wordpress-archive-cell/" target="_blank">', '</a>' ),
+			'you_cant_use_archive_cell'               => sprintf( __( 'You cannot add an archive cell into a page. To display lists, use the %sView cell%s. Learn more about %sWordPress archives cells%s.', 'ddl-layouts' ), '<a href="https://toolset.com/documentation/user-guides/view-cell/" target="_blank">', '</a>', '<a href="https://toolset.com/documentation/user-guides/wordpress-archive-cell/" target="_blank">', '</a>' ),
 			'you_cant_use_comments_cell'              => __( 'You cannot add a comments cell into the content of a page. To display comments, use the cell in a template layout.', 'ddl-layouts' ),
 			'you_cant_use_this_cell'                  => __( 'You cannot use this cell in Content Layouts', 'ddl-layouts' ),
 			'apply'                                   => __( 'Apply', 'ddl-layouts' ),
+			'layout_hierarchy_settings_tooltip'       => __( 'Layout hierarchy settings', 'ddl-layouts' ),
+			'cred_relationship_form_name_postfix' => __( 'Relationship Form', 'ddl-layouts' )
 		), $this );
 	}
 

@@ -18,7 +18,7 @@ class WPV_Editor_Content{
 	
 	static function wpv_screen_options_content( $sections ) {
 		$sections['content'] = array(
-			'name'		=> __( 'Filter and Loop Output Integration Editor', 'wpv-views' ),
+			'name'		=> __( 'Output Editor', 'wpv-views' ),
 			'disabled'	=> false,
 		);
 		return $sections;
@@ -60,7 +60,7 @@ class WPV_Editor_Content{
 
 			<div class="wpv-settings-header">
 				<h2>
-					<?php _e( 'Filter and Loop Output Integration Editor', 'wpv-views' ) ?>
+					<?php _e( 'Output Editor', 'wpv-views' ) ?>
 					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
 						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">

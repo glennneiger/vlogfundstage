@@ -60,21 +60,15 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 119);
+/******/ 	return __webpack_require__(__webpack_require__.s = 163);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 119:
+/***/ 163:
 /***/ (function(module, exports) {
 
-/**
- * Code executed on the frontend when the Toolset View block is rendered.
- *
- * No code is executed at the moment for this block. This file is here for future reference.
- *
- * @since  2.6.0
- */
+throw new Error("Module build failed: Error: ENOENT: no such file or directory, open 'D:\\OTGS\\vagrant-local\\www\\otgs3\\public_html\\wp-content\\plugins\\wp-views\\vendor\\toolset\\toolset-common\\toolset-blocks\\blocks\\view\\frontend.js'");
 
 /***/ })
 

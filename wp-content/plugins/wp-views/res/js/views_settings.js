@@ -3,6 +3,8 @@ var WPViews = WPViews || {};
 WPViews.ViewsSettingsScreen = function( $ ) {
 	
 	var self = this;
+
+	self.i18n = wpv_settings_texts;
 	
 	self.cache = {};
 	
@@ -165,6 +167,53 @@ WPViews.ViewsSettingsScreen = function( $ ) {
             }
 		});
 	};
+
+	/**
+	 * --------------------
+	 * Query filters settings
+	 * 
+	 * @since 2.6.4
+	 * --------------------
+	 */
+
+	self.queryFiltersOptionsState = ( $( '.js-wpv-query-filters-options' ).length > 0 ) ? $( '.js-wpv-query-filters-options' ).serialize() : false;
+	
+	$( '.js-wpv-query-filters-options' ).on( 'change', function() {
+		self.queryFiltersOptionsDebounceUpdate();
+	});
+	
+	self.saveQueryFiltersOptions = function() {
+		if ( $( '.js-wpv-query-filters-options' ).serialize() != self.queryFiltersOptionsState ) {
+			var data = {
+				action: 'wpv_update_query_filters_options',
+				support_spaces_in_meta_filters: $( '#js-wpv-support-spaces-in-meta-filters' ).prop( 'checked' ),
+				wpnonce: wpv_settings_texts.wpnonce
+			};
+			$( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );
+			$.ajax({
+				type: "POST",
+				dataType: "json",
+				url: ajaxurl,
+				data: data,
+				success: function( response ) {
+					if ( response.success ) {
+						self.queryFiltersOptionsState = $( '.js-wpv-query-filters-options' ).serialize();
+						$( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
+					} else {
+						$( document ).trigger( 'js-toolset-event-update-setting-section-failed', [ response.data ] );
+					}
+				},
+				error: function( ajaxContext ) {
+					$( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+				},
+				complete: function() {
+					
+				}
+			});
+		}
+	};
+	
+	self.queryFiltersOptionsDebounceUpdate = _.debounce( self.saveQueryFiltersOptions, 1000 );
 	
 	/**
 	* --------------------
@@ -881,6 +930,53 @@ WPViews.ViewsSettingsScreen = function( $ ) {
 	};
 	
 	self.views_debug_options_debounce_update = _.debounce( self.save_views_debug_options, 1000 );
+
+	/**
+	 * ----------------------------------------
+	 * Views Page Builders Frontend Content
+	 * ----------------------------------------
+	 */
+	var allowViewsWpWidgetsInElementorSelector = $( '.js_wpv_allow_views_wp_widgets_in_elementor' );
+	self.allowViewsWpWidgetsInElementorState = allowViewsWpWidgetsInElementorSelector.length > 0 ?
+		allowViewsWpWidgetsInElementorSelector.prop( 'checked' ) :
+		false;
+
+	allowViewsWpWidgetsInElementorSelector.on( 'change', function() {
+		self.views_page_builders_frontend_content_options_debounce_update();
+	});
+
+	self.saveViewsPageBuildersFrontendContentOptions = function() {
+		if ( self.allowViewsWpWidgetsInElementorState !== allowViewsWpWidgetsInElementorSelector.prop( 'checked' ) ) {
+			var data = {
+				action: self.i18n.ajax.action.save_views_page_builders_frontend_content_options,
+				wpnonce: self.i18n.ajax.nonce.save_views_page_builders_frontend_content_options,
+				allow_views_wp_widgets_in_elementor: allowViewsWpWidgetsInElementorSelector.prop( 'checked' )
+			};
+			$( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );
+			$.ajax(
+				{
+					type: 'post',
+					dataType: 'json',
+					url: ajaxurl,
+					data: data,
+					success: function( response ) {
+						if ( response.success ) {
+							self.allowViewsWpWidgetsInElementorState = allowViewsWpWidgetsInElementorSelector.prop( 'checked' );
+							$( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
+						} else {
+							$( document ).trigger( 'js-toolset-event-update-setting-section-failed', [ response.data ] );
+						}
+					},
+					error: function( ajaxContext ) {
+						$( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+					},
+					complete: function() {}
+				}
+			);
+		}
+	};
+
+	self.views_page_builders_frontend_content_options_debounce_update = _.debounce( self.saveViewsPageBuildersFrontendContentOptions, 1000 );
 	
 	self.init = function() {
 		self.init_dialogs();

@@ -13,11 +13,11 @@ abstract class CRED_Field_Abstract {
 	 *
 	 * @param array $atts
 	 * @param CRED_Form_Rendering $cred_form_rendering
-	 * @param CRED_Helper $formHelper
+	 * @param CRED_Form_Builder_Helper $formHelper
 	 * @param CRED_Form_Data $formData
 	 * @param CRED_Translate_Field_Factory $translate_field_factory
 	 */
-	public function __construct( $atts, $cred_form_rendering, $formHelper, $formData, $translate_field_factory ) {
+	public function __construct( $atts, $cred_form_rendering, CRED_Form_Builder_Helper $formHelper, $formData, CRED_Translate_Field_Factory $translate_field_factory ) {
 		$this->_atts = $atts;
 		$this->cred_form_rendering = $cred_form_rendering;
 		$this->_formHelper = $formHelper;

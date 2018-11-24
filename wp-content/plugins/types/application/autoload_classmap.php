@@ -134,6 +134,7 @@ return array(
 'Types_Twig_Autoloader'                                     => dirname( __FILE__ ) . '/controllers/twig_autoloader.php',
 'Types_Upgrade'                                             => dirname( __FILE__ ) . '/controllers/upgrade.php',
 'Types_Utils'                                               => dirname( __FILE__ ) . '/controllers/admin_notice/utils.php',
+'Types_Admin_Notices_Free_Version'                          => dirname( __FILE__ ) . '/controllers/admin_notice/free-version.php',
 'Types_Utils_Post_Type_Option'                              => dirname( __FILE__ ) . '/controllers/utils/post_type_option.php',
 'Types_Wpml_Field_Group'                                    => dirname( __FILE__ ) . '/models/wpml/field_group.php',
 'Types_Wpml_Field_Group_String_Description'                 => dirname( __FILE__ ) . '/models/wpml/field/group/string/description.php',

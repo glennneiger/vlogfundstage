@@ -1,9 +1,7 @@
 <?php
 
 /**
- * CRED Form Translator
- * 
- * 
+ * Toolset Forms Translator
  */
 final class CRED_Form_Translator {
 

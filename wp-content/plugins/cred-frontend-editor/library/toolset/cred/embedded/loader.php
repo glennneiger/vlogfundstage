@@ -9,7 +9,7 @@ if ( !class_exists( 'CRED_Loader', false ) ) {
      *  This class is responsible for loading/including all files and getting instances of all objects
      *  in an efficient and abstract manner, abstracts all hardcoded paths and dependencies and manages singleton instances automatically
      *
-     *  Also it renders and caches templates even from 3rd-party plugins (that want to use the templating engine, eg CRED Commerce)
+     *  Also it renders and caches templates even from 3rd-party plugins (that want to use the templating engine, eg Toolset Forms Commerce)
      *
      */
 // define interfaces used to implement design patterns
@@ -456,7 +456,7 @@ if ( !class_exists( 'CRED_Loader', false ) ) {
             }
         }
 
-        // allow plugins to autoload their deps using the loader (eg CRED Commerce)
+        // allow plugins to autoload their deps using the loader (eg Toolset Forms Commerce)
         public static function doAutoLoad() {
             // allow deps for plugins loaded before cred
             $extra_deps = apply_filters( 'cred_loader_dependencies', array() );

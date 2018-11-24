@@ -6,6 +6,11 @@
  * @since m2m
  */
 class CRED_Field_Command_Post_Reference_Fields extends CRED_Field_Command_Base {
+	
+	/**
+	 * @var boolean
+	 */
+	private $disabled_for_non_default_wpml_language = false;
 
 	public function execute() {
 		$field = CRED_StaticClass::$out['fields']['post_reference_fields'][ $this->field_name ];
@@ -57,18 +62,9 @@ class CRED_Field_Command_Post_Reference_Fields extends CRED_Field_Command_Base {
 		 * set current post as parent if value attribute is $current
 		 */
 		$current_as_parent = false;
-		if ( '$current'=== $this->filtered_attributes['value'] ){
+		if ( '$current' === $this->filtered_attributes['value'] ){
 			global $post;
 			$default_option = $post->ID;
-			$current_as_parent = true;
-			$field['readonly'] = true;
-		}
-
-		/*
-		 * enable setting parent form url param ([cred_child_link_form])
-		 */
-		if ( array_key_exists( 'parent_' . $field['data']['post_type'] . '_id', $_GET ) ) {
-			$default_option = (int) $_GET[ 'parent_' . $field['data']['post_type'] . '_id' ];
 			$current_as_parent = true;
 			$field['readonly'] = true;
 		}
@@ -89,6 +85,8 @@ class CRED_Field_Command_Post_Reference_Fields extends CRED_Field_Command_Base {
 		$field['data']['options']['default'] = $default_option;
 		
 		$force_author = $this->maybe_set_ancestor_filter_by_author( $force_author, $field_name );
+		
+		$this->maybe_disable_for_non_default_wpml_language();
 
 		$additional_attributes = array(
 			'preset_value' => $this->value,
@@ -112,7 +110,7 @@ class CRED_Field_Command_Post_Reference_Fields extends CRED_Field_Command_Base {
 		// Get possible association parent
 		$results = CRED_Form_Relationship::get_instance()->get_ruled_association_by_id( $this->form_rendering->_post_id, $relationship_definition, $field[ 'role' ] );
 		
-		if ( count( $results > 0 )
+		if ( count( $results ) > 0
 			&& isset( $results[ 0 ][ 'post' ] )
 		) {
 			//TODO: maybe we need to improve checking here
@@ -158,7 +156,33 @@ class CRED_Field_Command_Post_Reference_Fields extends CRED_Field_Command_Base {
 			'name' => $field_name,
 		);
 		
+		if (
+			$this->disabled_for_non_default_wpml_language
+			&& current_user_can( 'manage_options' )
+		) {
+			$field_object['description'] = __( 'Post reference fields can only be managed in the default language.', 'wp-cred' );
+		}
+		
 		return $field_object;
+	}
+	
+	/**
+	 * Disable post reference fields displayed on a form to create posts in a language different than default.
+	 *
+	 * Post reference fields behave like associations, and you can only create an association
+	 * for a post that has a translation into the default language.
+	 * When creating new posts, this does not happen automatically.
+	 *
+	 * @since 2.1
+	 */
+	private function maybe_disable_for_non_default_wpml_language() {
+		if ( 'new' != $this->form_type ) {
+			return;
+		}
+		if ( apply_filters( 'wpml_default_language', '' ) != apply_filters( 'wpml_current_language', '' ) ) {
+			$this->disabled_for_non_default_wpml_language = true;
+			$this->readonly = true;
+		}
 	}
 
 	/**

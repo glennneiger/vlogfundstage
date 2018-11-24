@@ -29,7 +29,7 @@ class CRED_Form_Builder_Helper {
 	 * @deprecated since 1.9.3 moved into CRED_Asset_Manager::unloadFrontendAssets()
 	 */
     public static function unloadFrontendAssets() {
-        //Print custom js/css on front-end	
+        //Print custom js/css on front-end
         $custom_js_cache = wp_cache_get('cred_custom_js_cache');
         if (false !== $custom_js_cache) {
             echo "\n<script type='text/javascript' class='custom-js'>\n";
@@ -42,34 +42,6 @@ class CRED_Form_Builder_Helper {
             echo "\n<style type='text/css'>\n";
             echo $custom_css_cache . "\n";
             echo "</style>\n";
-        }
-    }
-
-    public static function makeCommentsClosed($open, $post_id) {
-        return false;
-    }
-
-    public static function noComments($comments, $post_id) {
-        return array();
-    }
-
-    public static function hideComments() {
-        global $post, $wp_query;
-        // hide comments
-        if (isset($post)) {
-            //global $_wp_post_type_features;
-            remove_post_type_support($post->post_type, 'comments');
-            remove_post_type_support($post->post_type, 'trackbacks');
-            $post->comment_status = "closed";
-            $post->ping_status = "closed";
-            $post->comment_count = 0;
-            $wp_query->comment_count = 0;
-            $wp_query->comments = array();
-            add_filter('comments_open', array('CRED_Form_Builder_Helper', 'makeCommentsClosed'), 1000, 2);
-            add_filter('pings_open', array('CRED_Form_Builder_Helper', 'makeCommentsClosed'), 1000, 2);
-            add_filter('comments_array', array('CRED_Form_Builder_Helper', 'noComments'), 1000, 2);
-            // as a last resort, use the template hook
-            //add_filter('comments_template', STYLESHEETPATH . $file );
         }
     }
 
@@ -141,108 +113,35 @@ class CRED_Form_Builder_Helper {
     }
 
 	/**
-	 * @param $form_type
-	 * @param $form_id
-	 * @param bool $post
+	 * @param string $form_type
+	 * @param integer $form_id
+	 * @param bool|object $post
 	 *
-	 * @return bool|mixed|void
+	 * @return bool
+     * 
+     * @deprecated 2.1.1 Use the toolset_forms_current_user_can_use_post_form filter instead.
 	 */
-    public function checkFormAccess($form_type, $form_id, $post = false) {
-	    $current_user = wp_get_current_user();
-
-        switch ($form_type) {
-            case 'edit':
-
-	            if ( false === $post
-		            && $current_user->ID != 0
-	            ) {
-		            return false;
-	            }
-	            if ( empty( $post ) ) {
-		            return false;
-	            }
-
-	            if ( ! current_user_can( 'edit_own_posts_with_cred_' . $form_id )
-		            && $current_user->ID == $post->post->post_author
-	            ) {
-                    return false;
-                }
-
-	            if ( ! current_user_can( 'edit_other_posts_with_cred_' . $form_id )
-		            && $current_user->ID != $post->post->post_author
-	            ) {
-                    return false;
-                }
-                break;
-            case 'translation':
-                $return = false;
-                return apply_filters('cred_wpml_glue_check_user_privileges', $return);
-                break;
-            case 'new':
-	            if ( ! current_user_can( 'create_posts_with_cred_' . $form_id ) ) {
-		            return false;
-	            }
-                break;
-            default:
-                return false;
-                break;
-        }
-        return true;
+    public function checkFormAccess( $form_type, $form_id, $post = false ) {
+        $post_to_check = ( false === $post )
+            ? false
+            : $post->post;
+        return apply_filters( 'toolset_forms_current_user_can_use_post_form', false, $form_id, $post_to_check );
     }
 
 	/**
-	 * @param $form_type
-	 * @param $form_id
-	 * @param bool $user_data
+	 * @param string $form_type
+	 * @param integer $form_id
+	 * @param bool|object $user_data
 	 *
-	 * @return bool|mixed|void
+	 * @return bool
+     * 
+     * @deprecated 2.1.1 Use the toolset_forms_current_user_can_use_user_form filter instead.
 	 */
-	public function checkUserFormAccess($form_type, $form_id, $user_data = false) {
-		$current_user = wp_get_current_user();
-		switch ($form_type) {
-			case 'edit':
-				if ( ! $user_data ) {
-					return false;
-				}
-				if ( 0 == $current_user->ID ) {
-					return false;
-				}
-				if ($current_user->ID == $user_data->user->ID) {
-					$current_user_can = current_user_can('edit_own_user_with_cred_' . $form_id);
-					if (is_multisite()) {
-						return $current_user_can && is_user_member_of_blog($user_data->user->ID);
-					}
-					return $current_user_can;
-				} else {
-					$is_multisite = is_multisite();
-					if ($is_multisite) {
-						$super_admins = get_super_admins();
-						$is_other_user_multisite_super_admin = (is_array($super_admins) && in_array($user_data->user->user_login, $super_admins));
-						if ( $is_other_user_multisite_super_admin ) {
-							return false;
-						}
-					}
-					$current_user_can = defined('TACCESS_VERSION') && current_user_can('edit_other_users_with_cred_' . $form_id);
-					if ($is_multisite) {
-						return $current_user_can && is_user_member_of_blog($user_data->user->ID);
-					}
-					return $current_user_can;
-				}
-				break;
-			case 'translation':
-				$return = false;
-				return apply_filters('cred_wpml_glue_check_user_privileges', $return);
-				break;
-			case 'new':
-				if ( ! current_user_can( 'create_users_with_cred_' . $form_id ) ) {
-					return false;
-				}
-				break;
-			default:
-				return false;
-				break;
-		}
-		return true;
+	public function checkUserFormAccess( $form_type, $form_id, $user_data = false ) {
+        $user_to_check = ( false === $user_data )
+            ? false
+            : $user_data->user;
+        return apply_filters( 'toolset_forms_current_user_can_use_user_form', false, $form_id, $user_to_check );
 	}
 
 	/**
@@ -453,73 +352,6 @@ class CRED_Form_Builder_Helper {
     }
 
 	/**
-     * Display a Message after CRED Form submit redirection
-     *
-	 * @param int $form
-	 *
-	 * @return string
-	 */
-	public function display_message( $form ) {
-		$_fields = $form->getFields();
-
-		// apply some rich filters
-		$rendered_message = $this->render_display_message_with_basic_filters(
-			cred_translate(
-				'Display Message: ' . $form->getForm()->post_title, $_fields['form_settings']->form['action_message'], 'cred-form-' . $form->getForm()->post_title . '-' . $form->getForm()->ID
-			)
-		);
-
-		$success_message = sanitize_text_field( $_GET['_success_message'] );
-        ob_start();
-        ?>
-        <div id="cred_form_<?php echo esc_attr( $success_message ); ?>"><?php echo $rendered_message; ?></div>
-        <?php
-        $content = ob_get_clean();
-        return $content;
-    }
-
-	/**
-     * Temporary Replacing global $post with $_GET['_target'] ID one and applying filters in order to
-     * display the correct message like after a redirection form
-     *
-	 * @param string $content
-	 *
-	 * @return mixed
-	 */
-	public function render_display_message_with_basic_filters( $content ) {
-		global $post;
-		$old_post = null;
-
-		if ( isset( $_GET['_target'] ) && is_numeric( $_GET['_target'] ) ) {
-			if ( isset( $post ) ) {
-				$old_post = clone $post;
-			}
-			$args = array(
-				'p' => (int) $_GET['_target'],
-				'post_type' => 'any',
-				'post_status' => array( 'publish', 'pending', 'draft', 'future' ),
-			);
-			$query = new WP_Query( $args );
-			$posts = $query->posts;
-			foreach ( $posts as $result ) {
-				if ( $result->post_type == 'attachment' ) {
-					continue;
-				}
-				$post = $result;
-				break;
-			}
-		}
-
-		$content = CRED_Helper::render_with_basic_filters($content);
-
-		if ( isset( $old_post ) ) {
-			$post = $old_post;
-		}
-
-		return $content;
-	}
-
-	/**
 	 * @param $settings
 	 *
 	 * @return mixed
@@ -637,15 +469,16 @@ class CRED_Form_Builder_Helper {
             unset($method['post_excerpt']);
         }
         // parent
-        if (
-                array_key_exists('post_parent', $form_fields) &&
-                array_key_exists('post_parent', $method) &&
-                isset($fields['parents']) && isset($fields['parents']['post_parent']) &&
-                intval($method['post_parent']) >= 0
-        ) {
-            $post->post_parent = intval($method['post_parent']);
-            unset($method['post_parent']);
-        }
+	    if (
+		    array_key_exists( 'post_parent', $form_fields )
+		    && array_key_exists( 'post_parent', $method )
+		    && ( isset( $fields[ 'parents' ] ) && isset( $fields[ 'parents' ][ 'post_parent' ] )
+			    || isset( $fields[ 'hierarchical_parents' ] ) && isset( $fields[ 'hierarchical_parents' ][ 'post_parent' ] ) )
+		    && intval( $method[ 'post_parent' ] ) >= 0
+	    ) {
+		    $post->post_parent = intval( $method[ 'post_parent' ] );
+		    unset( $method[ 'post_parent' ] );
+	    }
 
         // type
         $post->post_type = $post_type;
@@ -672,15 +505,17 @@ class CRED_Form_Builder_Helper {
 	    }
 
         if ($track) {
+	        $basic_post_fields = CRED_Fields_Model::get_basic_post_fields();
+
             // track the data, eg for notifications
 	        if ( isset( $post->post_title ) ) {
-		        $this->trackData( array( 'Post Title' => $post->post_title ) );
+		        $this->trackData( array( $basic_post_fields['post_title']['name'] => $post->post_title ) );
 	        }
 	        if ( isset( $post->post_content ) ) {
-		        $this->trackData( array( 'Post Content' => $post->post_content ) );
+		        $this->trackData( array( $basic_post_fields['post_content']['name'] => $post->post_content ) );
 	        }
 	        if ( isset( $post->post_excerpt ) ) {
-		        $this->trackData( array( 'Post Excerpt' => $post->post_excerpt ) );
+		        $this->trackData( array( $basic_post_fields['post_excerpt']['name'] => $post->post_excerpt ) );
 	        }
         }
 
@@ -773,11 +608,19 @@ class CRED_Form_Builder_Helper {
             }
         }
 
-        if ($track) {
-            // track the data, eg for notifications
-	        if ( isset( $user['name'] ) ) {
-		        $this->trackData( array( 'name' => $user['name'] ) );
-	        }
+        if ( $track ) {
+            $fields_to_track = array(
+                'user_login' => __( 'Username', 'wp-cred' ),
+                'user_email' => __( 'User email', 'wp-cred' ),
+                'user_pass' => __( 'User password', 'wp-cred' ),
+                'nickname' => __( 'Nickname', 'wp-cred' )
+            );
+            foreach ( $fields_to_track as $field => $label ) {
+                // track the data, eg for notifications
+                if ( isset( $user[ $field ] ) ) {
+                    $this->trackData( array( $label => $user[ $field ] ) );
+                }
+            }
         }
 
         // return them
@@ -1035,7 +878,7 @@ class CRED_Form_Builder_Helper {
         foreach ($_fields['post_fields'] as $key => $field) {
             $field_label = $field['name'];
             $done_data = false;
-            
+
             // use the key as was rendered (with potential prefix)
             $key11 = $key;
             if (isset($field['plugin_type_prefix'])) {
@@ -1066,45 +909,40 @@ class CRED_Form_Builder_Helper {
                 }
             }
 
-	        if (
-		        'checkboxes' == $field['type']
-		        && isset( $field['data']['save_empty'] )
-		        && 'yes' == $field['data']['save_empty']
-		        && ! array_key_exists( $key, $method )
-	        ) {
-                $values = array();
-                foreach ($field['data']['options'] as $optionkey => $optiondata) {
-                    $values[$optionkey] = '0';
+	        if ( 'checkboxes' == $field[ 'type' ]
+                && !array_key_exists( $key, $method ) ) {
+
+                if ( isset( $field[ 'data' ][ 'save_empty' ] )
+                    && $field[ 'data' ][ 'save_empty' ] == 'yes'
+                ) {
+                    $values = array();
+                    foreach ( $field[ 'data' ][ 'options' ] as $optionkey => $optiondata ) {
+                        $values[ $optionkey ] = '0';
+                    }
+
+                    // let model serialize once, fix Types-CRED mapping issue with checkboxes
+                    $fieldsInfo[ $key ][ 'save_single' ] = true;
+                    $fields[ $key ] = $values;
+                } else {
+                    // remove the fields
+                    $removed_fields[] = $key;
+                    unset( $fieldsInfo[ $key ] );
                 }
 
-                // let model serialize once, fix Types-CRED mapping issue with checkboxes
-                $fieldsInfo[$key]['save_single'] = true;
-                $fields[$key] = $values;
-	        } elseif (
-		        'checkboxes' == $field['type']
-		        && ( ! isset( $field['data']['save_empty'] )
-			        && 'yes' != $field['data']['save_empty'] )
-		        && ! array_key_exists( $key, $method )
-	        ) {
-                // remove the fields
-                $removed_fields[] = $key;
-                unset($fieldsInfo[$key]);
 	        } elseif (
 		        'checkbox' == $field['type']
-		        && isset( $field['data']['save_empty'] )
-		        && 'yes' == $field['data']['save_empty']
 		        && ! array_key_exists( $key, $method )
 	        ) {
-                $fields[$key] = '0';
-            } elseif (
-                    'checkbox' == $field['type'] &&
-                    (!isset($field['data']['save_empty']) ||
-                    'yes' != $field['data']['save_empty']) &&
-                    !array_key_exists($key, $method)
-            ) {
-                // remove the fields
-                $removed_fields[] = $key;
-                unset($fieldsInfo[$key]);
+
+		        if ( isset( $field[ 'data' ][ 'save_empty' ] )
+			        && 'yes' == $field[ 'data' ][ 'save_empty' ] ) {
+			        $fields[ $key ] = '0';
+		        } else {
+			        // remove the fields
+			        $removed_fields[] = $key;
+			        unset( $fieldsInfo[ $key ] );
+		        }
+
             } elseif (array_key_exists($key, $method)) {
                 // normalize repetitive values out  of sequence
 		        if ( $_form_fields_info[ $key11 ]['repetitive']
@@ -1155,10 +993,15 @@ class CRED_Form_Builder_Helper {
                 if ($track) {
                     $tmp_data = null;
                     if ('checkbox' == $field['type']) {
-	                    if ( 'db' == $field['data']['display'] ) {
+                        if ( 
+                            ! isset( $field['data']['display'] )
+                            || 'db' == $field['data']['display']
+                        ) {
 		                    $tmp_data = $values;
 	                    } else {
-		                    $tmp_data = $field['data']['display_value_selected'];
+                            $tmp_data = isset( $field['data']['display_value_selected'] )
+                                ? $field['data']['display_value_selected']
+                                : null;
 	                    }
                     }
                     elseif ('radio' == $field['type'] || 'select' == $field['type']) {
@@ -1207,7 +1050,7 @@ class CRED_Form_Builder_Helper {
 		        } elseif ( 'radio' == $field['type'] ||
 			        'select' == $field['type']
 		        ) {
-                    
+
                 } elseif ('date' == $field['type']) {
 
                     /*
@@ -1279,7 +1122,7 @@ class CRED_Form_Builder_Helper {
                 }
                 elseif ('skype' == $field['type']) {
 
-                    //TODO: check this could be no need array($values)                    
+                    //TODO: check this could be no need array($values)
                     $values = isset($_form_fields_info[$key11]['repetitive']) && $_form_fields_info[$key11]['repetitive'] == 1 ? $values : array($values);
 
                     if ($track) {
@@ -1462,7 +1305,7 @@ class CRED_Form_Builder_Helper {
             $field_label = $field['name'];
             $done_data = false;
 
-            // use the key as was rendered (with potential prefix) 
+            // use the key as was rendered (with potential prefix)
             $key11 = $key;
 	        if ( isset( $field['plugin_type_prefix'] ) ) {
 		        $key = $field['plugin_type_prefix'] . $key;
@@ -1508,7 +1351,7 @@ class CRED_Form_Builder_Helper {
 	        } elseif (
 		        'checkboxes' == $field['type']
 		        && ( ! isset( $field['data']['save_empty'] )
-			        && 'yes' != $field['data']['save_empty'] )
+			        || 'yes' != $field['data']['save_empty'] )
 		        && ! array_key_exists( $key, $method )
 	        ) {
                 // remove the fields
@@ -1524,7 +1367,7 @@ class CRED_Form_Builder_Helper {
 	        } elseif (
 		        'checkbox' == $field['type']
 		        && ( ! isset( $field['data']['save_empty'] )
-			        && 'yes' != $field['data']['save_empty'] )
+			        || 'yes' != $field['data']['save_empty'] )
 		        && ! array_key_exists( $key, $method )
 	        ) {
                 // remove the fields
@@ -1583,10 +1426,15 @@ class CRED_Form_Builder_Helper {
                 if ($track) {
                     $tmp_data = null;
                     if ('checkbox' == $field['type']) {
-	                    if ( 'db' == $field['data']['display'] ) {
+	                    if ( 
+                            ! isset( $field['data']['display'] )
+                            || 'db' == $field['data']['display']
+                        ) {
 		                    $tmp_data = $values;
 	                    } else {
-		                    $tmp_data = $field['data']['display_value_selected'];
+                            $tmp_data = isset( $field['data']['display_value_selected'] )
+                                ? $field['data']['display_value_selected']
+                                : null;
 	                    }
                     }
                     elseif ('radio' == $field['type'] || 'select' == $field['type']) {
@@ -1634,7 +1482,7 @@ class CRED_Form_Builder_Helper {
 			        || 'select' == $field['type']
 		        ) {
                 } elseif ('date' == $field['type']) {
-                    // Modified by Srdjan                    
+                    // Modified by Srdjan
                     /*
                      * Single/repetitive values for Date are not set right,
                      * because CRED used Date as string - not array
@@ -1705,7 +1553,7 @@ class CRED_Form_Builder_Helper {
                 }
 
                 elseif ('skype' == $field['type']) {
-                    //TODO: check this could be no need array($values)                    
+                    //TODO: check this could be no need array($values)
                     $values = isset($_form_fields_info[$key11]['repetitive']) && $_form_fields_info[$key11]['repetitive'] == 1 ? $values : array($values);
 
                     if ($track) {
@@ -2128,6 +1976,8 @@ class CRED_Form_Builder_Helper {
     }
 
 	/**
+     * @deprecated since version 1.3.6.2 with Ajax Feature fields upload
+     *
 	 * @param int $post_id
 	 * @param $fields
 	 * @param $files
@@ -2136,251 +1986,19 @@ class CRED_Form_Builder_Helper {
 	 *
 	 * @return bool
 	 */
-    public function CRED_uploadAttachments($post_id, &$fields, &$files, &$extra_files, $track = false) {
-        // dependencies
-        require_once(ABSPATH . '/wp-admin/includes/file.php');
+	public function CRED_uploadAttachments( $post_id, &$fields, &$files, &$extra_files, $track = false ) {
+		// dependencies
+		require_once( ABSPATH . '/wp-admin/includes/file.php' );
 
-        $form = $this->_formBuilder->_formData;
-
-        $_form_fields = CRED_StaticClass::$out['form_fields'];
-
-        // upload data
-        $all_ok = true;
-        // set featured image only if uploaded
-        $fkey = '_featured_image';
-
-        if (isset($_POST[$fkey])) {
-            $this->trackData(array(__('Featured Image', 'wp-cred') => "<img src='" . $_POST[$fkey] . "'>"));
-            //$_feature_image = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ));
-        }
-
-        $extra_files = array();
-        if (
-                array_key_exists($fkey, $_form_fields) &&
-                array_key_exists($fkey, $_FILES) &&
-                isset($_FILES[$fkey]['name']) &&
-                !empty($_FILES[$fkey]['name'])
-        ) {
-            $upload = wp_handle_upload($_FILES[$fkey], array('test_form' => false, 'test_upload' => false));
-            if (!isset($upload['error']) && isset($upload['file'])) {
-                $extra_files[$fkey]['wp_upload'] = $upload;
-	            if ( $track ) {
-		            $tmp_data = $upload['url'];
-	            }
-            }
-            else {
-                $all_ok = false;
-	            if ( $track ) {
-		            $tmp_data = $this->getLocalisedMessage( 'upload_failed' );
-	            }
-                $fields[$fkey] = '';
-                $extra_files[$fkey]['upload_fail'] = true;
-            }
-            if ($track) {
-                $this->trackData(array(__('Featured Image', 'wp-cred') => $tmp_data));
-                unset($tmp_data);
-            }
-        } else {
-	        if ( array_key_exists( $fkey, $_FILES )
-		        && isset( $_FILES[ $fkey ]['name'] )
-		        && empty( $_FILES[ $fkey ]['name'] )
-		        && is_int( $post_id )
-		        && $post_id > 0
-	        ) {
-                delete_post_meta($post_id, '_thumbnail_id');
-            }
-        }
-
-	    if ( isset( $_POST[ $fkey ] )
-		    && isset( $_POST['_cred_cred_prefix_post_id'] )
-	    ) {
-            $post_id = intval($_POST['_cred_cred_prefix_post_id']);
-            delete_post_meta($post_id, '_thumbnail_id');
-
-            $args = array(
-                'post_type' => 'attachment',
-                'numberposts' => -1,
-                'post_status' => 'any',
-                'post_parent' => $post_id
-            );
-
-            $attachments = get_posts($args);
-            foreach ($attachments as $n => $attachment) {
-                if ($attachment->post_title == basename($_POST[$fkey])) {
-                    $attachment_id = $attachment->ID;
-                    break;
-                }
-            }
-            update_post_meta($post_id, '_thumbnail_id', $attachment_id);
-        }
-
-        $new_arr = array();
-        $i = 0;
-        foreach ($files as $mkey => $file) {
-            if ($file['repetitive']) {
-                $j = 0;
-
-                if (!isset($new_arr['elements'])) {
-                    $new_arr['elements'] = array();
-                }
-
-                foreach ($file['value'] as $value) {
-	                if ( ! isset( $new_arr['elements'][ $j ] ) ) {
-		                $new_arr['elements'][ $j ] = array();
-	                }
-                    $new_arr['elements'][$j]['value'] = $value;
-                    $j++;
-                }
-
-                foreach ($file['file_data'][$mkey] as $name => $value) {
-                    $t = 0;
-                    foreach ($value as $v) {
-	                    if ( ! isset( $new_arr['elements'][ $t ]['filedata'] ) ) {
-		                    $new_arr['elements'][ $t ]['filedata'] = array();
-	                    }
-	                    if ( ! isset( $new_arr['elements'][ $t ]['filedata'][ $mkey ] ) ) {
-		                    $new_arr['elements'][ $t ][' filedata'][ $mkey ] = array();
-	                    }
-                        $new_arr['elements'][$t]['filedat a'][$mkey][$name] = $v;
-                        $t++;
-                    }
-                }
-
-
-                $j = 0;
-                foreach ($file['value'] as $value) {
-	                if ( ! isset( $new_arr['elements'][ $j ] ) ) {
-		                $new_arr['elements'][ $j ] = array();
-	                }
-                    $new_arr['elements'][$j]['file_upload'] = $file['file_upload'];
-                    $new_arr['elements'][$j]['name_orig'] = $file['name_orig'];
-                    $new_arr['elements'][$j]['label'] = $file['label'];
-                    $j++;
-                }
-
-                $i++;
-
-	            if ( ! isset( $new_arr['repetitive'] ) ) {
-		            $new_arr['repetitive'] = $file['repetitive'];
-	            }
-
-                $files[$mkey] = $new_arr;
-            }
-        }
-        unset($new_arr);
-
-        //$mime_types = wp_get_mime_types();
-        //$allowed_file_types = array_merge($mime_types, array('xml' => 'text/xml'));
-
-        foreach ($files as $fkey => $fdata) {
-            if ((isset($fdata['repetitive']) && $fdata['repetitive']) && isset($fdata['elements'])) {
-                if (!isset($fields[$fkey])) {
-                    $fields[$fkey] = array();
-                } else {
-                    if (is_array($fields[$fkey])) {
-                        $fields[$fkey] = array_filter($fields[$fkey]);
-                    } else {
-                        $aux_value_array = array($fields[$fkey]);
-                        $fields[$fkey] = array_filter($aux_value_array);
-                    }
-                }
-
-                foreach ($fdata['elements'] as $element) {
-                    $i = 0;
-                    foreach ($element as $ii => $fdata2) {
-                        if ($track)
-                            $tmp_data = array();
-
-	                    if ( ! isset( $fdata2[ $fkey ] ) || ! is_array( $fdata2[ $fkey ] ) ) {
-		                    continue;
-	                    }
-
-                        //TODO: check also $_POST[$fkey]
-                        if ($fdata2[$fkey]['error'] == 4)
-                            continue;
-
-                        $file_data = $fdata2[$fkey];
-
-                        $upload = wp_handle_upload($file_data, array('test_form' => false, 'test_upload' => false, 'mimes' => CRED_StaticClass::$_allowed_mime_types));
-                        if (!isset($upload['error']) && isset($upload['file'])) {
-                            $files[$fkey]['elements'][]['wp_upload'] = $upload;
-                            $fields[$fkey][] = $upload['url'];
-	                        if ( $track ) {
-		                        $tmp_data[] = $upload['url'];
-	                        }
-                            $fields = $this->removeFromArray($fields, $fkey, $file_data['name']);
-                        }
-                        else {
-                            $all_ok = false;
-                            $files[$fkey]['elements'][$i]['upload_fail'] = true;
-	                        if ( $track ) {
-		                        $tmp_data[] = $this->getLocalisedMessage( 'upload_failed' );
-	                        }
-
-                            $files[$fkey]['elements'][$i] = '';
-                            $files[$fkey]['elements'][$i]['upload_fail'] = true;
-                        }
-
-                        if ($track) {
-                            $this->trackData(array($files[$fkey]['elements'][$i]['label'] => $tmp_data));
-
-                            unset($tmp_data);
-                        }
-                        $i++;
-                    }
-                }
-            } else {
-
-	            if ( ! isset( $fdata['file_data'][ $fkey ] ) || ! is_array( $fdata['file_data'][ $fkey ] ) ) {
-		            continue;
-	            }
-
-                //Fix tssupp-158
-                //Fix changed !empty with isset tssupp-152
-	            if ( $fdata['file_data'][ $fkey ]['error'] == 4 && isset( $_POST[ $fkey ] ) ) {
-		            continue;
-	            }
-
-                $file_data = $fdata['file_data'][$fkey];
-
-                $upload = wp_handle_upload($file_data, array('test_form' => false, 'test_upload' => false, 'mimes' => CRED_StaticClass::$_allowed_mime_types));
-	            if ( ! isset( $upload['error'] )
-		            && isset( $upload['file'] )
-	            ) {
-                    $files[$fkey]['wp_upload'] = $upload;
-                    $fields[$fkey] = $upload['url'];
-		            if ( $track ) {
-			            $tmp_data = $upload['url'];
-		            }
-	            } else {
-                    //Fix if there a File generi cred field not required
-                    $data_field = CRED_StaticClass::$out['fields']['post_fields'][$fkey];
-		            if ( isset( $data_field['cred_generic'] ) && $data_field['cred_generic'] == 1
-			            && ( isset( $data_field['data']['validate']['required']['active'] )
-				            && $data_field['data']['validate']['required']['active'] == 0 )
-		            ) {
-		            } else {
-                        $all_ok = false;
-			            if ( $track ) {
-				            $tmp_data = $this->getLocalisedMessage( 'upload_failed' );
-			            }
-
-                        $fields[$fkey] = '';
-                        $files[$fkey]['upload_fail'] = true;
-                    }
-                }
-                if ($track) {
-                    $this->trackData(array($files[$fkey]['label'] => $tmp_data));
-                    unset($tmp_data);
-                }
-            }
-        }
-
-        return $all_ok;
-    }
+		$all_ok = true;
+		$all_ok = $this->elaborate_featured_image_upload( $post_id, $fields, $extra_files, $all_ok, $track );
+		$files = $this->get_transformed_files_in_cred_compatible_format( $files );
+		$all_ok = $this->set_fields_by_files_elaboration( $fields, $files, $all_ok, $track );
+		return $all_ok;
+	}
 
 	/**
-     * @deprecated since version 1.3.6.2
+     * @deprecated since version 1.3.6.2 with Ajax Feature fields upload
      *
 	 * @param $user_id
 	 * @param $fields
@@ -2390,209 +2008,304 @@ class CRED_Form_Builder_Helper {
 	 *
 	 * @return bool
 	 */
-    public function CRED_userUploadAttachments($user_id, &$fields, &$files, &$extra_files, $track = false) {
-        // dependencies
-        require_once(ABSPATH . '/wp-admin/includes/file.php');
-        //CRED_Loader::loadThe('wp_handle_upload');
-        // get ref here
-        $form = $this->_formBuilder->_formData;
+	public function CRED_userUploadAttachments( $user_id, &$fields, &$files, &$extra_files, $track = false ) {
+		// dependencies
+		require_once( ABSPATH . '/wp-admin/includes/file.php' );
 
-        $_form_fields = CRED_StaticClass::$out['form_fields'];
+		$all_ok = true;
+		$files = $this->get_transformed_files_in_cred_compatible_format( $files );
+		return $this->set_fields_by_files_elaboration( $fields, $files, $all_ok, $track );
+	}
 
-        // upload data
-        $all_ok = true;
-        // set featured image only if uploaded
-        $fkey = '_featured_image';
-        $extra_files = array();
-	    if (
-		    array_key_exists( $fkey, $_form_fields )
-		    && array_key_exists( $fkey, $_FILES )
-		    && isset( $_FILES[ $fkey ]['name'] )
-		    && ! empty( $_FILES[ $fkey ]['name'] )
-	    ) {
-            $upload = wp_handle_upload($_FILES[$fkey], array('test_form' => false, 'test_upload' => false));
-            if (!isset($upload['error']) && isset($upload['file'])) {
-                $extra_files[$fkey]['wp_upload'] = $upload;
-	            if ( $track ) {
-		            $tmp_data = $upload['url'];
-	            }
-            }
-            else {
-                $all_ok = false;
-                if ($track)
-                    $tmp_data = $this->getLocalisedMessage('upload_failed');
-                $fields[$fkey] = '';
-                $extra_files[$fkey]['upload_fail'] = true;
-            }
-            if ($track) {
-                $this->trackData(array(__('Featured Image', 'wp-cred') => $tmp_data));
-                unset($tmp_data);
-            }
-        } else {
-            if (array_key_exists($fkey, $_FILES) &&
-                    isset($_FILES[$fkey]['name']) &&
-                    empty($_FILES[$fkey]['name']) &&
-                    is_int($user_id) &&
-                    $user_id > 0
-            ) {
-                delete_user_meta($user_id, '_thumbnail_id');
-            }
-        }
+	/**
+	 * @param $fields
+	 * @param $files
+	 * @param $track
+	 *
+	 * @return bool
+	 */
+	protected function set_fields_by_files_elaboration( &$fields, &$files, &$all_ok, $track ) {
+		foreach ( $files as $file_key => $files_data ) {
+			if ( (
+			        isset( $files_data[ 'repetitive' ] )
+					&& $files_data[ 'repetitive' ]
+                )
+				&& isset( $files_data[ 'elements' ] )
+			) {
+				if ( ! isset( $fields[ $file_key ] ) ) {
+					$fields[ $file_key ] = array();
+				} else {
+					if ( is_array( $fields[ $file_key ] ) ) {
+						$fields[ $file_key ] = array_filter( $fields[ $file_key ] );
+					} else {
+						$aux_value_array = array( $fields[ $file_key ] );
+						$fields[ $file_key ] = array_filter( $aux_value_array );
+					}
+				}
 
-        $new_arr = array();
-        $i = 0;
-        foreach ($files as $mkey => $file) {
-            if ($file['repetitive']) {
-                $j = 0;
+				foreach ( $files_data[ 'elements' ] as $element ) {
+					$main_count = 0;
+					foreach ( $element as $element_key => $element_data ) {
+						if ( $track ) {
+							$tmp_data = array();
+						}
 
-                if (!isset($new_arr['elements'])) {
-                    $new_arr['elements'] = array();
-                }
+						if ( ! isset( $element_data[ $file_key ] )
+                            || ! is_array( $element_data[ $file_key ] )
+                        ) {
+							continue;
+						}
 
-                foreach ($file['value'] as $value) {
-                    if (!isset($new_arr['elements'][$j]))
-                        $new_arr['elements'][$j] = array();
-                    $new_arr ['elements'][$j]['value'] = $value;
-                    $j++;
-                }
+						if ( $element_data[ $file_key ][ 'error' ] !== UPLOAD_ERR_OK ) {
+							continue;
+						}
 
-                foreach ($file['file_data'][$mkey] as $name => $value) {
-                    $t = 0;
-                    foreach ($value as $v) {
-                        if (!isset($new_arr['elements'][$t]['filedata']))
-                            $new_arr['elements'][$t]['filedata'] = array();
-                        if (!isset($new_arr['elements'][$t]['filedata'][$mkey]))
-                            $new_arr['elements'][$t]['filedata'][$mkey] = array();
-                        $new_arr['elements'][$t]['filedata'][$mkey][$name] = $v;
-                        $t++;
-                    }
-                }
+						$file_data = $element_data[ $file_key ];
 
-                $j = 0;
+						$upload = wp_handle_upload( $file_data, array(
+							'test_form' => false,
+							'test_upload' => false,
+							'mimes' => CRED_StaticClass::$_allowed_mime_types,
+						) );
+						if ( ! isset( $upload[ 'error' ] )
+                            && isset( $upload[ 'file' ] )
+                        ) {
+							$files[ $file_key ][ 'elements' ][][ 'wp_upload' ] = $upload;
+							$fields[ $file_key ][] = $upload[ 'url' ];
+							if ( $track ) {
+								$tmp_data[] = $upload[ 'url' ];
+							}
+							$fields = $this->removeFromArray( $fields, $file_key, $file_data[ 'name' ] );
+						} else {
+							$all_ok = false;
+							$files[ $file_key ][ 'elements' ][ $main_count ][ 'upload_fail' ] = true;
+							if ( $track ) {
+								$tmp_data[] = $this->getLocalisedMessage( 'upload_failed' );
+							}
 
-                foreach ($file['value'] as $value) {
-                    if (!isset($new_arr['elements'][$j]))
-                        $new_arr['elements'][$j] = array();
-                    $new_arr['elements'][$j]['file_upload'] = $file['file_upload'];
-                    $new_arr['elements'][$j]['name_orig'] = $file['name_orig'];
-                    $new_arr['elements'][$j]['label'] = $file['label'];
-                    $j++;
-                }
+							$files[ $file_key ][ 'elements' ][ $main_count ] = '';
+							$files[ $file_key ][ 'elements' ][ $main_count ][ 'upload_fail' ] = true;
+						}
 
-                $i++;
+						if ( $track ) {
+							$this->trackData( array( $files[ $file_key ][ 'elements' ][ $main_count ][ 'label' ] => $tmp_data ) );
 
-                if (!isset($new_arr['repetitive']))
-                    $new_arr['repetitive'] = $file['repetitive'];
+							unset( $tmp_data );
+						}
+						$main_count ++;
+					}
+				}
+			} else {
+				if ( ! isset( $files_data[ 'file_data' ][ $file_key ] )
+					|| ! is_array( $files_data[ 'file_data' ][ $file_key ] )
+				) {
+					continue;
+				}
 
-                $files[$mkey] = $new_arr;
-            }
-        }
-        unset($new_arr);
+				if ( $files_data[ 'file_data' ][ $file_key ][ 'error' ] !== UPLOAD_ERR_OK
+					&& isset( $_POST[ $file_key ] )
+				) {
+					continue;
+				}
 
-        //$mime_types = wp_get_mime_types();
-        //$allowed_file_types = array_merge($mime_types, array('xml' => 'text/xml'));
+				$file_data = $files_data[ 'file_data' ][ $file_key ];
 
-        foreach ($files as $fkey => $fdata) {
-            if ((isset($fdata['repetitive']) && $fdata['repetitive']) && isset
-                            ($fdata['elements'])) {
-                if (!isset($fields[$fkey])) {
-                    $fields[$fkey] = array();
-                } else {
-                    if (is_array($fields[$fkey])) {
-                        $fields[$fkey] = array_filter($fields[$fkey]);
-                    } else {
-                        $aux_value_array = array($fields[$fkey]);
-                        $fields[$fkey] = array_filter($aux_value_array);
-                    }
-                }
+				$upload = wp_handle_upload( $file_data, array(
+					'test_form' => false,
+					'test_upload' => false,
+					'mimes' => CRED_StaticClass::$_allowed_mime_types,
+				) );
+				if ( ! isset( $upload[ 'error' ] )
+					&& isset( $upload[ 'file' ] )
+				) {
+					$files[ $file_key ][ 'wp_upload' ] = $upload;
+					$fields[ $file_key ] = $upload[ 'url' ];
+					if ( $track ) {
+						$tmp_data = $upload[ 'url' ];
+					}
+				} else {
+					//Fix if there a File generic cred field not required
+					$data_field = CRED_StaticClass::$out[ 'fields' ][ 'post_fields' ][ $file_key ];
+					if ( isset( $data_field[ 'cred_generic' ] ) && $data_field[ 'cred_generic' ] == 1
+						&& ( isset( $data_field[ 'data' ][ 'validate' ][ 'required' ][ 'active' ] )
+							&& $data_field[ 'data' ][ 'validate' ][ 'required' ][ 'active' ] == 0 )
+					) {
+					} else {
+						$all_ok = false;
+						if ( $track ) {
+							$tmp_data = $this->getLocalisedMessage( 'upload_failed' );
+						}
 
-                foreach ($fdata['elements'] as $element) {
-                    $i = 0;
-                    foreach ($element as $ii => $fdata2) {
-                        if ($track)
-                            $tmp_data = array();
+						$fields[ $file_key ] = '';
+						$files[ $file_key ][ 'upload_fail' ] = true;
+					}
+				}
+				if ( $track ) {
+					$this->trackData( array( $files[ $file_key ][ 'label' ] => $tmp_data ) );
+					unset( $tmp_data );
+				}
+			}
+		}
 
-                        //if (!isset($fdata2['file_data'][$fkey]) || !is_array($fdata2['file_data'][$fkey])) continue;
-                        //$file_data=$fdata2['file_data'][$fkey];
-                        if (!isset($fdata2[$fkey]) || !is_array($fdata2[$fkey]))
-                            continue;
-                        if ($fdata2[$fkey]['error'] == 4)
-                            continue;
+		return $all_ok;
+	}
 
-                        $file_data = $fdata2[$fkey];
+	/**
+	 * @param $files
+	 *
+	 * @return mixed
+	 */
+	protected function get_transformed_files_in_cred_compatible_format( &$files ) {
+		$support_array = array();
+		$main_count = 0;
+		foreach ( $files as $support_file_key => $support_file_data ) {
+			if ( $support_file_data[ 'repetitive' ] ) {
+				$file_count = 0;
 
-                        $upload = wp_handle_upload($file_data, array('test_form' => false, 'test_upload' => false, 'mimes' => CRED_StaticClass::$_allowed_mime_types));
-                        if (!isset($upload['error']) && isset($upload['file'])) {
-                            $files[$fkey]['elements'][]['wp_upload'] = $upload;
+				if ( ! isset( $support_array[ 'elements' ] ) ) {
+					$support_array[ 'elements' ] = array();
+				}
 
-                            $fields[$fkey][] = $upload['url'];
-                            if ($track)
-                                $tmp_data[] = $upload['url'];
-                            $fields = $this->removeFromArray($fields, $fkey, $file_data['name']);
-                        }
-                        else {
-                            $all_ok = false;
-                            $files[$fkey]['elements'][$i]['upload_fail'] = true;
-                            if ($track)
-                                $tmp_data[] = $this->getLocalisedMessage('upload_failed');
-                            $files[$fkey]['elements'][$i] = '';
-                            $files[$fkey]['elements'][$i]['upload_fail'] = true;
-                        }
+				foreach ( $support_file_data[ 'value' ] as $value ) {
+					if ( ! isset( $support_array[ 'elements' ][ $file_count ] ) ) {
+						$support_array[ 'elements' ][ $file_count ] = array();
+					}
+					$support_array[ 'elements' ][ $file_count ][ 'value' ] = $value;
+					$file_count ++;
+				}
 
-                        if ($track) {
-                            $this->trackData(array($files[$fkey]['elements'][$i]['label'] => $tmp_data));
+				foreach ( $support_file_data[ 'file_data' ][ $support_file_key ] as $support_file_name => $values ) {
+					$value_count = 0;
+					foreach ( $values as $single_value ) {
+						if ( ! isset( $support_array[ 'elements' ][ $value_count ][ 'filedata' ] ) ) {
+							$support_array[ 'elements' ][ $value_count ][ 'filedata' ] = array();
+						}
+						if ( ! isset( $support_array[ 'elements' ][ $value_count ][ 'filedata' ][ $support_file_key ] ) ) {
+							$support_array[ 'elements' ][ $value_count ][ 'filedata' ][ $support_file_key ] = array();
+						}
+						$support_array[ 'elements' ][ $value_count ][ 'filedata' ][ $support_file_key ][ $support_file_name ] = $single_value;
+						$value_count ++;
+					}
+				}
 
-                            unset($tmp_data);
-                        }
-                        $i++;
-                    }
-                }
-            } else {
-                if (!isset($fdata['file_data'][$fkey]) || !is_array($fdata['file_data'][$fkey]))
-                    continue;
 
-                $file_data = $fdata['file_data'][$fkey];
+				$sub_count = 0;
+				foreach ( $support_file_data[ 'value' ] as $value ) {
+					if ( ! isset( $support_array[ 'elements' ][ $sub_count ] ) ) {
+						$support_array[ 'elements' ][ $sub_count ] = array();
+					}
+					$support_array[ 'elements' ][ $sub_count ][ 'file_upload' ] = $support_file_data[ 'file_upload' ];
+					$support_array[ 'elements' ][ $sub_count ][ 'name_orig' ] = $support_file_data[ 'name_orig' ];
+					$support_array[ 'elements' ][ $sub_count ][ 'label' ] = $support_file_data[ 'label' ];
+					$sub_count ++;
+				}
 
-                $upload = wp_handle_upload($file_data, array('test_form' => false, 'test_upload' => false, 'mimes' => CRED_StaticClass::$_allowed_mime_types));
-                if (!isset($upload['error']) && isset($upload['file'])) {
-                    $files[$fkey]['wp_upload'] = $upload;
-                    $fields[$fkey] = $upload['url'];
-                    if ($track)
-                        $tmp_data = $upload['url'];
-                    //$zebraForm->controls[$_form_fields[$files[$fkey]['name_orig']][0]]->set_values(array('value'=>$upload['url']));
-                }
-                else {
-                    //Fix if there a File generi cred field not required
-                    //cred-14
-                    $data_field = CRED_StaticClass::$out['fields']['post_fields'][$fkey];
+				$main_count ++;
 
-                    if (isset($data_field['cred_generic']) && $data_field['cred_generic'] == 1 &&
-                            (isset($data_field['data']['validate']['required']['active']) &&
-                            $data_field['data']['validate']['required']['active'] == 0)) {
-                        
-                    } else {
-                        $all_ok = false;
-                        if ($track)
-                            $tmp_data = $this->getLocalisedMessage('upload_failed');
+				if ( ! isset( $support_array[ 'repetitive' ] ) ) {
+					$support_array[ 'repetitive' ] = $support_file_data[ 'repetitive' ];
+				}
 
-                        $fields[$fkey] = '';
-                        $files[$fkey]['upload_fail'] = true;
-                    }
-                    //$zebraForm->controls[$_form_fields[$files[$fkey]['name_orig']][0]]->set_values(array('value'=>''));
-                    //$zebraForm->controls[$_form_fields[$files[$fkey]['name_orig']][0]]->addError($upload['error']);
-                }
-                if ($track) {
-                    $this->trackData(array($files[$fkey]['label'] => $tmp_data));
-                    unset($tmp_data);
-                }
-            }
-        }
+				$files[ $support_file_key ] = $support_array;
+			}
+		}
+		unset( $support_array );
 
-        return $all_ok;
-    }
+		return $files;
+	}
+
+	/**
+	 * @param $post_id
+	 * @param $fields
+	 * @param $extra_files
+	 * @param $all_ok
+	 * @param $track
+	 *
+	 * @return bool
+	 */
+	protected function elaborate_featured_image_upload( $post_id, &$fields, &$extra_files, &$all_ok, $track ) {
+		$_form_fields = CRED_StaticClass::$out[ 'form_fields' ];
+
+	    // set featured image only if uploaded
+		$_featured_image_key = '_featured_image';
+
+		if ( isset( $_POST[ $_featured_image_key ] ) ) {
+			$this->trackData( array( __( 'Featured Image', 'wp-cred' ) => "<img src='" . $_POST[ $_featured_image_key ] . "'>" ) );
+		}
+
+	    $extra_files = array();
+		if (
+			array_key_exists( $_featured_image_key, $_form_fields )
+			&& array_key_exists( $_featured_image_key, $_FILES )
+			&& isset( $_FILES[ $_featured_image_key ][ 'name' ] )
+			&& ! empty( $_FILES[ $_featured_image_key ][ 'name' ] )
+		) {
+			$upload = wp_handle_upload( $_FILES[ $_featured_image_key ], array(
+				'test_form' => false,
+				'test_upload' => false
+			) );
+			if ( ! isset( $upload[ 'error' ] ) && isset( $upload[ 'file' ] ) ) {
+				$extra_files[ $_featured_image_key ][ 'wp_upload' ] = $upload;
+				if ( $track ) {
+					$tmp_data = $upload[ 'url' ];
+				}
+			} else {
+				$all_ok = false;
+				if ( $track ) {
+					$tmp_data = $this->getLocalisedMessage( 'upload_failed' );
+				}
+				$fields[ $_featured_image_key ] = '';
+				$extra_files[ $_featured_image_key ][ 'upload_fail' ] = true;
+			}
+			if ( $track ) {
+				$this->trackData( array( __( 'Featured Image', 'wp-cred' ) => $tmp_data ) );
+				unset( $tmp_data );
+			}
+		} else {
+			if ( array_key_exists( $_featured_image_key, $_FILES )
+				&& isset( $_FILES[ $_featured_image_key ][ 'name' ] )
+				&& empty( $_FILES[ $_featured_image_key ][ 'name' ] )
+				&& is_int( $post_id )
+				&& $post_id > 0
+			) {
+				delete_post_meta( $post_id, '_thumbnail_id' );
+			}
+		}
+
+		if ( isset( $_POST[ $_featured_image_key ] )
+			&& isset( $_POST[ '_cred_cred_prefix_post_id' ] )
+		) {
+			$post_id = intval( $_POST[ '_cred_cred_prefix_post_id' ] );
+			delete_post_meta( $post_id, '_thumbnail_id' );
+
+			$args = array(
+				'post_type' => 'attachment',
+				'numberposts' => - 1,
+				'post_status' => 'any',
+				'post_parent' => $post_id,
+			);
+
+			$attachments = get_posts( $args );
+			if (!empty($attachments)) {
+				foreach ( $attachments as $n => $attachment ) {
+					if ( $attachment->post_title == basename( $_POST[ $_featured_image_key ] ) ) {
+						$attachment_id = $attachment->ID;
+						break;
+					}
+				}
+				if ( isset( $attachment_id ) ) {
+					update_post_meta( $post_id, '_thumbnail_id', $attachment_id );
+				}
+			}
+		}
+
+		return $all_ok;
+	}
+
 
 	/**
      * @deprecated since version 1.3.6.3
+     *
 	 * @param $result
 	 * @param $fields
 	 * @param $files
@@ -2847,7 +2560,7 @@ class CRED_Form_Builder_Helper {
                     'type' => $field['type'],
                     'repetitive' => isset($field['data']['repetitive']) ? $field['data']['repetitive'] : false
                 );
-                //Fix https://icanloc alize. basecamphq.com/projects/7393061-toolset/todo_items/192856893/comments                
+                //Fix https://icanloc alize. basecamphq.com/projects/7393061-toolset/todo_items/192856893/comments
                 //Added file_data for validation
                 if (isset($_FILES) && !empty($_FILES)) {
                     if (isset($_FILES[$field['name']])) {
@@ -3017,8 +2730,9 @@ class CRED_Form_Builder_Helper {
                         $attributes['public_key'] = $globals['RECAPTCHA']['public_key'];
                         $attributes['private_key'] = $globals['RECAPTCHA']['private_key'];
                     }
-                    if (1 == CRED_StaticClass::$out['count'])
-                        $attributes['open'] = true;
+	                if ( 1 === CRED_Form_Count_Handler::get_instance()->get_main_count() ) {
+		                $attributes[ 'open' ] = true;
+	                }
                     // used to load additional js script
                     CRED_StaticClass::$out['has_recaptcha'] = true;
                     break;
@@ -3056,7 +2770,7 @@ class CRED_Form_Builder_Helper {
                     break;
 
                 case 'image':
-                    //$type='file';  
+                    //$type='file';
                     $type = 'cred' . $field['type'];
                     // show previous post featured image thumbnail
                     if ('_featured_image' == $name) {
@@ -3360,8 +3074,18 @@ class CRED_Form_Builder_Helper {
                 case 'wysiwyg':
                     $type = 'wysiwyg';
                     $attributes = array_merge($additional_options, array('disable_xss_filters' => true));
-                    if ('post_content' == $name && isset($form->fields['form_settings']->form['has_media_button']) && $form->fields['form_settings']->form['has_media_button'])
+                    if (
+                        isset( $form->fields['form_settings']->form['has_media_button'] )
+                        && $form->fields['form_settings']->form['has_media_button']
+                    ) {
                         $attributes['has_media_button'] = true;
+                    }
+                    if (
+                        isset( $form->fields['form_settings']->form['has_toolset_buttons'] )
+                        && $form->fields['form_settings']->form['has_toolset_buttons']
+                    ) {
+                        $attributes['has_toolset_buttons'] = true;
+                    }
                     break;
 
                 case 'integer':
@@ -3549,6 +3273,7 @@ class CRED_Form_Builder_Helper {
 
 	/**
      * @deprecated since 1.9
+     *
 	 * @param $option
 	 * @param $key
 	 * @param $form
@@ -3575,6 +3300,7 @@ class CRED_Form_Builder_Helper {
 
 	/**
      * @deprecated since 1.9
+     *
 	 * @param $name
 	 * @param $field
 	 * @param array $additional_options
@@ -3600,7 +3326,7 @@ class CRED_Form_Builder_Helper {
                 if (isset($field['id'])) {
                     $f = "_" . $field['id'];
                 } else {
-                    
+
                 }
             }
         }
@@ -3624,5 +3350,4 @@ class CRED_Form_Builder_Helper {
         $array[$key] = array_diff($array[$key], array($value));
         return $array;
     }
-
 }

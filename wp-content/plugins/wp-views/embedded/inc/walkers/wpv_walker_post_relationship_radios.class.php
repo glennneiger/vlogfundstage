@@ -101,7 +101,8 @@ class WPV_Walker_Post_Relationship_Radios extends WPV_Walker_Control_Base {
 					'style'		=> $this->walker_args['style'],
 					'class'		=> ( empty( $this->walker_args['class'] ) ) ? array() : explode( ' ', $this->walker_args['class'] ),
 					'name'		=> $this->walker_args['name'],
-					'value'		=> $item_object->ID
+					'value'		=> $item_object->ID,
+					'data-currentposttype'	=> $this->walker_args['ancestor_type']
 				),
 				'label'		=> array(
 					'style'		=> $this->walker_args['label_style'],

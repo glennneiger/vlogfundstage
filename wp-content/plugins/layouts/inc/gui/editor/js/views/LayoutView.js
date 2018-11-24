@@ -619,7 +619,7 @@ DDLayout.views.LayoutView = Backbone.View.extend({
 				}
 			});
 		}
-		else if( response.Data.message && response.Data.message.layout_changed == true )
+		else if( response.Data.message && response.Data.message.layout_changed )
 		{
             if( typeof self.save_layout_callback === 'function' ){
                 self.save_layout_callback.call(self, model, response);

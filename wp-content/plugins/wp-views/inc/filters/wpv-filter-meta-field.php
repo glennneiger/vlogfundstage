@@ -72,6 +72,58 @@ class WPV_Meta_Field_Filter {
 	static function admin_enqueue_scripts( $hook ) {
 		wp_enqueue_script( 'views-filter-meta-field-js' );
 	}
+
+	/**
+	 * Document scenaios where a custom field by a given field key should not be supported.
+	 *
+	 * @param string $meta_key
+	 * @param string $domain
+	 * 
+	 * @return boolean
+	 * 
+	 * @since 2.6.4
+	 */
+	static function can_filter_by( $meta_key, $domain = 'cf' ) {
+		// Do not support filtering by Types checkboxes fields
+		// that save mpty in the database when unchecked
+		$field_type = wpv_types_get_field_type( $meta_key, $domain );
+		if ( in_array( $field_type, array( 'checkboxes' ) ) ) {
+			$field_data = wpv_types_get_field_data( $meta_key, $domain );
+			if ( 'yes' == toolset_getnest( $field_data, array( 'data', 'save_empty' ), 'no' ) ) {
+				return false;
+			}
+		}
+
+		// Do not support filtering by meta keys containing a space,
+		// a dot and an underscore, or combinations of two of those items
+		$meta_key_has_space = ( strpos( $meta_key, ' ' ) !== false );
+		$meta_key_has_dot = ( strpos( $meta_key, '.' ) !== false );
+		$meta_key_has_underscore = ( strpos( $meta_key, '_' ) !== false );
+
+		if (
+			( $meta_key_has_space && $meta_key_has_dot )
+			|| ( $meta_key_has_space && $meta_key_has_underscore )
+			|| ( $meta_key_has_dot && $meta_key_has_underscore )
+		) {
+			return false;
+		}
+
+		// Do not support filtering by meta keys containing a space
+		// unless specific support has been declared for postmeta keys
+		if ( $meta_key_has_space || $meta_key_has_dot ) {
+			if ( 'cf' != $domain ) {
+				// Do not support problematic characters in termmeta or usermeta filters
+				return false;
+			}
+			$global_views_settings = WPV_Settings::get_instance();
+			if ( ! $global_views_settings->support_spaces_in_meta_filters ) {
+				// For postmeta, only if it is supported
+				return false;
+			}
+		}
+		
+		return true;
+	}
 	
 	/**
 	* wpv_render_meta_field_options
@@ -180,12 +232,14 @@ class WPV_Meta_Field_Filter {
 		$name_sanitized = $args['name'];
 		if (
 			$view_settings['view-query-mode'] == 'normal' 
-			&& $meta_type != 'termmeta'
+			&& $meta_type == 'postmeta'
 		) {
 			// LEGACY
-			// For some reason, postmeta and usermeta store a meta field data in a trimmed key
+			// For some reason, postmeta store a meta field data in a trimmed key
+			// Usermeta used to transform but did nto transform back on frontend, so whitelisting it
 			// Termmeta and postmeta on WPAs do not do it and at some point we will revert this for all
 			$name_sanitized = str_replace( ' ', '_', $name_sanitized );
+			$name_sanitized = str_replace( '.', '_', $name_sanitized );
 		} else if ( $view_settings['view-query-mode'] != 'normal' ) {
 			// Remove shortcode attribute options on WPAs.
 			unset( $options[ __( 'Shortcode attribute', 'wpv-views' ) ] );
@@ -793,16 +847,22 @@ class WPV_Custom_Field_Filter {
 	}
 	
 	/**
-	* @todo check what happens with all the _compare, _type and _value when the meta key has a space AND an underscore?
-	*/
+	 * LEGACY
+	 * @todo check what happens with all the _compare, _type and _value when the meta key has a space AND an underscore?
+	 */
 
 	static function wpv_filters_add_filter_custom_field( $filters ) {
-		global $WP_Views;
-		$meta_keys = $WP_Views->get_meta_keys();
-		$all_types_fields = get_option( 'wpcf-fields', array() );
+		$meta_keys = apply_filters( 'wpv_filter_wpv_get_postmeta_keys', array() );
 		foreach ( $meta_keys as $key ) {
+			if ( ! WPV_Meta_Field_Filter::can_filter_by( $key ) ) {
+				continue;
+			}
 			$key_nicename = wpv_types_get_field_name( $key );
-			$filters[ 'custom-field-' . str_replace( ' ', '_', $key ) ] = array(
+			// If the key has spaces, and passed WPV_Meta_Field_Filter::can_filter_by, adjust to underscores
+			$key = str_replace( ' ', '_', $key );
+			// If the key has dots, and passed WPV_Meta_Field_Filter::can_filter_by, adjust to underscores
+			$key = str_replace( '.', '_', $key );
+			$filters[ 'custom-field-' . $key ] = array(
 				'name'		=> sprintf( __( 'Custom field - %s', 'wpv-views' ), $key_nicename ),
 				'present'	=> 'custom-field-' . $key . '_compare',
 				'callback'	=> array( 'WPV_Custom_Field_Filter', 'wpv_add_new_filter_custom_field_list_item' ),
@@ -821,11 +881,16 @@ class WPV_Custom_Field_Filter {
 	*/
 	
 	static function wpv_filters_add_archive_filter_post_field( $filters ) {
-		global $WP_Views;
-		$meta_keys = $WP_Views->get_meta_keys();
-		$all_types_fields = get_option( 'wpcf-fields', array() );
+		$meta_keys = apply_filters( 'wpv_filter_wpv_get_postmeta_keys', array() );
 		foreach ( $meta_keys as $key ) {
+			if ( ! WPV_Meta_Field_Filter::can_filter_by( $key ) ) {
+				continue;
+			}
 			$key_nicename = wpv_types_get_field_name( $key );
+			// If the key has spaces, and passed WPV_Meta_Field_Filter::can_filter_by, adjust to underscores
+			$key = str_replace( ' ', '_', $key );
+			// If the key has dots, and passed WPV_Meta_Field_Filter::can_filter_by, adjust to underscores
+			$key = str_replace( '.', '_', $key );
 			$filters[ 'custom-field-' . $key ] = array(
 				'name'		=> sprintf( __( 'Custom field - %s', 'wpv-views' ), $key_nicename ),
 				'present'	=> 'custom-field-' . $key . '_compare',
@@ -888,6 +953,7 @@ class WPV_Custom_Field_Filter {
 	 */
 	
 	static function wpv_custom_search_filter_shortcodes_postmeta( $shortcodes ) {
+		$subgroups = array();
 		if (
 			function_exists( 'wpcf_admin_fields_get_groups' ) 
 			&& function_exists( 'wpcf_admin_fields_get_fields_by_group' )
@@ -897,10 +963,15 @@ class WPV_Custom_Field_Filter {
 				$subgroups = array();
 				foreach ( $groups as $group ) {
 					$fields = wpcf_admin_fields_get_fields_by_group( $group['id'], 'slug', true, false, true );
+					// @since m2m wpcf_admin_fields_get_fields_by_group returns strings for repeatng fields groups
+					$fields = array_filter( $fields, 'is_array' );
 					if ( ! empty( $fields ) ) {
 						$subgroup_items = array();
 						
 						foreach ( $fields as $field ) {
+							if ( ! WPV_Meta_Field_Filter::can_filter_by( $field['meta_key'] ) ) {
+								continue;
+							}
 							$subgroup_items[ 'postmeta_' . $field['id'] ] = array(
 								'name'			=> $field['name'],
 								'present'		=> 'custom-field-' . $field['meta_key'] . '_compare',
@@ -917,13 +988,15 @@ class WPV_Custom_Field_Filter {
 						);
 					}
 				}
-				$shortcodes['wpv-control-postmeta'] = array(
-					'query_type_target'					=> 'posts',
-					'query_filter_define_callback'		=> array( 'WPV_Custom_Field_Filter', 'query_filter_define_callback' ),
-					'custom_search_filter_subgroups'	=> $subgroups
-				);
 			}
 		}
+		
+		$shortcodes['wpv-control-postmeta'] = array(
+			'query_type_target'					=> 'posts',
+			'query_filter_define_callback'		=> array( 'WPV_Custom_Field_Filter', 'query_filter_define_callback' ),
+			'custom_search_filter_subgroups'	=> $subgroups
+		);
+		
 		return $shortcodes;
 	}
 	
@@ -1038,9 +1111,11 @@ class WPV_Termmeta_Field_Filter {
 	*/
 
 	static function wpv_filters_add_filter_termmeta_field( $filters ) {
-        global $WP_Views;
-		$meta_keys = $WP_Views->get_termmeta_keys();
+		$meta_keys = apply_filters( 'wpv_filter_wpv_get_termmeta_keys', array() );
 		foreach ( $meta_keys as $key ) {
+			if ( ! WPV_Meta_Field_Filter::can_filter_by( $key, 'tf' ) ) {
+				continue;
+			}
 			$key_nicename = wpv_types_get_field_name( $key, 'tf' );
 			$filters[ 'termmeta-field-' . $key ] = array(
 				'name'		=> sprintf( __( 'Termmeta field - %s', 'wpv-views' ), $key_nicename ),
@@ -1147,7 +1222,7 @@ class WPV_Usermeta_Field_Filter {
             //array('User Url', 'user_url','Basic','')
         );
         foreach ( $basic as $b_filter ) {
-			$filters[ 'usermeta-field-basic-' . str_replace( ' ', '_', $b_filter[1] ) ] = array(
+			$filters[ 'usermeta-field-basic-' . $b_filter[1] ] = array(
 				'name'		=> sprintf( __( 'User field - %s', 'wpv-views' ), $b_filter[0]),
                 'present'	=> 'usermeta-field-' . $b_filter[1] . '_compare',
                 'callback'	=> array( 'WPV_Usermeta_Field_Filter', 'wpv_add_new_filter_usermeta_field_list_item' ),
@@ -1156,6 +1231,7 @@ class WPV_Usermeta_Field_Filter {
 			);
 		}
 		// @todo review this for gods sake!!!!!!!!!!!!!!!!!!!!!!!!
+		// @since m2m wpcf_admin_fields_get_fields_by_group returns strings for repeatng fields groups
         if ( function_exists( 'wpcf_admin_fields_get_groups' ) ) {
             $groups = wpcf_admin_fields_get_groups( 'wp-types-user-group' );            
             $user_id = wpcf_usermeta_get_user();
@@ -1174,10 +1250,14 @@ class WPV_Usermeta_Field_Filter {
 						'wp-types-user-group',
                         'wpcf-usermeta' 
 					);
+					$fields = array_filter( $fields, 'is_array' );
                     if ( ! empty( $fields ) ) {
                         foreach ( $fields as $field_id => $field ) {
-                            $add[] = $field['meta_key'];
-                            $filters[ 'usermeta-field-' . str_replace( ' ', '_', $field['meta_key'] ) ] = array(
+							$add[] = $field['meta_key'];
+							if ( ! WPV_Meta_Field_Filter::can_filter_by( $field['meta_key'], 'uf' ) ) {
+								continue;
+							}
+                            $filters[ 'usermeta-field-' . $field['meta_key'] ] = array(
 								'name'		=> sprintf( __( 'User field - %s', 'wpv-views' ), $field['name'] ),
                                 'present'	=> 'usermeta-field-' . $field['meta_key'] . '_compare',
                                 'callback'	=> array( 'WPV_Usermeta_Field_Filter', 'wpv_add_new_filter_usermeta_field_list_item' ),
@@ -1190,7 +1270,10 @@ class WPV_Usermeta_Field_Filter {
             $cf_types = wpcf_admin_fields_get_fields( true, true, false, 'wpcf-usermeta' );
             foreach ( $cf_types as $cf_id => $cf ) {
                  if ( ! in_array( $cf['meta_key'], $add ) ) {
-                     $filters[ 'usermeta-field-' . str_replace( ' ', '_', $cf['meta_key'] ) ] = array(
+					if ( ! WPV_Meta_Field_Filter::can_filter_by( $cf['meta_key'], 'uf' ) ) {
+						continue;
+					}
+                    $filters[ 'usermeta-field-' . $cf['meta_key'] ] = array(
 						'name'		=> sprintf( __( 'User field - %s', 'wpv-views' ), $cf['name'] ),
                         'present'	=> 'usermeta-field-' . $cf['meta_key'] . '_compare',
                         'callback'	=> array( 'WPV_Usermeta_Field_Filter', 'wpv_add_new_filter_usermeta_field_list_item' ),
@@ -1200,18 +1283,20 @@ class WPV_Usermeta_Field_Filter {
             }
         }
 		
-		global $WP_Views;
-        $meta_keys = $WP_Views->get_usermeta_keys();
+        $meta_keys = apply_filters( 'wpv_filter_wpv_get_usermeta_keys', array() );
         foreach ( $meta_keys as $key ) {
+			if ( ! WPV_Meta_Field_Filter::can_filter_by( $key, 'uf' ) ) {
+				continue;
+			}
             $key_nicename = '';
             if ( stripos( $key, 'wpcf-' ) === 0 ) {
                 if ( function_exists( 'wpcf_admin_fields_get_groups' ) ) {    
-                continue;    
+                	continue;    
                 }
             } else {
                 $key_nicename = $key;
             }
-            $filters[ 'usermeta-field-' . str_replace( ' ', '_', $key ) ] = array(
+            $filters[ 'usermeta-field-' . $key ] = array(
 				'name'		=> sprintf( __( 'User field - %s', 'wpv-views' ), $key_nicename ),
                 'present'	=> 'usermeta-field-' . $key . '_compare',
                 'callback'	=> array( 'WPV_Usermeta_Field_Filter', 'wpv_add_new_filter_usermeta_field_list_item' ),

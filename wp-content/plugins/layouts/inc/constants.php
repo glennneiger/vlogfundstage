@@ -65,7 +65,20 @@ define("WPDDL_THE_CONTENT_PRIORITY_RENDER", 999);
 // Private layout
 define('WPDDL_PRIVATE_LAYOUTS_IN_USE', '_private_layouts_template_in_use');
 define('WPDDL_PRIVATE_LAYOUTS_ORIGINAL_CONTENT_META_KEY', '_private_layout_original_content');
-///
+
+// Grid Elements
 define('Rows', 'Rows');
 define('Cells', 'Cells');
 define('Cell', 'Cell');
+
+/** CAPABILITIES **/
+// Template Layout
+define("DDL_CREATE", "ddl_create_layout" );
+define("DDL_ASSIGN", "ddl_assign_layout_to_content" );
+define("DDL_EDIT", "ddl_edit_layout" );
+define("DDL_DELETE", "ddl_delete_layout" );
+// Private Layout
+define("DDL_CREATE_PRIVATE", "ddl_create_content_layout" );
+define("DDL_ASSIGN_PRIVATE", "ddl_assign_content_layout_to_post" );
+define("DDL_EDIT_PRIVATE", "ddl_edit_content_layout" );
+define("DDL_DELETE_PRIVATE", "ddl_delete_content_layout" );

@@ -1,3 +1,67 @@
+= 1.8.25 =
+* Fix display notice for Lite products
+* Fix error in plugin page
+
+= 1.8.24 =
+* Fixed wrong notice displayed for Toolset Types in plugins page
+* Fixed missing Register / Registered links for some Toolset products
+* Fixed wrong link in the notice of Toolset Views Lite
+* Removed notice in Toolset Views Lite and Toolset Types asking to register when they registered
+
+= 1.8.23 =
+* Improved message when switching between production and beta channels
+* Fixed random error thrown from Installer during plugin activation on slow connection
+
+= 1.8.22 =
+* Adjustments for distributing Views Lite and Types through the WPML repository
+* Fixed JavaScript errors occurring on WPML pages in IE 11
+
+= 1.8.21 =
+* Removed source maps for transpiled JS and CSS files which were causing some false positive alerts from malware softwares
+
+= 1.8.20 =
+* Display a link for Toolset Types upgrade if there is an available paid update
+* Do not include the plugin in the list of updates if it is not part of the current user subscription
+
+= 1.8.19 =
+* Fixed a bug that was preventing Types from being downloaded from wordpress.org
+
+= 1.8.18 =
+* Fixed a scenario where the `get_plugins` function might not be defined yet
+
+= 1.8.17 =
+* Implemented a notice for non-subscription users if an update is available on our site, without blocking updates from wordpress.org
+
+= 1.8.16 =
+* Improved sending of components data to be sent separately than the product registration
+
+= 1.8.15 =
+* Fixed message displayed even after sitekey gets validated
+* Resolved PHP Notice Undefined index: version in specific client's dump
+* Fixed incorrect comparison in the verification of subscriptions
+* Improved incorrect message when trying to download a plugin but the connection times out
+
+= 1.8.14.1 =
+* Fixed Warning when components storage cache is empty
+
+= 1.8.14 =
+* Optionally collect some site information and send to our Toolset and WPML servers, such as PHP version, theme and plugins
+* Resolved PHP fatal error when Types release/3.0 was active with WPML 3.9.4
+* Skipped sending reports when site key is missing
+* Changed the UI allowing users to send site's data
+* Send Installer reports when user clicks in "How to translate" link
+* Fixed Uncaught exception cURL error 35
+* Fixed a PHP notice when two instances of Installer exist
+* Refactored HTML to be more reusable and improved JS
+* Replaced Installer setting from plugins list with an action
+* Added Custom autoloader for Twig
+* Started using only one version number for Installer
+* Sanitized return of phpversion() in order to avoid registration issues when the option to send plugin/theme info is enabled
+* Include Installer reports settings class in the beginning
+* Removed autoloaded classes: replaced with custom autoloader only in `bootstrap.php`
+* Included a check for equivalent subscription type for each plugin/product
+* Added icons into upgrade response for WPML/Toolset plugins 
+
 = 1.8.10 =
 * Removed wrongly added dependencies and repositories
 

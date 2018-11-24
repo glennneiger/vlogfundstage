@@ -1,11 +1,15 @@
 <?php
 
+namespace OTGS\Toolset\CRED\Model\Shortcode\Delete;
+
 /**
- * Class CRED_Shortcode_Delete_Association
+ * Class Association delete shortcode class.
  *
  * @since m2m
  */
-class CRED_Shortcode_Delete_Association extends CRED_Shortcode_Delete_Base implements CRED_Shortcode_Interface, CRED_Shortcode_Interface_Conditional {
+class Association 
+	extends Base 
+	implements \CRED_Shortcode_Interface, \CRED_Shortcode_Interface_Conditional {
 	
 	const SHORTCODE_NAME = 'cred-delete-relationship';
 	

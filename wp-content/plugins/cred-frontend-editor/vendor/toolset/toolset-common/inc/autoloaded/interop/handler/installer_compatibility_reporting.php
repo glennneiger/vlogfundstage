@@ -4,6 +4,7 @@ namespace OTGS\Toolset\Common\Interop\Handler;
 
 use OTGS\Toolset\Common\Condition\Installer as installerCondition;
 use OTGS\Toolset\Common\Interop\HandlerInterface;
+use OTGS\Toolset\Common\Utility\Admin\Notices as adminNotices;
 
 /**
  * Display the Installer's Compatibility Reporting setting wherever necessary.
@@ -77,9 +78,9 @@ class InstallerCompatibilityReporting implements HandlerInterface {
 		// Add the options for sending compatibility reports to the Toolset repository on the Installer's Commercial
 		// Plugins page.
 		add_filter( 'otgs_installer_repository_registration_steps', function ( $registration_steps, $repository_id ) use ( $that ) {
-			if ( self::REPOSITORY_ID === $repository_id ) {
+			if ( InstallerCompatibilityReporting::REPOSITORY_ID === $repository_id ) {
 				$content = __( 'Choose if Toolset plugins should send reports about the active theme and plugins to toolset.com.', 'wpv-views' )
-					. $that->build_content( self::CONTEXT_REPOSITORY_LISTING )
+					. $that->build_content( InstallerCompatibilityReporting::CONTEXT_REPOSITORY_LISTING )
 					. '* ' . __( 'These reports, if you decide to send them, will allow Toolset team to give you faster support. We will also use this information to send you alerts about potential compatibility issues with the theme and plugins that you use.', 'wpv-views' );
 
 				array_unshift( $registration_steps, $content );
@@ -201,7 +202,7 @@ class InstallerCompatibilityReporting implements HandlerInterface {
 	 * Build and register the admin notice that alerts about the missing setting of compatibility reporting.
 	 */
 	public function show_notice() {
-		$builder = new \OTGS\Toolset\Common\Utility\Admin\Notices\Builder();
+		$builder = new adminNotices\Builder();
 
 		$notice = $builder->createNotice( self::NOTICE_ID, 'undismissible' );
 		$notice->set_is_only_for_administrators( true );

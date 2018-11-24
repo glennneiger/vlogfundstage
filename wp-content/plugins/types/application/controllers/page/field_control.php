@@ -461,8 +461,6 @@ final class Types_Page_Field_Control extends Types_Page_Abstract {
 			'option' => self::SCREEN_OPTION_PER_PAGE_NAME,
 		);
 		add_screen_option( 'per_page', $args );
-
-		add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3);
 	}
 
 

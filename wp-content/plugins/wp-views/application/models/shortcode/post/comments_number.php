@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Comments_Number implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Comments_Number extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-comments-number';
 
@@ -71,13 +71,12 @@ class WPV_Shortcode_Post_Comments_Number implements WPV_Shortcode_Interface {
 		}
 		
 		$out = '';
-		
-		$item = get_post( $item_id );
 
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
 		
 		if ( function_exists('icl_t') ) {
 			if ( isset( $this->user_atts['none'] ) ) {
@@ -96,20 +95,18 @@ class WPV_Shortcode_Post_Comments_Number implements WPV_Shortcode_Interface {
 		
 		global $WPVDebug;
 		
-		$number = get_comments_number( $item_id );
+		$number = get_comments_number( $item->ID );
 		
 		if ( $number > 1 ) {
-			$out = str_replace( '%', number_format_i18n( $number ), $this->user_atts['more'] );
+			$out .= str_replace( '%', number_format_i18n( $number ), $this->user_atts['more'] );
 		} elseif ( $number == 0 ) {
-			$out = $this->user_atts['none'];
+			$out .= $this->user_atts['none'];
 		} else { // must be one
-			$out = $this->user_atts['one'];
+			$out .= $this->user_atts['one'];
 		}
 
 		apply_filters( 'wpv_shortcode_debug', 'wpv-post-comments-number', json_encode( $this->user_atts ), $WPVDebug->get_mysql_last(), 'Data received from cache', $out );
 
 		return $out;
 	}
-	
-	
 }

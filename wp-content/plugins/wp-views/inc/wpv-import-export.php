@@ -28,8 +28,8 @@ function wpv_admin_menu_import_export() {
 					<?php _e( 'You only need to enter affiliate settings if you are a theme designer and want to receive affiliate commission.', 'wpv-views' ); ?>
 					<?php echo sprintf(
 						__( 'Log into <a href="%s">your account</a> and go to <a href="%s">affiliate settings</a> for details.', 'wpv-views' ),
-						'http://wp-types.com?utm_source=viewsplugin&utm_campaign=views&utm_medium=import-export-login-to-wp-types-com&utm_term=your account',
-						'https://wp-types.com/account/affiliate/?utm_source=viewsplugin&utm_campaign=views&utm_medium=import-export-get-affiliate-link&utm_term=affiliate settings'
+						'https://toolset.com?utm_source=viewsplugin&utm_campaign=views&utm_medium=import-export-login-to-wp-types-com&utm_term=your account',
+						'https://toolset.com/account/affiliate/?utm_source=viewsplugin&utm_campaign=views&utm_medium=import-export-get-affiliate-link&utm_term=affiliate settings'
 					);
 					?>
 				</p>
@@ -91,7 +91,10 @@ function wpv_admin_export_data( $download = true ) {
     } else {
         $wp_upload_dir = wp_upload_dir();
         $data['fileupload_url'] = $wp_upload_dir['baseurl'];
-    }
+	}
+	
+	$upgrade_controller = \OTGS\Toolset\Views\Controller\Upgrade::get_instance();
+	$data['wpv_database_version'] = $upgrade_controller->get_database_version();
 	
 	/**
 	* wpv_filter_view_extra_fields_for_import_export
@@ -150,6 +153,7 @@ function wpv_admin_export_data( $download = true ) {
                     foreach ( $meta as $meta_key => $meta_value ) {
                         if ( $meta_key == '_wpv_settings' ) {
                             $value = maybe_unserialize( $meta_value[0] );
+                            $value = is_array( $value ) ? $value : array();
 							$this_settings = $value;
                             // Add data from the taxonomy terms query filter so we can re-map when we import
                             if ( ! empty( $value['taxonomy_terms'] ) ) {
@@ -256,7 +260,8 @@ function wpv_admin_export_data( $download = true ) {
 							$data['views']['view-' . $post['ID']]['attachments']['attach_'.$attachment->ID]['excerpt'] = $attachment->post_excerpt;
 							$data['views']['view-' . $post['ID']]['attachments']['attach_'.$attachment->ID]['status'] = $attachment->post_status;
 							$data['views']['view-' . $post['ID']]['attachments']['attach_'.$attachment->ID]['alt'] = get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true );
-							$imdata = base64_encode( file_get_contents( $attachment->guid ) );
+							$attachment_contents = @file_get_contents( $attachment->guid );
+							$imdata = $attachment_contents ? base64_encode( $attachment_contents ) : '';
 							$data['views']['view-' . $post['ID']]['attachments']['attach_'.$attachment->ID]['data'] = $imdata;
 							preg_match( '/[^\?]+\.(jpe?g|jpe|gif|png)\b/i', $attachment->guid, $matches );
 							$data['views']['view-' . $post['ID']]['attachments']['attach_'.$attachment->ID]['filename'] = basename( $matches[0] );
@@ -410,7 +415,8 @@ function wpv_admin_export_data( $download = true ) {
 							$post_data['attachments']['attach_'.$attachment->ID]['excerpt'] = $attachment->post_excerpt;
 							$post_data['attachments']['attach_'.$attachment->ID]['status'] = $attachment->post_status;
 							$post_data['attachments']['attach_'.$attachment->ID]['alt'] = get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true );
-							$imdata = base64_encode( file_get_contents( $attachment->guid ) );
+							$attachment_contents = @file_get_contents( $attachment->guid );
+							$imdata = $attachment_contents ? base64_encode( $attachment_contents ) : '';
 							$post_data['attachments']['attach_'.$attachment->ID]['data'] = $imdata;
 							preg_match( '/[^\?]+\.(jpe?g|jpe|gif|png)\b/i', $attachment->guid, $matches );
 							$post_data['attachments']['attach_'.$attachment->ID]['filename'] = basename( $matches[0] );

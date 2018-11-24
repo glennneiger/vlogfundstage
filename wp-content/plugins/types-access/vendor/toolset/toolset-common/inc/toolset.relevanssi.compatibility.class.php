@@ -127,7 +127,7 @@ if ( ! class_exists( 'Toolset_Relevanssi_Compatibility' ) ) {
 		function toolset_relevanssi_settings( $sections, $toolset_options ) {
 			
 			$section_content = '';
-			$text_search_documentation_link = 'https://wp-types.com/documentation/user-guides/filtering-views-for-a-specific-text-string-search/?utm_source=viewsplugin&utm_campaign=views&utm_medium=views-text-search-settings&utm_term=Text Search documentation';
+			$text_search_documentation_link = 'https://toolset.com/documentation/user-guides/filtering-views-for-a-specific-text-string-search/?utm_source=viewsplugin&utm_campaign=views&utm_medium=views-text-search-settings&utm_term=Text Search documentation';
 
 			
 			if ( ! $this->relevanssi_installed ) {
@@ -379,7 +379,7 @@ if ( ! class_exists( 'Toolset_Relevanssi_Compatibility' ) ) {
 											'' : 
 											' style="display:none"';
 				$this_field_description		= '<span class="js-toolset-toggle-relevanssi-index-description"' . $this_field_description_style . '>' . sprintf(
-							__( 'Go to %1$sText Search settings%2$s to build the search index.', 'wpcf' ),
+							__( 'Go to %1$sText Search settings%2$s to build the search index.', 'wpv-views' ),
 							'<a href="' . esc_url( $this->toolset_settings_url ) . '" target="_blank">',
 							'</a>'
 						) . '</span>';
@@ -387,8 +387,8 @@ if ( ! class_exists( 'Toolset_Relevanssi_Compatibility' ) ) {
 						'#type' => 'checkbox',
 						'#name' => 'relevanssi_index',
 						'#inline' => true,
-						'#title' => __( 'Include in search', 'wpcf' ),
-						'#label' => __( 'Include this field in text searches throughout the site', 'wpcf' ),
+						'#title' => __( 'Include in search', 'wpv-views' ),
+						'#label' => __( 'Include this field in text searches throughout the site', 'wpv-views' ),
 						'#description' => $this_field_description,
 						'#attributes' => array(
 							'autocomplete'	=> 'off',

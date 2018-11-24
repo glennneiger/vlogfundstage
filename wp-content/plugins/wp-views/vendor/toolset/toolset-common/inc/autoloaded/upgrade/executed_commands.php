@@ -55,4 +55,10 @@ class Toolset_Upgrade_Executed_Commands {
 		return $this->executed_commands;
 	}
 
+
+	public function reset() {
+		$this->executed_commands = null;
+		delete_option( self::OPTION_NAME );
+	}
+
 }

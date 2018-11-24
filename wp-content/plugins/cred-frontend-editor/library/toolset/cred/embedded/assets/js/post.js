@@ -1,7 +1,7 @@
 (function (window, $, settings, utils, gui, undefined) {
     // public methods / properties
     var self = {
-        // add the extra Modules as part of main CRED Module
+        // add the extra Modules as part of main Toolset Forms Module
         app: utils,
         gui: gui,
         settings: settings,

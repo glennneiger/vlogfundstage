@@ -327,6 +327,19 @@ class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements
 
 
 	/**
+	 * @param IToolset_Post_Type_Registered $registered_post_type
+	 * @since 2.6.3
+	 */
+	public function set_registered_post_type( IToolset_Post_Type_Registered $registered_post_type ) {
+		if( $registered_post_type->get_slug() !== $this->get_slug() ) {
+			throw new InvalidArgumentException();
+		}
+
+		$this->registered_post_type = $registered_post_type;
+	}
+
+
+	/**
 	 * @inheritdoc
 	 * @return bool
 	 */
@@ -484,7 +497,7 @@ class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements
 	public function set_is_repeating_field_group( $value ) {
 		$this->set_flag_to_definition( self::DEF_IS_REPEATING_FIELD_GROUP, (bool) $value );
 		if ( $value ) {
-			$this->definition['supports'] = array( 'post_title', 'author', 'custom-fields', 'revisions' );
+			$this->definition['supports'] = array( 'post_title' => 1, 'author' => 1, 'custom-fields' => 1 );
 		}
 		$this->set_is_public( false );
 	}

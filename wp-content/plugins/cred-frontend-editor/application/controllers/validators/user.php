@@ -63,8 +63,8 @@ class CRED_Validator_User extends CRED_Validator_Base implements ICRED_Validator
 				&& isset( $_POST['user_pass2'] )
 				&& $_POST['user_pass'] != $_POST['user_pass2']
 			) {
-				$zebra_form->add_top_message( __( 'Password fields do not match', 'wp-cred' ) );
-				$zebra_form->add_field_message( __( 'Password fields do not match', 'wp-cred' ), 'user_pass2' );
+				$zebra_form->add_top_message( $this->_formHelper->getLocalisedMessage( 'passwords_do_not_match' ) );
+				$zebra_form->add_field_message( $this->_formHelper->getLocalisedMessage( 'passwords_do_not_match' ), 'user_pass2' );
 				$result = false;
 			}
 		}
@@ -106,7 +106,14 @@ class CRED_Validator_User extends CRED_Validator_Base implements ICRED_Validator
 				&& ! $is_multisite_error
 			) {
 				$msg = $this->_formHelper->getLocalisedMessage( 'invalid_edit_user_role' );
-				$zebra_form->add_top_message( $msg . ': <b>' . implode( ", ", $user_role_can_edit ) . '</b>' );
+				if ( false !== strpos( $msg, '%%EDITED_USER_ROLE%%' ) ) {
+					$msg = str_replace( '%%EDITED_USER_ROLE%%', $user_role_to_edit, $msg );
+				}
+				if ( false !== strpos( $msg, '%%SUPPORTED_USER_ROLE%%' ) ) {
+					$supported_roles = implode( ", ", $user_role_can_edit );
+					$msg = str_replace( '%%SUPPORTED_USER_ROLE%%', $supported_roles, $msg );
+				}
+				$zebra_form->add_top_message( $msg );
 				$result = false;
 			}
 		} else {
@@ -118,12 +125,15 @@ class CRED_Validator_User extends CRED_Validator_Base implements ICRED_Validator
 				$result = false;
 			}
 
-			if ( isset( $_POST['user_login'] )
-				&& username_exists( $_POST['user_login'] )
-			) {
-				$zebra_form->add_top_message( $this->_formHelper->getLocalisedMessage( 'username_already_exists' ) );
-				$zebra_form->add_field_message( $this->_formHelper->getLocalisedMessage( 'username_already_exists' ), 'user_login' );
-				$result = false;
+			if ( isset( $_POST['user_login'] ) ) {
+				if ( ! validate_username( $_POST['user_login'] ) ) {
+					$zebra_form->add_field_message( $this->_formHelper->getLocalisedMessage( 'invalid_username' ), 'user_login' );
+					$result = false;
+				} else if ( username_exists( $_POST['user_login'] ) ) {
+					$zebra_form->add_top_message( $this->_formHelper->getLocalisedMessage( 'username_already_exists' ) );
+					$zebra_form->add_field_message( $this->_formHelper->getLocalisedMessage( 'username_already_exists' ), 'user_login' );
+					$result = false;
+				}
 			}
 		}
 

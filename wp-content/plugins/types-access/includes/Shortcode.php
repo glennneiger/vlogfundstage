@@ -16,7 +16,7 @@ if ( ! class_exists( 'OTG_Access_Shortcode_Generator' ) ) {
 	
 	class OTG_Access_Shortcode_Generator extends Toolset_Shortcode_Generator {
 
-	    function __construct() {
+		function __construct() {
 			
 			parent::__construct();
 			
@@ -85,11 +85,19 @@ if ( ! class_exists( 'OTG_Access_Shortcode_Generator' ) ) {
 			global $pagenow;
 			wp_register_script( 'otg-access-shortcodes-gui-script', TACCESS_ASSETS_URL . '/js/shortcode.js', array( 'jquery', 'jquery-ui-dialog', 'icl_editor-script', 'underscore', 'toolset-event-manager' ), TACCESS_VERSION );
 			$shortcodes_gui_translations = array(
+				/* translators: Label for the Access button to insert the Access hortcodes into editors */
+				'button_title' => __( 'Access', 'wpcf-access' ),
+				/* translators: Label for the button in the dialog to insert the Access shortcode to editors */
 				'insert_shortcode'			=> __( 'Insert shortcode', 'wpcf-access'),
+				/* translators: Label for the button in the dialog to create an Access shortcode */
 				'create_shortcode'			=> __( 'Create shortcode', 'wpcf-access' ),
+				/* translators: Label for the button to close the dialog to insert an Access shortcode */
 				'close'						=> __( 'Close', 'wpcf-access'),
+				/* translators: Label for the button to cancel the dialog to create an Access shortcode */
 				'cancel'					=> __( 'Cancel', 'wpcf-access' ),
+				/* translators: Title of the dialog to insert an Access shortcode */
 				'dialog_title'				=> __( 'Conditionally-displayed text', 'wpcf-access' ),
+				/* translators: Title of the dialog that shows an Access created shortcode */
 				'dialog_title_generated'	=> __( 'Generated shortcode', 'wpcf-access' ),
 				'pagenow'					=> $pagenow
 			);
@@ -339,13 +347,44 @@ if ( ! class_exists( 'OTG_Access_Shortcode_Generator' ) ) {
 		}
 		
 		public function is_access_button_disabled() {
-			$hide_access_button = apply_filters( 'toolset_editor_add_access_button', false );
-            if ( is_array( $hide_access_button ) ) {
-                $current_role = Access_Helper::wpcf_get_current_logged_user_role();
-                if ( in_array( $current_role, $hide_access_button ) ) {
-                    return true;
-                }
-            }
+
+			// General shared filter for all Toolset buttons
+			if ( ! apply_filters( 'toolset_editor_add_form_buttons', true ) ) {
+				return true;
+			}
+
+			$current_role = Access_Helper::wpcf_get_current_logged_user_role();
+
+			/**
+			 * Legacy filter that blacklists roles from showing the button.
+			 * Despite its name, it does blacklist roles.
+			 * Yes, really.
+			 *
+			 * Returning an array of roles here will disable the button for those roles.
+			 *
+			 * @since unknown
+			 * @since 2.5.2 Returning false to this filter will disable the button globally.
+			 */
+			$hide_access_button = apply_filters( 'toolset_editor_add_access_button', true );
+			if ( false === $hide_access_button ) {
+				return true;
+			}
+			if ( is_array( $hide_access_button ) ) {
+				if ( in_array( $current_role, $hide_access_button, true ) ) {
+					return true;
+				}
+			}
+
+			/**
+			 * Blacklist roles from showing the Access editor button.
+			 *
+			 * @since 2.5.2
+			 */
+			$blacklisted_roles = apply_filters( 'toolset_editor_access_button_disable_by_role', array() );
+			if ( in_array( $current_role, $blacklisted_roles, true ) ) {
+				return true;
+			}
+
 			return false;
 		}
 		

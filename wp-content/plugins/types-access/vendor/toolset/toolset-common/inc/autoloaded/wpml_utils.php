@@ -3,7 +3,7 @@
 /**
  * WPML-related helper functions.
  *
- * todo merge this with Toolset_Wpml_Compatibility.
+ * @deprecated Do not add new methods. Merge this class with Toolset_Wpml_Compatibility.
  *
  * @since m2m
  */
@@ -12,6 +12,7 @@ class Toolset_Wpml_Utils {
 
 	/**
 	 * @return string icl_translations table name.
+	 * @deprecated Use Toolset_WPML_Compatibility::icl_translations_table_name
 	 */
 	public static function icl_translations_tn() {
 		global $wpdb;
@@ -89,6 +90,7 @@ class Toolset_Wpml_Utils {
 	 * @param int $post_id
 	 * @return int "trid" value or zero.
 	 * @since m2m
+	 * @deprecated Use Toolset_WPML_Compatibility::get_post_trid
 	 */
 	public static function get_post_trid( $post_id ) {
 		global $wpdb;
@@ -116,6 +118,7 @@ class Toolset_Wpml_Utils {
 	 * @param int $post_id
 	 * @return int[]
 	 * @since m2m
+	 * @deprecated Use Toolset_WPML_Compatibility::get_post_translations_directly
 	 */
 	public static function get_post_translations_directly( $post_id ) {
 
@@ -133,12 +136,12 @@ class Toolset_Wpml_Utils {
 		}
 
 		$query = $wpdb->prepare(
-			"SELECT 
-				element_id AS post_id, 
-				language_code AS language_code 
-			FROM 
+			"SELECT
+				element_id AS post_id,
+				language_code AS language_code
+			FROM
 				$icl_translations_table
-			WHERE 
+			WHERE
 				element_type LIKE %s
 				AND trid = %d",
 			'post_%',
@@ -164,13 +167,11 @@ class Toolset_Wpml_Utils {
 	 * @param string $post_type_slug
 	 * @return bool
 	 * @since m2m
+	 * @deprecated Use Toolset_WPML_Compatibility::is_post_type_translatable() instead.
 	 */
 	public static function is_post_type_translatable( $post_type_slug ) {
-		return (bool) apply_filters( 'wpml_is_translated_post_type', false, $post_type_slug );
+		return Toolset_WPML_Compatibility::get_instance()->is_post_type_translatable( $post_type_slug );
 	}
-
-
-	private static $current_language = null;
 
 
 	/**
@@ -180,19 +181,11 @@ class Toolset_Wpml_Utils {
 	 *
 	 * @return string
 	 * @since m2m
+	 * @deprecated Use Toolset_WPML_Compatibility::get_current_language()
 	 */
 	public static function get_current_language() {
-		if(
-			null === self::$current_language
-			&& Toolset_WPML_Compatibility::get_instance()->is_wpml_active_and_configured()
-		) {
-			self::$current_language = apply_filters( 'wpml_current_language', null );
-		}
-		return self::$current_language;
+		return Toolset_WPML_Compatibility::get_instance()->get_current_language();
 	}
-
-
-	private static $default_language = null;
 
 
 	/**
@@ -202,15 +195,10 @@ class Toolset_Wpml_Utils {
 	 *
 	 * @return string
 	 * @since m2m
+	 * @deprecated Use Toolset_WPML_Compatibility::get_default_language()
 	 */
 	public static function get_default_language() {
-		if(
-			null === self::$default_language
-			&& Toolset_WPML_Compatibility::get_instance()->is_wpml_active_and_configured()
-		) {
-			self::$default_language = apply_filters( 'wpml_default_language', null );
-		}
-		return self::$default_language;
+		return Toolset_WPML_Compatibility::get_instance()->get_default_language();
 	}
 
 
@@ -245,4 +233,41 @@ class Toolset_Wpml_Utils {
 		}
 	}
 
+
+	/**
+	 * Check whether a default language of a post exists.
+	 *
+	 * Returns true if WPML is not active, as in that case, all posts are considered
+	 * to be in the "default" language.
+	 *
+	 * Also returns true if the provided post itself is in the default language.
+	 *
+	 * @param int $post_id ID of the post
+	 * @return boolean
+	 * @since m2m
+	 */
+	public static function has_default_language_translation( $post_id ) {
+		$wpml_service = Toolset_WPML_Compatibility::get_instance();
+		if( ! $wpml_service->is_wpml_active_and_configured() ) {
+			return true;
+		}
+
+		$default_language = $wpml_service->get_default_language();
+
+		$translated_post_id = apply_filters( 'wpml_object_id', (int) $post_id, 'any', false, $default_language );
+
+		return ( null !== $translated_post_id );
+	}
+
+
+	/**
+	 * Gets active languages information
+	 *
+	 * @return array
+	 * @since m2m
+	 * @link https://wpml.org/documentation/getting-started-guide/language-setup/custom-language-switcher/
+	 */
+	public static function get_active_languages() {
+		return apply_filters( 'wpml_active_languages', null, '' );
+	}
 }

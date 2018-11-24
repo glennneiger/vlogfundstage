@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Class implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Class extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-class';
 
@@ -64,16 +64,15 @@ class WPV_Shortcode_Post_Class implements WPV_Shortcode_Interface {
 			// no valid item
 			throw new WPV_Exception_Invalid_Shortcode_Attr_Item();
 		}
-		
-		$out = '';
-		
-		$item = get_post( $item_id );
 
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
-		
+		$out = '';
+
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
+
 		// get_post_class handles the escaping of the additional classnames.
 		// We need to force the $post->post_type classname as it is added in the frontend 
 		// but in AJAX it is not included as it is considered backend.
@@ -82,14 +81,12 @@ class WPV_Shortcode_Post_Class implements WPV_Shortcode_Interface {
 			$added_classnames = explode( ' ', $this->user_atts['add'] );
 		}
 		$added_classnames[] = $item->post_type;
-		
-		$item_classes = get_post_class( $added_classnames, $item_id );
-		$out = implode( ' ', $item_classes );
+
+		$item_classes = get_post_class( $added_classnames, $item->ID );
+		$out .= implode( ' ', $item_classes );
 
 		apply_filters( 'wpv_shortcode_debug', 'wpv-post-class', json_encode( $this->user_atts ), '', 'Data received from cache', $out );
 
 		return $out;
 	}
-	
-	
 }

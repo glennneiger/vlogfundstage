@@ -783,8 +783,9 @@ function wpv_render_wpa_listing_dialog_templates_arrangeby_usage() {
 					</li>
 					<li>
 						<p>
-							<input type="radio" name="wpv_wpa_usage_purpose" class="js-wpv-usage-purpose js-wpv-usage-purpose-parametric" id="wpv_wpa_purpose_parametric" value="parametric" />
+							<input type="radio" name="wpv_wpa_usage_purpose" class="js-wpv-usage-purpose js-wpv-usage-purpose-parametric" <?php disabled( wpv_is_views_lite(), true, true );?> id="wpv_wpa_purpose_parametric" value="parametric" />
 							<label for="wpv_wpa_purpose_parametric"><?php _e('Display the items using a custom search','wpv-views'); ?></label>
+							<?php if( wpv_is_views_lite() ):?><a href="javascript:void(0)" class="dashicons dashicons-editor-help" id="wpv_parametric_disabled_pointer"></a><?php endif;?>
 							<span class="wpv-helper-text"><?php _e('Visitors will be able to search through your content using different search criteria.', 'wpv-views'); ?></span>
 						</p>
 					</li>
@@ -809,6 +810,7 @@ function wpv_render_view_listing_dialog_templates() {
 		<!-- popup: create View -->
 		<div id="js-wpv-create-view-form-dialog" class="toolset-shortcode-gui-dialog-container wpv-shortcode-gui-dialog-container wpv-create-view-form-dialog js-create-view-form-dialog">
 			<div class="wpv-dialog wpv-shortcode-gui-content-wrapper no-scrollbar">
+				<div class="js-wpv-error-container"></div>
 				<?php
 					wp_nonce_field('wp_nonce_create_view', 'wp_nonce_create_view');
 					printf(
@@ -816,9 +818,6 @@ function wpv_render_view_listing_dialog_templates() {
 							// Careful, it is expected that this value really ends with "view_id=". View ID gets appended to it in JS.
 							admin_url( 'admin.php?page=views-editor&amp;view_id=') );
 				?>
-				<label for="view_new_name"><strong><?php _e( 'Name this View', 'wpv-views' ); ?></strong></label>
-				<input type="text" name="view_new_name" id="view_new_name" class="js-new-post_title large-text"
-						placeholder="<?php echo esc_attr( __('Enter title here', 'wpv-views') ); ?>" />
 				<h3><?php _e( 'What kind of display do you want to create?', 'wpv-views' ); ?></h3>
 				<p style="margin-top:0;">
 					<?php _e('A View loads content from the database and displays it with your HTML.', 'wpv-views'); ?>
@@ -826,32 +825,36 @@ function wpv_render_view_listing_dialog_templates() {
 				<ul>
 					<li>
 						<p>
-							<input type="radio" name="view_purpose" class="js-wpv-purpose" id="view_purpose_all" value="all" />
+							<input type="radio" name="view_purpose" <?php checked( wpv_is_views_lite(), true, true );?> class="js-wpv-purpose" id="view_purpose_all" value="all" />
 							<label for="view_purpose_all"><?php _e('Display all results','wpv-views'); ?></label>
 							<span class="wpv-helper-text"><?php _e('The View will output all the results returned from the query section.', 'wpv-views'); ?></span>
 						</p>
 					</li>
 					<li>
 						<p>
-							<input type="radio" name="view_purpose" class="js-wpv-purpose" id="view_purpose_pagination" value="pagination" />
+							<input type="radio" name="view_purpose" <?php disabled( wpv_is_views_lite(), true, true );?> class="js-wpv-purpose" id="view_purpose_pagination" value="pagination" />
 							<label for="view_purpose_pagination"><?php _e('Display the results with pagination','wpv-views'); ?></label>
+							<?php if( wpv_is_views_lite() ):?><a href="javascript:void(0)" class="dashicons dashicons-editor-help" id="wpv_pagination_disabled_pointer"></a><?php endif;?>
 							<span class="wpv-helper-text"><?php _e('The View will display the query results in pages.', 'wpv-views'); ?></span>
 						</p>
 					</li>
 					<li>
 						<p>
-							<input type="radio" name="view_purpose" class="js-wpv-purpose" id="view_purpose_slider" value="slider" />
+							<input type="radio" name="view_purpose" <?php disabled( wpv_is_views_lite(), true, true );?> class="js-wpv-purpose" id="view_purpose_slider" value="slider" />
 							<label for="view_purpose_slider"><?php _e('Display the results as a slider','wpv-views'); ?></label>
+							<?php if( wpv_is_views_lite() ):?><a href="javascript:void(0)" class="dashicons dashicons-editor-help" id="wpv_slider_disabled_pointer"></a><?php endif;?>
 							<span class="wpv-helper-text"><?php _e('The View will display the query results as slides.', 'wpv-views'); ?></span>
 						</p>
 					</li>
 					<li>
 						<p>
-							<input type="radio" name="view_purpose" class="js-wpv-purpose" id="view_purpose_parametric" value="parametric" />
+							<input type="radio" name="view_purpose" <?php disabled( wpv_is_views_lite(), true, true );?> class="js-wpv-purpose" id="view_purpose_parametric" value="parametric" />
 							<label for="view_purpose_parametric"><?php _e('Display the results using a custom search','wpv-views'); ?></label>
-							<span class="wpv-helper-text"><?php _e('Visitors will be able to search through your content using different search criteria.', 'wpv-views'); ?></span>
+                            <?php if( wpv_is_views_lite() ):?><a href="javascript:void(0)" class="dashicons dashicons-editor-help" id="wpv_custom_search_disabled_pointer"></a><?php endif;?>
+                            <span class="wpv-helper-text"><?php _e('Visitors will be able to search through your content using different search criteria.', 'wpv-views'); ?></span>
 						</p>
 					</li>
+                    <?php if( ! wpv_is_views_lite() ):?>
 					<li>
 						<p>
 							<input type="radio" name="view_purpose" class="js-wpv-purpose" id="view_purpose_full" value="full" />
@@ -859,8 +862,11 @@ function wpv_render_view_listing_dialog_templates() {
 							<span class="wpv-helper-text"><?php _e('See all the View controls open and set up things manually..', 'wpv-views'); ?></span>
 						</p>
 					</li>
+                    <?php endif;?>
 				</ul>
-				<div class="js-wpv-error-container"></div>
+				<h3><?php _e( 'Name this View', 'wpv-views' ); ?></h3>
+				<input type="text" name="view_new_name" id="view_new_name" class="js-new-post_title large-text"
+						placeholder="<?php echo esc_attr( __( 'View name', 'wpv-views' ) ); ?>" />
 			</div>
 		</div> <!-- js-wpv-create-view-form-dialog -->
 

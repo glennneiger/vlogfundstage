@@ -3,8 +3,8 @@
 
     <h3><?php _e('Documentation and Support', 'ddl-layouts'); ?></h3>
     <ul>
-        <li><?php printf('<a target="_blank" href="http://wp-types.com/documentation/user-guides/#Layouts"><strong>%s</strong></a>'.__(' - everything you need to know about using Layouts', 'ddl-layouts'),__('User Guides', 'ddl-layouts')); ?></li>
-        <li><?php printf('<a target="_blank" href="http://wp-types.com/forums/forum/support-2/"><strong>%s</strong></a>'.__(' - online help by support staff', 'ddl-layouts'),__('Support forum', 'ddl-layouts') ); ?></li>
+        <li><?php printf('<a target="_blank" href="https://toolset.com/documentation/user-guides/#Layouts"><strong>%s</strong></a>'.__(' - everything you need to know about using Layouts', 'ddl-layouts'),__('User Guides', 'ddl-layouts')); ?></li>
+        <li><?php printf('<a target="_blank" href="https://toolset.com/forums/forum/support-2/"><strong>%s</strong></a>'.__(' - online help by support staff', 'ddl-layouts'),__('Support forum', 'ddl-layouts') ); ?></li>
     </ul>
     <h3 style="margin-top:2em;"><?php _e('Debug information', 'ddl-layouts'); ?></h3>
     <p><?php

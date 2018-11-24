@@ -67,10 +67,10 @@ DDLayout.views.abstract.ElementView = Backbone.View.extend({
     mockParent:function( ){
         var self = this,
             model = self.model,
-            id = self.model.get('id'),
-            row = null;
+            id = model.get('id'),
+            row;
 
-        row = DDLayout.ddl_admin_page.instance_layout_view.model.get_row_where_cell_has_property_value('id', model.get('id'));
+        row = DDLayout.ddl_admin_page.instance_layout_view.model.get_row_where_cell_has_property_value( 'id', id );
 
         if( row ){
             return new DDLayout.views.RowView({model:row, mock : true});

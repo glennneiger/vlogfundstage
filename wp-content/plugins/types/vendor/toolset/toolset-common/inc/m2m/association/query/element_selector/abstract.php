@@ -33,6 +33,12 @@ abstract class Toolset_Association_Query_Element_Selector_Abstract
 	protected $requested_roles = array();
 
 
+	private $requested_association_and_relationship = false;
+
+
+	private $requested_distinct_query = false;
+
+
 	/**
 	 * Toolset_Association_Query_Element_Selector_Abstract constructor.
 	 *
@@ -92,4 +98,49 @@ abstract class Toolset_Association_Query_Element_Selector_Abstract
 	}
 
 
+	/**
+	 * @inheritdoc
+	 */
+	public function request_association_and_relationship_in_results() {
+		$this->requested_association_and_relationship = true;
+	}
+
+
+	/**
+	 * Get the select clauses for association and relationship IDs if they have been requested.
+	 *
+	 * @return string[]
+	 * @since 2.6.1
+	 */
+	protected function maybe_get_association_and_relationship() {
+		if( ! $this->requested_association_and_relationship ) {
+			return array();
+		}
+
+		return array(
+			'associations.id AS id',
+			'associations.relationship_id AS relationship_id'
+		);
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @since 2.6.1
+	 */
+	public function request_distinct_query() {
+		$this->requested_distinct_query = true;
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return string
+	 * @since 2.6.1
+	 */
+	public function maybe_get_distinct_modifier() {
+		return ( $this->requested_distinct_query ? 'DISTINCT' : '' );
+	}
 }

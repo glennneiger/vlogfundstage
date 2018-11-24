@@ -3,10 +3,10 @@
 
 
 *Contributors:* Bruce Pearson, Amir Helzer, Cezary Buliszak, Olaf Surma, Riccardo Strobbia, Dario Jazbec Hrvatin, Ghennadi Iolchin, Rafa Vargas, Kasia Janoska, Ivan Maricic
-*Donate link:* http://wp-types.com/
+*Donate link:* https://toolset.com/
 *Tags:* layouts, layout, drag&drop, themes, templates
 *Requires at least:* 3.7
-*Tested up to:* 4.7
+*Tested up to:* 4.9
 *Stable tag:* 1.2
 
 A theme independant drag and drop layout generator for bootstrap themes.

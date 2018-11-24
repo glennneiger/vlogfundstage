@@ -1,5 +1,7 @@
 <?php
 
+use \OTGS\Toolset\Common\WPML\Package as wpml_package;
+
 /**
  * Handles the persistence of relationship definitions, from IToolset_Relationship_Definition object to a wpdb call.
  *
@@ -24,11 +26,28 @@ class Toolset_Relationship_Definition_Persistence {
 	/** @var  Toolset_Post_Type_Repository */
 	private $post_type_repository;
 
+	/**
+	 * WPML package
+	 *
+	 * @var wpml_package\RelationshipDefinitionTranslationPackage
+	 */
+	private $wpml_package_definition;
+
+	/**
+	 * WPML compatibility
+	 *
+	 * @var Toolset_WPML_Compatibility
+	 */
+	private $wpml_compatibility;
+
+
 	public function __construct(
 		wpdb $wpdb_di = null,
 		Toolset_Relationship_Definition_Translator $definition_translator_di = null,
 		Toolset_Relationship_Table_Name $table_name_di = null,
-		Toolset_Post_Type_Repository $post_type_repository = null
+		Toolset_Post_Type_Repository $post_type_repository = null,
+		wpml_package\RelationshipDefinitionTranslationPackage $wpml_package_definition_di = null,
+		Toolset_WPML_Compatibility $wpml_compatibility_di = null
 	) {
 
 		if( null === $wpdb_di ) {
@@ -56,27 +75,39 @@ class Toolset_Relationship_Definition_Persistence {
 				: $post_type_repository
 		);
 
-	}
+		$this->wpml_package_definition = $wpml_package_definition_di;
 
+		$this->wpml_compatibility = $wpml_compatibility_di;
+
+	}
 
 
 	/**
 	 * Update a single relationship definition.
 	 *
 	 * @param Toolset_Relationship_Definition $relationship_definition
+	 *
+	 * @return Toolset_Result
 	 */
 	public function persist_definition( Toolset_Relationship_Definition $relationship_definition ) {
+		$this->register_definition_strings( $relationship_definition );
 		$this->abort_if_invalid_element_types_used( $relationship_definition );
 
 		$row = $this->definition_translator->to_database_row( $relationship_definition );
 		$row = $this->update_definition_type_sets( $relationship_definition, $row );
-		$this->wpdb->update(
+		$result = $this->wpdb->update(
 			$this->table_name->relationship_table(),
 			$row,
 			array( 'id' => $relationship_definition->get_row_id() ),
 			$this->definition_translator->get_database_row_formats(),
 			'%s'
 		);
+
+		if( false === $result ) {
+			return new Toolset_Result( false, 'Error when persisting a relationship definition: ' . $this->wpdb->last_error );
+		}
+
+		return new Toolset_Result( true );
 	}
 
 
@@ -88,6 +119,7 @@ class Toolset_Relationship_Definition_Persistence {
 	 * @return null|Toolset_Relationship_Definition
 	 */
 	public function insert_definition( Toolset_Relationship_Definition $relationship_definition ) {
+		$this->register_definition_strings( $relationship_definition );
 		$this->abort_if_invalid_element_types_used( $relationship_definition );
 
 		$row = $this->definition_translator->to_database_row( $relationship_definition );
@@ -108,7 +140,7 @@ class Toolset_Relationship_Definition_Persistence {
 		// Work around some differences caused between the data sent when updating relationship
 		// rows and data retrieved when querying (and appending the concatenated list of parent
 		// and child types).
-		$definition_array = $relationship_definition->get_definition_array();
+		$definition_array = $relationship_definition->get_definition_array( false );
 		$row['parent_types'] = implode(
 			Toolset_Relationship_Database_Operations::GROUP_CONCAT_DELIMITER,
 			$definition_array[ Toolset_Relationship_Definition::DA_PARENT_TYPE ][ Toolset_Relationship_Element_Type::DA_TYPES ]
@@ -309,5 +341,63 @@ class Toolset_Relationship_Definition_Persistence {
 			// This exception should never been thrown, while using the GUI of Types to create Relationships
 			throw new RuntimeException( $error );
 		}
+	}
+
+	/**
+	 * Register strings for translations using WPML
+	 *
+	 * @param Toolset_Relationship_Definition $definition Definition.
+	 * @since 3.0
+	 */
+	private function register_definition_strings( Toolset_Relationship_Definition $definition ) {
+		$definition_package = $this->get_wpml_package_definition( $definition );
+		$package = $definition_package->get_package_definition();
+		$wpml_compatibility = $this->get_wpml_compatibility();
+		$definition_slug = $definition->get_slug();
+		$definition_name = $definition->get_display_name( false );
+		// Plural.
+		// translators: Definition name.
+		$wpml_compatibility->register_string( $definition->get_display_name_plural( false ), "{$definition_slug}-plural", $package, sprintf( __( '%s plural'), $definition_name ) );
+		// Singular.
+		// translators: Definition name.
+		$wpml_compatibility->register_string( $definition->get_display_name_singular( false ), "{$definition_slug}-singular", $package, sprintf( __( '%s plural'), $definition_name ) );
+		$labels_plural = $definition->get_role_labels_plural( false );
+		$labels_singular = $definition->get_role_labels_singular( false );
+		// Parent label singular.
+		// translators: Definition label.
+		$wpml_compatibility->register_string( $labels_plural[ Toolset_Relationship_Role::PARENT ], "{$definition_slug}-parent-plural", $package, sprintf( __( '%s parent label plural'), $definition_name ) );
+		// translators: Definition label.
+		$wpml_compatibility->register_string( $labels_singular[ Toolset_Relationship_Role::PARENT ], "{$definition_slug}-parent-singular", $package, sprintf( __( '%s parent label singular'), $definition_name ) );
+		// translators: Definition label.
+		$wpml_compatibility->register_string( $labels_plural[ Toolset_Relationship_Role::CHILD ], "{$definition_slug}-child-plural", $package, sprintf( __( '%s child label plural'), $definition_name ) );
+		// translators: Definition label.
+		$wpml_compatibility->register_string( $labels_singular[ Toolset_Relationship_Role::CHILD ], "{$definition_slug}-child-singular", $package, sprintf( __( '%s child label singular'), $definition_name ) );
+	}
+
+
+	/**
+	 * Gets WPML package
+	 *
+	 * @return wpml_package\RelationshipDefinitionTranslationPackage
+	 * @since 3.0
+	 */
+	private function get_wpml_package_definition( Toolset_Relationship_Definition $definition ) {
+		if ( $this->wpml_package_definition ) {
+			return $this->wpml_package_definition;
+		}
+		return new wpml_package\RelationshipDefinitionTranslationPackage( $definition );
+	}
+
+	/**
+	 * Gets WPML compatibility class
+	 *
+	 * @return Toolset_WPML_Compatibility
+	 * @since 3.0
+	 */
+	private function get_wpml_compatibility() {
+		if ( ! $this->wpml_compatibility ) {
+			$this->wpml_compatibility = Toolset_WPML_Compatibility::get_instance();
+		}
+		return $this->wpml_compatibility;
 	}
 }

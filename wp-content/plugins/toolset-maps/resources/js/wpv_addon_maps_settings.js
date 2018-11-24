@@ -2,11 +2,16 @@ var WPViews = WPViews || {};
 var WPV_Toolset = WPV_Toolset  || {};
 
 WPViews.ViewAddonMapsSettings = function( $ ) {
+	const API_GOOGLE = 'google';
+	const API_AZURE  = 'azure';
 	
 	var self = this;
 	self.marker_add_button = $( '#js-wpv-addon-maps-marker-add' );
 	self.settings = {
-		'api_key': $( '#js-wpv-map-api-key' ).val(),
+		api_key: $( '#js-wpv-map-api-key' ).val(),
+		server_side_api_key: $( '#js-wpv-map-server_side_api_key' ).val(),
+		apiUsed: wpv_addon_maps_settings_local.api_used,
+		azureKey: $( '#js-wpv-map-azure-api-key' ).val(),
 	};
 	self.legacy_mode_api_key = ( $( '.js-wpv-map-api-key-save' ).length > 0 );
 	
@@ -309,13 +314,6 @@ WPViews.ViewAddonMapsSettings = function( $ ) {
 	$( document ).on( 'click', 'button.js-wpv-toolset-maps-delete-json-file', self.on_uploaded_map_style_delete );
 
 	$( document ).on( 'change keyup input cut paste', '#js-wpv-map-api-key', function() {
-		// Check input validity before saving: API key is a 39 or 40 character SHA-1 hash
-		var apiKeyField = $('#js-wpv-map-api-key')[0];
-		if ( ! apiKeyField.checkValidity() ) {
-			apiKeyField.reportValidity();
-			return;
-		}
-
 		var thiz = $( this );
 		self.maybe_glow_api_key( thiz );
 		if ( thiz.val() != self.settings.api_key ) {
@@ -335,6 +333,33 @@ WPViews.ViewAddonMapsSettings = function( $ ) {
 				.prop( 'disabled', true );
 		}
 	});
+
+	// Listener for saving optional API key 2
+	$( document ).on( 'change keyup input cut paste', '#js-wpv-map-server_side_api_key', function() {
+		var $this = $( this );
+
+		self.maybe_glow_api_key( $this );
+
+		if ( $this.val() !== self.settings.server_side_api_key ) {
+			self.api_key_debounce_update();
+		}
+	});
+
+	// Listener for API used change
+	$( document ).on( 'change', 'input[name="toolset-maps-api-used"]', function( event ) {
+		self.saveApiUsed( event.target.value );
+	} );
+
+	// Listener for Azure API key change
+	$( document ).on( 'change keyup input cut paste', 'input#js-wpv-map-azure-api-key', function() {
+		var $this = $( this );
+
+		self.maybe_glow_api_key( $this );
+
+		if ( $this.val() !== self.settings.azureKey ) {
+			self.updateAzureApiKeyDebounced( $this.val() );
+		}
+	} );
 	
 	$( document ).on( 'click', '.js-wpv-map-api-key-save', function() {
 		var thiz = $( this );
@@ -365,15 +390,105 @@ WPViews.ViewAddonMapsSettings = function( $ ) {
 	});
 
 	/**
+	 * Save API to use setting.
+	 *
+	 * @since 1.5
+	 * @param {string} apiUsed
+	 */
+	self.saveApiUsed = function( apiUsed ) {
+		$( 'input[name="toolset-maps-api-used"]' ).attr( 'disabled', true );
+		$( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );
+
+		$.ajax( {
+			type: "POST",
+			dataType: "json",
+			url: ajaxurl,
+			data: {
+				action:     'toolset_maps_update_api_used',
+				api_used:   apiUsed,
+				wpnonce:    wpv_addon_maps_settings_local.global_nonce
+			}
+		} )
+			.done( function( response, textStatus ) {
+				if ( response.success ) {
+					$( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
+					self.showAppropriateSettingsSections( apiUsed );
+				} else {
+					$( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+				}
+			} )
+			.fail( function( jqXHR, textStatus, errorThrown ) {
+				$( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+			} )
+			.always( function() {
+				$( 'input[name="toolset-maps-api-used"]' ).attr( 'disabled', false );
+			} );
+	};
+
+	/**
+	 * Save Azure API key
+	 *
+	 * @since 1.5
+	 * @param {string} apiKey
+	 */
+	self.saveAzureApiKey = function( apiKey ) {
+		$( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );
+
+		$.ajax( {
+			type: "POST",
+			dataType: "json",
+			url: ajaxurl,
+			data: {
+				action:         'toolset_maps_update_azure_api_key',
+				azure_api_key:  apiKey,
+				wpnonce:        wpv_addon_maps_settings_local.global_nonce
+			}
+		} )
+			.done( function( response, textStatus ) {
+				if ( response.success ) {
+					$( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
+				} else {
+					$( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+				}
+			} )
+			.fail( function( jqXHR, textStatus, errorThrown ) {
+				$( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
+			} )
+	};
+
+	self.updateAzureApiKeyDebounced = _.debounce( self.saveAzureApiKey, 1000 );
+
+	/**
+	 * Shows appropriate settings sections for the API being used
+	 * @param {string} apiUsed
+	 */
+	self.showAppropriateSettingsSections = function( apiUsed ) {
+		let $shownForGoogle = $( 'div#toolset-maps-api-key, div#toolset-style-files, div#toolset-maps-legacy' );
+		let $shownForAzure = $( 'div#toolset-maps-azure-key' );
+
+		if ( apiUsed === API_GOOGLE ) {
+			$shownForAzure.hide();
+			$shownForGoogle.show();
+		} else {
+			$shownForGoogle.hide();
+			$shownForAzure.show();
+		}
+	};
+
+	/**
 	 * @since 1.4.2 - do an API check after successful key save
+	 * @since 1.5 - save server-side API key too
 	 */
 	self.save_api_key_options = function() {
-		var api_key = $( '#js-wpv-map-api-key' ).val(),
-		data = {
-			action:		'wpv_addon_maps_update_api_key',
-			api_key:	api_key,
-			wpnonce:	wpv_addon_maps_settings_local.global_nonce
+		var api_key = $( '#js-wpv-map-api-key' ).val();
+		var server_side_api_key = $( '#js-wpv-map-server_side_api_key' ).val();
+		var data = {
+			action:		            'wpv_addon_maps_update_api_key',
+			api_key:	            api_key,
+			server_side_api_key:    server_side_api_key,
+			wpnonce:	            wpv_addon_maps_settings_local.global_nonce
 		};
+
 		$( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );		
 		$.ajax({
 			type:		"POST",
@@ -383,6 +498,7 @@ WPViews.ViewAddonMapsSettings = function( $ ) {
 			success:	function( response ) {
 				if ( response.success ) {
 					self.settings.api_key = api_key;
+					self.settings.server_side_api_key = server_side_api_key;
 					$( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
 					self.checkGApi();
 				} else {
@@ -541,6 +657,7 @@ WPViews.ViewAddonMapsSettings = function( $ ) {
 		if ( ! self.settings.api_key ) return;
 		if ( $('#js-wpv-addon-maps-render-map-preview').length === 0 ) return;
 
+		// Start listeners
 		$( 'select#wpv-map-render-style_json' ).on( 'change', function( event ) {
 			WPViews.addon_maps_preview.render_preview_map( event.currentTarget.value );
 			self.update_default_map_style( event.currentTarget );
@@ -555,11 +672,16 @@ WPViews.ViewAddonMapsSettings = function( $ ) {
 			}
 		} );
 	};
-	
-	self.init = function() {
-		self.maybe_glow_api_key( $( '#js-wpv-map-api-key' ) );
 
-		self.init_map_preview();
+	self.init = function() {
+		self.showAppropriateSettingsSections( self.settings.apiUsed );
+
+		self.maybe_glow_api_key( $( '#js-wpv-map-api-key' ) );
+		self.maybe_glow_api_key( $( '#js-wpv-map-azure-api-key' ) );
+
+		if ( API_GOOGLE === self.settings.apiUsed ) {
+			self.init_map_preview();
+		}
 	};
 	
 	self.init();

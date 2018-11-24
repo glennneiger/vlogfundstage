@@ -6,6 +6,7 @@
  * @since 2.3
  */
 interface Toolset_Field_Definition_Factory_Interface {
+
 	/**
 	 * Load an existing field definition.
 	 *

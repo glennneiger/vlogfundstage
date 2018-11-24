@@ -36,6 +36,9 @@ class WPV_Settings_Screen {
 		add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section',	array( $this, 'wpv_show_hidden_custom_fields_options' ) );
 		add_action( 'wp_ajax_wpv_get_hidden_custom_fields',									array( $this, 'wpv_get_hidden_custom_fields' ) );
 		add_action( 'wp_ajax_wpv_set_hidden_custom_fields',									array( $this, 'wpv_set_hidden_custom_fields' ) );
+		// spaces in meta query filters
+		add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section',	array( $this, 'render_query_filters_options' ) );
+		add_action( 'wp_ajax_wpv_update_query_filters_options',								array( $this, 'update_query_filters_options' ) );
 		// History management options
 		add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section',	array( $this, 'wpv_frontend_history_management_options' ), 20 );
 		add_action( 'wp_ajax_wpv_update_pagination_options',								array( $this, 'wpv_update_pagination_options' ) );
@@ -58,6 +61,8 @@ class WPV_Settings_Screen {
 		add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section',	array( $this, 'wpv_whitelist_domains' ), 100 );
         add_action( 'wp_ajax_wpv_update_whitelist_domains',									array( $this, 'wpv_update_whitelist_domains' ) );
         add_action( 'wp_ajax_wpv_update_whitelist_subdomains',									array( $this, 'wpv_update_whitelist_subdomains' ) );
+		// Page builders options
+	    add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section', array( $this, 'views_page_builders_options' ), 110 );
 
 		/**
 		* Map section
@@ -76,7 +81,15 @@ class WPV_Settings_Screen {
         add_action( 'wp_ajax_wpv_update_wpml_settings',										array( $this, 'wpv_update_wpml_settings' ) );
 
         // Register Settings CSS
-        wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array( 'wp-pointer', 'font-awesome', 'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css', 'views-notifications-css', 'views-admin-dialogs-css' ), WPV_VERSION );
+        wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array( 
+			'wp-pointer', 'font-awesome', 
+			'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css', 
+			Toolset_Assets_Manager::STYLE_NOTIFICATIONS,
+			'views-admin-dialogs-css' 
+		), WPV_VERSION );
+
+	    $wpv_ajax = WPV_Ajax::get_instance();
+
         // Register Settings JS
         wp_register_script( 'views-settings-js', WPV_URL . '/res/js/views_settings.js',		array( 'jquery', 'underscore', 'jquery-ui-dialog', 'jquery-ui-tabs', 'toolset-settings' ), WPV_VERSION, true );
 		$settings_script_texts = array(
@@ -89,7 +102,19 @@ class WPV_Settings_Screen {
 			'hidden_fields_count_zero'			=> __( 'There are no hidden custom fields on your site.', 'wpv-views' ),
 			'wpnonce'							=> wp_create_nonce( 'wpv_settings_nonce' )
 		);
-		wp_localize_script( 'views-settings-js', 'wpv_settings_texts', $settings_script_texts );
+
+		$settings_ajax_info = array(
+			'ajax' => array(
+				'action' => array(
+					'save_views_page_builders_frontend_content_options' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_SAVE_VIEWS_PAGE_BUILDERS_FRONTEND_CONTENT_SETTINGS ),
+				),
+				'nonce' => array(
+					'save_views_page_builders_frontend_content_options' => wp_create_nonce( WPV_Ajax::CALLBACK_SAVE_VIEWS_PAGE_BUILDERS_FRONTEND_CONTENT_SETTINGS ),
+				)
+			),
+		);
+
+		wp_localize_script( 'views-settings-js', 'wpv_settings_texts', array_merge( $settings_script_texts, $settings_ajax_info ) );
 		
 		/**
 		* API filters to get Views settings
@@ -367,6 +392,61 @@ class WPV_Settings_Screen {
 		$settings->save();
 		wp_send_json_success( $data );
 	}
+
+	function render_query_filters_options( $sections ) {
+		$settings = WPV_Settings::get_instance();
+		ob_start();
+        ?>
+		<h3><?php _e( 'Query filters by meta fields', 'wpv-views' ); ?></h3>
+		<div class="toolset-advanced-setting">
+			<p>
+				<label>
+					<input id="js-wpv-support-spaces-in-meta-filters" type="checkbox" name="wpv-support-spaces-in-meta-filters" class="js-wpv-query-filters-options js-wpv-support-spaces-in-meta-filters" value="on" <?php checked( $settings->support_spaces_in_meta_filters ); ?> autocomplete="off" />
+					<?php _e( "Support query filters by custom fields that include a space or a dot in their meta key", 'wpv-views' ); ?>
+				</label>
+			</p>
+			<p>
+				<?php _e( 'Types fields do not include spaces or dots in their meta key, so it can be disabled if this site only has Views filters by Types fields.', 'wpv-views' ); ?>
+			</p>
+			<p>
+				<?php _e( 'Enabling this option might have a performance penalty.', 'wpv-views' ); ?>
+			</p>
+		</div>
+		<?php
+		$section_content = ob_get_clean();
+			
+		$sections['wpv-support-spaces-in-meta-filters'] = array(
+			'slug'		=> 'wpv-support-spaces-in-meta-filters',
+			'title'		=> __( 'Query filters', 'wpv-views' ),
+			'content'	=> $section_content
+		);
+		return $sections;
+	}
+
+	function update_query_filters_options() {
+		$settings = WPV_Settings::get_instance();
+		if ( ! current_user_can( 'manage_options' ) ) {
+			$data = array(
+				'type' => 'capability',
+				'message' => __( 'You do not have permissions for that.', 'wpv-views' )
+			);
+			wp_send_json_error( $data );
+		}
+		if ( 
+			! isset( $_POST["wpnonce"] )
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_settings_nonce' ) 
+		) {
+			$data = array(
+				'type' => 'nonce',
+				'message' => __( 'Your security credentials have expired. Please reload the page to get new ones.', 'wpv-views' )
+			);
+			wp_send_json_error( $data );
+		}
+		$support_spaces_in_meta_filters = ( isset( $_POST['support_spaces_in_meta_filters'] ) ) ? sanitize_text_field( $_POST['support_spaces_in_meta_filters'] ) : '';
+		$settings->support_spaces_in_meta_filters = ( $support_spaces_in_meta_filters == 'true' );
+		$settings->save();
+		wp_send_json_success();
+	}
 	
 	/**
 	* History management - settings and saving
@@ -522,7 +602,7 @@ class WPV_Settings_Screen {
 				);
 				echo sprintf( 
 					__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ), 
-					WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://wp-types.com/documentation/user-guides/shortcodes-within-shortcodes/' ),
+					WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/shortcodes-within-shortcodes/' ),
 					esc_attr( __( 'Documentation on the third-party shortcode arguments', 'wpv-views' ) )
 				);
 				?>
@@ -654,7 +734,7 @@ class WPV_Settings_Screen {
 				);
 				echo sprintf( 
 					__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ), 
-					WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://wp-types.com/documentation/user-guides/conditional-html-output-in-views/' ),
+					WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/conditional-html-output-in-views/' ),
 					esc_attr( __( 'Documentation on functions inside conditional evaluations', 'wpv-views' ) )
 				);
 				?>
@@ -914,7 +994,7 @@ class WPV_Settings_Screen {
 			);
 			echo sprintf( 
 				__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ), 
-				WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://wp-types.com/documentation/user-guides/debugging-types-and-views/' ),
+				WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/debugging-types-and-views/' ),
 				esc_attr( __( 'Documentation on the Views debug modes', 'wpv-views' ) )
 			);
 			?>
@@ -1221,8 +1301,8 @@ class WPV_Settings_Screen {
 				)
 			);
 			echo sprintf( 
-				__( 'Get more details about the new Toolset Maps plugin in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ), 
-				WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://wp-types.com/documentation/user-guides/map-wordpress-posts/' ),
+				__( 'Get more details about the new Toolset Maps plugin in the <a href="%1$s" title="%2$s" target="_blank">documentation page</a>.', 'wpv-views' ),
+				WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/map-wordpress-posts/' ),
 				esc_attr( __( 'Documentation on the Toolset Maps plugin', 'wpv-views' ) )
 			);
 			?>
@@ -1317,7 +1397,7 @@ class WPV_Settings_Screen {
 				</p>
 			<?php } ?>
 			<p>
-				<?php _e( 'Need help?', 'wpv-views' ); ?> <a href="http://wp-types.com/documentation/multilingual-sites-with-types-and-views/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-content-template-wpml-and-views-help&utm_term=Translating Views and Content Templates with WPML#3" target="_blank"> <?php _e( 'Translating Views and Content Templates with WPML', 'wpv-views' ); ?> &raquo; </a>
+				<?php _e( 'Need help?', 'wpv-views' ); ?> <a href="https://toolset.com/documentation/multilingual-sites-with-types-and-views/?utm_source=viewsplugin&utm_campaign=views&utm_medium=edit-content-template-wpml-and-views-help&utm_term=Translating Views and Content Templates with WPML#3" target="_blank"> <?php _e( 'Translating Views and Content Templates with WPML', 'wpv-views' ); ?> &raquo; </a>
 			</p>
 			<?php wp_nonce_field( 'wpv_wpml_settings_nonce', 'wpv_wpml_settings_nonce' ); ?>
 			<?php
@@ -1382,6 +1462,37 @@ class WPV_Settings_Screen {
 		return $status;
 	}
 
+	/**
+	 * Page Builder related settings
+	 */
+	public function views_page_builders_options( $sections ) {
+		$show_views_page_builders_settings = new Toolset_Condition_Plugin_Views_Show_Page_Builder_Frontend_Content_Settings();
+
+		if ( ! $show_views_page_builders_settings->is_met() ) {
+			return $sections;
+		}
+
+		$settings = WPV_Settings::get_instance();
+
+		$context = array(
+			'allow_views_wp_widgets_in_elementor' => $settings->allow_views_wp_widgets_in_elementor
+		);
+
+		$template_repository = WPV_Output_Template_Repository::get_instance();
+		$renderer = Toolset_Renderer::get_instance();
+		$section_content = $renderer->render(
+			$template_repository->get( WPV_Output_Template_Repository::VIEWS_SETTINGS_PAGE_BUILDER_OPTIONS ),
+			$context,
+			false
+		);
+
+		$sections['page-builders-settings'] = array(
+			'slug'		=> 'page-builders-settings',
+			'title'		=> __( 'Page Builders', 'wpv-views' ),
+			'content'	=> $section_content
+		);
+		return $sections;
+	}
 }
 
 // Initialize the Settings screen

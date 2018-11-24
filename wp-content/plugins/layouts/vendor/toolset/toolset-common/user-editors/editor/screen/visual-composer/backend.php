@@ -3,6 +3,8 @@
 class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 	extends Toolset_User_Editors_Editor_Screen_Abstract {
 
+	const VC_SCREEN_ID = 'vc';
+
 	private $post;
 	public $editor;
 
@@ -20,11 +22,34 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 		$this->constants = $constants
 			? $constants
 			: new Toolset_Constants();
+	}
 
-		$this->constants->define( 'VC_SCREEN_ID', 'vc' );
+	/**
+	 * Returns the editor's name.
+	 *
+	 * @param string $default
+	 *
+	 * @return string The editor's name.
+	 */
+	public function get_editor_name( $default = '' ) {
+		/* translators: The human readable name of WPBakery Page Builder. */
+		return __( 'WPBakery Page Builder', 'wpv-views' );
+	}
+
+	/**
+	 * Returns the editor's screen ID.
+	 *
+	 * @param string $default
+	 *
+	 * @return string The editor's screen ID.
+	 */
+	public function get_editor_screen_id( $default = '' ) {
+		return self::VC_SCREEN_ID;
 	}
 
 	public function initialize() {
+		parent::initialize();
+
 	    $shortcode_transformer = new Toolset_Shortcode_Transformer();
 
 		add_action( 'init',												array( $this, 'register_assets' ), 50 );
@@ -94,6 +119,10 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 		// Get backend editor object through VC_Manager (vc di container)
 		global $vc_manager;
 		$this->editor = $vc_manager->backendEditor();
+		// Since VC 5.5 we need to register their backend editor, it does not happen automatically.
+		if ( is_callable( array( $this->editor, 'registerScripts' ) ) ) {
+			$this->editor->registerScripts();
+		}
 
 		// VC_Backend_Editor->render() registers all needed scripts
 		// the "real" render came later in $this->html_output();
@@ -118,7 +147,7 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 	
 	public function register_assets() {
 		
-		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager = Toolset_Assets_Manager::get_instance();
 		
 		// Content Template as inline object assets
 		
@@ -162,7 +191,7 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 	}
 	
 	public function admin_enqueue_assets( $screen_id ) {
-		$content_template_has_vc = ( get_post_meta( wpv_getget( 'ct_id' ), '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'VC_SCREEN_ID' ) );
+		$content_template_has_vc = ( get_post_meta( wpv_getget( 'ct_id' ), '_toolset_user_editors_editor_choice', true ) === self::VC_SCREEN_ID );
 		$ct_edit_page_screen_id = class_exists( 'WPV_Page_Slug' ) ? WPV_Page_Slug::CONTENT_TEMPLATES_EDIT_PAGE : 'toolset_page_ct-editor';
 
 		if ( $this->is_views_or_wpa_edit_page() ) {
@@ -270,11 +299,12 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 	* On a Content Template used inside a View or WPA loop output, we set which builder it is using
 	* so we can link to the CT edit page with the right builder instantiated.
 	*
+	* @return mixed
+	*
 	* @since 2.3.0
 	*/
-	
-	public function layout_template_attribute( $attributes, $content_template, $view_id ) {
-		$content_template_has_vc = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'VC_SCREEN_ID' ) );
+	public function layout_template_attribute( $attributes, $content_template ) {
+		$content_template_has_vc = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === self::VC_SCREEN_ID );
 		if ( $content_template_has_vc ) {
 			$attributes['builder'] = $this->editor->get_id();
 		}
@@ -282,7 +312,7 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 	}
 	
 	public function register_inline_editor_action_buttons( $content_template ) {
-		$content_template_has_vc = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'VC_SCREEN_ID' ) );
+		$content_template_has_vc = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === self::VC_SCREEN_ID );
 		?>
 		<button 
 			class="button button-secondary toolset-ct-button-logo js-wpv-ct-apply-user-editor js-wpv-ct-apply-user-editor-<?php echo esc_attr( $this->editor->get_id() ); ?>"
@@ -296,7 +326,7 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 		<?php
 	}
 
-	public function force_shortcode_generator_display( $register_section ) {
+	public function force_shortcode_generator_display() {
 		return true;
 	}
 
@@ -327,13 +357,19 @@ class Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend
 	 * @since 2.5.1
 	 */
 	public function save_vc_custom_css( $content_template_id ) {
-		$content_template_has_vc = ( get_post_meta( $content_template_id, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'VC_SCREEN_ID' ) );
+	    if ( ! WPV_Content_Template_Embedded::is_valid( $content_template_id ) ) {
+            return;
+        }
+
+		$content_template_has_vc = ( get_post_meta( $content_template_id, '_toolset_user_editors_editor_choice', true ) === self::VC_SCREEN_ID );
 		if ( $content_template_has_vc ) {
 			foreach ( $_POST['properties'] as $property ) {
 				if ( 'template_extra_css' === $property['name'] ) {
 					update_post_meta( $content_template_id, '_wpb_post_custom_css', $property['value'] );
 				}
 			}
-		}
+		} else {
+			update_post_meta( $content_template_id, '_wpb_post_custom_css', '' );
+        }
 	}
 }

@@ -262,7 +262,7 @@ class Toolset_Relationship_Definition_Persistence {
 		 * @var $element_types Toolset_Relationship_Element_Type[]
 		 */
 		$element_types = array(
-			$relationship_definition->get_parent_type(), 
+			$relationship_definition->get_parent_type(),
 			$relationship_definition->get_child_type()
 		);
 
@@ -286,11 +286,14 @@ class Toolset_Relationship_Definition_Persistence {
 							continue;
 						}
 
-						if( ! $rfg_involved && ! $post_type->can_be_used_in_relationship() ) {
-							$error =
-								'The post type "'.$post_type_string.'" uses the "Translatable - only show translated '
-								. 'items" WPML translation mode. In order to use it in a relationship, switch to '
-								. '"Translatable - use translation if available or fallback to default language mode".';
+						$can_be_used_in_relationship = $post_type->can_be_used_in_relationship();
+						if( ! $rfg_involved && $can_be_used_in_relationship->is_error() ) {
+							$message = $can_be_used_in_relationship->get_message();
+							$error = strpos( $message, 'WPML' ) !== false
+								? 'The post type "'.$post_type_string.'" uses the "Translatable - only show translated '
+									. 'items" WPML translation mode. In order to use it in a relationship, switch to '
+									. '"Translatable - use translation if available or fallback to default language mode".'
+								: $message;
 						}
 					}
 					break;

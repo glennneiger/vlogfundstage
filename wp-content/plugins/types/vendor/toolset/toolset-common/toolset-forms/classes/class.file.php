@@ -73,7 +73,7 @@ class WPToolset_Field_File extends WPToolset_Field_Textfield {
 		$wpml_action = $this->getWPMLAction();
 
 		// Get attachment by guid
-		if ( ! empty( $value ) ) {
+		if ( ! empty( $value ) && is_string( $value ) ) {
 			global $wpdb;
 			$attachment_id = $wpdb->get_var(
 				$wpdb->prepare(
@@ -92,6 +92,10 @@ class WPToolset_Field_File extends WPToolset_Field_Textfield {
 			$preview = wp_get_attachment_image( $attachment_id, 'thumbnail', false, $attributes );
 		} else {
 			// If external image set preview
+			while( is_array( $value ) ) {
+				// repeatable file field
+				$value = reset( $value );
+			}
 			$file_path = parse_url( $value );
 			if ( $file_path && isset( $file_path['path'] ) ) {
 				$file = pathinfo( $file_path['path'] );

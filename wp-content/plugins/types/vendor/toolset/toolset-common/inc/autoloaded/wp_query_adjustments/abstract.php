@@ -70,15 +70,21 @@
  */
 abstract class Toolset_Wp_Query_Adjustments extends Toolset_Wpdb_User {
 
+
 	// Must not be changed, third-party software depends on it.
 	const RELATIONSHIP_QUERY_ARG = 'toolset_relationships';
+
+
+	// The time when we store the toolset_relationships query argument during pre_get_posts.
+	// It needs to happen late so that other query modifications (also meta_query ones) can happen before.
+	const TIME_TO_STORE_RELATIONSHIPS_ARG = 10000;
 
 
 	/**
 	 * Initialize the query adjustments.
 	 */
 	public function initialize() {
-		add_action( 'pre_get_posts', array( $this, 'check_custom_query_args' ) );
+		add_action( 'pre_get_posts', array( $this, 'check_custom_query_args' ), self::TIME_TO_STORE_RELATIONSHIPS_ARG );
 	}
 
 

@@ -4,6 +4,7 @@ ToolsetCommon.ThemeIntegration = function ($) {
     var self = this;
 
     self.hintPointer = null;
+    self.displayType = Toolset_Theme_Integrations_Settings.strings.assignment;
 
     self.makeAjaxCall = function ( data, successCallback, errorCallback ) {
         $.ajax({
@@ -268,8 +269,13 @@ ToolsetCommon.ThemeIntegration = function ($) {
 
 
     self.optionsVisibilityOnLayoutsEditorLoad = function (){
+		
+		// execute only for layout page
+        if( Toolset_Theme_Integrations_Settings.strings.current_page !== 'dd_layouts_edit' ){
+            return;
+        }
 
-        if( typeof DDLayout_settings !== 'object' ){
+        if( typeof Toolset_Theme_Integrations_Settings !== 'object' ){
             return;
         }
         self.renderVisibleSections( Toolset_Theme_Integrations_Settings.strings.assignment );
@@ -418,6 +424,14 @@ ToolsetCommon.ThemeIntegration = function ($) {
                 colorPickerWrap.show();
 			}
 		});
+		
+		$( document ).on( 'click', '.js-toolset-theme-settings-toggle-settings', function() {
+			var $toggler = $( this ),
+				$toggling = $( '.js-toolset-theme-settings-toggling-settings' );
+			
+			$toggler.find( '.fa' ).toggleClass( 'fa-caret-down fa-caret-up' );
+			$toggling.slideToggle();
+		});
     }
 
     self.selfThroughLayoutsAjaxCall = function(){
@@ -445,13 +459,14 @@ ToolsetCommon.ThemeIntegration = function ($) {
                     self.makeAjaxCall(data,
                         function (originalResponse) {
                             if (originalResponse.data.hasOwnProperty('display_type')) {
-                                self.renderVisibleSections(originalResponse.data.display_type);
-                                self.adjustRadioOptionOnValueChange( originalResponse.data.display_type )
+                                self.displayType = originalResponse.data.display_type;
+                                self.renderVisibleSections( self.displayType );
+                                self.adjustRadioOptionOnValueChange( self.displayType );
                             }
 
-                            if(originalResponse.data.hasOwnProperty('tooltip_message')) {
+                            if( originalResponse.data.hasOwnProperty('tooltip_message') ) {
                                 self.removeHints();
-                                self.initHints(originalResponse.data.tooltip_message)
+                                self.initHints(originalResponse.data.tooltip_message);
                             }
                         }
                     );
@@ -491,24 +506,41 @@ ToolsetCommon.ThemeIntegration = function ($) {
     };
 
     self.toggleThemeOptionsBoxVisibility = function(){
+		
+		// execute only for layout page
+        if( Toolset_Theme_Integrations_Settings.strings.current_page !== 'dd_layouts_edit' ){
+            return;
+        }
+		
         var $caret = jQuery( '.js-theme-settings-toggle' );
 
-        $caret.on( 'click', function( event ){
-            var $me = jQuery( this ),
+        jQuery(document).on( 'click', $caret.selector, function( event ){
+            var $me = jQuery( event.target ),
                 closed = $me.data( 'closed' ),
                 $target = jQuery( '#toolset_theme_settings_form' );
 
             if( !closed ){
                 $target.slideUp( 'fast', function(event){
+                    jQuery(this).addClass('hidden');
+                    jQuery('.js-toolset-non-assigned-message').addClass('hidden').hide();
                     $me.data( 'closed', true );
                     $me.find('.fa').removeClass( 'fa-caret-up' ).addClass( 'fa-caret-down' );
                     $me.parent('.theme-settings-wrap').addClass('theme-settings-wrap-collapsed');
                 });
             } else {
+                $target.removeClass('hidden');
                 $target.slideDown( 'fast', function(event){
+                    jQuery(this).removeClass('hidden');
+                    jQuery('.js-toolset-non-assigned-message').removeClass('hidden').show();
                     $me.data( 'closed', false );
                     $me.find('.fa').removeClass( 'fa-caret-down' ).addClass( 'fa-caret-up' );
-					$me.parent('.theme-settings-wrap').removeClass('theme-settings-wrap-collapsed')
+					$me.parent('.theme-settings-wrap').removeClass('theme-settings-wrap-collapsed');
+
+                        if( self.displayType ){
+                            self.renderVisibleSections( self.displayType );
+                            self.adjustRadioOptionOnValueChange( self.displayType );
+                        }
+
                 });
             }
         });

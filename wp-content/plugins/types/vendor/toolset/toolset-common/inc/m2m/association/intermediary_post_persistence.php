@@ -180,6 +180,33 @@ class Toolset_Association_Intermediary_Post_Persistence {
 	}
 
 
+	/**
+	 * Removes intermediary post from associations.
+	 *
+	 * @param int $limit The number of associations in a loop.
+	 * @return int Number of associations updated.
+	 * @since 2.3
+	 */
+	public function remove_associations_intermediary_posts( $limit = 0 ) {
+		if ( (int) $limit <= 0 ) {
+			$limit = self::DEFAULT_LIMIT;
+		}
+
+		$association_query = new Toolset_Association_Query_V2();
+		$association_query->add( $association_query->relationship( $this->relationship ) )
+			->add( $association_query->has_intermediary_id() )
+			->limit( $limit );
+		$associations = $association_query->get_results();
+		foreach ( $associations as $association ) {
+			// Don't use `maybe_delete_intermediary_post` because it tries to access an object it doesn't exist.
+			$intermediary_id = $association->get_intermediary_id();
+			if ( $intermediary_id ) {
+				$database_operations = new Toolset_Relationship_Database_Operations();
+				$database_operations->update_association_intermediary_id( $association->get_uid(), 0 );
+			}
+		}
+		return count( $associations );
+	}
 
 	/**
 	 * Creates an empty association intermediary post

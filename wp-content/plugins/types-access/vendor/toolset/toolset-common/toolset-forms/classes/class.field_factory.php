@@ -127,12 +127,13 @@ abstract class FieldFactory extends FieldAbstract
 	 * ATTENTION: Function uses $this->_data['title'] and $this->_data['_title']
 	 *
 	 * @param bool $_title
+	 * @param bool $force Forces to return the title.
 	 *
 	 * @return bool|string
 	 */
-    public function getTitle($_title = false)
+    public function getTitle( $_title = false, $force = false )
     {
-    	if( isset( $this->_data['hide_field_title'] ) && $this->_data['hide_field_title'] ) {
+    	if( isset( $this->_data['hide_field_title'] ) && $this->_data['hide_field_title'] && ! $force ) {
     		// option to hide the title is used
     		return '';
 	    }

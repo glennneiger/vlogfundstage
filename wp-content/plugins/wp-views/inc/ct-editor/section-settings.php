@@ -49,7 +49,7 @@ function wpv_ct_editor_settings_section_localize_script( $l10n_data ) {
 \* ************************************************************************* */
 
 
-add_action( 'wpv_ct_editor_sections', 'wpv_ct_editor_settings_section', 40 );
+add_action( 'wpv_ct_editor_sections', 'wpv_ct_editor_settings_section', 30 );
 
 
 function wpv_ct_editor_settings_section(
@@ -59,10 +59,6 @@ function wpv_ct_editor_settings_section(
 
 	?>
 		<!-- output mode -->
-		<h3>
-            <?php _e( 'Output mode', 'wpv-views' ) ?>
-            <i class="icon-question-sign fa fa-question-circle js-wpv-show-pointer" data-section="settings_section" data-pointer-slug="ptr_output_mode"></i>
-        </h3>
         <p>
             <label>
                 <input type="radio" value="WP_mode" data-bind="checked: outputModeAccepted" />
@@ -87,5 +83,13 @@ function wpv_ct_editor_settings_section(
 	$content = ob_get_contents();
 	ob_end_clean();
 
-	wpv_ct_editor_render_section( __( 'Settings', 'wpv-views' ), 'js-wpv-settings-section', $content );
+	wpv_ct_editor_render_section(
+		__( 'Output mode', 'wpv-views' ),
+		'js-wpv-settings-section',
+		$content,
+		false,
+		'',
+		'',
+		array( 'section' => 'settings_section', 'pointer_slug' => 'ptr_output_mode' )
+	);
 }

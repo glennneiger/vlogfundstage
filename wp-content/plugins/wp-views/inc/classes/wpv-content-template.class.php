@@ -276,6 +276,28 @@ final class WPV_Content_Template extends WPV_Content_Template_Embedded {
         return $cloned_ct;
     }
 
+	/**
+	 * Content Template's Extra CSS public setter.
+	 *
+	 * @param string $value The new CSS code.
+	 *
+	 * @since 2.6.4
+	 */
+	public function set_template_extra_css( $value ) {
+		$this->_set_template_extra_css( WPV_Content_Template_Embedded::POSTMETA_TEMPLATE_EXTRA_CSS, $value );
+	}
+
+	/**
+	 * Content Template's Extra JS public setter.
+	 *
+	 * @param string $value The new JS code.
+	 *
+	 * @since 2.6.4
+	 */
+	protected function set_template_extra_js( $value ) {
+		$this->_set_template_extra_js( WPV_Content_Template_Embedded::POSTMETA_TEMPLATE_EXTRA_JS, $value );
+	}
+
 
     /* ************************************************************************* *\
         Setters (& validators)

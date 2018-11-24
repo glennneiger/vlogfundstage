@@ -536,7 +536,7 @@ class  WPDD_layout_post_loop_cell_manager
         
         
         if (
-            ($slug === 'product' || $product_base)  &&
+            ( $slug === 'product' && $product_base )  &&
             $this->is_using_permalinks() &&
             in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) )
         ){

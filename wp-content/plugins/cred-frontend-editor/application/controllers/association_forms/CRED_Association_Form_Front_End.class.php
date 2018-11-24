@@ -27,7 +27,7 @@ class CRED_Association_Form_Front_End extends CRED_Association_Form_Abstract {
 
 	public function add_hooks() {
 		add_action( 'cred_do_shortcode_' . CRED_Shortcode_Association_Form::SHORTCODE_NAME, array( $this, 'run_in_shortcode_form' ) );
-		add_action( 'cred_do_shortcode_' . CRED_Shortcode_Delete_Association::SHORTCODE_NAME, array( $this, 'run_in_shortcode_delete' ) );
+		add_action( 'cred_do_shortcode_' . OTGS\Toolset\CRED\Model\Shortcode\Delete\Association::SHORTCODE_NAME, array( $this, 'run_in_shortcode_delete' ) );
 	}
 
 	public function initialize() {
@@ -39,11 +39,11 @@ class CRED_Association_Form_Front_End extends CRED_Association_Form_Abstract {
 	private function init_scripts_and_styles() {
 		$this->assets_to_load_js = array(
 			CRED_Shortcode_Association_Form::SHORTCODE_NAME => array(),
-			CRED_Shortcode_Delete_Association::SHORTCODE_NAME => array()
+			OTGS\Toolset\CRED\Model\Shortcode\Delete\Association::SHORTCODE_NAME => array()
 		);
 		$this->assets_to_load_css = array(
 			CRED_Shortcode_Association_Form::SHORTCODE_NAME => array(),
-			CRED_Shortcode_Delete_Association::SHORTCODE_NAME => array()
+			OTGS\Toolset\CRED\Model\Shortcode\Delete\Association::SHORTCODE_NAME => array()
 		);
 		
 		$this->register_assets();
@@ -78,7 +78,7 @@ class CRED_Association_Form_Front_End extends CRED_Association_Form_Abstract {
 				'select2nonce_type'        => wp_create_nonce( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_POSTS_BY_POST_TYPE ),
 				'select2nonce_title'        => wp_create_nonce( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE ),
 				'strings' => array(
-					'fail_text' => __( 'An error occured while processing the ajax request, check the log, refresh and try again.', 'wp-cred' ),
+					'fail_text' => __( 'An error occurred while processing the ajax request, check the log, refresh and try again.', 'wp-cred' ),
 					'role_placeholder' => __( 'Search for a post', 'wp-cred' ),
 					'role_no_matches' => __( 'No %POST_TYPE_LABEL% can be associated to %OTHER_POST_TITLE%', 'wp-cred'),
 					'role_no_search' => __( 'No results can be found searching: %SEARCH%', 'wp-cred')
@@ -115,7 +115,7 @@ class CRED_Association_Form_Front_End extends CRED_Association_Form_Abstract {
 				)
 			)
 		);
-		$this->assets_to_load_js[ CRED_Shortcode_Delete_Association::SHORTCODE_NAME ][ self::JS_FRONT_END_DELETE ] = self::JS_FRONT_END_DELETE;
+		$this->assets_to_load_js[ OTGS\Toolset\CRED\Model\Shortcode\Delete\Association::SHORTCODE_NAME ][ self::JS_FRONT_END_DELETE ] = self::JS_FRONT_END_DELETE;
 
 	}
 
@@ -128,9 +128,9 @@ class CRED_Association_Form_Front_End extends CRED_Association_Form_Abstract {
 	
 	public function run_in_shortcode_delete() {
 		// load in footer conditionally
-		$this->load_assets_js( CRED_Shortcode_Delete_Association::SHORTCODE_NAME );
+		$this->load_assets_js( OTGS\Toolset\CRED\Model\Shortcode\Delete\Association::SHORTCODE_NAME );
 		// load also CSS in the footer, so it is loaded conditionally and we avoid conflicts if form is not there
-		$this->load_assets_css( CRED_Shortcode_Delete_Association::SHORTCODE_NAME );
+		$this->load_assets_css( OTGS\Toolset\CRED\Model\Shortcode\Delete\Association::SHORTCODE_NAME );
 	}
 
 	public function load_assets_js( $shortcode ) {

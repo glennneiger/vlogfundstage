@@ -28,6 +28,10 @@ span.toolset-alert {
 	cursor: pointer;
 }
 
+.toolset-alert.hidden {
+	display: none;
+}
+
 .toolset-alert,
 .toolset-alert .toolset-alert-header {
 	color: #c09853;
@@ -44,9 +48,20 @@ span.toolset-alert {
 		color: #999;
         cursor:pointer;
 	}
-	
+
 	.toolset-alert .button {
 		text-shadow: none;
+	}
+	
+	.toolset-alert .toolset-rounded-icon {
+		width: 25px;
+		height: 25px;
+		margin-right: 10px;
+		line-height: 25px;
+		text-align: center;
+		color: #fff;
+		background: #c09853;
+		border-radius: 50%;
 	}
 
 .toolset-alert-success {
@@ -58,6 +73,10 @@ span.toolset-alert {
 	.toolset-alert-success .toolset-alert-header {
 	 	color: #468847;
 	}
+	
+	.toolset-alert-success .toolset-rounded-icon {
+		background: #468847;
+	}
 
 .toolset-alert-error {
 	border-color: #eed3d7;
@@ -67,6 +86,10 @@ span.toolset-alert {
 
 	.toolset-alert-error .toolset-alert-header {
 	 	color: #b94a48;
+	}
+	
+	.toolset-alert-error .toolset-rounded-icon {
+		background: #b94a48;
 	}
 
 .toolset-alert-info {
@@ -78,107 +101,22 @@ span.toolset-alert {
 	.toolset-alert-info .toolset-alert-header {
 		color: #3a87ad;
 	}
+	
+	.toolset-alert-info .toolset-rounded-icon {
+		background: #3a87ad;
+	}
 
 /* Explanation messages */
 .toolset-help {
-	display: table;
-	width: 100%;
 	background: #fff;
-	border: none;
+	border: solid 1px #cdcdcd;
+	border-radius: 0;
 }
-
-.js-show-toolset-message {
-	display: none;
-}
-
-	.toolset-help-content {
-		display: table-cell;
-		vertical-align: middle;
-		padding: 25px 25px 15px 180px;
-		height: 135px;
-		color: #4f4f4f;
-		border: solid 1px #cdcdcd;
-	}
-
-		.toolset-help-content a {
-			display: inline-block;
-			line-height: 18px;
-			text-decoration: underline;
-		}
-		.toolset-help-content p,
-		.toolset-help-content ul,
-		.toolset-help-content ol {
-			line-height: 1.6;
-		}
-		.toolset-help-content ul,
-		.toolset-help-content ol {
-			margin-left: 0;
-			list-style-position: inside;
-		}
-		.toolset-help-content ul li {
-			list-style-type: disc;
-		}
-		.toolset-help-content ol li {
-			list-style-type: decimal;
-		}
-		.toolset-help-content p:first-child {
-			margin-top: 0;
-		}
-		.toolset-help-content .btn {
-			margin: 0 10px 0 0;
-			padding: 4px 10px;
-			border: 0;
-			border-radius: 4px;
-			background: #11a99b;
-			color: #fff;
-			text-decoration: none;
-			text-shadow: none;
-			font-weight: bold;
-		}
-		
-		.toolset-help-content .btn:hover {
-			background: #008C7D;
-		}
-
-		.toolset-help-content .toolset-help-content-toolbar {
-			margin: 20px 0 10px 0;
-		}
-
-	.toolset-help-sidebar {
-		position: absolute;
-		top: 1px;
-		left: 1px;
-		bottom: 1px;
-		width: 144px;
-		display: table-cell;
-		text-align: center;
-		vertical-align: middle;
-		background: url('../images/icon-help-message.png') center center no-repeat #333;
-		box-shadow: inset 0 0 15px #111;
-	}
-		.toolset-help-sidebar-ico {
-			
-		}
-
-	.toolset-help-footer {
-		position: relative;
-		z-index: 1;
-		padding: 5px;
-		border-top: 1px solid #cdcdcd;
-		background: #fff;
-		text-align: right;
-	}
-
-		.toolset-help-footer [class^="button-"] {
-			margin-left: 5px;
-		}
-
-
 	.toolset-help .icon-remove-sign,
 	.toolset-help .icon-remove {
 		position: absolute;
-		top: 0;
-		right: 0;
+		top: -1px;
+		right: -1px;
 		color: #999;
 		opacity: 1;
 		background: #fff;
@@ -187,16 +125,146 @@ span.toolset-alert {
 		font-size: 16px;
 		cursor: pointer;
 	}
-	
+
+	.rtl .toolset-help .icon-remove-sign,
+	.rtl .toolset-help .icon-remove {
+		right: auto;
+		left: -1px;
+	}
+
 	.toolset-help .icon-remove-sign:hover,
 	.toolset-help .icon-remove:hover {
 		background: #b94a48;
 		color: #fff;
 	}
-	
+
 	.toolset-help code {
 		display: inline-block;
 	}
+
+.js-show-toolset-message {
+	display: none;
+}
+
+.toolset-help-content {
+	padding: 9px 25px;
+	color: #4f4f4f;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-margin-start: 25%;
+	-moz-margin-start: 25%;
+	margin-inline-start: 25%;
+
+	}
+	@media (max-width: 480px) {
+		.toolset-help-content {
+			-webkit-margin-start: 70px;
+			-moz-margin-start: 70px;
+			margin-inline-start: 70px;
+		}
+	}
+	@media (min-width: 960px) {
+		.toolset-help-content {
+			-webkit-margin-start: 160px;
+			-moz-margin-start: 160px;
+			margin-inline-start: 160px;
+		}
+	}
+	
+	.toolset-help-content a {
+		text-decoration: underline;
+	}
+
+	.toolset-help-content a.button {
+		display: inline-block;
+		line-height: 18px;
+	}
+
+	.toolset-help-content ul,
+	.toolset-help-content ol {
+		line-height: 1.6;
+		margin-left: 0;
+		list-style-position: inside;
+	}
+
+	.toolset-help-content ul li {
+		list-style-type: disc;
+	}
+
+	.toolset-help-content ol li {
+		list-style-type: decimal;
+	}
+
+	.toolset-help-content .btn {
+		margin: 0 10px 0 0;
+		padding: 4px 10px;
+		border: 0;
+		border-radius: 4px;
+		background: #11a99b;
+		color: #fff;
+		text-decoration: none;
+		text-shadow: none;
+		font-weight: bold;
+	}
+
+	.toolset-help-content .btn:hover {
+		background: #008C7D;
+	}
+
+	.toolset-help-content .toolset-help-content-toolbar {
+		margin: 20px 0 10px 0;
+	}
+
+.toolset-help-sidebar {
+	position: absolute;
+	top: -1px;
+	bottom: -1px;
+	left: -1px;
+	width: 25%;
+	background: #333;
+}
+	@media (max-width: 480px) {
+		.toolset-help-sidebar {
+			width: 70px;
+		}
+	}
+	@media (min-width: 960px) {
+		.toolset-help-sidebar {
+			width: 160px;
+		}
+	}
+	.rtl .toolset-help-sidebar {
+		left: auto;
+		right: -1px;
+	}
+	.toolset-help-sidebar::before {
+		content: '';
+		position: absolute;
+		top: 3%;
+		right: 15%;
+		bottom: 2%;
+		left: 6%;
+		background: url('../images/icon-help-message.svg') center no-repeat;
+		background-size: contain;
+	}
+	.rtl .toolset-help-sidebar::before {
+		right: 6%;
+		left: 15%;
+	}
+
+.toolset-help-footer {
+	position: relative;
+	z-index: 1;
+	padding: 5px;
+	border-top: 1px solid #cdcdcd;
+	background: #fff;
+	text-align: right;
+}
+
+	.toolset-help-footer [class^="button-"] {
+		margin-left: 5px;
+	}
+
 
 /* TOOLTIP */
 .toolset-tooltip {
@@ -205,7 +273,7 @@ span.toolset-alert {
     display: inline-block;
     display: none;
     padding: 3px 6px;
-	max-width: 300px;
+    max-width: 300px;
     background: #000;
     background: rgba(0,0,0,.8);
     color: #fff;
@@ -304,7 +372,7 @@ span.toolset-alert {
 }
 
 .wp-toolset-pointer .wp-pointer-buttons {
-	
+
 }
 
 .wp-toolset-pointer .wp-pointer-buttons button.alignright {
@@ -323,6 +391,10 @@ span.toolset-alert {
 .wp-toolset-pointer.wp-pointer-top .wp-pointer-arrow {
 	border-bottom-color: #EF6223;
 }
+
+	.wp-toolset-pointer.wp-toolset-shortcode-pointer.wp-pointer-top .wp-pointer-arrow {
+		left: 187px;
+	}
 
 .wp-toolset-pointer.wp-pointer-right .wp-pointer-arrow-inner {
 	right: 2px;
@@ -377,19 +449,19 @@ span.dont-wrap{float:right;margin-right:12px;}
 	transition: all 0.15s linear;
 	z-index: 1111;
 }
-	
+
 	.toolset-ajax-saving-messages.toolset-ajax-saving-messages-success {
 		border-color: #d6e9c6;
 		background-color: #dff0d8;
 		color: #468847;
 	}
-	
+
 	.toolset-ajax-saving-messages.toolset-ajax-saving-messages-fail {
 		border-color: #eed3d7;
 		background-color: #f2dede;
 		color: #b94a48;
 	}
-	
+
 	.toolset-ajax-saving-messages i {
 		margin-right: 5px;
 	}

@@ -152,9 +152,6 @@ class WP_Views_Integration_API {
 		
 		// Bring the frameworks shortcode into the Views GUI
 		add_filter( 'wpv_filter_wpv_shortcodes_gui_data',				array( $this, 'register_shortcode_in_gui' ) );
-		// @since 2.3.0 tis should get deprecated
-		// Keep for the Loop Wizard for now as it might need some extra love
-		add_filter( 'editor_addon_menus_wpv-views',						array( $this, 'add_shortcode_to_editor' ), 99 );
 		
 		add_action( 'wp_ajax_wpv_register_auto_detected_framework',		array( $this, 'wpv_register_auto_detected_framework' ) );
 		add_action( 'wp_ajax_wpv_update_framework_integration_keys',	array( $this, 'wpv_update_framework_integration_keys' ) );
@@ -675,35 +672,6 @@ class WP_Views_Integration_API {
 			);
 		}
 		return $views_shortcodes;
-	}
-	
-	/**
-	* add_shortcode_to_editor
-	*
-	* Add the wpv-theme-option shortcode to the editor popup
-	*
-	* @since 1.10
-	* @since 2.3.0 Deprecated
-	*/
-	
-	function add_shortcode_to_editor( $menu = array() ) {
-		$basic = __( 'Basic', 'wpv-views' );
-		$keys = $this->get_combined_framework_keys();
-		if ( 
-			$this->framework_valid 
-			&& count( $keys ) > 0 
-			&& isset( $menu[$basic] )
-		) {
-			$theme_option_title = __( 'Theme option', 'wpv-views' );
-			$nonce = wp_create_nonce( 'wpv_editor_callback' );
-			$menu[$basic][$theme_option_title] = array( 
-				$theme_option_title, 
-				'wpv-theme-option', 
-				$basic, 
-				"WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: 'wpv-theme-option', title: '" . esc_js( $theme_option_title ) . "' })"
-			);
-		}
-		return $menu;
 	}
 	
 	/**

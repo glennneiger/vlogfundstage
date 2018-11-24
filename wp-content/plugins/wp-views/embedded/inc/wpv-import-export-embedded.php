@@ -242,7 +242,7 @@ class WPV_Export_Import_Embedded {
 	*/
 	
 	function legacy_get_affiliate_url() {
-		$affiliate_url = '?utm_source=viewsplugin&utm_campaign=views&utm_medium=affiliate-link&utm_term=http://www.wp-types.com';
+		$affiliate_url = '?utm_source=viewsplugin&utm_campaign=views&utm_medium=affiliate-link&utm_term=https://toolset.com';
 		if (
 			! is_null( $this->legacy_import_affiliate_id ) 
 			&& ! is_null( $this->legacy_import_affiliate_key )
@@ -611,6 +611,7 @@ class WPV_Export_Import_Embedded {
 				return new WP_Error( 'not_xml_file', sprintf( __( 'The XML file (%s) could not be read.', 'wpv-views' ), $file['name'] ) );
 			}
 			$import_data = wpv_admin_import_export_simplexml2array( $xml );
+			$import_version = toolset_getarr( $import_data, 'wpv_database_version', 0 );
 			
 			// Import Content Templates
 			$result_content_templates = $this->import_content_templates( $import_data, $args );
@@ -627,6 +628,10 @@ class WPV_Export_Import_Embedded {
 			if ( is_wp_error( $result_view_settings ) ) {
 				return $result_view_settings;
 			}
+
+			// Maybe run upgrade routins starting on the imported version number
+			$upgrade_controller = \OTGS\Toolset\Views\Controller\Upgrade::get_instance();
+			$upgrade_controller->check_import_upgrade( $import_version );
 			
 			return true;
 			
@@ -1091,7 +1096,7 @@ class WPV_Export_Import_Embedded {
 			}
 		}
 
-		$this->import_messages[] = sprintf( __( '%d Content Templates found in the file. %d have been created and %d have been over written.', 'wpv-views' ), sizeof( $imported_view_templates ), $new_count, $overwrite_count );
+		$this->import_messages[] = sprintf( __( '%d Content Templates found in the file. %d have been created and %d have been overwritten.', 'wpv-views' ), sizeof( $imported_view_templates ), $new_count, $overwrite_count );
 		if ( $deleted_count ) {
 			$this->import_messages[] = sprintf( __( '%d existing Content Templates were deleted.', 'wpv-views' ), $deleted_count );
 		}
@@ -1698,7 +1703,7 @@ class WPV_Export_Import_Embedded {
 			}
 		}
 
-		$this->import_messages[] = sprintf( __( '%d Views found in the file. %d have been created and %d have been over written.', 'wpv-views' ), sizeof( $imported_views ), $new_count, $overwrite_count );
+		$this->import_messages[] = sprintf( __( '%d Views found in the file. %d have been created and %d have been overwritten.', 'wpv-views' ), sizeof( $imported_views ), $new_count, $overwrite_count );
 
 		if ( $deleted_count ) {
 			$this->import_messages[] = sprintf( __( '%d existing Views were deleted.', 'wpv-views' ), $deleted_count );
@@ -2187,7 +2192,8 @@ function wpv_admin_import_data( $args = array() ) {
         if ( ! $xml ) {
             return new WP_Error( 'not_xml_file', sprintf( __( 'The XML file (%s) could not be read.', 'wpv-views' ), $file['name'] ) );
         }
-        $import_data = wpv_admin_import_export_simplexml2array( $xml );
+		$import_data = wpv_admin_import_export_simplexml2array( $xml );
+		$import_version = toolset_getarr( $import_data, 'wpv_database_version', 0 );
 		
 		global $WPV_Export_Import;
 
@@ -2205,7 +2211,11 @@ function wpv_admin_import_data( $args = array() ) {
         $result_view_settings = $WPV_Export_Import->import_settings( $import_data, $args );
         if ( is_wp_error( $result_view_settings ) ) {
             return $result_view_settings;
-        }
+		}
+		
+		// Maybe run upgrade routins starting on the imported version number
+		$upgrade_controller = \OTGS\Toolset\Views\Controller\Upgrade::get_instance();
+		$upgrade_controller->check_import_upgrade( $import_version );
 		
     } else {
         return new WP_Error( 'could_not_open_file', __( 'Could not read the Views import file.', 'wpv-views' ) );
@@ -2554,7 +2564,6 @@ function _wpv_adjust_view_ids_to_names_for_export( $view_settings = array(), $vi
 	// Query filter by specific IDs
 	if ( isset( $view_settings['post_id_ids_list'] ) ) {
 		if ( ! empty( $view_settings['post_id_ids_list'] ) ) {
-			// Explode and implode just in case - trust nothing!
 			$id_array = explode( ',', $view_settings['post_id_ids_list'] );
 			$id_array = array_map( 'esc_attr', $id_array );
 			$id_array = array_map( 'trim', $id_array );
@@ -3146,7 +3155,7 @@ function _wpv_adjust_view_names_to_ids_for_import( $view_settings = array(), $vi
 			);
 			if ( ! empty( $new_post_ids ) ) {
 				$view_settings['post_id_ids_list'] = implode( ',', $new_post_ids );
-				if ( count( $view_settings['post_id_ids_list'] ) != $query_limit ) {
+				if ( count( $new_post_ids ) != $query_limit ) {
 					$view_settings['post_id_ids_list_lost'] = 1;
 				}
 			} else {

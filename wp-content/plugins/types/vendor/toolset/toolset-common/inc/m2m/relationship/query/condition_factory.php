@@ -8,6 +8,13 @@
 class Toolset_Relationship_Query_Condition_Factory {
 
 	/**
+	 * Join Manager
+	 *
+	 * @param Toolset_Association_Query_Table_Join_Manager
+	 */
+	private $join_manager;
+
+	/**
 	 * Chain multiple conditions with OR.
 	 *
 	 * The whole statement will evaluate to true if at least one of provided conditions is true.
@@ -57,6 +64,19 @@ class Toolset_Relationship_Query_Condition_Factory {
 		return new Toolset_Relationship_Query_Condition_Origin( $origin );
 	}
 
+	/**
+	 * Condition that the relationship uses a given intermediary post type
+	 *
+	 * @param string $intermediary_type
+	 *
+	 * @return Toolset_Relationship_Query_Condition_Intermediary_Type
+	 *
+	 * @since 2.6.7
+	 */
+	public function intermediary_type( $intermediary_type ) {
+		return new Toolset_Relationship_Query_Condition_Intermediary_Type( $intermediary_type );
+	}
+
 
 	/**
 	 * Condition that the relationship has a certain type in a given role.
@@ -68,6 +88,19 @@ class Toolset_Relationship_Query_Condition_Factory {
 	 */
 	public function has_type( $type, IToolset_Relationship_Role_Parent_Child $in_role ) {
 		return new Toolset_Relationship_Query_Condition_Type( $type, $in_role );
+	}
+
+
+	/**
+	 * Condition that the relationship has not a certain type in a given role.
+	 *
+	 * @param string $type
+	 * @param IToolset_Relationship_Role_Parent_Child $in_role
+	 *
+	 * @return IToolset_Relationship_Query_Condition
+	 */
+	public function exclude_type( $type, IToolset_Relationship_Role_Parent_Child $in_role ) {
+		return new Toolset_Relationship_Query_Condition_Exclude_Type( $type, $in_role );
 	}
 
 
@@ -131,4 +164,14 @@ class Toolset_Relationship_Query_Condition_Factory {
 	}
 
 
+	/**
+	 * Condition that excludes a relationship.
+	 *
+	 * @param Toolset_Relationship_Definition $relationship Relationship Definition.
+	 *
+	 * @return IToolset_Relationship_Query_Condition
+	 */
+	public function exclude_relationship( $relationship ) {
+		return new Toolset_Relationship_Query_Condition_Exclude_Relationship( $relationship );
+	}
 }

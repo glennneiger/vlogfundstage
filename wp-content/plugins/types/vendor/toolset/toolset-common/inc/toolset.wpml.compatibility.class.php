@@ -76,7 +76,7 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 			 *
 			 * @since m2m
 			 */
-			add_filter( 'wpml_disable_translation_mode_radio', array( $this, 'wpml_disable_translation_mode_radio' ), 10, 3 );
+			//add_filter( 'wpml_disable_translation_mode_radio', array( $this, 'wpml_disable_translation_mode_radio' ), 10, 3 );
 		}
 
 
@@ -219,6 +219,12 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 		 * @since m2m
 		 */
 		public function is_post_type_translatable( $post_type_slug ) {
+			if( ! $this->is_wpml_active_and_configured() ) {
+				// Sometimes, the filter below starts working before the activeness check,
+				// creating a little mess - this happens on WPML (re)activation.
+				return false;
+			}
+
 			return (bool) apply_filters( 'wpml_is_translated_post_type', false, $post_type_slug );
 		}
 
@@ -286,11 +292,33 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 		}
 
 
+		/**
+		 * Get the language of a provided post.
+		 *
+		 * @param int $post_id
+		 *
+		 * @return string Language code or an empty string if none is defined or WPML is not active.
+		 */
 		public function get_post_language( $post_id ) {
 			$post_language_details = apply_filters( 'wpml_post_language_details', null, $post_id );
 			$lang = toolset_getarr( $post_language_details, 'language_code', '' );
 
+			if( ! is_string( $lang ) ) {
+				$lang = '';
+			}
+
 			return $lang;
+		}
+
+
+		/**
+		 * Determine whether the current language is "All languages".
+		 *
+		 * @return bool
+		 * @since  2.6.8
+		 */
+		public function is_showing_all_languages() {
+			return $this->get_current_language() === 'all';
 		}
 
 
@@ -486,10 +514,13 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 		 * @since m2m
 		 */
 		public function wpml_disable_translation_mode_radio( $disabled_state_for_mode, $mode, $content_slug ) {
-			do_action( 'toolset_do_m2m_full_init' );
+
 			if( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
 				return $disabled_state_for_mode;
 			}
+
+			do_action( 'toolset_do_m2m_full_init' );
+
 			$relationships_query = new Toolset_Relationship_Query_V2();
 			$relationships_query->add( $relationships_query->has_domain( 'posts' ) )
 				->add( $relationships_query->has_type( $content_slug ) )
@@ -505,7 +536,7 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 				if ( in_array( $content_slug, $types, true ) && defined( 'WPML_CONTENT_TYPE_TRANSLATE' ) && $mode == WPML_CONTENT_TYPE_TRANSLATE ) {
 					$disabled_state_for_mode['state'] = true;
 					// translators: Relationship name.
-					$disabled_state_for_mode['reason_message'] = sprintf( __( 'You cannot set this translation mode because the post type is involved in the relationship "%s".', 'wpcf' ), $relationship->get_display_name() ) . ' <a href="https://wp-types.com/documentation/translating-sites-built-with-toolset/translating-related-content/" target="_blank">' . __( 'Learn more' , 'wpcf' ) . '</a>.';
+					$disabled_state_for_mode['reason_message'] = sprintf( __( 'You cannot set this translation mode because the post type is involved in the relationship "%s".', 'wpcf' ), $relationship->get_display_name() ) . ' <a href="https://toolset.com/documentation/translating-sites-built-with-toolset/translating-related-content/" target="_blank">' . __( 'Learn more' , 'wpcf' ) . '</a>.';
 					return $disabled_state_for_mode;
 				}
 			}
@@ -539,6 +570,30 @@ if ( ! class_exists( 'Toolset_WPML_Compatibility', false ) ) {
 		public function switch_language_back() {
 			$lang_code = array_pop( $this->previous_languages );
 			do_action( 'wpml_switch_language', $lang_code );
+		}
+
+
+		/**
+		 * Get the URL for the WPML setting of post type translation modes.
+		 *
+		 * Note: This works since WPML 3.9.2.
+		 *
+		 * @return string Escaped URL.
+		 * @since 3.8
+		 * @throws RuntimeException If WPML is not active and configured.
+		 */
+		public function get_post_type_translation_settings_url() {
+			if( ! $this->is_wpml_active_and_configured() ) {
+				throw new RuntimeException( 'Cannot get the translation options URL until WPML is active and configured.');
+			}
+
+			$url = esc_url_raw( apply_filters( 'wpml_get_post_translation_settings_link', '' ) );
+			if( ! is_string( $url ) ) {
+				// Something bad happened, but not our fault.
+				return '';
+			}
+
+			return $url;
 		}
 	}
 }

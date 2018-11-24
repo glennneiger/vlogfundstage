@@ -12,8 +12,9 @@ if (ddl_has_feature('menu-cell') === false) {
 }
 
 
-if (!class_exists('Layouts_cell_Menu')) {
-    class Layouts_cell_Menu
+if( ! class_exists( 'Layouts_cell_Menu', false ) ) {
+    
+	class Layouts_cell_Menu
     {
 
         // define cell name
@@ -217,7 +218,8 @@ if (!class_exists('Layouts_cell_Menu')) {
 }
 
 
-if (!class_exists('DDL_Wpbootstrap_Nav_Walker')) {
+if( ! class_exists( 'DDL_Wpbootstrap_Nav_Walker', false ) ) {
+	
     class DDL_Wpbootstrap_Nav_Walker extends Walker_Nav_Menu
     {
 

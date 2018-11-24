@@ -1,5 +1,7 @@
 <?php
 
+use OTGS\Toolset\Common\WpQueryFactory;
+
 /**
  * Factory for the Toolset_Field_Group_User class.
  *
@@ -16,10 +18,16 @@ class Toolset_Field_Group_User_Factory extends Toolset_Field_Group_Factory {
 		return parent::get_instance();
 	}
 
-	protected function __construct() {
-		parent::__construct();
 
-		//add_action( 'wpcf_group_updated', array( $this, 'on_group_updated' ), 10, 2 );
+	/**
+	 * Toolset_Field_Group_User_Factory constructor.
+	 *
+	 * @param WpQueryFactory|null $wp_query_factory
+	 */
+	public function __construct( WpQueryFactory $wp_query_factory = null ) {
+		parent::__construct( $wp_query_factory );
+
+		add_action( 'wpcf_group_updated', array( $this, 'on_group_updated' ), 10, 2 );
 	}
 
 
@@ -63,6 +71,87 @@ class Toolset_Field_Group_User_Factory extends Toolset_Field_Group_Factory {
 
 	protected function get_field_group_class_name() {
 		return 'Toolset_Field_Group_User';
+	}
+
+	private $roles_assignment_cache = null;
+
+	/**
+	 * Get the roles registered on the site, in a slug -> label array.
+	 *
+	 * @return array
+	 * @since 3.1
+	 */
+	private function get_roles() {
+		global $wp_roles;
+
+		if ( ! isset( $wp_roles ) ) {
+			$wp_roles = new WP_Roles();
+		}
+
+		$available_roles_names = $wp_roles->get_names();
+
+		return $available_roles_names;
+	}
+
+	/**
+	 * Get all field groups sorted by their association with roles.
+	 *
+	 * @return Toolset_Field_Group_User[][] For each role, there will be an array element, which is
+	 *     an array of user field groups associated to it.
+	 * @since 3.1
+	 */
+	public function get_groups_by_roles() {
+		if ( null == $this->roles_assignment_cache ) {
+			$groups = $this->query_groups();
+			$roles = $this->get_roles();
+
+			$this->roles_assignment_cache = array();
+			foreach( $roles as $role_slug => $role_label ) {
+				$groups_for_role = array();
+
+				foreach( $groups as $group ) {
+					if ( $group instanceof Toolset_Field_Group_User
+						&& $group->is_active()
+						&& $group->has_associated_role( $role_slug )
+					) {
+						$groups_for_role[] = $group;
+					}
+				}
+
+				$this->roles_assignment_cache[ $role_slug ] = $groups_for_role;
+			}
+		}
+
+		return $this->roles_assignment_cache;
+	}
+
+	/**
+	 * Get array of groups that are associated with given role.
+	 *
+	 * @param string $role Slug of the role.
+	 * @return Toolset_Field_Group_User[] Associated user field groups.
+	 * @since 3.1
+	 */
+	public function get_groups_by_role( $role ) {
+		$groups_by_roles = $this->get_groups_by_roles();
+		return toolset_ensarr( toolset_getarr( $groups_by_roles, $role ) );
+	}
+
+
+	/**
+	 * This needs to be executed whenever an usermeta field group is updated.
+	 *
+	 * Hooked into the wpcf_group_updated action.
+	 * Erases cache for the get_groups_by_roles() method.
+	 *
+	 * @param int $group_id Ignored
+	 * @param Toolset_Field_Group $group Field group that has been just updated.
+	 * @since 3.1
+	 */
+	public function on_group_updated( /** @noinspection PhpUnusedParameterInspection */ $group_id = null, $group = null ) {
+		if ( $group instanceof Toolset_Field_Group_User ) {
+			$this->roles_assignment_cache = null;
+		}
 	}
 
 

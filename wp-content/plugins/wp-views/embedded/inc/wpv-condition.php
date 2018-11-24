@@ -452,7 +452,7 @@ function wpv_condition_compare_strings( $first, $second, $sign ) {
  * [wpv-if evaluate="my_func() = '1'"]my_func returns 1[/wpv-if]
  *
  * Link:
- * <a href="http://wp-types.com/documentation/user-guides/conditional-html-output-in-views/?utm_source=viewsplugin&utm_campaign=views&utm_medium=views-conditional-help-link&utm_term=Conditional HTML output in Views">Conditional HTML output in Views</a>
+ * <a href="https://toolset.com/documentation/user-guides/conditional-html-output-in-views/?utm_source=viewsplugin&utm_campaign=views&utm_medium=views-conditional-help-link&utm_term=Conditional HTML output in Views">Conditional HTML output in Views</a>
  *
  * Note:
  *

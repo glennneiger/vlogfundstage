@@ -235,7 +235,7 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
         if( self.redirect_to() === 'custom_post'){
             return stringIsValid( self.form_name() ) && self.relationship() && self.redirect_to() && self.mockOnOffSave() &&  self.redirect_custom_post();
         } else {
-            return self.form_name() && self.relationship() && self.redirect_to() && self.mockOnOffSave();
+            return stringIsValid( self.form_name() ) && self.relationship() && self.redirect_to() && self.mockOnOffSave();
         }
     }, self);
 

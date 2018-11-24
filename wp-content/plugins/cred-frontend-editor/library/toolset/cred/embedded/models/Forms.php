@@ -3,7 +3,7 @@
 /**
  * Uses custom posts and fields to store form data
  */
-class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
+class CRED_Forms_Model extends CRED_Abstract_Model {
 
     public function __construct() {
         parent::__construct();
@@ -14,14 +14,14 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
     public function register_form_type() {
         $args = array(
             'labels' => array(
-                'name' => __( 'CRED Post Forms', 'wp-cred' ),
-                'singular_name' => __( 'CRED Post Form', 'wp-cred' ),
+                'name' => __( 'Post Forms', 'wp-cred' ),
+                'singular_name' => __( 'Post Form', 'wp-cred' ),
                 'add_new' => __( 'Add New', 'wp-cred' ),
-                'add_new_item' => __( 'Add New CRED Post Form', 'wp-cred' ),
-                'edit_item' => __( 'Edit CRED Post Form', 'wp-cred' ),
-                'new_item' => __( 'New CRED Post Form', 'wp-cred' ),
-                'view_item' => __( 'View CRED Post Form', 'wp-cred' ),
-                'search_items' => __( 'Search CRED Post Forms', 'wp-cred' ),
+                'add_new_item' => __( 'Add New Post Form', 'wp-cred' ),
+                'edit_item' => __( 'Edit Post Form', 'wp-cred' ),
+                'new_item' => __( 'New Post Form', 'wp-cred' ),
+                'view_item' => __( 'View Post Form', 'wp-cred' ),
+                'search_items' => __( 'Search Post Forms', 'wp-cred' ),
                 'not_found' => __( 'No forms found', 'wp-cred' ),
                 'not_found_in_trash' => __( 'No form found in Trash', 'wp-cred' ),
                 'parent_item_colon' => '',
@@ -38,7 +38,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
             'has_archive' => false,
             'hierarchical' => false,
             'menu_position' => 80,
-            'supports' => array('title', 'editor')
+            'supports' => array('title')
         );
         register_post_type( $this->post_type_name, $args );
 
@@ -155,6 +155,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
                     'hide_comments' => isset( $form_settings->hide_comments ) ? $form_settings->hide_comments : 0,
                     'theme' => isset( $form_settings->cred_theme_css ) ? $form_settings->cred_theme_css : 'minimal',
                     'has_media_button' => isset( $form_settings->has_media_button ) ? $form_settings->has_media_button : 0,
+                    'has_toolset_buttons' => isset( $form_settings->has_toolset_buttons ) ? $form_settings->has_toolset_buttons : 0,
                     'include_wpml_scaffold' => isset( $form_settings->include_wpml_scaffold ) ? $form_settings->include_wpml_scaffold : 0,
                     'include_captcha_scaffold' => isset( $form_settings->include_captcha_scaffold ) ? $form_settings->include_captcha_scaffold : 0
                 );
@@ -285,6 +286,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
                     'hide_comments' => 0,
                     'theme' => 'minimal',
                     'has_media_button' => 0,
+                    'has_toolset_buttons' => 0,
                     'include_wpml_scaffold' => 0,
                     'include_captcha_scaffold' => 0
                 )
@@ -310,11 +312,12 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
 	 *
 	 * @param $post_id
 	 * @param $meta
+     * @param $single
 	 *
 	 * @return mixed
 	 */
-	public function getPostMeta( $post_id, $meta ) {
-		return get_post_meta( $post_id, $meta, true );
+	public function getPostMeta( $post_id, $meta, $single = true ) {
+		return get_post_meta( $post_id, $meta, $single );
 	}
 
 	/**
@@ -475,8 +478,9 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
 	 * @param array|null $taxonomies
 	 *
 	 * @return int|WP_Error
+	 * @since 2.0.1 Splitted in different methods so another actions can be inserted inbetween
 	 */
-	public function addPost($post, $fields, $taxonomies = null) {
+	public function addPost( $post ) {
 		global $user_ID;
 		$allowed_tags = $allowed_protocols = array();
 		$this->setAllowed( $allowed_tags, $allowed_protocols );
@@ -522,100 +526,119 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
 
 		$post_id = wp_insert_post( $up_post, true );
 
-		if ( !is_wp_error( $post_id ) ) {
-			if ( isset( $fields['removed'] )
-				&& is_array( $fields['removed'] ) ) {
-				// remove the fields that need to be removed
-				foreach ( $fields['removed'] as $meta_key ) {
-					delete_post_meta( $post_id, $meta_key );
-				}
-			}
-			$fields['fields'] = $this->esc_data( $fields['fields'] );
-			foreach ( $fields['fields'] as $meta_key => $meta_value ) {
-				if ( is_array( $meta_value )
-					&& ! $fields['info'][ $meta_key ]['save_single'] ) {
-					foreach ( $meta_value as $meta_value_single ) {
-						$meta_value_single = str_replace( '\\\\"', '"', $meta_value_single );
-						$meta_value_single = wp_kses( $meta_value_single, $allowed_tags, $allowed_protocols );
-						$meta_value_single = str_replace( "&amp;", "&", $meta_value_single );
-						add_post_meta( $post_id, $meta_key, $meta_value_single, false /* $unique */ );
-					}
-				} else {
-					if ( is_array( $meta_value ) ) {
-						foreach ( $meta_value as &$meta_val ) {
-							$meta_val = str_replace( '\\\\"', '"', $meta_val );
-							$meta_val = wp_kses( $meta_val, $allowed_tags, $allowed_protocols );
-							$meta_val = str_replace( "&amp;", "&", $meta_val );
-						}
-					} else {
-						$meta_value = str_replace( '\\\\"', '"', $meta_value );
-						$meta_value = wp_kses( $meta_value, $allowed_tags, $allowed_protocols );
-						//avoid & to be replaced with &amp;
-						$meta_value = str_replace( "&amp;", "&", $meta_value );
-					}
-					add_post_meta( $post_id, $meta_key, $meta_value, false /* $unique */ );
-				}
-			}
+		return $post_id;
+	}
 
-			if ( $taxonomies ) {
-				$taxonomies = $this->esc_data( $taxonomies );
-				foreach ( $taxonomies['flat'] as $tax ) {
-					// attach them to post
-					wp_set_post_terms( $post_id, $tax['add'], $tax['name'], false );
-				}
 
-				foreach ( $taxonomies['hierarchical'] as $tax ) {
-					foreach ( $tax['add_new'] as $ii => $addnew ) {
-						/**
-						 * if numeric parent, then check is there such a taxonomy
-						 */
-						if ( is_numeric( $addnew['parent'] ) && is_object( get_term( $addnew['parent'], $tax['name'] ) ) ) {
-							$pid = (int) $addnew['parent'];
-							if ( $pid < 0 )
-								$pid = 0;
-
-							$result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
-							if ( !is_wp_error( $result ) ) {
-								$tax['add_new'][$ii]['id'] = $result['term_id'];
-								$ind = array_search( $addnew['term'], $tax['terms'] );
-								if ( $ind !== false )
-									$tax['terms'][$ind] = $result['term_id'];
-							}
-						}
-						else {
-							$par_id = false;
-							foreach ( $tax['add_new'] as $ii2 => $addnew2 ) {
-								if ( $addnew['parent'] == $addnew2['term'] && isset( $addnew2['id'] ) ) {
-									$par_id = $addnew2['id'];
-									break;
-								}
-							}
-							if ( $par_id !== false ) {
-								$pid = (int) $par_id;
-								if ( $pid < 0 ) {
-									$pid = 0;
-								}
-								$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => $pid ) );
-							} else {
-								$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => 0 ) );
-							}
-
-							if ( !is_wp_error( $result ) ) {
-								$tax['add_new'][$ii]['id'] = $result['term_id'];
-								$ind = array_search( $addnew['term'], $tax['terms'] );
-								if ( $ind !== false ) {
-									$tax['terms'][ $ind ] = $result['term_id'];
-								}
-							}
-						}
-						delete_option( $tax['name'] . "_children" ); // clear the cache
-					}
-					// attach them to post
-					wp_set_post_terms( $post_id, $tax['terms'], $tax['name'], false );
-				}
+	/**
+	 * Add fiedls to a new post
+	 *
+	 * @param int $post_id Post ID.
+	 * @param array $fields Field list.
+	 * @since 2.0.1
+	 */
+	public function addFields( $post_id, $fields ) {
+		if ( isset( $fields['removed'] )
+			&& is_array( $fields['removed'] ) ) {
+			// remove the fields that need to be removed
+			foreach ( $fields['removed'] as $meta_key ) {
+				delete_post_meta( $post_id, $meta_key );
 			}
 		}
-		return ($post_id);
+		$fields['fields'] = $this->esc_data( $fields['fields'] );
+		foreach ( $fields['fields'] as $meta_key => $meta_value ) {
+			if ( is_array( $meta_value )
+				&& ! $fields['info'][ $meta_key ]['save_single'] ) {
+				foreach ( $meta_value as $meta_value_single ) {
+					$meta_value_single = str_replace( '\\\\"', '"', $meta_value_single );
+					$meta_value_single = wp_kses( $meta_value_single, $allowed_tags, $allowed_protocols );
+					$meta_value_single = str_replace( "&amp;", "&", $meta_value_single );
+					add_post_meta( $post_id, $meta_key, $meta_value_single, false /* $unique */ );
+				}
+			} else {
+				if ( is_array( $meta_value ) ) {
+					foreach ( $meta_value as &$meta_val ) {
+						$meta_val = str_replace( '\\\\"', '"', $meta_val );
+						$meta_val = wp_kses( $meta_val, $allowed_tags, $allowed_protocols );
+						$meta_val = str_replace( "&amp;", "&", $meta_val );
+					}
+				} else {
+					$meta_value = str_replace( '\\\\"', '"', $meta_value );
+					$meta_value = wp_kses( $meta_value, $allowed_tags, $allowed_protocols );
+					//avoid & to be replaced with &amp;
+					$meta_value = str_replace( "&amp;", "&", $meta_value );
+				}
+				add_post_meta( $post_id, $meta_key, $meta_value, false /* $unique */ );
+			}
+		}
+	}
+
+
+	/**
+	 * Add taxonomies to a new post
+	 *
+	 * @param int $post_id Post ID.
+	 * @param array $taxonomies Taxonomies list.
+	 * @since 2.0.1
+	 */
+	public function addTaxonomies( $post_id, $taxonomies = null ) {
+		if ( $taxonomies ) {
+			$taxonomies = $this->esc_data( $taxonomies );
+			foreach ( $taxonomies['flat'] as $tax ) {
+				// attach them to post
+				wp_set_post_terms( $post_id, $tax['add'], $tax['name'], false );
+			}
+
+			foreach ( $taxonomies['hierarchical'] as $tax ) {
+				foreach ( $tax['add_new'] as $ii => $addnew ) {
+					/**
+					 * if numeric parent, then check is there such a taxonomy
+					 */
+					if ( is_numeric( $addnew['parent'] ) && is_object( get_term( $addnew['parent'], $tax['name'] ) ) ) {
+						$pid = (int) $addnew['parent'];
+						if ( $pid < 0 )
+							$pid = 0;
+
+						$result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
+						if ( !is_wp_error( $result ) ) {
+							$tax['add_new'][$ii]['id'] = $result['term_id'];
+							$ind = array_search( $addnew['term'], $tax['terms'] );
+							if ( $ind !== false )
+								$tax['terms'][$ind] = $result['term_id'];
+						}
+					}
+					else {
+						$par_id = false;
+						foreach ( $tax['add_new'] as $ii2 => $addnew2 ) {
+							if ( $addnew['parent'] == $addnew2['term'] && isset( $addnew2['id'] ) ) {
+								$par_id = $addnew2['id'];
+								break;
+							}
+						}
+						if ( $par_id !== false ) {
+							$pid = (int) $par_id;
+							if ( $pid < 0 ) {
+								$pid = 0;
+							}
+							$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => $pid ) );
+						} else {
+							$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => 0 ) );
+						}
+
+						if ( !is_wp_error( $result ) ) {
+							$tax['add_new'][$ii]['id'] = $result['term_id'];
+							$ind = array_search( $addnew['term'], $tax['terms'] );
+							if ( $ind !== false ) {
+								$tax['terms'][ $ind ] = $result['term_id'];
+							}
+						}
+					}
+					delete_option( $tax['name'] . "_children" ); // clear the cache
+				}
+				// attach them to post
+				wp_set_post_terms( $post_id, $tax['terms'], $tax['name'], false );
+			}
+		}
 	}
 
 	/**
@@ -638,9 +661,11 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
     }
 
 	/**
-	 * @param object $post
+     * Remove all the taxonomy terms assigned to a post.
+     * 
+	 * @param WP_Post $post
 	 *
-	 * @return array
+	 * @return array The list of removed terms, grouped by taxonomy
 	 */
     protected function delete_post_taxonomies($post) {
         $taxonomies = $this->getPostTaxonomies( $post );
@@ -690,7 +715,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
 	 *
 	 * @return mixed
 	 */
-    public function updatePost($post, $fields, $taxonomies = null) {
+    public function updatePost( $post ) {
         global $user_ID;
         $allowed_tags = $allowed_protocols = array();
         $this->setAllowed( $allowed_tags, $allowed_protocols );
@@ -728,6 +753,21 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
 
         wp_update_post( $up_post );
 
+        return $post->ID;
+    }
+
+
+    /**
+     * Update fiedls to a new post
+     *
+     * @param int $post_id Post ID.
+     * @param array $fields Field list.
+     * @since 2.0.1
+     */
+    public function updateFields( $post_id, $fields ) {
+        $allowed_tags = $allowed_protocols = array();
+        $this->setAllowed( $allowed_tags, $allowed_protocols );
+
         if ( isset( $fields['removed'] ) && is_array( $fields['removed'] ) ) {
             // remove the fields that need to be removed
             foreach ( $fields['removed'] as $meta_key ) {
@@ -737,13 +777,12 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
 
         $fields['fields'] = $this->esc_data( $fields['fields'] );
         foreach ( $fields['fields'] as $meta_key => $meta_value ) {
-            delete_post_meta( $post_id, $meta_key );
             if ( is_array( $meta_value ) && !$fields['info'][$meta_key]['save_single'] ) {
+                delete_post_meta( $post_id, $meta_key );
                 foreach ( $meta_value as $meta_value_single ) {
                     $meta_value_single = str_replace( '\\\\"', '"', $meta_value_single );
                     $meta_value_single = wp_kses( $meta_value_single, $allowed_tags, $allowed_protocols );
                     $meta_value_single = str_replace( "&amp;", "&", $meta_value_single );
-
                     add_post_meta( $post_id, $meta_key, $meta_value_single, false /* $unique */ );
                 }
             } else {
@@ -758,10 +797,21 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
                     $meta_value = wp_kses( $meta_value, $allowed_tags, $allowed_protocols );
                     $meta_value = str_replace( "&amp;", "&", $meta_value );
                 }
-                add_post_meta( $post_id, $meta_key, $meta_value, false /* $unique */ );
+                update_post_meta( $post_id, $meta_key, $meta_value, false /* $unique */ );
             }
         }
+    }
 
+
+    /**
+     * Update taxonomies to a new post
+     *
+     * @param int $post_id Post ID.
+     * @param array $post Post.
+     * @param array $taxonomies Taxonomies list.
+     * @since 2.0.1
+     */
+    public function updateTaxonomies( $post_id, $post, $taxonomies = null ) {
         if ( $taxonomies ) {
             $post_taxonomies = $this->delete_post_taxonomies( $post );
 
@@ -776,64 +826,60 @@ class CRED_Forms_Model extends CRED_Abstract_Model implements CRED_Singleton {
                 wp_set_post_terms( $post_id, $new_terms, $tax['name'], false );
             }
 
-            if ( !empty( $taxonomies['hierarchical'] ) ) {
-                foreach ( $taxonomies['hierarchical'] as $tax ) {
-                    foreach ( $tax['add_new'] as $ii => $addnew ) {
-                        $_gterms = get_term( $addnew['parent'], $tax['name'] );
-                        if ( is_numeric( $addnew['parent'] ) && is_object( $_gterms ) ) {
-                            $pid = (int) $addnew['parent'];
-                            if ( $pid < 0 )
-                                $pid = 0;
-                            $result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
-                            if ( !is_wp_error( $result ) ) {
-                                $tax['add_new'][$ii]['id'] = $result['term_id'];
-                                $ind = array_search( $addnew['term'], $tax['terms'] );
-                                if ( $ind !== false ) {
-                                    $tax['terms'][$ind] = $result['term_id'];
-                                }
-                            } else {
-                                continue;
+            foreach ( $taxonomies['hierarchical'] as $tax ) {
+                foreach ( $tax['add_new'] as $ii => $addnew ) {
+                    $_gterms = get_term( $addnew['parent'], $tax['name'] );
+                    if ( is_numeric( $addnew['parent'] ) && is_object( $_gterms ) ) {
+                        $pid = (int) $addnew['parent'];
+                        if ( $pid < 0 )
+                            $pid = 0;
+                        $result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
+                        if ( !is_wp_error( $result ) ) {
+                            $tax['add_new'][$ii]['id'] = $result['term_id'];
+                            $ind = array_search( $addnew['term'], $tax['terms'] );
+                            if ( $ind !== false ) {
+                                $tax['terms'][$ind] = $result['term_id'];
                             }
                         } else {
-                            $par_id = false;
-                            foreach ( $tax['add_new'] as $ii2 => $addnew2 ) {
-                                if ( $addnew['parent'] == $addnew2['term'] && isset( $addnew2['id'] ) ) {
-                                    $par_id = $addnew2['id'];
-                                    break;
-                                }
-                            }
-
-                            $pid = 0;
-                            if ( $par_id !== false ) {
-                                $pid = (int) $par_id;
-	                            if ( $pid < 0 ) {
-		                            $pid = 0;
-	                            }
-                            }
-                            $result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
-                            if ( !is_wp_error( $result ) ) {
-                                $tax['add_new'][$ii]['id'] = $result['term_id'];
-                                $ind = array_search( $addnew['term'], $tax['terms'] );
-                                if ( $ind !== false ) {
-                                    $tax['terms'][$ind] = $result['term_id'];
-                                }
-                            } else {
-                                continue;
+                            continue;
+                        }
+                    } else {
+                        $par_id = false;
+                        foreach ( $tax['add_new'] as $ii2 => $addnew2 ) {
+                            if ( $addnew['parent'] == $addnew2['term'] && isset( $addnew2['id'] ) ) {
+                                $par_id = $addnew2['id'];
+                                break;
                             }
                         }
+
+                        $pid = 0;
+                        if ( $par_id !== false ) {
+                            $pid = (int) $par_id;
+                            if ( $pid < 0 ) {
+                                $pid = 0;
+                            }
+                        }
+                        $result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
+                        if ( !is_wp_error( $result ) ) {
+                            $tax['add_new'][$ii]['id'] = $result['term_id'];
+                            $ind = array_search( $addnew['term'], $tax['terms'] );
+                            if ( $ind !== false ) {
+                                $tax['terms'][$ind] = $result['term_id'];
+                            }
+                        } else {
+                            continue;
+                        }
                     }
-                    // attach them to post
-                    wp_set_post_terms( $post_id, $tax['terms'], $tax['name'], false );
                 }
-            } else {
-                //Fixed set uncategorized, check if category is a term of this post
-	            if ( isset( $post_taxonomies['category'] ) && ( ! has_category( '', $post_id ) ) ) {
-		            wp_set_post_categories( $post_id, array( 1 ) );
-	            }
+                // attach them to post
+                wp_set_post_terms( $post_id, $tax['terms'], $tax['name'], false );
+            }
+            //Fixed set uncategorized, check if category is a taxonomy for this post type
+            if ( isset( $post_taxonomies['category'] ) && ( ! has_category( '', $post_id ) ) ) {
+                wp_set_post_categories( $post_id, array( get_option('default_category') ) );
             }
         }
 
-        return ($post_id);
     }
 
 }

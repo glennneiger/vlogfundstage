@@ -284,7 +284,7 @@ class Toolset_CRED_Duplicator extends Toolset_Resource_Duplicator implements Too
     public function duplicate(){
 
         if( class_exists('CRED_Loader') === false ){
-            throw new Exception(__(sprintf("%s is not defined, is CRED Plugin active?", 'CRED_Loader'), 'ddl-layouts'));
+            throw new Exception(__(sprintf("%s is not defined, is Toolset Forms plugin active?", 'CRED_Loader'), 'ddl-layouts'));
         } else{
             $forms_model = CRED_Loader::get('MODEL/Forms');
             $this->new_id = $forms_model->cloneForm( $this->get_resource_id(), $this->get_new_name() );
@@ -301,7 +301,7 @@ class Toolset_CRED_User_Duplicator extends Toolset_Resource_Duplicator implement
     public function duplicate(){
 
         if( class_exists('CRED_Loader') === false ){
-            throw new Exception(__(sprintf("%s is not defined, is CRED Plugin active?", 'CRED_Loader'), 'ddl-layouts'));
+            throw new Exception(__(sprintf("%s is not defined, is Toolset Forms plugin active?", 'CRED_Loader'), 'ddl-layouts'));
         } else{
             $forms_model = CRED_Loader::get('MODEL/UserForms');
             $this->new_id = $forms_model->cloneForm( $this->get_resource_id(), $this->get_new_name() );

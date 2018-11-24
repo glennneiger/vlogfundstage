@@ -1,27 +1,45 @@
 <?php
-
+/**
+ * Backend Editor class for Divi.
+ *
+ * Handles all the functionality needed to allow Divi to work with Content Template editing on the backend.
+ *
+ * @since 2.5.9
+ */
 class Toolset_User_Editors_Editor_Screen_Divi_Backend
 	extends Toolset_User_Editors_Editor_Screen_Abstract {
 
-	/**
-	 * @var Toolset_Constants
-	 */
-	protected $constants;
+	const DIVI_SCREEN_ID = 'divi';
 
 	/**
-	 * Toolset_User_Editors_Editor_Screen_Divi_Backend constructor.
+	 * Returns the editor's name.
 	 *
-	 * @param Toolset_Constants|null $constants
+	 * @param string $default
+	 *
+	 * @return string The editor's name.
 	 */
-	public function __construct( Toolset_Constants $constants = null ) {
-		$this->constants = $constants
-			? $constants
-			: new Toolset_Constants();
-
-		$this->constants->define( 'DIVI_SCREEN_ID', 'divi' );
+	public function get_editor_name( $default = '' ) {
+		/* translators: The human readable name of Divi. */
+		return __( 'Divi', 'wpv-views' );
 	}
 
+	/**
+	 * Returns the editor's screen ID.
+	 *
+	 * @param string $default
+	 *
+	 * @return string The editor's screen ID.
+	 */
+	public function get_editor_screen_id( $default = '' ) {
+		return self::DIVI_SCREEN_ID;
+	}
+
+	/**
+	 * Initializes the Toolset_User_Editors_Editor_Screen_Divi_Backend class.
+	 */
 	public function initialize() {
+		parent::initialize();
+
 		add_action( 'init', array( $this, 'register_assets' ), 50 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_assets' ), 50 );
 
@@ -56,10 +74,9 @@ class Toolset_User_Editors_Editor_Screen_Divi_Backend
 
 	public function register_assets() {
 
-		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager = Toolset_Assets_Manager::get_instance();
 
 		// Content Template own edit screen assets
-
 		$toolset_assets_manager->register_style(
 			'toolset-user-editors-divi-style',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/divi/backend.css',
@@ -68,7 +85,6 @@ class Toolset_User_Editors_Editor_Screen_Divi_Backend
 		);
 
 		// Native post editor screen assets
-
 		$toolset_assets_manager->register_script(
 			'toolset-user-editors-divi-script',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/divi/backend_editor.js',
@@ -78,7 +94,6 @@ class Toolset_User_Editors_Editor_Screen_Divi_Backend
 		);
 
 		// Content Template as inline object assets
-
 		$toolset_assets_manager->register_script(
 			'toolset-user-editors-divi-layout-template-script',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/divi/backend_layout_template.js',
@@ -142,7 +157,6 @@ class Toolset_User_Editors_Editor_Screen_Divi_Backend
 	 *
 	 * @since 2.5.0
 	 */
-
 	public function html_output() {
 
 		if ( ! isset( $_GET['ct_id'] ) ) {
@@ -168,7 +182,7 @@ class Toolset_User_Editors_Editor_Screen_Divi_Backend
 	}
 
 	public function register_inline_editor_action_buttons( $content_template ) {
-		$content_template_has_divi = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'DIVI_SCREEN_ID' ) );
+		$content_template_has_divi = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === self::DIVI_SCREEN_ID );
 		?>
 		<button
 			class="button button-secondary toolset-ct-button-logo js-wpv-ct-apply-user-editor js-wpv-ct-apply-user-editor-<?php echo esc_attr( $this->editor->get_id() ); ?>  <?php echo $this->editor->get_logo_class(); ?>"
@@ -189,8 +203,8 @@ class Toolset_User_Editors_Editor_Screen_Divi_Backend
 	 *
 	 * @since 2.5.0
 	 */
-	public function layout_template_attribute( $attributes, $content_template, $view_id ) {
-		$content_template_has_divi = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'DIVI_SCREEN_ID' ) );
+	public function layout_template_attribute( $attributes, $content_template ) {
+		$content_template_has_divi = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === self::DIVI_SCREEN_ID );
 		if ( $content_template_has_divi ) {
 			$attributes['builder'] = $this->editor->get_id();
 		}

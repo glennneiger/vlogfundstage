@@ -347,12 +347,6 @@ abstract class Toolset_Field_Definition_Factory implements Toolset_Field_Definit
 	protected abstract function get_existing_meta_keys();
 
 
-	/**
-	 * @return Toolset_Field_Group_Factory
-	 * @since 2.0
-	 */
-	public abstract function get_group_factory();
-
 
 	/**
 	 * @var null|Toolset_Field_Definition_Generic[] Cache.

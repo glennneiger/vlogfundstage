@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Toolset Views
-Plugin URI: http://wp-types.com/?utm_source=viewsplugin&utm_campaign=views&utm_medium=plugins-list-full-version&utm_term=Visit plugin site
+Plugin URI: https://toolset.com/?utm_source=viewsplugin&utm_campaign=views&utm_medium=plugins-list-full-version&utm_term=Visit plugin site
 Description: When you need to create lists of items, Views is the solution. Views will query the content from the database, iterate through it and let you display it with flair. You can also enable pagination, search, filtering and sorting by site visitors.
 Author: OnTheGoSystems
-Author URI: http://www.onthegosystems.com
-Version: 2.5.2
+Author URI: https://toolset.com
+Version: 2.6.4.2
 */
 
 
@@ -22,7 +22,7 @@ if ( defined( 'WPV_VERSION' ) ) {
 	return;
 }
 
-define( 'WPV_VERSION', '2.5.2' );
+define( 'WPV_VERSION', '2.6.4.2' );
 
 /**
 * Set constants
@@ -31,6 +31,9 @@ define( 'WPV_VERSION', '2.5.2' );
 define( 'WPV_PATH',				dirname( __FILE__ ) );
 define( 'WPV_PATH_EMBEDDED',	dirname( __FILE__ ) . '/embedded' );
 define( 'WPV_FOLDER',			basename( WPV_PATH ) );
+
+$wpv_templates = WPV_PATH . '/application/views';
+define( 'WPV_TEMPLATES', $wpv_templates );
 
 if ( 
 	( 
@@ -83,18 +86,16 @@ $WPV_settings = WPV_Settings::get_instance();
 // ----------------------------------
 
 /**
+ * Public Views API functions
+ */
+
+require WPV_PATH_EMBEDDED . '/inc/wpv-api.php';
+
+/**
 * Helper classes
 */
 
 require_once WPV_PATH . '/inc/classes/wpv-exception-with-message.class.php';
-
-/**
-* Public Views API
-*/
-
-require_once WPV_PATH . '/inc/api/hooks-api.php';
-$wpv_api = new WPV_API();
-$wpv_api->initialize();
 
 /**
 * WPV_View and other Toolset object wrappers
@@ -231,7 +232,9 @@ if (
 	
 	require_once WPV_PATH . '/inc/sections/wpv-section-layout-extra.php';
 	require_once WPV_PATH . '/inc/sections/wpv-section-layout-extra-js.php';
-	require_once WPV_PATH . '/inc/sections/wpv-section-content.php';
+	if( ! wpv_is_views_lite() ){
+		require_once WPV_PATH . '/inc/sections/wpv-section-content.php';
+	}
 	// Query filters
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-author.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-category.php' );
@@ -239,7 +242,6 @@ if (
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-id.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-meta-field.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-parent.php' );
-	require_once( WPV_PATH . '/inc/filters/wpv-filter-post-relationship.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-post-type.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-search.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-status.php' );
@@ -263,7 +265,6 @@ require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-date-embedded.php' );
 require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-id-embedded.php' );
 require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-meta-field-embedded.php' );
 require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-parent-embedded.php' );
-require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-post-relationship-embedded.php' );
 require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-post-type-embedded.php' );
 require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-search-embedded.php' );
 require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-status-embedded.php' );
@@ -363,11 +364,6 @@ require WPV_PATH_EMBEDDED . '/inc/wpv-readonly-embedded.php';
 require WPV_PATH . '/inc/wpv-admin-update-help.php';
 require WPV_PATH . '/inc/wpv-admin-notices.php';
 
-/**
-* Public Views API functions
-*/
-
-require WPV_PATH_EMBEDDED . '/inc/wpv-api.php';
 
 /**
 * Load all dependencies that needs toolset common loader

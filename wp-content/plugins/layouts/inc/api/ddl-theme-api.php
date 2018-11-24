@@ -124,6 +124,15 @@ function user_can_edit_content_layouts( $layout_id ){
 function user_can_delete_layouts(){
     return WPDD_Layouts_Users_Profiles::user_can_delete();
 }
+function user_can_create_private_layouts(){
+	return WPDD_Layouts_Users_Profiles_Private::user_can_create();
+}
+function user_can_delete_private_layouts(){
+	return WPDD_Layouts_Users_Profiles_Private::user_can_delete();
+}
+function user_can_edit_private_layouts(){
+	return WPDD_Layouts_Users_Profiles_Private::user_can_edit();
+}
 function ddl_layout_slug_exists( $slug ){
     $res = WPDD_Layouts::get_post_ID_by_slug( $slug, WPDDL_LAYOUTS_POST_TYPE );
     return $res != null && $res != 0 && $res != false;

@@ -87,7 +87,7 @@ class CRED_User_Forms_List_Table extends WP_List_Table implements CRED_Singleton
             //'cred_post_type' => __('Post Type', 'wp-cred'),
             'cred_user_role' => __('Role', 'wp-cred'),
         );
-        // allow 3rd-party integration, eg CRED Commerce
+        // allow 3rd-party integration, eg Toolset Forms Commerce
         $columns = apply_filters('manage_posts_columns', $columns, $post_type);
         $columns = apply_filters("manage_{$post_type}_posts_columns", $columns);
         return $columns;

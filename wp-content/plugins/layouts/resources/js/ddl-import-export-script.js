@@ -19,10 +19,14 @@ DDLayout.ImportLayouts = function($)
         $deleted = 0,
         $saved_css = 0,
         $saved_js = 0,
+        $saved_json = 0,
         $saved_layouts = 0,
         $skipped_layouts = 0,
         $show_log = false,
         $is_zip = 0,
+        message_style = '',
+        working_with_text = '',
+        working_with_text_fail = '',
         $imported_layouts = [],
         wpddl_import_spinner = '<div class="spinner ajax-loader" style="float: none; display: inline-block; margin-top: -4px">',
         $import_files_array = '';
@@ -32,6 +36,37 @@ DDLayout.ImportLayouts = function($)
     self.init = function()
     {
         self.check_file_is_there();
+        jQuery( document ).on( 'click', '.ddl-import-export-help-icon', self.icon_click_handler );
+        jQuery( document ).on( 'click', self.dismiss_pointer );
+    };
+
+    self.icon_click_handler = function ( event ) {
+
+        event.stopPropagation();
+
+        if ( !jQuery(this).data('has-wppointer') ) {
+
+            jQuery(this).ddlWpPointer('show', {
+                edge: 'left',
+                align: 'middle'
+            });
+
+        } else {
+            jQuery(this).ddlWpPointer('hide');
+        }
+    };
+
+    self.dismiss_pointer = function( event ){
+        event.stopPropagation();
+
+        var $el = jQuery( '.ddl-import-export-help-icon' );
+
+            $el.each(function(element){
+                if( jQuery(this).data('has-wppointer') ){
+                    jQuery(this).ddlWpPointer('hide');
+                }
+            });
+
     };
 
     /*
@@ -55,6 +90,9 @@ DDLayout.ImportLayouts = function($)
         if ( $saved_js != 0 ){
             out += '<br>' + ddl_import_texts.saved_js + ': ' + $saved_js;
         }
+        if ( $saved_json != 0 ){
+            out += '<br>' + ddl_import_texts.saved_json + ': ' + $saved_json;
+        }
         if ( $overwritten != 0 ){
             out += '<br>' + ddl_import_texts.overwritten_layouts + ': ' + $overwritten;
         }
@@ -68,6 +106,7 @@ DDLayout.ImportLayouts = function($)
         $deleted = 0;
         $saved_css = 0;
         $saved_js = 0;
+        $saved_json = 0;
         $saved_layouts = 0;
         $imported_layouts = [];
         $is_zip = 0;
@@ -111,10 +150,11 @@ DDLayout.ImportLayouts = function($)
                 if( $message.data('has_message') ) $message.wpvToolsetMessage('destroy');
             }
             else{
+                var extension = '';
 
                 event.preventDefault();
                 if ( $file.val() !== ''){
-                    var extension = $file[0].files[0].name.substr( ($file[0].files[0].name.lastIndexOf('.') +1) );
+                    extension = $file[0].files[0].name.substr( ($file[0].files[0].name.lastIndexOf('.') +1) );
                 }
 
                 if( $file.val() === '' )
@@ -124,7 +164,7 @@ DDLayout.ImportLayouts = function($)
                 else if ( $file[0].files[0].size > $max_upload_size ){
                     self.showmessage( DDLayout_settings.DDL_JS.file_to_big, 'warning');
                 }
-                else if ( extension != 'zip' && extension != 'ddl' && extension != 'css' && extension != 'js' ){
+                else if ( extension != 'zip' && extension != 'ddl' && extension != 'css' && extension != 'js' && extension != 'json' ){
                     self.showmessage( DDLayout_settings.DDL_JS.file_type_wrong, 'warning');
                 }
                 else
@@ -317,6 +357,7 @@ DDLayout.ImportLayouts = function($)
         $deleted = 0;
         $saved_css = 0;
         $saved_js = 0;
+        $saved_json = 0;
         $saved_layouts = 0;
         $('#import-layouts')[0].reset();
         $('.import-layouts-messages').html('');
@@ -335,6 +376,9 @@ DDLayout.ImportLayouts = function($)
         }
         if ( res.saved_js != 0 ){
             $saved_js+= res.saved_js;
+        }
+        if ( res.saved_json != 0 ){
+            $saved_js+= res.saved_json;
         }
         if ( res.overwritten != 0 ){
             $overwritten+= res.overwritten;

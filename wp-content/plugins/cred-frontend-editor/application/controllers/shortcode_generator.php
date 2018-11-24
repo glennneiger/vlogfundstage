@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Shortcode generator for Toolset CRED
+ * Shortcode generator for Toolset Forms
  *
  * @since 1.9.3
  */
@@ -27,13 +27,14 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		
 		/**
 		 * ---------------------
-		 * CRED button and dialogs
+		 * Toolset Forms button and dialogs
 		 * ---------------------
 		 */
 		// Initialize dialog groups and the action to register them
 		$this->dialog_groups = array();
 		add_action( 'cred_action_collect_shortcode_groups', array( $this, 'register_builtin_groups' ), 1 );
-		add_action( 'cred_action_collect_shortcode_groups', array( $this, 'register_extra_groups' ), 1 );
+		add_action( 'cred_action_collect_shortcode_groups', array( $this, 'register_extra_groups' ), 2 );
+		add_action( 'cred_action_collect_shortcode_groups', array( $this, 'maybe_register_association_forms_group' ), 5 );
 		add_action( 'cred_action_register_shortcode_group', array( $this, 'register_shortcode_group' ), 10, 2 );
 		
 		// Fields and Views button in native editors plus on demand:
@@ -80,7 +81,7 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	}
 	
 	/**
-	 * Register the CRED shortcode generator in the Toolset shortcodes admin bar entry.
+	 * Register the Toolset Forms shortcode generator in the Toolset shortcodes admin bar entry.
 	 *
 	 * Hooked into the toolset_shortcode_generator_register_item filter.
 	 * 
@@ -92,7 +93,7 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		$this->enforce_shortcode_assets();
 		$registered_sections[ 'cred' ] = array(
 			'id'		=> 'CRED',
-			'title'		=> __( 'CRED forms', 'wpv-views' ),
+			'title'		=> __( 'Toolset Forms', 'wp-cred' ),
 			'href'		=> '#cred_shortcodes',
 			'parent'	=> 'toolset-shortcodes',
 			'meta'		=> 'js-cred-shortcode-generator-node'
@@ -114,12 +115,29 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		$toolset_assets_manager->register_script(
 			'cred-shortcode',
 			CRED_ABSURL . '/public/js/cred_shortcode.js',
-			array( 'toolset-shortcode' ),
+			array( 'toolset-shortcode', 'wp-pointer' ),
 			TOOLSET_COMMON_VERSION,
 			true
 		);
 		
 		global $pagenow;
+		$current_user_id = get_current_user_id();
+		$toolset_ajax = Toolset_Ajax::get_instance();
+		$cred_ajax = CRED_Ajax::get_instance();
+		$cred_conditions = array(
+			'views_active' => new Toolset_Condition_Plugin_Views_Active(),
+			'layouts_active' => new Toolset_Condition_Plugin_Layouts_Active(),
+			'associationFormInstructions' => ( 0 == $current_user_id ) ? false : true
+		);
+		if ( $current_user_id ) {
+			$user_settings = get_user_meta( $current_user_id, CRED_Ajax_Handler_Dismiss_Association_Shortcode_Instructions::ID, true );
+			$user_settings = empty( $user_settings ) ? array() : $user_settings;
+			$cred_conditions['associationFormInstructions'] = ! (
+				isset( $user_settings[ CRED_Ajax_Handler_Dismiss_Association_Shortcode_Instructions::OPTION_FIELD_DISMISSED_INSTRUCTION ][ CRED_Ajax::CALLBACK_DISMISS_ASSOCIATION_SHORTCODE_INSTRUCTIONS ] ) 
+				&& $user_settings[ CRED_Ajax_Handler_Dismiss_Association_Shortcode_Instructions::OPTION_FIELD_DISMISSED_INSTRUCTION ][ CRED_Ajax::CALLBACK_DISMISS_ASSOCIATION_SHORTCODE_INSTRUCTIONS ]
+			);
+		}
+		
 		$cred_shortcode_i18n = array(
 			'action'	=> array(
 				'insert' => __( 'Insert shortcode', 'wp-cred' ),
@@ -130,13 +148,15 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 				'back' => __( 'Back', 'wp-cred' ),
 				'previous' => __( 'Previous', 'wp-cred' ),
 				'next' => __( 'Next', 'wp-cred' ),
+				'doContinue' => __( 'Continue', 'wp-cred' ),
 				'save' => __( 'Save settings', 'wp-cred' ),
 				'loading' => __( 'Loading...', 'wp-cred' ),
+				'processing' => __( 'Processing', 'wp-cred' )
 			),
 			'title' => array(
-				'dialog' => __( 'CRED shortcodes', 'wp-cred' ),
+				'dialog' => __( 'Toolset Forms shortcodes', 'wp-cred' ),
 				'generated' => __( 'Generated shortcode', 'wp-cred' ),
-				'button' => __( 'CRED', 'wp-cred' ),
+				'button' => __( 'Toolset Forms', 'wp-cred' ),
 			),
 			'validation' => array(
 				'mandatory'		=> __( 'This option is mandatory ', 'wp-cred' ),
@@ -145,8 +165,52 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 				'url'			=> __( 'Please enter a valid URL', 'wp-cred' ),
 				
 			),
-			'ajaxurl'									=> admin_url( 'admin-ajax.php', ( is_ssl() ? 'https' : 'http' )  ),
-			'pagenow'									=> $pagenow
+			'shortcodeHandle' => array(
+				'association' => array(
+					'form' => CRED_Shortcode_Association_Form::SHORTCODE_NAME,
+					'link' => OTGS\Toolset\CRED\Model\Shortcode\Form\Link\Association::SHORTCODE_NAME
+				)
+			),
+			'ajaxaction' => array(
+				'get_shortcode_attributes' => array(
+					'action' => $cred_ajax->get_action_js_name( CRED_Ajax::CALLBACK_GET_SHORTCODE_ATTRIBUTES ),
+					'nonce' => wp_create_nonce( CRED_Ajax::CALLBACK_GET_SHORTCODE_ATTRIBUTES )
+				),
+				'get_association_form_data' => array(
+					'action' => $cred_ajax->get_action_js_name( CRED_Ajax::CALLBACK_GET_ASSOCIATION_FORM_DATA ),
+					'nonce' => wp_create_nonce( CRED_Ajax::CALLBACK_GET_ASSOCIATION_FORM_DATA )
+				),
+				'create_form_template' => array(
+					'action' => $cred_ajax->get_action_js_name( CRED_Ajax::CALLBACK_CREATE_FORM_TEMPLATE ),
+					'nonce' => wp_create_nonce( CRED_Ajax::CALLBACK_CREATE_FORM_TEMPLATE )
+				),
+				'dismiss_association_shortcode_instructions' => array(
+					'action' => $cred_ajax->get_action_js_name( CRED_Ajax::CALLBACK_DISMISS_ASSOCIATION_SHORTCODE_INSTRUCTIONS ),
+					'nonce' => wp_create_nonce( CRED_Ajax::CALLBACK_DISMISS_ASSOCIATION_SHORTCODE_INSTRUCTIONS )
+				),
+				'select2_suggest_posts_by_title' => array(
+					'action' => $toolset_ajax->get_action_js_name( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE ),
+					'nonce' => wp_create_nonce( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE )
+				)
+			),
+			'data' => array(
+				'formType' => array(
+					'association' => CRED_Association_Form_Main::ASSOCIATION_FORMS_POST_TYPE
+				)
+			),
+			'conditions' => array(
+				'viewsActive' => $cred_conditions['views_active']->is_met(),
+				'editingView' => ( 'admin.php' == $pagenow && 'views-editor' == toolset_getget( 'page' ) ),
+				'editingCt' => ( 'admin.php' == $pagenow && 'ct-editor' == toolset_getget( 'page' ) ),
+				'layoutsActive' => $cred_conditions['layouts_active']->is_met(),
+				'editingLayout' => ( 'admin.php' == $pagenow && 'dd_layouts_edit' == toolset_getget( 'page' ) ),
+				'associationFormInstructions' => $cred_conditions['associationFormInstructions']
+			),
+			'shortcodesWithGui' => apply_filters( 'cred_shortcodes_data', array() ),
+			'shortcodesWithDelayedGui' => apply_filters( 'cred_shortcodes_dynamic_data', array() ),
+			'ajaxurl' => admin_url( 'admin-ajax.php', ( is_ssl() ? 'https' : 'http' )  ),
+			'pagenow' => $pagenow,
+			'page'    => toolset_getget( 'page' )
 		);
 		$toolset_assets_manager->localize_script( 
 			'cred-shortcode', 
@@ -159,7 +223,7 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	 * Enforce some assets that need to be in the frontend header, like styles, 
 	 * when we detect that we are on a page that needs them.
 	 * Basically, this involves frontend page builders, detected by their own methods.
-	 * Also enforces the generation of the CRED dialog, just in case, in the footer.
+	 * Also enforces the generation of the Toolset Forms dialog, just in case, in the footer.
 	 *
 	 * @uses is_frontend_editor_page which is a parent method.
 	 *
@@ -179,7 +243,7 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	/**
 	 * Enforce some assets that need to be in the backend header, like styles, 
 	 * when we detect that we are on a page that needs them.
-	 * Also enforces the generation of the CRED dialog, just in case, in the footer.
+	 * Also enforces the generation of the Toolset Forms dialog, just in case, in the footer.
 	 *
 	 * Note that we enforce the shortcode assets in all known admin editor pages.
 	 *
@@ -206,7 +270,11 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	public function enforce_shortcode_assets() {
 		
 		do_action( 'toolset_enqueue_scripts', array( 'cred-shortcode' ) );
-		do_action( 'toolset_enqueue_styles', array( 'toolset-common', 'toolset-dialogs-overrides-css', 'toolset-select2-css' ) );
+		wp_enqueue_style( 'wp-pointer' );
+		do_action( 'toolset_enqueue_styles', array( 
+			Toolset_Assets_Manager::STYLE_TOOLSET_COMMON, Toolset_Assets_Manager::STYLE_TOOLSET_DIALOGS_OVERRIDES, 
+			Toolset_Assets_Manager::STYLE_SELECT2_CSS, Toolset_Assets_Manager::STYLE_NOTIFICATIONS 
+		) );
 		do_action( 'otg_action_otg_enforce_styles' );
 		
 	}
@@ -245,7 +313,7 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	}
 	
 	/**
-	 * Generates the CRED button on native editors, using the media_buttons action.
+	 * Generates the Toolset Forms button on native editors, using the media_buttons action.
 	 * and also on demand using a custom action.
 	 *
 	 * @param $editor		string
@@ -263,14 +331,14 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 				/**
 				 * cred_filter_add_cred_button
 				 *
-				 * Public filter to disable the Fields and Views button on native WordPress editors.
+				 * Public filter to disable the Toolset Forms button on native WordPress editors.
 				 *
 				 * @since 2.3.0
 				 */
 				|| ! apply_filters( 'cred_filter_add_cred_button', true, $editor )
 			)
 		) {
-			// Disable the CRED button just on native WP Editors
+			// Disable the Toolset Forms button just on native WP Editors
 			return;
 		}
 		
@@ -284,7 +352,7 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		$args = wp_parse_args( $args, $defaults );
 		
 		$button			= '';
-		$button_label	= __( 'CRED Forms', 'wp-cred' );
+		$button_label	= __( 'Toolset Forms', 'wp-cred' );
 		
 		switch ( $args['output'] ) {
 			case 'button':
@@ -358,6 +426,14 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		return $this->get_form_shortcode_callback( $form_candidate, $args );
 	}
 	
+	public function get_association_form_shortcode_callback( $form_candidate ) {
+		return "Toolset.CRED.shortcodeGUI.associationFormShortcodeWizardDialogOpen({ shortcode: '" . CRED_Shortcode_Association_Form::SHORTCODE_NAME . "', title: '" . esc_js( $form_candidate->post_title ) . "', parameters: { form: '" . esc_js( $form_candidate->post_name ) . "' } })";
+	}
+	
+	public function get_association_form_link_shortcode_callback( $form_candidate ) {
+		return "Toolset.CRED.shortcodeGUI.associationFormLinkShortcodeWizardDialogOpen({ shortcode: '" . OTGS\Toolset\CRED\Model\Shortcode\Form\Link\Association::SHORTCODE_NAME . "', title: '" . esc_js( sprintf( __( '%1$s link', 'wp-cred' ), $form_candidate->post_title ) ) . "', parameters: { form: '" . esc_js( $form_candidate->post_name ) . "' } })";
+	}
+	
 	public function get_form_shortcode_callback( $form_candidate, $args ) {
 		return ( 'edit' === $args['type'] ) 
 		? "Toolset.CRED.shortcodeGUI.shortcodeDialogOpen({ shortcode: '" . esc_js( $args['shortcode'] ) . "', title: '" . esc_js( $form_candidate->post_title ) . "', parameters: { form: '" . esc_js( $form_candidate->post_name ) . "' } })" 
@@ -366,13 +442,11 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	
 	public function register_builtin_groups() {
 		
-		global $wpdb;
-		
-		$post_forms = get_transient( 'cred_transient_published_post_forms' );
+		$post_forms = apply_filters( 'cred_get_available_forms', array(), CRED_Form_Domain::POSTS );
 		
 		$form_groups = array(
 			'new-post'	=> array(
-				'name'		=> __( 'New Post Forms', 'wp-cred' ),
+				'name'		=> __( 'Add Post Forms', 'wp-cred' ),
 				'fields'	=> array()
 			),
 			'edit-post'	=> array(
@@ -380,56 +454,20 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 				'fields'	=> array()
 			)
 		);
-		
-		if ( $post_forms === false ) {
-			
-			$post_forms_transient_to_update = array(
-				'new'	=> array(),
-				'edit'	=> array()
-			);
-			
-			$post_forms_available = $wpdb->get_results(
-				"SELECT ID, post_title, post_name FROM {$wpdb->posts}
-				WHERE post_type='cred-form'
-				AND post_status in ('private')"
-			);
-			
-			foreach ( $post_forms_available as $post_form_candidate ) {
-				$current_form_type = 'new';
-				$form_settings = (array) get_post_meta( $post_form_candidate->ID, '_cred_form_settings', true );
-				if (
-					! is_array( $form_settings ) 
-					|| empty( $form_settings ) 
-					|| ! array_key_exists( 'form', $form_settings ) 
-					|| ! array_key_exists( 'type', $form_settings['form'] )
-				) {
-					continue;
-				}
-				$current_form_type = $form_settings['form']['type'];
-				$post_forms_transient_to_update[ $current_form_type ][] = $post_form_candidate;
-				$form_groups[ $current_form_type . '-post' ]['fields'][ $post_form_candidate->post_name ] = array(
-					'name'		=> $post_form_candidate->post_title,
-					'shortcode'	=> 'cred_form form="' . esc_html( $post_form_candidate->post_name ) . '"',
-					'callback'	=> $this->get_post_form_shortcode_callback( $post_form_candidate, $current_form_type )
-				);
-			}
-			
-			set_transient( 'cred_transient_published_post_forms', $post_forms_transient_to_update, WEEK_IN_SECONDS );
-			
-		} else {
-			$post_forms_types = array( 'new', 'edit' );
-			foreach ( $post_forms_types as $forms_type ) {
-				if ( 
-					isset( $post_forms[ $forms_type ] )
-					&& is_array( $post_forms[ $forms_type ] )
-				) {
-					foreach ( $post_forms[ $forms_type ] as $post_form_candidate ) {
-						$form_groups[ $forms_type . '-post' ]['fields'][ $post_form_candidate->post_name ] = array(
-							'name'		=> $post_form_candidate->post_title,
-							'shortcode'	=> 'cred_form form="' . esc_html( $post_form_candidate->post_name ) . '"',
-							'callback'	=> $this->get_post_form_shortcode_callback( $post_form_candidate, $forms_type )
-						);
-					}
+
+
+		$post_forms_types = array( 'new', 'edit' );
+		foreach ( $post_forms_types as $forms_type ) {
+			if ( 
+				isset( $post_forms[ $forms_type ] )
+				&& is_array( $post_forms[ $forms_type ] )
+			) {
+				foreach ( $post_forms[ $forms_type ] as $post_form_candidate ) {
+					$form_groups[ $forms_type . '-post' ]['fields'][ $post_form_candidate->post_name ] = array(
+						'name'		=> $post_form_candidate->post_title,
+						'shortcode'	=> 'cred_form form="' . esc_html( $post_form_candidate->post_name ) . '"',
+						'callback'	=> $this->get_post_form_shortcode_callback( $post_form_candidate, $forms_type )
+					);
 				}
 			}
 		}
@@ -440,11 +478,11 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 			}
 		}
 		
-		$user_forms = get_transient( 'cred_transient_published_user_forms' );
+		$user_forms = apply_filters( 'cred_get_available_forms', array(), CRED_Form_Domain::USERS );
 		
 		$user_form_groups = array(
 			'new-user'	=> array(
-				'name'		=> __( 'New User Forms', 'wp-cred' ),
+				'name'		=> __( 'Add User Forms', 'wp-cred' ),
 				'fields'	=> array()
 			),
 			'edit-user'	=> array(
@@ -453,55 +491,18 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 			)
 		);
 		
-		if ( $user_forms === false ) {
-			
-			$user_forms_transient_to_update = array(
-				'new'	=> array(),
-				'edit'	=> array()
-			);
-			
-			$user_forms_available = $wpdb->get_results(
-				"SELECT ID, post_title, post_name FROM {$wpdb->posts}
-				WHERE post_type='cred-user-form'
-				AND post_status in ('private')"
-			);
-			
-			foreach ( $user_forms_available as $user_form_candidate ) {
-				$current_form_type = 'new';
-				$form_settings = (array) get_post_meta( $user_form_candidate->ID, '_cred_form_settings', true );
-				if (
-					! is_array( $form_settings ) 
-					|| empty( $form_settings ) 
-					|| ! array_key_exists( 'form', $form_settings ) 
-					|| ! array_key_exists( 'type', $form_settings['form'] )
-				) {
-					continue;
-				}
-				$current_form_type = $form_settings['form']['type'];
-				$user_forms_transient_to_update[ $current_form_type ][] = $user_form_candidate;
-				$user_form_groups[ $current_form_type . '-user' ]['fields'][ $user_form_candidate->post_name ] = array(
-					'name'		=> $user_form_candidate->post_title,
-					'shortcode'	=> 'cred_user_form form="' . esc_html( $user_form_candidate->post_name ) . '"',
-					'callback'	=> $this->get_user_form_shortcode_callback( $user_form_candidate, $current_form_type )
-				);
-			}
-			
-			set_transient( 'cred_transient_published_user_forms', $user_forms_transient_to_update, WEEK_IN_SECONDS );
-			
-		} else {
-			$user_forms_types = array( 'new', 'edit' );
-			foreach ( $user_forms_types as $forms_type ) {
-				if ( 
-					isset( $user_forms[ $forms_type ] )
-					&& is_array( $user_forms[ $forms_type ] )
-				) {
-					foreach ( $user_forms[ $forms_type ] as $user_form_candidate ) {
-						$user_form_groups[ $forms_type . '-user' ]['fields'][ $user_form_candidate->post_name ] = array(
-							'name'		=> $user_form_candidate->post_title,
-							'shortcode'	=> 'cred_user_form form="' . esc_html( $user_form_candidate->post_name ) . '"',
-							'callback'	=> $this->get_user_form_shortcode_callback( $user_form_candidate, $forms_type )
-						);
-					}
+		$user_forms_types = array( 'new', 'edit' );
+		foreach ( $user_forms_types as $forms_type ) {
+			if ( 
+				isset( $user_forms[ $forms_type ] )
+				&& is_array( $user_forms[ $forms_type ] )
+			) {
+				foreach ( $user_forms[ $forms_type ] as $user_form_candidate ) {
+					$user_form_groups[ $forms_type . '-user' ]['fields'][ $user_form_candidate->post_name ] = array(
+						'name'		=> $user_form_candidate->post_title,
+						'shortcode'	=> 'cred_user_form form="' . esc_html( $user_form_candidate->post_name ) . '"',
+						'callback'	=> $this->get_user_form_shortcode_callback( $user_form_candidate, $forms_type )
+					);
 				}
 			}
 		}
@@ -514,6 +515,46 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		
 	}
 	
+	public function maybe_register_association_forms_group() {
+		
+		if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+
+			return;
+		}
+		$association_forms = apply_filters( 'cred_get_available_forms', array(), CRED_Form_Domain::ASSOCIATIONS );
+		$association_forms_group = array(
+			'name'   => __( 'Relationship Forms', 'wp-cred' ),
+			'fields' => array()
+		);
+		$association_forms_links_group = array(
+			'name'   => __( 'Relationship Links', 'wp-cred' ),
+			'fields' => array()
+		);
+		$association_forms_links_group = array(
+			'name'   => __( 'Relationship Links', 'wp-cred' ),
+			'fields' => array()
+		);
+		
+		foreach ( $association_forms as $association_form_candidate ) {
+			$association_forms_group['fields'][ $association_form_candidate->post_name ] = array(
+				'name'		=> $association_form_candidate->post_title,
+				'shortcode'	=> CRED_Shortcode_Association_Form::SHORTCODE_NAME . ' form="' . esc_html( $association_form_candidate->post_name ) . '"',
+				'callback'	=> $this->get_association_form_shortcode_callback( $association_form_candidate )
+			);
+			$association_forms_links_group['fields'][ $association_form_candidate->post_name ] = array(
+				'name'		=> sprintf( __( '%s link', 'wp-cred' ), $association_form_candidate->post_title ),
+				'shortcode'	=> OTGS\Toolset\CRED\Model\Shortcode\Form\Link\Association::SHORTCODE_NAME . ' form="' . esc_html( $association_form_candidate->post_name ) . '"',
+				'callback'	=> $this->get_association_form_link_shortcode_callback( $association_form_candidate )
+			);
+		}
+		
+		if ( count( $association_forms_group['fields'] ) > 0 ) {
+			$this->register_shortcode_group( 'relationship', $association_forms_group );
+			$this->register_shortcode_group( 'relationship-links', $association_forms_links_group );
+		}
+		
+	}
+	
 	public function get_shortcode_callback( $shortcode_slug, $shortcode_title ) {
 		return "Toolset.CRED.shortcodeGUI.shortcodeDialogOpen({ shortcode: '" . esc_js( $shortcode_slug ) . "', title: '" . esc_js( $shortcode_title ) . "' })";
 	}
@@ -522,13 +563,16 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		
 		$group_id	= 'cred-extra';
 		$group_data	= array(
-			'name'		=> __( 'Other CRED actions', 'wp-cred' ),
+			'name'		=> __( 'Other Toolset Forms actions', 'wp-cred' ),
 			'fields'	=> array()
 		);
 		
 		$shortcodes = array(
-			'cred_delete_post_link'		=> __( 'Delete Post Link', 'wp-cred' ),
-			'cred_child_link_form'		=> __( 'Create Child Post Link', 'wp-cred' )
+			OTGS\Toolset\CRED\Model\Shortcode\Form\Message::SHORTCODE_NAME => __( 'Forms message', 'wp-cred' ),
+			'cred_child_link_form' => __( 'Create Child Post Link', 'wp-cred' ),
+			OTGS\Toolset\CRED\Model\Shortcode\Form\Link\Post::SHORTCODE_NAME => __( 'Edit post link', 'wp-cred' ),
+			'cred_delete_post_link' => __( 'Delete Post Link', 'wp-cred' ),
+			OTGS\Toolset\CRED\Model\Shortcode\Form\Link\User::SHORTCODE_NAME => __( 'Edit user link', 'wp-cred' )
 		);
 		
 		foreach ( $shortcodes as $shortcode_slug => $shortcode_title ) {
@@ -544,7 +588,7 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	}
 	
 	/**
-	 * Register a CRED dialog group with its fields.
+	 * Register a Toolset Forms dialog group with its fields.
 	 *
 	 * @param $group_id		string 	The group unique ID.
 	 * @param $group_data	array	The group data:
@@ -571,6 +615,8 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 		}
 		
 		$group_data['fields'] = ( isset( $group_data['fields'] ) && is_array( $group_data['fields'] ) ) ? $group_data['fields'] : array();
+		
+		$group_data = apply_filters( 'cred_shortcode_group_before_register', $group_data, $group_id );
 		
 		$dialog_groups = $this->dialog_groups;
 		
@@ -691,230 +737,31 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	
 	public function render_dialog_templates() {
 		do_action( 'toolset_action_require_shortcodes_templates' );
-		?>	
-		<script type="text/html" id="tmpl-cred-post-edit-form-template">
-			<#
-			data = _.extend( 
-				data, 
-				{
-					attributes: {
-						postSelection: {
-							header: '<?php _e( 'Post selection', 'wp-cred' ); ?>',
-							fields: {
-								post: { 
-									label: '<?php _e( 'Post to edit', 'wp-cred' ); ?>',
-									type: 'post',
-									defaultValue: 'current'
-								} 
-							}
-						}
-					}
-				}
-			);
-			#>
-			<# print( data.templates.dialog( data ) ); #>
-		</script>
-		<script type="text/html" id="tmpl-cred-user-edit-form-template">
-			<#
-			data = _.extend( 
-				data, 
-				{
-					attributes: {
-						userSelection: {
-							header: '<?php _e( 'User selection', 'wp-cred' ); ?>',
-							fields: {
-								user: { 
-									label: '<?php _e( 'User to edit', 'wp-cred' ); ?>',
-									type: 'user',
-									defaultValue: 'current'
-								} 
-							}
-						}
-					}
-				}
-			);
-			#>
-			<# print( data.templates.dialog( data ) ); #>
-		</script>
-		<script type="text/html" id="tmpl-cred-delete-post-link-template">
-			<#
-			data = _.extend( 
-				data, 
-				{
-					attributes: {
-						options: {
-							header: '<?php _e( 'Options', 'wp-cred' ); ?>',
-							fields: {
-								action: { 
-									label: '<?php _e( 'Action to perform', 'wp-cred' ); ?>',
-									type: 'radio',
-									options: {
-										trash: '<?php _e( 'Trash the post', 'wp-cred' ); ?>',
-										delete: '<?php _e( 'Delete the post', 'wp-cred' ); ?>'
-									},
-									defaultForceValue: 'trash'
-								},
-								text: { 
-									label: '<?php _e( 'Link text', 'wp-cred' ); ?>',
-									type: 'text',
-									required: true,
-									defaultForceValue: '<?php _e( 'Delete %TITLE%', 'wp-cred' ); ?>'
-								},
-								redirect: {
-									label: '<?php _e( 'Action after deleting the post', 'wp-cred' ); ?> ',
-									type: 'radio',
-									options: {
-										'': '<?php _e( 'Do nothing', 'wp-cred' ); ?>',
-										'reload': '<?php _e( 'Reload the current page', 'wp-cred' ); ?>',
-										toolsetCombo: '<?php _e( 'Redirect to another page', 'wp-cred' ); ?>'
-									},
-									default: ''
-								},
-								'toolsetCombo:redirect': {
-									type: 'ajaxSelect2',
-									action: 'toolset_select2_suggest_posts_by_title',
-									nonce: '',
-									placeholder: '<?php _e( 'Search for a page to redirect to', 'wp-cred' ); ?>',
-									hidden: true
-								},
-							}
-						},
-						messageOptions: {
-							header: '<?php _e( 'Confirmation messages', 'wp-cred' ); ?>',
-							fields: {
-								message_show: {
-									label: '<?php _e( 'Message before deleting', 'wp-cred' ); ?>',
-									type: 'radio',
-									options: {
-										'0': '<?php _e( 'Do not show a message before deleting the post', 'wp-cred' ); ?>',
-										toolsetCombo: '<?php _e( 'Show a message before deleting the post', 'wp-cred' ); ?>'
-									},
-									defaultValue: 'toolsetCombo'
-								},
-								'toolsetCombo:message_show': {
-									type: 'text',
-									defaultForceValue: '<?php _e( 'Are you sure you want to delete this post?', 'wp-cred' ); ?>'
-								},
-								message_after: {
-									label: '<?php _e( 'Message after deleting', 'wp-cred' ); ?>',
-									type: 'radio',
-									options: {
-										'': '<?php _e( 'Do not show a message after deleting the post', 'wp-cred' ); ?>',
-										toolsetCombo: '<?php _e( 'Show a message after deleting the post', 'wp-cred' ); ?>'
-									},
-									defaultValue: ''
-								},
-								'toolsetCombo:message_after': {
-									type: 'text',
-									defaultForceValue: '<?php _e( 'Post deleted', 'wp-cred' ); ?>',
-									hidden: true
-								}
-							}
-						},
-						styleOptions: {
-							header: '<?php _e( 'Style options', 'wp-cred' ); ?>',
-							fields: {
-								class: { 
-									label: '<?php _e( 'Class', 'wp-cred' ); ?>',
-									type: 'text',
-									description: '<?php _e( 'Space-separated list of classnames that will be added to the anchor HTML tag.', 'wp-cred' ); ?>'
-								},
-								style: { 
-									label: '<?php _e( 'Style', 'wp-cred' ); ?>',
-									type: 'text',
-									description: '<?php _e( 'Inline styles that will be added to the anchor HTML tag.', 'wp-cred' ); ?>'
-								}
-							}
-						},
-						postSelection: {
-							header: '<?php _e( 'Post selection', 'wp-cred' ); ?>',
-							fields: {
-								post: { 
-									label: '<?php _e( 'Post to delete', 'wp-cred' ); ?>',
-									type: 'post',
-									defaultValue: 'current'
-								} 
-							}
-						}
-					}
-				}
-			);
-			#>
-			<# print( data.templates.dialog( data ) ); #>
-		</script>
-		<script type="text/html" id="tmpl-cred-create-child-post-link-template">
-			<#
-			data = _.extend( 
-				data, 
-				{
-					attributes: {
-						options: {
-							header: '<?php _e( 'Options', 'wp-cred' ); ?>',
-							fields: {
-								form: { 
-									label: '<?php _e( 'Page that contains the form', 'wp-cred' ); ?>',
-									type: 'ajaxSelect2',
-									action: 'toolset_select2_suggest_posts_by_title',
-									nonce: '',
-									placeholder: '<?php _e( 'Search for a target page', 'wp-cred' ); ?>',
-									required: true
-								},
-								'parent_id': { 
-									label: '<?php _e( 'Parent post', 'wp-cred' ); ?>',
-									type: 'radio',
-									options: {
-										'': '<?php _e( 'The form includes the parent selector', 'wp-cred' ); ?>',
-										'-1': '<?php _e( 'Set the parent according to the currently displayed content', 'wp-cred' ); ?>',
-										toolsetCombo: '<?php _e( 'Choose a specific parent', 'wp-cred' ); ?>'
-									},
-									defaultValue: ''
-								},
-								'toolsetCombo:parent_id': {
-									type: 'ajaxSelect2',
-									action: 'toolset_select2_suggest_posts_by_title',
-									nonce: '',
-									placeholder: '<?php _e( 'Search for a parent post', 'wp-cred' ); ?>',
-									hidden: true
-								},
-								text: { 
-									label: '<?php _e( 'Link text', 'wp-cred' ); ?>',
-									type: 'text',
-									required: true,
-									defaultForceValue: '<?php _e( 'Create new', 'wp-cred' ); ?>'
-								},
-								target: {
-									label: '<?php _e( 'Open link in', 'wp-cred' ); ?>',
-									type: 'select',
-									options: {
-										'_self': '<?php _e( 'Current window', 'wp-cred' ); ?>',
-										'_top': '<?php _e( 'Parent window', 'wp-cred' ); ?>',
-										'_blank': '<?php _e( 'New window', 'wp-cred' ); ?>'
-									}
-								}
-							}
-						},
-						styleOptions: {
-							header: '<?php _e( 'Style options', 'wp-cred' ); ?>',
-							fields: {
-								class: { 
-									label: '<?php _e( 'Class', 'wp-cred' ); ?>',
-									type: 'text',
-									description: '<?php _e( 'Space-separated list of classnames that will be added to the anchor HTML tag.', 'wp-cred' ); ?>'
-								},
-								style: { 
-									label: '<?php _e( 'Style', 'wp-cred' ); ?>',
-									type: 'text',
-									description: '<?php _e( 'Inline styles that will be added to the anchor HTML tag.', 'wp-cred' ); ?>'
-								}
-							}
-						}
-					}
-				}
-			);
-			#>
-			<# print( data.templates.dialog( data ) ); #>
-		</script>
-		<?php
+		$template_repository = CRED_Output_Template_Repository::get_instance();
+		$renderer = Toolset_Renderer::get_instance();
+		
+		$renderer->render(
+			$template_repository->get( CRED_Output_Template_Repository::SHORTCODE_CRED_FORM_DIALOG ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( CRED_Output_Template_Repository::SHORTCODE_CRED_USER_FORM_DIALOG ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( CRED_Output_Template_Repository::SHORTCODE_CRED_DELETE_POST_DIALOG ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( CRED_Output_Template_Repository::SHORTCODE_CRED_CHILD_DIALOG ),
+			null
+		);
+		
+		// Association forms related templates
+		$renderer->render(
+			$template_repository->get( CRED_Output_Template_Repository::SHORTCODE_CRED_RELATIONSHIP_FORM_WIZARD_DIALOG ),
+			null
+		);
 	}
 	
 	/**
@@ -933,8 +780,8 @@ class CRED_Shortcode_Generator extends Toolset_Shortcode_Generator {
 	 *
 	 * @return array
 	 *
-	 * @note This is not used because we disable CRED buttons in Gravity Forms notifications and confirmations.
-	 *       Why would anyone want to put a CRED form inside those elements, anyway?
+	 * @note This is not used because we disable Toolset Forms buttons in Gravity Forms notifications and confirmations.
+	 *       Why would anyone want to put a Toolset Forms form inside those elements, anyway?
 	 *
 	 * @since 1.9.3
 	 */

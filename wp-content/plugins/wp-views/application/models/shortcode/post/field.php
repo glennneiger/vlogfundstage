@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Field implements WPV_Shortcode_Interface {
+class WPV_Shortcode_Post_Field extends WPV_Shortcode_Base {
 
 	const SHORTCODE_NAME = 'wpv-post-field';
 
@@ -80,17 +80,16 @@ class WPV_Shortcode_Post_Field implements WPV_Shortcode_Interface {
 			// no valid item
 			throw new WPV_Exception_Invalid_Shortcode_Attr_Item();
 		}
-		
-		$item = get_post( $item_id );
 
-		// Adjust for WPML support
-		// If WPML is enabled, $item_id should contain the right ID for the current post in the current language
-		// However, if using the id attribute, we might need to adjust it to the translated post for the given ID
-		$item_id = apply_filters( 'translate_object_id', $item_id, $item->post_type, true, null );
-		
+		$item = $this->get_post( $item_id );
+
+		if ( null === $item ) {
+			return $out;
+		}
+
 		$filters_applied = '';
 
-		$meta = get_post_meta( $item_id, $this->user_atts['name'] );
+		$meta = get_post_meta( $item->ID, $this->user_atts['name'] );
 		$meta = apply_filters('wpv-post-field-meta-' . $this->user_atts['name'], $meta);
 		$filters_applied .= 'Filter wpv-post-field-meta-' . $this->user_atts['name'] .' applied. ';
 		
@@ -102,11 +101,11 @@ class WPV_Shortcode_Post_Field implements WPV_Shortcode_Interface {
 				$out .= isset( $meta[ $index ] ) ? $meta[ $index ] : '';
 			} else {
 				$filters_applied .= 'No index set. ';
-				foreach( $meta as $item ) {
+				foreach( $meta as $meta_item ) {
 					if ( $out != '' ) {
 						$out .= $this->user_atts['separator'];
 					}
-					$out .= wpv_maybe_flatten_array( $item, $this->user_atts['separator'] );
+					$out .= wpv_maybe_flatten_array( $meta_item, $this->user_atts['separator'] );
 				}
 
 			}
@@ -119,18 +118,16 @@ class WPV_Shortcode_Post_Field implements WPV_Shortcode_Interface {
 			$this->user_atts['parse_shortcodes'] == 'true' 
 			|| $this->user_atts['parse_shortcodes'] == 1 
 		) {
-			if ( isset( $this->infinite_loop_keys[ $item_id . '-' . $this->user_atts['name'] ] ) ) {
+			if ( isset( $this->infinite_loop_keys[ $item->ID . '-' . $this->user_atts['name'] ] ) ) {
 				return '';
 			}
-			$this->infinite_loop_keys[ $item_id . '-' . $this->user_atts['name'] ] = true;
+			$this->infinite_loop_keys[ $item->ID . '-' . $this->user_atts['name'] ] = true;
 			$out = wpv_do_shortcode( $out );
-			unset( $this->infinite_loop_keys[ $item_id . '-' . $this->user_atts['name'] ] );
+			unset( $this->infinite_loop_keys[ $item->ID . '-' . $this->user_atts['name'] ] );
 		}
 
 		apply_filters( 'wpv_shortcode_debug', 'wpv-post-field', json_encode( $this->user_atts ), '', 'Data received from cache. ' . $filters_applied, $out );
 
 		return $out;
 	}
-	
-	
 }

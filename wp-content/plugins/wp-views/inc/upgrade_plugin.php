@@ -1,6 +1,6 @@
 <?php
 
-    define ('VIEWS_UPDATE_URL', 'http://wp-types.com/?views_plugin_info=1');
+    define ('VIEWS_UPDATE_URL', 'https://toolset.com/?views_plugin_info=1');
 
     $views_plugins = array('WP Views',);
 

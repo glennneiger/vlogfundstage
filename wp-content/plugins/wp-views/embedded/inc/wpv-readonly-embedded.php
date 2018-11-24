@@ -129,7 +129,7 @@ function views_embedded_html() {
 		</div>
 		
 		<div class="wpv-layout-section">
-			<h3 class="wpv-section-title"><?php _e('The Loop Output section styles the View output on the page.','wpv-views') ?></h3>
+			<h3 class="wpv-section-title"><?php _e('The Loop section styles the View output on the page.','wpv-views') ?></h3>
 			<?php
 				// Commented out in Views 1.8
 				// wpv_get_embedded_view_layout_introduction_data();
@@ -142,7 +142,7 @@ function views_embedded_html() {
 			<div class="js-show-toolset-message"
 					data-close="false"
 					data-tutorial-button-text="<?php echo esc_attr( __('Learn how to display Views','wpv-views') ) ?>" 
-					data-tutorial-button-url="https://wp-types.com/documentation/getting-started-with-toolset/adding-lists-of-contents/?utm_source=viewsplugin&utm_campaign=views&utm_medium=embedded-view-readonly-info&utm_term=Want to see this in action?">
+					data-tutorial-button-url="https://toolset.com/documentation/getting-started-with-toolset/adding-lists-of-contents/?utm_source=viewsplugin&utm_campaign=views&utm_medium=embedded-view-readonly-info&utm_term=Want to see this in action?">
 				<h2><?php _e( 'Want to see this in action?','wpv-views' ) ?></h2>
 			</div>
 		</div>
@@ -377,7 +377,7 @@ function view_archives_embedded_html() {
 		
 		<div class="wpv-layout-section">
 			<h3 class="wpv-section-title">
-				<?php _e( 'The Loop Output section styles the View output on the page.','wpv-views' ) ?>
+				<?php _e( 'The Loop section styles the View output on the page.','wpv-views' ) ?>
 			</h3>
 			<?php
 				// Commented out in Views 1.8
@@ -774,7 +774,7 @@ function wpv_embedded_layout_extra(  $view_settings, $view_layout_settings ) {
 	<div class="wpv-setting-container wpv-setting-container-horizontal">
 		<div class="wpv-settings-header">
 			<h3>
-				<?php _e( 'Loop Output', 'wpv-views' ) ?>
+				<?php _e( 'Loop', 'wpv-views' ) ?>
 				<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
 						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
@@ -839,7 +839,7 @@ function wpv_embedded_combined_output(  $view_settings, $view_layout_settings, $
 	<div class="wpv-setting-container wpv-setting-container-horizontal">
 		<div class="wpv-settings-header">
 			<h3>
-				<?php _e( 'Filter and Loop Output Integration', 'wpv-views' ) ?>
+				<?php _e( 'Output Integration', 'wpv-views' ) ?>
 				<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
 						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">

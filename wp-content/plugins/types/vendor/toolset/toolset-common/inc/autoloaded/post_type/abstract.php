@@ -79,25 +79,32 @@ abstract class Toolset_Post_Type_Abstract implements IToolset_Post_Type {
 
 	/**
 	 * @inheritdoc
-	 * @return bool
+	 * @return Toolset_Result
 	 */
 	public function can_be_used_in_relationship() {
+		if ( 'attachment' == $this->get_slug() ) {
+			// Media post type can be used in relationships.
+			return new Toolset_Result( false, __( 'Media post type can not be part of a relationship.') );
+		}
+
 		if( ! $this->get_wpml_compatibility()->is_wpml_active_and_configured() ) {
 			// no wpml = no limitations on relationships
-			return true;
+			return new Toolset_Result( true );
 		}
 
 		if( ! $this->is_translatable() ) {
 			// no translation mode selected = all good
-			return true;
+			return new Toolset_Result( true );
 		}
 
 		if( $this->is_in_display_as_translated_mode() ) {
 			// "display as translated" mode selected = all good
-			return true;
+			return new Toolset_Result( true );
 		}
 
-		return false;
+		// at the end, we've decided to allow any translation mode for relationships
+		return new Toolset_Result( true );
+		// return new Toolset_Result( false, __( 'This post type uses the <strong>Translatable - only show translated items</strong> WPML translation mode. In order to use it in a relationship, switch to <strong>Translatable - use translation if available or fallback to default language</strong> mode.', 'wpcf' ) );
 	}
 
 

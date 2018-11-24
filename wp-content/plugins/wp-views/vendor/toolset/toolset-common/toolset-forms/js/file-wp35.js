@@ -114,13 +114,28 @@ var wptFile = (function($, w) {
                             && 'undefined' != typeof attachment.attributes.sizes.thumbnail
                             && 'undefined' != typeof attachment.attributes.sizes.thumbnail.url
                            ) {
-                               $('.wpt-file-preview img', $parent.parent()).attr('src', attachment.attributes.sizes.thumbnail.url);
-                           }
+							$( '.wpt-file-preview img', $parent.parent() ).attr(
+								{
+									'src': attachment.attributes.sizes.thumbnail.url,
+									'srcset': attachment.attributes.sizes.thumbnail.url,
+								}
+							);
+                        }
                         else if ( has_size_full ) {
-                            $('.wpt-file-preview img', $parent.parent()).attr('src', attachment.attributes.sizes.full.url);
+							$( '.wpt-file-preview img', $parent.parent() ).attr(
+								{
+									'src': attachment.attributes.sizes.full.url,
+									'srcset': attachment.attributes.sizes.full.url,
+								}
+							);
                         }
                         else if ( 'undefined' != typeof(attachment.attributes.url) ) {
-                            $('.wpt-file-preview img', $parent.parent()).attr('src', attachment.attributes.url);
+							$( '.wpt-file-preview img', $parent.parent() ).attr(
+								{
+									'src': attachment.attributes.url,
+									'srcset': attachment.attributes.url,
+								}
+							);
                         }
                         /**
                          * add full
@@ -130,6 +145,18 @@ var wptFile = (function($, w) {
                         } else if ( 'undefined' != typeof(attachment.attributes.url) ) {
                             $('.wpt-file-preview img', $parent.parent()).data('full-src', attachment.attributes.url);
                         }
+
+                        // add "title" and "alt" attribute to preview image
+                        var previewImage = $('.wpt-file-preview img', $parent.parent());
+                        if( previewImage.length ) {
+                            previewImage.attr('alt', attachment.attributes.alt );
+                            previewImage.attr('title', attachment.attributes.title );
+                        }
+
+                        // trigger "change" on preview input,
+                        // which triggers Yoast Analysis to use the "title" / "alt" attribute
+                        $( '.textfield', $parent ).trigger( 'change' );
+
                         /**
                          * bind preview
                          */

@@ -150,17 +150,17 @@ class Toolset_Relationship_Cardinality {
 	/**
 	 * Get a limit value per element and limit key.
 	 *
-	 * @param string $element_role
+	 * @param string|IToolset_Relationship_Role_Parent_Child $element_role
 	 * @param string $limit_key
 	 *
 	 * @return int Limit value.
 	 * @since m2m
 	 */
 	public function get_limit( $element_role, $limit_key = self::MAX ) {
-		Toolset_Association::validate_element_role( $element_role );
 		self::validate_limit_name( $limit_key );
+		$role_name = Toolset_Relationship_Role::name_from_role( $element_role );
 
-		return $this->limits[ $element_role ][ $limit_key ];
+		return $this->limits[ $role_name ][ $limit_key ];
 	}
 
 
@@ -282,7 +282,9 @@ class Toolset_Relationship_Cardinality {
 			}
 		}
 
-		throw new InvalidArgumentException();
+		throw new InvalidArgumentException(
+			'Invalid cardinality string. Expected format is "{$parent_min}..{$parent_max}:{$child_min}..{$child_max}. Each of these values must be an integer or "*" for infinity.'
+		);
 	}
 
 
@@ -326,6 +328,22 @@ class Toolset_Relationship_Cardinality {
 	 */
 	public function to_array() {
 		return $this->limits;
+	}
+
+
+	/**
+	 * Get a string representation of the cardinality type.
+	 *
+	 * @return string 'many-to-many'|'one-to-many'|'one-to-one'
+	 */
+	public function get_type() {
+		if( $this->is_many_to_many() ) {
+			return 'many-to-many';
+		} elseif( $this->is_one_to_many() ) {
+			return 'one-to-many';
+		} else {
+			return 'one-to-one';
+		}
 	}
 
 }

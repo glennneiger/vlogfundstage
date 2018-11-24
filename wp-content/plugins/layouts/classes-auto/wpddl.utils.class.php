@@ -895,12 +895,12 @@ final class WPDD_Utils {
 			"cred-cell"               => array(
 				"type"     => "cred-form",
 				"property" => "ddl_layout_cred_id",
-				"label"    => "CRED Post Form"
+				"label"    => "Post Form"
 			),
 			"cred-user-cell"          => array(
 				"type"     => "cred-user-form",
 				"property" => "ddl_layout_cred_user_id",
-				"label"    => "CRED User form"
+				"label"    => "User form"
 			)
 		) );
 

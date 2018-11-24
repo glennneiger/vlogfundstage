@@ -8,7 +8,7 @@
  *
  * @since m2m
  */
-interface IToolset_Potential_Association_Query extends IToolset_Query {
+interface IToolset_Potential_Association_Query {
 
 	/**
 	 * IToolset_Potential_Association_Query constructor.
@@ -29,9 +29,13 @@ interface IToolset_Potential_Association_Query extends IToolset_Query {
 
 
 	/**
+ 	 * @param bool $check_can_connect_another_element Check wheter it is possible to connect any other element at all,
+	 *     and return an empty result if not.
+	 * @param bool $check_distinct_relationships Exclude elements that would break the "distinct" property of a relationship.
+	 *     You can set this to false if you're overwriting an existing association.
 	 * @return IToolset_Element[]
 	 */
-	public function get_results();
+	public function get_results( $check_can_connect_another_element = true, $check_distinct_relationships = true );
 
 
 	/**

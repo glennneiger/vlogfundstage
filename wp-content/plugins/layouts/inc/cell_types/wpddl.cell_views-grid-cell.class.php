@@ -7,508 +7,520 @@
 
 
 
-if( ddl_has_feature('views-content-grid-cell') === false ){
+if ( ddl_has_feature( 'views-content-grid-cell' ) === false ) {
 	return;
 }
 
-if (!class_exists('Layouts_cell_views_content_grid')) {
-    class Layouts_cell_views_content_grid extends Layouts_views_based_cell{
-        
-        protected $cell_type = 'views-content-grid-cell';
+if ( ! class_exists( 'Layouts_cell_views_content_grid', false ) ) {
+	class Layouts_cell_views_content_grid extends Layouts_views_based_cell {
 
-        private $views_not_available_message = "Sorry, preview is not available. Please make sure that the Toolset Views plugin is active.";
-        
-        function __construct() {
+		protected $cell_type = 'views-content-grid-cell';
 
-            $this->views_not_available_message = apply_filters( 'toolset_is_views_available', false ) === false ?
-                                                __("Sorry, preview is not available. Please make sure that the Toolset Views plugin is active.", 'ddl-layouts') :
-                                                __("Sorry, preview is not available. This View may have been deleted.", 'ddl-layouts');
+		private $views_not_available_message = "Sorry, preview is not available. Please make sure that the Toolset Views plugin is active.";
 
-            // add actions
-            add_action( 'init', array(&$this, 'register_views_content_grid_cell_init'), 12);
-            
-            // javascript calls
-            add_action('wp_ajax_ddl_views_content_grid_preview', array(&$this,'ddl_views_content_grid_preview'));
-            add_action('wp_ajax_ddl_create_new_view', array(&$this,'ddl_create_new_view'));
-            add_action('wp_ajax_ddl_get_settings_for_view', array(&$this,'ddl_get_settings_for_view'));
-            add_action('wp_ajax_ddl_save_view_columns', array(&$this,'ddl_save_view_columns'));
-            // add shortcodes
-            add_shortcode('ddl-pager-prev-page', array(&$this,'ddl_pagination_previous_shortcode'));
-            add_shortcode('ddl-pager-next-page', array(&$this,'ddl_pagination_next_shortcode'));
-        }
-        
-        
-        function register_views_content_grid_cell_init() {
-            
-            if (function_exists('register_dd_layout_cell_type')) {
-                register_dd_layout_cell_type($this->cell_type, 
-                    array(
-                        'name' => __('View (content lists, custom searches, custom sliders)', 'ddl-layouts'),
-                        'description' => __('Load content and display it with your styling. A View is used for any custom content display, including custom searches, tables, grids, sliders and content lists.', 'ddl-layouts'),
-                        'category' => __('Lists and loops', 'ddl-layouts'),
-                        'button-text' => __('Assign View cell', 'ddl-layouts'),
-                        'dialog-title-create' => __('Create new View cell', 'ddl-layouts'),
-                        'dialog-title-edit' => __('Edit View cell', 'ddl-layouts'),
-                        'dialog-template-callback' => array(&$this, 'cell_dialogs_callback'),
-                        'cell-content-callback' => array(&$this, 'views_content_grid_content_callback'),
-                        'cell-template-callback' => array(&$this, 'views_content_grid_template_callback'),
-                        'preview-image-url' => DDL_ICONS_PNG_REL_PATH . 'views-content-grid_expand-image2.png',
-                        'cell-image-url' => DDL_ICONS_SVG_REL_PATH . 'views-grid-01.svg',
-                        'has_settings' => false,
-                        'register-scripts' => $this->cell_edit_script(),
-                    )
-                );
-            }
-        }
+		function __construct() {
 
-        protected function cell_edit_script(){
-	        if( is_admin() ){
-		        return array(
-		        	array('ddl_views_content_grid_js', WPDDL_RELPATH . '/inc/gui/dialogs/js/views-grid-cell.js', array('jquery'), WPDDL_VERSION, true)
-		        );
-	        }
-        }
+			$this->views_not_available_message = apply_filters( 'toolset_is_views_available', false ) === false ? __( "Sorry, preview is not available. Please make sure that the Toolset Views plugin is active.", 'ddl-layouts' ) : __( "Sorry, preview is not available. This View may have been deleted.", 'ddl-layouts' );
 
-        function ddl_views_content_grid_preview(){
-            /*
-            if(!class_exists('WP_Views')){
-                $output = "<center>";
-                $output .=__($this->views_not_available_message, 'ddl-layouts');
-                $output .= "</center><br><br>";
-                die( $output ); 
-            }
-            */
-            // check permissions
-            if( WPDD_Utils::user_not_admin() ){
-                die( __("You don't have permission to perform this action!", 'ddl-layouts') );
-            }
-            // check nonce
-            if (!isset($_POST['wpnonce']) || !wp_verify_nonce($_POST['wpnonce'],'ddl_layout_view_nonce')) {
-                die('verification failed');
-            }
+			// add actions
+			add_action( 'init', array( &$this, 'register_views_content_grid_cell_init' ), 12 );
 
-            global $wpdb;
-
-            if ( isset($_POST['view_id']) ){
-                $view_id = $_POST['view_id'];
-            }else{
-                return __('View not set','ddl-layouts');
-            }
-            
-            $layout_style = array(
-                'unformatted' => __('Unformatted','ddl-layouts'),
-                'bootstrap-grid' => __('Unformatted','ddl-layouts'),
-                'table' => __('Table-based grid','ddl-layouts'),
-                'table_of_fields' => __('Table','ddl-layouts'),
-                'un_ordered_list' => __('Unordered list','ddl-layouts'),
-                'ordered_list' => __('Ordered list','ddl-layouts')
-            );
-            
-            $view = $wpdb->get_results( $wpdb->prepare("SELECT ID, post_title, post_status FROM $wpdb->posts WHERE ID = %d AND post_type='view'",$view_id) );
-            if ( isset($view[0]) ){
-
-                if( $view[0]->post_status === 'trash' ){
-                    $view_details = get_post_meta( $view_id );
-                    $views_settings = unserialize($view_details['_wpv_settings'][0]);
-                    $cell_type = ( is_array($views_settings) && in_array($views_settings['view-query-mode'], array('layouts-loop', 'archive'))) ? 'views_archive' : 'view';
-
-                    die( json_encode( array( "status" => "trash", "cell_type" => $cell_type ) ) );
-                }
+			// javascript calls
+			add_action( 'wp_ajax_ddl_views_content_grid_preview', array( &$this, 'ddl_views_content_grid_preview' ) );
+			add_action( 'wp_ajax_ddl_create_new_view', array( &$this, 'ddl_create_new_view' ) );
+			add_action( 'wp_ajax_ddl_get_settings_for_view', array( &$this, 'ddl_get_settings_for_view' ) );
+			add_action( 'wp_ajax_ddl_save_view_columns', array( &$this, 'ddl_save_view_columns' ) );
+			// add shortcodes
+			add_shortcode( 'ddl-pager-prev-page', array( &$this, 'ddl_pagination_previous_shortcode' ) );
+			add_shortcode( 'ddl-pager-next-page', array( &$this, 'ddl_pagination_next_shortcode' ) );
+		}
 
 
-                $post_title = $view[0]->post_title;
-                $id = $view[0]->ID;
-                $view_settings = get_post_meta($id,'_wpv_settings',true);
-                $meta = get_post_meta($id,'_wpv_layout_settings',true);
-                if ( ! isset( $meta['style'] ) ) {
-                    $meta['style'] = 'unformatted';
-                }
+		function register_views_content_grid_cell_init() {
 
-                $view_purpose = '';
+			if ( function_exists( 'register_dd_layout_cell_type' ) ) {
+				register_dd_layout_cell_type( $this->cell_type, array(
+						'name'                     => __( 'View (content lists, custom searches, custom sliders)', 'ddl-layouts' ),
+						'description'              => __( 'Load content and display it with your styling. A View is used for any custom content display, including custom searches, tables, grids, sliders and content lists.', 'ddl-layouts' ),
+						'category'                 => __( 'Lists and loops', 'ddl-layouts' ),
+						'button-text'              => __( 'Assign View cell', 'ddl-layouts' ),
+						'dialog-title-create'      => __( 'Create new View cell', 'ddl-layouts' ),
+						'dialog-title-edit'        => __( 'Edit View cell', 'ddl-layouts' ),
+						'dialog-template-callback' => array( &$this, 'cell_dialogs_callback' ),
+						'cell-content-callback'    => array( &$this, 'views_content_grid_content_callback' ),
+						'cell-template-callback'   => array( &$this, 'views_content_grid_template_callback' ),
+						'preview-image-url'        => DDL_ICONS_PNG_REL_PATH . 'views-content-grid_expand-image2.png',
+						'cell-image-url'           => DDL_ICONS_SVG_REL_PATH . 'views-grid-01.svg',
+						'has_settings'             => false,
+						'register-scripts'         => $this->cell_edit_script(),
+					) );
+			}
+		}
 
-                if ( isset($view_settings['view-query-mode']) && $view_settings['view-query-mode'] == 'normal') {
-                    $view_output = get_view_query_results($id);
-                    if ( ! isset( $view_settings['view_purpose'] ) ) {
-                        $view_settings['view_purpose'] = 'full';
-                    }
-                    switch ($view_settings['view_purpose']) {
-                        case 'all':
-                            $view_purpose = __('Display all results','ddl-layouts');
-                            break;
+		protected function cell_edit_script() {
+			if ( is_admin() ) {
+				return array(
+					array(
+						'ddl_views_content_grid_js',
+						WPDDL_RELPATH . '/inc/gui/dialogs/js/views-grid-cell.js',
+						array( 'jquery' ),
+						WPDDL_VERSION,
+						true
+					)
+				);
+			}
+		}
 
-                        case 'pagination':
-                            $view_purpose = __('Display the results with pagination','ddl-layouts');
-                            break;
+		function ddl_views_content_grid_preview() {
+			/*
+			if(!class_exists('WP_Views')){
+				$output = "<center>";
+				$output .=__($this->views_not_available_message, 'ddl-layouts');
+				$output .= "</center><br><br>";
+				die( $output );
+			}
+			*/
+			// check permissions
+			if ( WPDD_Utils::user_not_admin() ) {
+				die( __( "You don't have permission to perform this action!", 'ddl-layouts' ) );
+			}
+			// check nonce
+			if ( ! isset( $_POST['wpnonce'] ) || ! wp_verify_nonce( $_POST['wpnonce'], 'ddl_layout_view_nonce' ) ) {
+				die( 'verification failed' );
+			}
 
-                        case 'slider':
-                            $view_purpose = __('Display the results as a slider','ddl-layouts');
-                            break;
+			global $wpdb;
 
-                        case 'parametric':
-                            $content = $_POST['content'];
-                            switch ($content['parametric_mode']) {
-                                case 'full':
-                                    ?>
+			if ( isset( $_POST['view_id'] ) ) {
+				$view_id = $_POST['view_id'];
+			} else {
+				return __( 'View not set', 'ddl-layouts' );
+			}
+
+			$layout_style = array(
+				'unformatted'     => __( 'Unformatted', 'ddl-layouts' ),
+				'bootstrap-grid'  => __( 'Unformatted', 'ddl-layouts' ),
+				'table'           => __( 'Table-based grid', 'ddl-layouts' ),
+				'table_of_fields' => __( 'Table', 'ddl-layouts' ),
+				'un_ordered_list' => __( 'Unordered list', 'ddl-layouts' ),
+				'ordered_list'    => __( 'Ordered list', 'ddl-layouts' )
+			);
+
+			$view = $wpdb->get_results( $wpdb->prepare( "SELECT ID, post_title, post_status FROM $wpdb->posts WHERE ID = %d AND post_type='view'", $view_id ) );
+			if ( isset( $view[0] ) ) {
+
+				if ( $view[0]->post_status === 'trash' ) {
+					$view_details   = get_post_meta( $view_id );
+					$views_settings = unserialize( $view_details['_wpv_settings'][0] );
+					$cell_type      = ( is_array( $views_settings ) && in_array( $views_settings['view-query-mode'], array(
+							'layouts-loop',
+							'archive'
+						) ) ) ? 'views_archive' : 'view';
+
+					die( json_encode( array( "status" => "trash", "cell_type" => $cell_type ) ) );
+				}
+
+
+				$post_title    = $view[0]->post_title;
+				$id            = $view[0]->ID;
+				$view_settings = get_post_meta( $id, '_wpv_settings', true );
+				$meta          = get_post_meta( $id, '_wpv_layout_settings', true );
+				if ( ! isset( $meta['style'] ) ) {
+					$meta['style'] = 'unformatted';
+				}
+
+				$view_purpose = '';
+
+				if ( isset( $view_settings['view-query-mode'] ) && $view_settings['view-query-mode'] == 'normal' ) {
+					$view_output = get_view_query_results( $id );
+					if ( ! isset( $view_settings['view_purpose'] ) ) {
+						$view_settings['view_purpose'] = 'full';
+					}
+					switch ( $view_settings['view_purpose'] ) {
+						case 'all':
+							$view_purpose = __( 'Display all results', 'ddl-layouts' );
+							break;
+
+						case 'pagination':
+							$view_purpose = __( 'Display the results with pagination', 'ddl-layouts' );
+							break;
+
+						case 'slider':
+							$view_purpose = __( 'Display the results as a slider', 'ddl-layouts' );
+							break;
+
+						case 'parametric':
+							$content = $_POST['content'];
+							switch ( $content['parametric_mode'] ) {
+								case 'full':
+									?>
                                     <div class="ddl-parametric-search-preview">
-                                        <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/both-search-form-and-results.png'; ?>" height="204px">
+                                        <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/both-search-form-and-results.png'; ?>"
+                                             height="204px">
                                     </div>
-                                    <?php
-                                    die();
-                                    break;
+									<?php
+									die();
+									break;
 
-                                case 'form':
+								case 'form':
 
-                                    if ($content['parametric_mode_target'] == 'self' && $_POST['target_found'] != 'true') {
-                                        ?>
+									if ( $content['parametric_mode_target'] == 'self' && $_POST['target_found'] != 'true' ) {
+										?>
                                         <div class="ddl-parametric-search-preview">
-                                            <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-form-only-results-missing.png'; ?>" height="204px">
+                                            <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-form-only-results-missing.png'; ?>"
+                                                 height="204px">
                                         </div>
-                                        <?php
-                                        die();
-                                    }
+										<?php
+										die();
+									}
 
-                                    if ($content['parametric_mode_target'] == 'other') {
-                                        ?>
+									if ( $content['parametric_mode_target'] == 'other' ) {
+										?>
                                         <div class="ddl-parametric-search-preview">
-                                            <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-form-only-results-in-a-different-page.png'; ?>" height="204px">
+                                            <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-form-only-results-in-a-different-page.png'; ?>"
+                                                 height="204px">
                                         </div>
-                                        <?php
-                                        die();
-                                    }
+										<?php
+										die();
+									}
 
-                                    ?>
+									?>
                                     <div class="ddl-parametric-search-preview">
-                                        <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-form-only.png'; ?>" height="100px">
+                                        <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-form-only.png'; ?>"
+                                             height="100px">
                                     </div>
-                                    <?php
-                                    die();
-                                    break;
+									<?php
+									die();
+									break;
 
-                                case 'results':
-                                    ?>
+								case 'results':
+									?>
                                     <div class="ddl-parametric-search-preview">
-                                        <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-results-only.png'; ?>" height="100px">
+                                        <img src="<?php echo WPDDL_RES_RELPATH . '/images/cell-icons/png/parametric-search-cells/search-results-only.png'; ?>"
+                                             height="100px">
                                     </div>
-                                    <?php
-                                    die();
-                                    break;
-                            }
-                            break;
+									<?php
+									die();
+									break;
+							}
+							break;
 
-                        case 'full':
-                            $view_purpose = __('Displays a fully customized display','ddl-layouts');
-                            break;
-                    }
+						case 'full':
+							$view_purpose = __( 'Displays a fully customized display', 'ddl-layouts' );
+							break;
+					}
 
-                    echo $view_purpose;
-                    echo '<br />';
+					echo $view_purpose;
+					echo '<br />';
 
-                } else {
-                    $view_output = array();
+				} else {
+					$view_output = array();
 
-                    if ($meta['style'] == 'bootstrap-grid' || $meta['style'] == 'table') {
-                        if ($meta['style'] == 'bootstrap-grid') {
-                            $col_number = $meta['bootstrap_grid_cols'];
-                        } else {
-                            $col_number = $meta['table_cols'];
-                        }
+					if ( $meta['style'] == 'bootstrap-grid' || $meta['style'] == 'table' ) {
+						if ( $meta['style'] == 'bootstrap-grid' ) {
+							$col_number = $meta['bootstrap_grid_cols'];
+						} else {
+							$col_number = $meta['table_cols'];
+						}
 
-                        // add 2 rows of items.
-                        for ($i = 1; $i <= 2 * $col_number; $i++) {
-                            $item = new stdClass();
-                            $item->post_title = sprintf(__('Post %d', 'ddl-layouts'), $i);
-                            $view_output[] = $item;
-                        }
+						// add 2 rows of items.
+						for ( $i = 1; $i <= 2 * $col_number; $i ++ ) {
+							$item             = new stdClass();
+							$item->post_title = sprintf( __( 'Post %d', 'ddl-layouts' ), $i );
+							$view_output[]    = $item;
+						}
 
-                    } else {
-                        // just add 3 items
-                        for ($i = 1; $i <= 3; $i++) {
-                            $item = new stdClass();
-                            $item->post_title = sprintf(__('Post %d', 'ddl-layouts'), $i);
-                            $view_output[] = $item;
-                        }
-                    }
+					} else {
+						// just add 3 items
+						for ( $i = 1; $i <= 3; $i ++ ) {
+							$item             = new stdClass();
+							$item->post_title = sprintf( __( 'Post %d', 'ddl-layouts' ), $i );
+							$view_output[]    = $item;
+						}
+					}
 
-                }
-                $this->ddl_views_generate_cell_preview( $post_title, $id, $meta, $view_output );
-            }
+				}
+				$this->ddl_views_generate_cell_preview( $post_title, $id, $meta, $view_output );
+			}
 
-            die();
-        }
-        
-        
-        function ddl_create_new_view(){
-            global $wpdb;
+			die();
+		}
 
-            if( WPDD_Utils::user_not_admin() ){
-                die( __("You don't have permission to perform this action!", 'ddl-layouts') );
-            }
-            if (!isset($_POST['wpnonce']) || !wp_verify_nonce($_POST['wpnonce'],
-                    'ddl_layout_view_nonce')) {
-                die('verification failed');
-            }
 
-            $view_type = 'normal';
-            if (isset($_POST['is_archive'])) {
-                $view_type = 'layouts-loop';
-            }
-            $view_purpose = 'full';
-            if (isset($_POST['purpose'])){
-                $view_purpose = $_POST['purpose'];
-            }
+		function ddl_create_new_view() {
+			global $wpdb;
 
-            $name = $original_name = $_POST['cell_name'];
-            $i = 0;
-            $name_in_use = true;
-            while( $name_in_use ){
-                $i++;
-                $postid = $wpdb->get_var(
-                    $wpdb->prepare(
-                        "SELECT ID FROM {$wpdb->posts}
+			if ( WPDD_Utils::user_not_admin() ) {
+				die( __( "You don't have permission to perform this action!", 'ddl-layouts' ) );
+			}
+			if ( ! isset( $_POST['wpnonce'] ) || ! wp_verify_nonce( $_POST['wpnonce'], 'ddl_layout_view_nonce' ) ) {
+				die( 'verification failed' );
+			}
+
+			$view_type = 'normal';
+			if ( isset( $_POST['is_archive'] ) ) {
+				$view_type = 'layouts-loop';
+			}
+			$view_purpose = 'full';
+			if ( isset( $_POST['purpose'] ) ) {
+				$view_purpose = $_POST['purpose'];
+			}
+
+			$name        = $original_name = $_POST['cell_name'];
+			$i           = 0;
+			$name_in_use = true;
+			while ( $name_in_use ) {
+				$i ++;
+				$postid = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts}
                             WHERE ( post_title = %s OR post_name = %s )
                             AND post_type = 'view'
-                            LIMIT 1",
-                        $name,
-                        strtolower( $name )
-                    )
-                );
-                if ( $postid ) {
-                    $name = $original_name . ' ' . $i;
-                }
-                else{
-                    $name_in_use = false;
-                }
-            }
-            $args = array(
-                'title' => $name,
-                'settings' => array('view_purpose' => $view_purpose,// This is not a purpose but a layout
-                    'view-query-mode' => $view_type)
-            );
-            $view_id = wpv_create_view( $args );
-            if ( isset( $view_id['success']) ){
+                            LIMIT 1", $name, strtolower( $name ) ) );
+				if ( $postid ) {
+					$name = $original_name . ' ' . $i;
+				} else {
+					$name_in_use = false;
+				}
+			}
+			$args    = array(
+				'title'    => $name,
+				'settings' => array(
+					'view_purpose'    => $view_purpose,// This is not a purpose but a layout
+					'view-query-mode' => $view_type
+				)
+			);
+			$view_id = wpv_create_view( $args );
+			if ( isset( $view_id['success'] ) ) {
 
-                $id = $view_id['success'];
+				$id = $view_id['success'];
 
-                // set it to filter posts by default.
-                $view_settings = get_post_meta($id, '_wpv_settings', true);
-                $view_settings['post_type'] = array('post');
-                if ( isset( $_POST['purpose'] ) ) {
-                    $view_settings['view_purpose'] = $_POST['purpose'];
-                } else {
-                    $view_settings['view_purpose'] = 'full';
-                }
+				// set it to filter posts by default.
+				$view_settings              = get_post_meta( $id, '_wpv_settings', true );
+				$view_settings['post_type'] = array( 'post' );
+				if ( isset( $_POST['purpose'] ) ) {
+					$view_settings['view_purpose'] = $_POST['purpose'];
+				} else {
+					$view_settings['view_purpose'] = 'full';
+				}
 
-                if ( $view_type == 'layouts-loop' ) {
-                    // show the content section for pagination.
-                    unset( $view_settings['sections-show-hide']['content'] );
-                }
+				if ( $view_type == 'layouts-loop' ) {
+					// show the content section for pagination.
+					unset( $view_settings['sections-show-hide']['content'] );
+				}
 
-                update_post_meta($id, '_wpv_settings', $view_settings);
+				update_post_meta( $id, '_wpv_settings', $view_settings );
 
-                $res = $wpdb->get_results( "SELECT post_name FROM $wpdb->posts WHERE ID = '" . $id . "' AND post_type='view'" );
-                $post_name = $res[0]->post_name;
-                $output = wp_json_encode(array( 'id'=>$id, 'post_name' => $post_name, 'post_title'=> $name));
-                //print wp_json_encode(array( 'id'=>$id, 'post_name' => $post_name, 'post_title'=> $name));
+				$res       = $wpdb->get_results( "SELECT post_name FROM $wpdb->posts WHERE ID = '" . $id . "' AND post_type='view'" );
+				$post_name = $res[0]->post_name;
+				$output    = wp_json_encode( array( 'id' => $id, 'post_name' => $post_name, 'post_title' => $name ) );
+				//print wp_json_encode(array( 'id'=>$id, 'post_name' => $post_name, 'post_title'=> $name));
 
-            } else {
-                $output = wp_json_encode( array( 'error'=>$view_id, 'message' => $view_id ) );
-            }
+			} else {
+				$output = wp_json_encode( array( 'error' => $view_id, 'message' => $view_id ) );
+			}
 
-            die( $output );
-        }
-        
-        
-        /*
-         * Shortcodes functions
-         */
-        function ddl_pagination_previous_shortcode($atts, $value) {
-            return get_next_posts_link(do_shortcode($value));
-        }
-        function ddl_pagination_next_shortcode($atts, $value) {
-            return get_previous_posts_link(do_shortcode($value));
-        }
-        
-        /*
-        * Get settings about the View
-        * $id, $slug, $title
-        *
-        * DEPRECATED
-        * Not sure if in use anymore
-        * We do not get the View settings anymore when selecting one
-        */
-        function ddl_get_settings_for_view(){
-            global $wpdb;
+			die( $output );
+		}
 
-            if( WPDD_Utils::user_not_admin() ){
-                die( __("You don't have permission to perform this action!", 'ddl-layouts') );
-            }
-            if (!isset($_POST['wpnonce']) || !wp_verify_nonce($_POST['wpnonce'],
-                    'ddl_layout_view_nonce')) {
-                die('verification failed');
-            }
 
-            $result = array();
+		/*
+		 * Shortcodes functions
+		 */
+		function ddl_pagination_previous_shortcode( $atts, $value ) {
+			return get_next_posts_link( do_shortcode( $value ) );
+		}
 
-            if ( isset($_POST['view_id']) ){
-                $view_id = $_POST['view_id'];
-                $view = $wpdb->get_results( $wpdb->prepare("SELECT ID, post_title FROM $wpdb->posts WHERE ID = %d AND post_type='view'",$view_id) );
-                if ( isset($view[0]) ){
-                    $id = $view[0]->ID;
-                    $meta = get_post_meta($id,'_wpv_layout_settings',true);
-                    // depricated
-                    if ($this->ddl_confirm_ok_to_change_grid_cols($meta)) {
-                        //$result['grid_settings'] = $meta['bootstrap_grid_cols'];
-                    }
-                    $result['title'] = $view[0]->post_title;
+		function ddl_pagination_next_shortcode( $atts, $value ) {
+			return get_previous_posts_link( do_shortcode( $value ) );
+		}
 
-                }
-            }
+		/*
+		* Get settings about the View
+		* $id, $slug, $title
+		*
+		* DEPRECATED
+		* Not sure if in use anymore
+		* We do not get the View settings anymore when selecting one
+		*/
+		function ddl_get_settings_for_view() {
+			global $wpdb;
 
-            print wp_json_encode($result);
+			if ( WPDD_Utils::user_not_admin() ) {
+				die( __( "You don't have permission to perform this action!", 'ddl-layouts' ) );
+			}
+			if ( ! isset( $_POST['wpnonce'] ) || ! wp_verify_nonce( $_POST['wpnonce'], 'ddl_layout_view_nonce' ) ) {
+				die( 'verification failed' );
+			}
 
-            die();
-        }
-        
-        
-        /*
-        * Save the View settings for columns
-        *
-        * DEPRECATED
-        */
-       function ddl_save_view_columns(){
-           global $wpdb;
+			$result = array();
 
-           if( WPDD_Utils::user_not_admin() ){
-               die( __("You don't have permission to perform this action!", 'ddl-layouts') );
-           }
-           if (!isset($_POST['wpnonce']) || !wp_verify_nonce($_POST['wpnonce'],
-                   'ddl_layout_view_nonce')) {
-               die('verification failed');
-           }
+			if ( isset( $_POST['view_id'] ) ) {
+				$view_id = $_POST['view_id'];
+				$view    = $wpdb->get_results( $wpdb->prepare( "SELECT ID, post_title FROM $wpdb->posts WHERE ID = %d AND post_type='view'", $view_id ) );
+				if ( isset( $view[0] ) ) {
+					$id   = $view[0]->ID;
+					$meta = get_post_meta( $id, '_wpv_layout_settings', true );
+					// depricated
+					if ( $this->ddl_confirm_ok_to_change_grid_cols( $meta ) ) {
+						//$result['grid_settings'] = $meta['bootstrap_grid_cols'];
+					}
+					$result['title'] = $view[0]->post_title;
 
-           $result = array();
+				}
+			}
 
-           print wp_json_encode($result);
+			print wp_json_encode( $result );
 
-           die();
-       }
+			die();
+		}
 
-       // DEPRECATED
-       function ddl_confirm_ok_to_change_grid_cols ($meta) {
-           $ok_to_update = false;
 
-           if (isset($meta['style']) && $meta['style'] == 'bootstrap-grid') {
-               if (function_exists('wpv_create_bootstrap_meta_html')) {
-                   $meta_html_current = $meta['layout_meta_html'];
-                   // find the content template used
-                   $match = array();
+		/*
+		* Save the View settings for columns
+		*
+		* DEPRECATED
+		*/
+		function ddl_save_view_columns() {
+			global $wpdb;
 
-                   if (preg_match('/\[wpv-post-body view_template="(.*?)\"\]/', $meta_html_current, $match)) {
-                       $template = $match[1];
-                       $old_test = wpv_create_bootstrap_meta_html( $meta['bootstrap_grid_cols'],
-                           $template,
-                           $meta_html_current);
+			if ( WPDD_Utils::user_not_admin() ) {
+				die( __( "You don't have permission to perform this action!", 'ddl-layouts' ) );
+			}
+			if ( ! isset( $_POST['wpnonce'] ) || ! wp_verify_nonce( $_POST['wpnonce'], 'ddl_layout_view_nonce' ) ) {
+				die( 'verification failed' );
+			}
 
-                       if (preg_replace('/\s+/', '', $old_test) == preg_replace('/\s+/', '', $meta_html_current)) {
-                           $ok_to_update = true;
-                       }
-                   }
-               } else {
-                   // set it to true so that the column select or shown.
-                   $ok_to_update = true;
-               }
-           }
+			$result = array();
 
-           return $ok_to_update;
+			print wp_json_encode( $result );
 
-        }
-        
-        
-        function views_content_grid_template_callback() {
-            global $WP_Views;
-            if( class_exists('WP_Views') ){
+			die();
+		}
 
-                ob_start();
+		// DEPRECATED
+		function ddl_confirm_ok_to_change_grid_cols( $meta ) {
+			$ok_to_update = false;
 
-                ?> <div class="cell-content">
-                    <p class="cell-name"><?php echo __('View');?>: {{ name }}</p>
+			if ( isset( $meta['style'] ) && $meta['style'] == 'bootstrap-grid' ) {
+				if ( function_exists( 'wpv_create_bootstrap_meta_html' ) ) {
+					$meta_html_current = $meta['layout_meta_html'];
+					// find the content template used
+					$match = array();
+
+					if ( preg_match( '/\[wpv-post-body view_template="(.*?)\"\]/', $meta_html_current, $match ) ) {
+						$template = $match[1];
+						$old_test = wpv_create_bootstrap_meta_html( $meta['bootstrap_grid_cols'], $template, $meta_html_current );
+
+						if ( preg_replace( '/\s+/', '', $old_test ) == preg_replace( '/\s+/', '', $meta_html_current ) ) {
+							$ok_to_update = true;
+						}
+					}
+				} else {
+					// set it to true so that the column select or shown.
+					$ok_to_update = true;
+				}
+			}
+
+			return $ok_to_update;
+
+		}
+
+
+		function views_content_grid_template_callback() {
+			global $WP_Views;
+			if ( class_exists( 'WP_Views' ) ) {
+
+				ob_start();
+
+				?>
+                <div class="cell-content">
+                    <p class="cell-name"><?php echo __( 'View' ); ?>: {{ name }}</p>
                     <div class="cell-preview">
                         <#
-                            if (content) {
-                            var preview = DDLayout.views_preview.get_preview( name,
-                            content,
-                            '<?php _e('Updating', 'ddl-layouts'); ?>...',
-                            '<?php _e('Loading', 'ddl-layouts'); ?>...',
-                            '<?php echo DDL_ICONS_SVG_REL_PATH . 'views-content-grid.svg'; ?>',
-                            'view'
-                            );
-                            print( preview );
-                            }
-                            #>
+                        if (content) {
+                        var preview = DDLayout.views_preview.get_preview( name,
+                        content,
+                        '<?php _e( 'Updating', 'ddl-layouts' ); ?>...',
+                        '<?php _e( 'Loading', 'ddl-layouts' ); ?>...',
+                        '<?php echo DDL_ICONS_SVG_REL_PATH . 'views-content-grid.svg'; ?>',
+                        'view'
+                        );
+                        print( preview );
+                        }
+                        #>
                     </div>
                 </div>
-                <?php
-                return ob_get_clean();
-            } else {
-                ob_start();
-                $output = '<div class="ddl-center-align">';
-                $output .=__($this->views_not_available_message, 'ddl-layouts');
-                $output .= "</div>";
-                ?> 
+				<?php
+				return ob_get_clean();
+			} else {
+				ob_start();
+				$output = '<div class="ddl-center-align">';
+				$output .= __( $this->views_not_available_message, 'ddl-layouts' );
+				$output .= "</div>";
+				?>
                 <div class="cell-content">
-                    <p class="cell-name"><?php echo __('View');?>: {{ name }}</p>
+                    <p class="cell-name"><?php echo __( 'View' ); ?>: {{ name }}</p>
                     <div class="cell-preview">
                         <div class="js-views-content-grid-92-full92">
-                            <?php echo $output;?>
+							<?php echo $output; ?>
                         </div>
                     </div>
                 </div>
-                <?php
-                return ob_get_clean();
-            }
-        }
+				<?php
+				return ob_get_clean();
+			}
+		}
 
-        function get_view_slug_from_id($id){
-            return get_post_field( 'post_name', $id );
-        }
-        
-        function views_content_grid_content_callback() {
-            //Render View
-            if( function_exists('render_view') )
-            {
-                $mode = get_ddl_field('parametric_mode');
-                $target = get_ddl_field('parametric_mode_target');
-                $target_id = get_ddl_field('parametric_target_id');
-                $is_private_layout = get_ddl_field('is_private_layout');
+		function get_view_slug_from_id( $id ) {
+			return get_post_field( 'post_name', $id );
+		}
+
+		function views_content_grid_content_callback() {
+			//Render View
+			if ( function_exists( 'render_view' ) ) {
+				$mode              = get_ddl_field( 'parametric_mode' );
+				$target            = get_ddl_field( 'parametric_mode_target' );
+				$target_id         = get_ddl_field( 'parametric_target_id' );
+				$is_private_layout = get_ddl_field( 'is_private_layout' );
+
+				if ( $target == 'self' ) {
+					$target_id = 'self';
+				}
+
+				if ( $is_private_layout === true ) {
+					$view_id   = get_ddl_field( 'ddl_layout_view_id' );
+					$view_slug = $this->get_view_slug_from_id( $view_id );
+
+					if ( $mode == 'form' && ! empty( $target_id ) ) {
+					    return '[wpv-form-view name="' . $view_slug . '" target_id="'.$target_id.'"]';
+				    } elseif ( $mode == 'results' ) {
+						return '[wpv-view name="' . $view_slug . '" view_display="layout"]';
+					} else {
+						return '[wpv-view name="' . $view_slug . '"]';
+					}
+				}
 
 
-                if($is_private_layout ===true){
-                    $view_id = get_ddl_field('ddl_layout_view_id');
-                    $view_slug = $this->get_view_slug_from_id($view_id);
-                    return '[wpv-view name="'.$view_slug.'"]';
-                }
+				if ( $mode == 'form' && ! empty( $target_id ) ) {
+					return render_view( array(
+						'id'        => get_ddl_field( 'ddl_layout_view_id' ),
+						'target_id' => $target_id
+					) );
+				} else if ( $mode == 'results' ) {
+					return render_view( array(
+						'id'           => get_ddl_field( 'ddl_layout_view_id' ),
+						'view_display' => 'layout'
+					) );
+				} else {
+					return render_view( array( 'id' => get_ddl_field( 'ddl_layout_view_id' ) ) );
+				}
+			} else {
+				return WPDDL_Messages::views_missing_message();
+			}
 
-                if ( $target == 'self' ) {
-                    $target_id = 'self';
-                }
+		}
 
-                if ( $mode == 'form' && ! empty( $target_id ) ) {
-                    return render_view( array( 'id' => get_ddl_field('ddl_layout_view_id'), 'target_id' => $target_id ) );
-                } else if ( $mode == 'results' ) {
-                    return render_view( array( 'id' => get_ddl_field('ddl_layout_view_id'), 'view_display' => 'layout' ) );
-                } else {
-                    return render_view( array( 'id' => get_ddl_field('ddl_layout_view_id') ) );
-                }
-            }
-            else
-            {
-                return WPDDL_Messages::views_missing_message();
-            }
 
-        }
-        
-        
-        function ddl_views_generate_cell_preview( $post_title, $id, $meta, $view_output ){
+		function ddl_views_generate_cell_preview( $post_title, $id, $meta, $view_output ) {
             $count_view_output = count($view_output);
             //Generate preview for bootstrap grid and table based grid
             if ( !isset($meta['style']) ){
@@ -798,23 +810,24 @@ if (!class_exists('Layouts_cell_views_content_grid')) {
                         <?php
             endif;
         }
-        
-        function ddl_view_content_grid_get_title( $view_post ){
-            $cell_content = '';
-            if ( isset($view_post->post_title) ){
-                $cell_content = $view_post->post_title;
-            }
-            if ( isset($view_post->name) ){
-                $cell_content = $view_post->name;
-            }
-            if ( isset($view_post->user_login) ){
-                $cell_content = $view_post->user_login;
-            }
-            return $cell_content;
-        }
-        
 
-    }
-    
-    new Layouts_cell_views_content_grid();
+		function ddl_view_content_grid_get_title( $view_post ) {
+			$cell_content = '';
+			if ( isset( $view_post->post_title ) ) {
+				$cell_content = $view_post->post_title;
+			}
+			if ( isset( $view_post->name ) ) {
+				$cell_content = $view_post->name;
+			}
+			if ( isset( $view_post->user_login ) ) {
+				$cell_content = $view_post->user_login;
+			}
+
+			return $cell_content;
+		}
+
+
+	}
+
+	new Layouts_cell_views_content_grid();
 }

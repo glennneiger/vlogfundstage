@@ -9,7 +9,8 @@ DDLayout.ChangeLayoutUseHelper = function ($) {
         , track_option_cache = {}
         , $bulk_types_checkboxes
         , $message_div, track_open_close = {}
-        , handlers = {};
+        , handlers = {}
+        , activeGroup = 'post_types';
 
     self.layoutOptions = null;
     self._current_layout = null;
@@ -37,12 +38,16 @@ DDLayout.ChangeLayoutUseHelper = function ($) {
     };
 
     self.dialog_before_load = function( dialog, layout_id, args ){
-
         self.current_dialog = dialog;
+        self.setGroupData( args );
         self.set_current_layout( layout_id );
         self.set_layout_has_cells_of_type(args);
         self.set_posts_list_handler(layout_id);
         self.set_ui( dialog );
+    };
+
+    self.setGroupData = function( args ){
+        activeGroup = args.hasOwnProperty( 'activeGroup' ) ? args.activeGroup : activeGroup;
     };
 
     self.handle_on_open = function (dialog, layout_id, args) {
@@ -55,14 +60,10 @@ DDLayout.ChangeLayoutUseHelper = function ($) {
     };
 
     self.init_dialog = function( dialog ){
-
         self.setInitialStateLayoutOptions(dialog);
-
         self.set_bulk_types_checkboxes(dialog);
-
         self.setChangeEvents();
         self.set_change_event_for_extras();
-
         self.build_cache();
     };
 
@@ -199,6 +200,7 @@ DDLayout.ChangeLayoutUseHelper = function ($) {
                         if( checkbox.length > 0 /*&& checkbox.prop('checked') !== el.checked */ ){
 
                             checkbox.prop( 'checked', el.checked).trigger('change');
+
                         }
                     }
                 }
@@ -216,6 +218,23 @@ DDLayout.ChangeLayoutUseHelper = function ($) {
 
             return assigned > 0;
         });
+
+        self.afterReloadCheckboxes();
+    };
+
+    self.afterReloadCheckboxes = function( ){
+        var tab = activeGroup;
+
+        if( tab === 'free' ) return;
+
+        if( Toolset.hooks.applyFilters('ddl-is_current_layout_assigned', false ) === false ){
+            self.markUnassignedTabForChanges( 1 );
+        }
+    };
+
+    self.markUnassignedTabForChanges = function( group ){
+        var $tab = jQuery('div#layout-listing-tabs ul li[data-group="'+group+'"]');
+        $tab.append('<i class="fa fa-exclamation-triangle js-tab-alert-icon tab-alert-icon"></i>');
     };
 
     self.get_post_types_to_batch = function()
@@ -769,11 +788,6 @@ DDLayout.ChangeLayoutUseHelper = function ($) {
                 $me.data('open', false);
                 $me.removeClass('fa-caret-up').addClass('fa-caret-down');
             }
-
-
-
-
-
         });
 
         // check individual pages section

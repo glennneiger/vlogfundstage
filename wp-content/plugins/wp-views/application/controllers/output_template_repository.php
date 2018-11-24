@@ -18,6 +18,13 @@ class WPV_Output_Template_Repository extends Toolset_Output_Template_Repository_
 
 	const ADMIN_FILTERS_POST_RELATIONSHIP_ANCESTOR_NODE = '/admin/filters/post/relationship/ancestor_node.phtml';
 
+	const VIEWS_EDITOR_VIEW_WRAPPER_SECTION = '/admin/views-editor/sections/view-wrapper.phtml';
+
+	const VIEWS_EDITOR_VIEW_WRAPPER_DISABLE_FOR_SEPARATORS_LIST = '/admin/views-editor/pointers/view-wrapper-disable-for-separators-list.phtml';
+
+	// Views Settings
+	const VIEWS_SETTINGS_PAGE_BUILDER_OPTIONS = '/admin/settings/page-builder-options.phtml';
+
 	/**
 	 * @var array|null Template definition cache.
 	 */
@@ -78,7 +85,20 @@ class WPV_Output_Template_Repository extends Toolset_Output_Template_Repository_
 				
 				self::ADMIN_FILTERS_POST_RELATIONSHIP_ANCESTOR_NODE => array(
 					'namespaces' => array()
-				)
+				),
+
+				self::VIEWS_EDITOR_VIEW_WRAPPER_SECTION => array(
+					'namespaces' => array(),
+				),
+
+				self::VIEWS_EDITOR_VIEW_WRAPPER_DISABLE_FOR_SEPARATORS_LIST => array(
+					'namespaces' => array(),
+				),
+
+				// Views Settings
+				self::VIEWS_SETTINGS_PAGE_BUILDER_OPTIONS => array(
+					'namespaces' => array(),
+				),
 			);
 		}
 		return $this->templates;

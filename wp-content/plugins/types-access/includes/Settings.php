@@ -24,7 +24,7 @@ final class Access_Database_Erase
      public static function register_settings_access_database_erase_section( $sections ) {
         $sections['access-database-erase'] = array(
             'slug'	=> 'access-database-erase',
-            'title'	=> __( 'Access', 'wpv-views' )
+            'title'	=> __( 'Access', 'wpcf-access' )
         );
         return $sections;
      }
@@ -34,7 +34,7 @@ final class Access_Database_Erase
         $section_content = self::generate_section_content();
         $sections['access-database-erase-tool'] = array(
 			'slug'		=> 'access-database-erase-tool',
-			'title'		=> __( 'Reset Access settings', 'wpv-views' ),
+			'title'		=> __( 'Reset Access settings', 'wpcf-access' ),
 			'content'	=> $section_content
 		);
 

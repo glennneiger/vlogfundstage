@@ -113,6 +113,7 @@ class Toolset_Element_Factory {
 	 * @param array|WP_Post|int $object_source
 	 *
 	 * @return Toolset_Post_Translation_Set
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 */
 	public function get_post_translation_set( $object_source ) {
 		if( ! is_array( $object_source ) ) {

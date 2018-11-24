@@ -1758,7 +1758,18 @@ function wpcf_usort_reorder($a,$b)
 add_filter('set-screen-option', 'wpcf_table_set_option', 10, 3);
 function wpcf_table_set_option($status, $option, $value)
 {
-      return $value;
+    $allowed_options = array(
+        'wpcf_cf_per_page',
+	    'wpcf_uf_per_page',
+	    WPCF_Page_Listing_Termmeta::SCREEN_OPTION_PER_PAGE_NAME,
+	    Types_Page_Field_Control::SCREEN_OPTION_PER_PAGE_NAME
+    );
+
+	if( in_array( $option, $allowed_options ) ) {
+		return $value;
+	}
+
+	return $status;
 }
 
 function wpcf_admin_screen( $post_type, $form_output = '')

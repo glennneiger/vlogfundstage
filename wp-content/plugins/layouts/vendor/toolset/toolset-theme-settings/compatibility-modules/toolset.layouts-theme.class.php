@@ -83,10 +83,22 @@ abstract class Toolset_Compatibility_Theme_Handler {
 	 *
 	 */
     public function run_settings_app(){
+	    // if it is a content template and cannot be assigned, then leave it alone.
+	    if( $this->check_if_content_template_and_cannot_be_assigned() ){
+		    return;
+	    }
 	    $this->helper->load_current_settings_object();
 	    $this->populate_settings_collections( $this->helper->get_current_settings() );
 	    $this->set_condition_has_settings();
 	    $this->run_controllers();
+    }
+
+	/**
+	 * @return bool
+	 * check if we have a object_type and an object_id and in case it's a CT if can be assigned, if not then we might avoid loading settings
+	 */
+    private function check_if_content_template_and_cannot_be_assigned(){
+    	return $this->helper->check_if_content_template_and_cannot_be_assigned();
     }
 
 	/**

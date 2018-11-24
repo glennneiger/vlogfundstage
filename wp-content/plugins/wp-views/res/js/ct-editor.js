@@ -2273,6 +2273,17 @@ WPViews.CTEditScreen = function( $ ) {
         $.colorbox.close();
 
     });
+	
+	
+	/**
+	 * Toggle the usage section visibility
+	 *
+	 * @since 2.6.0
+	 */
+	$(document).on('click', '.js-wpv-ct-usage-toggle', function() {
+		$(this).closest('.js-wpv-ct-usage-container-summary').remove();
+		$('.js-wpv-ct-usage-container').fadeIn('fast');
+	});
 
 
 

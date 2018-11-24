@@ -17,12 +17,12 @@ class WPV_script extends Toolset_Script {
 
 class WPV_scripts_manager extends Toolset_Assets_Manager {
 
-    protected function __initialize_styles() {
+    protected function initialize_styles() {
         return;
     }
 
 
-    protected function __initialize_scripts() {
+    protected function initialize_scripts() {
         return;
     }
 	

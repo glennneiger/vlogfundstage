@@ -2,7 +2,7 @@
 
 /**
  * Class CRED_Field_Translation_Result
- * used as result object of CRED Translate Commands execute() function
+ * used as result object of CRED_Translate_Field_Command_Interface::execute() methods
  *
  * @since 1.9.1
  */

@@ -4,7 +4,7 @@ $settings = $settings_model->getSettings();
 ?>
 <div class="js-cred-settings-wrapper">
 	<p>
-		<?php _e('If you are willing to use reCAPTCHA to protect your CRED Forms against bots\' entries please provide public and private keys for reCAPTCHA API:', 'wp-cred'); ?>
+		<?php _e('If you are willing to use reCAPTCHA to protect your Forms against bots\' entries please provide public and private keys for reCAPTCHA API:', 'wp-cred'); ?>
 	</p>
 	<p>
 		<label>
