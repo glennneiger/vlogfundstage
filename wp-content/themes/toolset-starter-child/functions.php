@@ -40,7 +40,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
 			wp_enqueue_style( 'slick-style', get_stylesheet_directory_uri() . '/css/vendor/slick.css', array(), null );
 			//wp_enqueue_style( 'animate-style', get_stylesheet_directory_uri() . '/css/vendor/animate.css', array(), null );
-			//wp_enqueue_style( 'responsive-style', get_stylesheet_directory_uri() . '/css/responsive.css', array(), null );
+			wp_enqueue_style( 'responsive-style', get_stylesheet_directory_uri() . '/css/responsive.css', array(), null );
 			wp_enqueue_style( 'normalize-style', get_stylesheet_directory_uri() . '/css/normalize.css', array(), null );
 
 			wp_enqueue_script( 'modernizr-script', get_stylesheet_directory_uri() . '/js/vendor/modernizr.min.js', array(), null, true );
@@ -53,7 +53,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 				wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
 
 		}
-		if ( is_post_type_archive( 'organization' ) || is_shop() || is_checkout() || is_home() ) {
+		if ( is_post_type_archive( 'organization' ) || is_shop() || is_checkout() || is_home()  ) {
 
 			wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
 			wp_enqueue_style('select2-style');
@@ -612,6 +612,55 @@ add_shortcode( 'comments_template', 'comments_template_shortcode' );
 /*******************************************************/
 //campaign form && campaign edit form
 /*******************************************************/
+
+
+//populate radio buttons with organizations
+add_filter( 'wpv_filter_wpv_view_shortcode_output', 'prefix_clean_view_output', 5, 2 );
+
+function prefix_clean_view_output( $out, $id ) {
+    if ( $id == '77289' ) { //Please adjust to your Views ID
+        $start = strpos( $out, '<!-- wpv-loop-start -->' );
+        if (
+            $start !== false
+            && strrpos( $out, '<!-- wpv-loop-end -->', $start ) !== false
+        ) {
+            $start = $start + strlen( '<!-- wpv-loop-start -->' );
+            $out = substr( $out , $start );
+            $end = strrpos( $out, '<!-- wpv-loop-end -->' );
+            $out = substr( $out, 0, $end );
+        }
+    }
+    return $out;
+}
+
+
+
+//connect posts with api and generic field
+
+/*add_action('cred_save_data','func_connect_child_posts',15,2);
+function func_connect_child_posts($post_id,$form_data) {
+    if ($form_data['id']==98 || 216) {
+
+        toolset_connect_posts('organization-campaign',$_POST['@organization-campaign.parent'], $post_id);
+    }
+}*/
+
+add_action('cred_save_data', 'cred_custom_callback_fn',10,2);
+function cred_custom_callback_fn($post_id, $form_data)
+{
+    $forms = array( 98 );
+    // if a specific form
+    if (in_array($form_data['id'], $forms))
+    {
+        if (isset($_POST['connect-organization-to-campaign']))
+        {
+            $parent_id = $_POST['connect-organization-to-campaign'];
+            $parent = toolset_connect_posts( 'organization-campaign', $parent_id, $post_id );
+            // your other callback code continues here
+        }
+    }
+}
+
 
 
 //validate youtube url 1 format

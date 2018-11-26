@@ -27,8 +27,8 @@ onElementInserted('body', '#lbl_generic', function(element) {
     console.log('error');
     var top = jQuery('.page-create-a-new-youtube-collaboration, .page-edit-your-youtube-collaboration');
     if (top.length) {
-    var TopPosition = top.offset().top;
-    jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
+    //var TopPosition = top.offset().top;
+    //jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
     toastr.warning('', 'Please review your collab');
     }
 
@@ -561,6 +561,16 @@ jQuery(document).ready(function($) {
   /*******************************************************/
 
 
+//submit form
+
+jQuery("#sf-submit-above-form").click( function(e){
+           jQuery('input.wpt-form-submit').click();
+       });
+
+
+
+
+
 
 
 //help
@@ -685,8 +695,8 @@ jQuery('input[name="tweet_url_2"]').change(function() {
 jQuery( document ).on( "ajaxSuccess", function() {
   var cred = jQuery('.cred-form, .page-create-a-new-youtube-collaboration, .page-edit-your-youtube-collaboration');
   if (cred.length) {
-  var TopPosition = cred.offset().top;
-    jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
+  //var TopPosition = cred.offset().top;
+    //jQuery('html, body').animate({scrollTop:TopPosition}, 'slow');
   }
 });
 
@@ -1077,10 +1087,10 @@ jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-po
           this.style.left = '0px';
       } );
 
-
+if (jQuery('body').hasClass('post-type-archive-product')) {
       jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
       jQuery(".form-control").select2({ minimumResultsForSearch: Infinity });
-
+}
 
 
 
@@ -1146,9 +1156,11 @@ jQuery( document ).on( 'js_event_wpv_parametric_search_started', function( event
 }); //js_event_wpv_parametric_search_started
 
 jQuery( document ).on( 'js_event_wpv_parametric_search_form_updated', function( event, data ) {
+
+  if (jQuery('body').hasClass('post-type-archive-product')) {
 jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
 jQuery(".form-control").select2({ minimumResultsForSearch: Infinity });
-
+}
 
 }); //js_event_wpv_parametric_search_form_updated
 

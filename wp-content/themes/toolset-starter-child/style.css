@@ -6070,7 +6070,6 @@ input[name="form_status"] p {
 }
 
 .sfc-collab-form {
-  height: 3400px;
 }
 
 .loading-spinner {
@@ -6891,6 +6890,232 @@ input[name="wpcf-collaborator-1"], input[name="wpcf-collaborator-2"] {
   top: 0;
   left: 5px;
 }
+
+
+/*campaign form select organization*/
+
+
+.sfc-collab-form .sfc-ngo-overview-col {
+      padding: 0;
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-col:nth-of-type(1) {
+      flex: 1 100%;
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-col:nth-of-type(2) {
+      box-shadow: none;
+      background: transparent;
+      border-top: none;
+      flex: 1 100%;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 996px) {
+      .sfc-collab-form  .sfc-ngo-overview-col:nth-of-type(1) {
+        flex: auto;
+        order: 0;
+      }
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-item {
+      flex: 1 0 200px;
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-row {
+      padding: 0;
+    }
+
+    .sfc-collab-form .sidebar {
+      position: relative;
+      ;
+      padding: 0;
+      position: relative;
+      padding: 0 10px;
+      padding-bottom: 5px;
+    }
+
+
+    @media screen and (max-width: 640px) {
+      .sfc-collab-form  .sfc-ngo-overview-item-wrapper {
+        display: block;
+      }
+      .sfc-collab-form  .mobile-scroll-row.mobile-scroll-row {
+        white-space: nowrap;
+        overflow-y: hidden;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        margin-left: 0px;
+        margin-right: 0px;
+        padding-top: 5px;
+      }
+
+    }
+
+    @media screen and (max-width: 640px) {
+      .sfc-collab-form  .mobile-scroll-row.mobile-scroll-row .mobile-scroll-row-item {
+        display: inline-block;
+        width: 90%;
+        padding-right: 0px;
+        float: none;
+        vertical-align: top;
+        position: relative;
+      }
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-search-label {
+      font-size: initial;
+    }
+
+
+
+
+    .sfc-collab-form  .sfc-ngo-overview-select-item-outer .sfc-ngo-overview-select-item-inner div {
+      color: #000;
+      font-size: 12px;
+      padding: 20px 10px 10px 10px;
+      text-align: left;
+      font-weight: normal;
+
+      height: 100%;
+      align-self: center;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-select-item-outer .sfc-ngo-overview-select-item-inner div h4 {
+      text-align: center;
+      margin: 0 auto;
+    }
+
+    .sfc-collab-form .sfc-ngo-overview-select-item-outer {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: auto 10px;
+      position: relative;
+
+
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-select-item-outer .sfc-ngo-overview-select-item-inner {
+      background-color: rgba(255, 255, 255, 1);
+      height: auto;
+      width: 100%;
+      opacity: 0;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      position: absolute;
+      padding: 0;
+      transition: opacity .5s;
+      z-index: -1;
+      word-wrap: break-word;
+      white-space: initial;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+
+    .sfc-collab-form .sfc-ngo-overview-category {
+      left: 5px;
+      right: auto;
+      padding: 2px;
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-select-close {
+      position: absolute;
+      color: #999;
+      border: 1px solid #999;
+      font-size: 10px;
+      padding: 2px 4px;
+      top: 5px;
+      right: 5px;
+    }
+
+
+
+
+
+
+
+    .sfc-collab-form  .sfc-ngo-overview-col input[type="radio"] {
+      display: none;
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-col input[type="radio"]:not(:disabled)~label {
+      cursor: pointer;
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-col input[type="radio"]:disabled~label {
+      color: #bcc2bf;
+      border-color: #bcc2bf;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+
+    .sfc-collab-form  .sfc-ngo-overview-col input[type="radio"]:checked+label {
+      box-shadow: 0px 0px 5px #6b10d6;
+      box-shadow: 0px 0px 5px var(--brand-color);
+    }
+
+    .sfc-collab-form  .sfc-ngo-overview-col input[type="radio"]+label::after {
+      color: #3d3f43;
+      border: 2px solid #eee;
+      content: "";
+      font-weight: 900;
+      font-style: normal;
+      font-size: 14px;
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      height: 20px;
+      width: 20px;
+      line-height: 20px;
+      text-align: center;
+      background: white;
+    }
+
+
+
+    .sfc-collab-form  .sfc-ngo-overview-col input[type="radio"]:checked+label::after {
+      color: #3d3f43;
+      font-family: "Font Awesome 5 Free";
+      border: 2px solid #ddd;
+      content: "\f00c";
+      font-weight: 900;
+      font-style: normal;
+      font-size: 14px;
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      height: 20px;
+      width: 20px;
+      line-height: 20px;
+      text-align: center;
+      background: white;
+      box-shadow: 0px 2px 5px -2px rgba(0, 0, 0, 0.25);
+    }
+
+
+    .sfc-collab-form  .sfc-pagination,
+    .wpv-pagination-nav-links-container {
+      padding: 0;
+    }
+
+    .sfc-org-selected {
+      margin: 5px 20px 15px 20px;
+      display: block;
+    }
+
+
+
+
+
 /*******************************************************/
 /**campaign search**/
 /*******************************************************/
@@ -9613,7 +9838,7 @@ ul.sfc-campaign-backers li {
   display: none;
 }
 
-.page-account .woocommerce {
+/*.page-account .woocommerce {
   height: auto;
 }
 
@@ -9622,7 +9847,7 @@ ul.sfc-campaign-backers li {
     height: 100vh;
   }
 
-}
+}*/
 /*account navigation*/
 
 .sfc-account-desktop-nav, .woocommerce-MyAccount-navigation {
