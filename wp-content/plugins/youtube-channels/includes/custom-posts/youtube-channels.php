@@ -40,7 +40,7 @@ function ytc_register_youtube_channels_post_type(){
 		'query_var'         =>	true,
 		'rewrite'           =>	array( 'slug' => 'youtube-channel', 'with_front' => false ),
 		'capability_type'   =>	'post',
-		'has_archive'       =>	false,
+		'has_archive'       =>	true,
 		'hierarchical'      =>	false,
 		'menu_position'     =>	null,
 		'menu_icon'			=>	'dashicons-video-alt3',
