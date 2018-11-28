@@ -147,11 +147,16 @@ function ytc_get_channels_list( $args = array() ){
 	$channels = new WP_Query( $query_args );
 
 	if( $channels->have_posts() ) :
-
+		$counter = 1;
 		while( $channels->have_posts() ) : $channels->the_post();
-
+			
 			ytc_get_channel_loop(); //Channel Loop
-
+			
+			if( $counter == 10 ) : //Check 12 Channel
+				ytc_get_make_it_happen_block();				
+				$counter = 0; //Reset Counter
+			endif; //Endif
+		$counter++;
 		endwhile; //Endwhile
 
 	endif;
@@ -220,3 +225,27 @@ function ytc_get_channel_latest_videos( $channel_id, $videos = 6 ){
 	return $result_videos;
 }
 endif; //Endif
+if( !function_exists('ytc_get_make_it_happen_block') ) :
+/**
+ * Make it Happen Block
+ *
+ * Handles to make it happen block
+ **/
+function ytc_get_make_it_happen_block(){ ?>
+	<div class="sfc-campaign-archive-post sfc-campaign-archive-create-own">
+		<a href="/create-a-new-youtube-collaboration" id="create_campaign" class="sfc-campaign-archive-post-content-a">
+			<div class="sfc-campaign-images">
+				<div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-left" src="/wp-content/uploads/2018/06/question-mark.png"></div>
+			  <div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-right" src="/wp-content/uploads/2018/06/question-mark.png"></div>
+			</div>						
+			<div class="sfc-campaign-archive-post-content">
+				<h3 class="sfc-campaign-archive-post-title"><span class="sfc-campaign-archive-post-title-inner">Create Your Own Collab</span></h3>
+				<p class="sfc-campaign-archive-post-excerpt">Submit your own idea for a YouTube collaboration, just like the other ones</p>
+				<div class="sfc-campaign-archive-vote-bar"></div>
+				<button class="sfc-campaign-make-it-happen-vote" style="background-color: #6b10d6; background-color: var(--brand-color);">Let's get it 🔥</button>
+			</div>					
+		</a>
+	</div>
+<?php 
+}
+endif;

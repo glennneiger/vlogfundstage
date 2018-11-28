@@ -14,7 +14,7 @@
 	$tw 	= get_post_meta(get_the_ID(), 'wpcf-channel_tw', true);
 	$insta 	= get_post_meta(get_the_ID(), 'wpcf-channel_insta', true);
 	$fb 	= get_post_meta(get_the_ID(), 'wpcf-channel_fb', true);
-	$gplus 	= get_post_meta(get_the_ID(), 'wpcf-channel_insta', true);
+	$gplus 	= get_post_meta(get_the_ID(), 'wpcf-channel_gplus', true);
 	$web 	= get_post_meta(get_the_ID(), 'wpcf-channel_web', true);
 	$snap 	= get_post_meta(get_the_ID(), 'wpcf-channel_snap', true);
 	$vk 	= get_post_meta(get_the_ID(), 'wpcf-channel_vk', true);
@@ -144,14 +144,14 @@
 
 			<div class="related-collaborations-section channel-section">
 
-				<!--<h2>Make These Collaborations Come True</h2>-->
+			<!--<h2>Make These Collaborations Come True</h2>-->
 
-				<?php echo do_shortcode('<!--[wpv-view name="campaign-search" view_display="layout" limit="3"]-->'); ?>
+			<?php //echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]'); ?>
 
-				<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);">
-     <h2>Make YouTube Collaborations Come True</h2>
-     <a href="/youtube-collaborations"><button class="sf-get-started">Let's get it</button></a>
-   </div>
+			<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);">
+				<h2>Make YouTube Collaborations Come True</h2>
+				<a href="/youtube-collaborations"><button class="sf-get-started">Let's get it</button></a>
+			</div>
 
 			</div><!--/.related-collaborations-section-->
 			<?php $rba_big = get_posts( array('post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => 1, 'orderby' => 'rand' ) );
@@ -211,7 +211,7 @@
 					wp_reset_postdata(); //Reset Post Data ?>
 				</div><!--/.grid-cols-->
 			</div><!--/.related-blog-section-->
-			<!--<?php if( !empty( $tw ) ) : //Check Twitter ?>
+			<?php /*if( !empty( $tw ) ) : //Check Twitter ?>
 				<div class="latest-tweets-section channel-section">
 					<h2>Latest Tweets</h2>
 					<div class="tweets-list">
@@ -222,6 +222,6 @@
 						</div>
 					</div>
 				</div>
-			<?php endif; //Endif ?>-->
+			<?php endif; //Endif */ ?>
 		</div><!--/.container-main-->
 	</div><!--/.channel-details-wrapper-->
