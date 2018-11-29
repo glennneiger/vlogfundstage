@@ -34,6 +34,7 @@ class YTC_Shortcodes{
 		
 		if( is_singular('youtube_channels') ) { //Check Youtube Channel Page
 			wp_register_style( 'ytc-detail-style',	YTC_PLUGIN_URL . 'assets/css/yt-detail.css', array(), null );
+			wp_enqueue_style( 'ytc-detail-style' );
 			wp_register_script( 'ytc-twitter-script', 	'https://platform.twitter.com/widgets.js', array(), null, true );
 		}
 		//App Style
@@ -169,7 +170,6 @@ class YTC_Shortcodes{
 	**/
 	public function channels_single_shortcode_callback( $atts, $content = null ){
 		
-		wp_enqueue_style( array( 'ytc-detail-style' ) );
 		wp_enqueue_script( array('ytc-twitter-script') );
 		
 		ob_start(); //Start Buffer

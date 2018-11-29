@@ -83,10 +83,16 @@ class YTC_Ajax_Callbacks{
 		$channels = new WP_Query( $query_args );
 		
 		if( $channels->have_posts() ) :
-	
+			$counter = 1;
 			while( $channels->have_posts() ) : $channels->the_post();
 	
 				ytc_get_channel_loop(); //Channel Loop
+
+				if( $counter == 10 ) : //Check 12 Channel
+					ytc_get_make_it_happen_block();				
+					$counter = 0; //Reset Counter
+				endif; //Endif
+				$counter++;
 	
 			endwhile; //Endwhile
 	
@@ -129,10 +135,16 @@ class YTC_Ajax_Callbacks{
 		$channels = new WP_Query( $query_args );
 	
 		if( $channels->have_posts() ) :
-	
+			$counter = 1;
 			while( $channels->have_posts() ) : $channels->the_post();
 	
 				ytc_get_channel_loop(); //Channel Loop
+				
+				if( $counter == 10 ) : //Check 12 Channel
+					ytc_get_make_it_happen_block();				
+					$counter = 0; //Reset Counter
+				endif; //Endif
+				$counter++;
 	
 			endwhile; //Endwhile
 	
