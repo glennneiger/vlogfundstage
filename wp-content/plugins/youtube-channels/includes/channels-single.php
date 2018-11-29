@@ -102,126 +102,103 @@
 			</div><!--/.channel-profile-box-->
 
 			<div class="latest-videos-section channel-section">
-
 				<div class="latest-videos">
-				<div class="latest-vidoes-section-headline">
-				<h2>Latest Videos</h2>
-				<!--<a href="https://www.youtube.com/channel/<?php echo $channel_id;?>" class="channel-btn show-videos" target="_blank">Show all Videos</a>-->
-				</div>
-				<?php if( $latest_videos = ytc_get_channel_latest_videos( $channel_id ) ) : ?>
-					<div class="grid-cols2 mobile-scroll-row">
-						<?php foreach( $latest_videos as $video ) : //Video List ?>
-							<div class="grid-col mobile-scroll-row-item">
-								<div class="channel-video-box">
-									<div class="channel-video">
-										<iframe width="560" height="315" src="https://www.youtube.com/embed/<?php echo $video['id'];?>" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-									</div><!--/.channel-video-->
-									<h3><?php echo $video['title'];?></h3>
-								</div><!--/.channel-video-box-->
-							</div><!--/.grid-col-->
-						<?php endforeach; //Endforeach ?>
-					</div><!--/.grid-cols-->
-				<?php endif; //Endif ?>
-			  </div>
-
-       <?php if( !empty( $tw ) ) : //Check Twitter ?>
-				<div class="latest-tweets">
-					<h2>Latest Tweets</h2>
-					<div class="tweets-list">
-						<div class="grid-cols2 grid-cols2-sm">
-							<div class="grid-col">
-								<div class="tweet-box"><a class="twitter-timeline" data-height="600" data-width="500" href="<?php echo esc_url( $tw );?>"></a></div><!--/.tweet-box-->
-							</div><!--/.grid-col-->
+					<div class="latest-vidoes-section-headline"><h2>Latest Videos</h2></div>
+					<?php if( $latest_videos = ytc_get_channel_latest_videos( $channel_id ) ) : ?>
+						<div class="grid-cols2 mobile-scroll-row">
+							<?php foreach( $latest_videos as $video ) : //Video List ?>
+								<div class="grid-col mobile-scroll-row-item">
+									<div class="channel-video-box">
+										<div class="channel-video">
+											<iframe width="560" height="315" src="https://www.youtube.com/embed/<?php echo $video['id'];?>" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+										</div><!--/.channel-video-->
+										<h3><?php echo $video['title'];?></h3>
+									</div><!--/.channel-video-box-->
+								</div><!--/.grid-col-->
+							<?php endforeach; //Endforeach ?>
 						</div><!--/.grid-cols-->
-					</div><!--/.tweets-list-->
-				</div><!--/.latest-tweets-section-->
-				<?php endif; //Endif ?>
-
-
-
-			</div><!--/.latest-videos-section-->
-
-
-			<div class="related-collaborations-section channel-section">
-
-			<!--<h2>Make These Collaborations Come True</h2>-->
-
-			<?php //echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]'); ?>
-
-			<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);">
-				<h2>Make YouTube Collaborations Come True</h2>
-				<a href="/youtube-collaborations"><button class="sf-get-started">Let's get it</button></a>
-			</div>
-
-			</div><!--/.related-collaborations-section-->
-			<?php $rba_big = get_posts( array('post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => 1, 'orderby' => 'rand' ) );
-				$rba_big = array_shift( $rba_big ); ?>
-			<div class="related-blog-section channel-section">
-				<h2>Blog Articles</h2>
-				<div class="grid-cols2 grid-cols2-sm cols-parent">
-					<?php if( !empty( $rba_big ) ) : //Check Big Article ?>
-						<div class="grid-col">
-							<div class="related-blog-col featured">
-								<a href="<?php echo get_permalink( $rba_big->ID );?>">
-									<figure>
-										<?php if( $video_id = get_post_meta($rba_big->ID, 'wpcf-post-youtube-video-id', true) ) : //Check Video ID ?>
-											<img src="https://img.youtube.com/vi/<?php echo $video_id;?>/sddefault.jpg" alt="<?php echo get_the_title( $rba_big->ID );?>">
-										<?php elseif( $rba_big_thumb = get_the_post_thumbnail_url( $rba_big->ID, 'medium_large') ) : //Check Thumbnail ?>
-											<img src="<?php echo $rba_big_thumb;?>" alt="<?php echo get_the_title( $rba_big->ID );?>">
-										<?php else : //Else ?>
-											<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/630x450.jpg" alt="<?php echo get_the_title( $rbapost->ID );?>">
-										<?php endif; //Endif ?>
-									</figure>
-									<h4><?php echo get_the_title( $rba_big->ID );?></h4>
-								</a>
-								<?php if( $rba_category = get_the_category( $rba_big->ID ) ) : //Check Category
-										echo '<a class="related-blog-category" href="' . esc_url( get_category_link( $rba_category[0]->term_id ) ) . '">' . esc_html( $rba_category[0]->name ) . '</a>';
-								endif; //Endif ?>
-							</div><!--/.related-blog-col-->
-						</div><!--/.grid-col-->
-					<?php endif; //Endif
-					$rba_regular = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => 4, 'post__not_in' => array( $rba_big->ID ), 'orderby' => 'rand' ) );
-					if( !empty( $rba_regular ) ) : //Regular Posts ?>
-						<div class="grid-col">
+					<?php endif; //Endif ?>
+				</div><!--/.latest-videos-->
+				<?php if( !empty( $tw ) ) : //Check Twitter ?>
+					<div class="latest-tweets">
+						<h2>Latest Tweets</h2>
+						<div class="tweets-list">
 							<div class="grid-cols2 grid-cols2-sm">
-								<?php foreach( $rba_regular as $rbapost ) : //Loop to List Posts ?>
-									<div class="grid-col">
-										<div class="related-blog-col">
-											<a href="<?php echo get_permalink( $rbapost->ID );?>">
-												<figure>
-													<?php if( $video_id = get_post_meta($rbapost->ID, 'wpcf-post-youtube-video-id', true) ) : //Check Video ID ?>
-														<img src="https://img.youtube.com/vi/<?php echo $video_id;?>/hqdefault.jpg" alt="<?php echo get_the_title( $rba_big->ID );?>">
-													<?php elseif( $rbapost_thumb = get_the_post_thumbnail_url( $rbapost->ID, 'product-thumbnail') ) : //Check Thumbnail ?>
-														<img src="<?php echo $rbapost_thumb;?>" alt="<?php echo get_the_title( $rbapost->ID );?>">
-													<?php else : //Else ?>
-														<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/305x215.jpg" alt="<?php echo get_the_title( $rbapost->ID );?>">
-													<?php endif; //Endif ?>
-												</figure>
-												<h4><?php echo get_the_title( $rbapost->ID );?></h4>
-											</a>
-											<?php if( $rba_category = get_the_category( $rbapost->ID ) ) : //Check Category
-													echo '<a class="related-blog-category" href="' . esc_url( get_category_link( $rba_category[0]->term_id ) ) . '">' . esc_html( $rba_category[0]->name ) . '</a>';
-											endif; //Endif ?>
-										</div><!--/.related-blog-col-->
-									</div><!--/.grid-col-->
-								<?php endforeach; //Endforeach ?>
-							</div><!--/.grid-cols2-->
-						</div><!--/.grid-col-->
-					<?php endif; //Endif
-					wp_reset_postdata(); //Reset Post Data ?>
-				</div><!--/.grid-cols-->
-			</div><!--/.related-blog-section-->
-			<?php /*if( !empty( $tw ) ) : //Check Twitter ?>
-				<div class="latest-tweets-section channel-section">
-					<h2>Latest Tweets</h2>
-					<div class="tweets-list">
-						<div class="grid-cols2 grid-cols2-sm">
+								<div class="grid-col">
+									<div class="tweet-box"><a class="twitter-timeline" data-height="600" data-width="500" href="<?php echo esc_url( $tw );?>"></a></div><!--/.tweet-box-->
+								</div><!--/.grid-col-->
+							</div><!--/.grid-cols-->
+						</div><!--/.tweets-list-->
+					</div><!--/.latest-tweets-section-->
+				<?php endif; //Endif ?>
+			</div><!--/.latest-videos-section-->
+			<div class="related-collaborations-section channel-section">
+				<?php if( $related_collabs = toolset_get_related_posts( get_the_ID(), 'channel-campaign', 'parent') ) : //Check Related Campaign ?>
+					<h2>Related Collaborations</h2>
+					<?php echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="4" ids="'.implode(',', $related_collabs).'"]'); ?>
+				<?php else : //Else ?>
+					<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);">
+						<h2>Make YouTube Collaborations Come True</h2>
+						<a href="/youtube-collaborations"><button class="sf-get-started">Let's get it</button></a>
+					</div><!--/.sf-blog-banner-->
+				<?php endif; //Endif ?>
+			</div><!--/.related-collaborations-section-->
+			
+			<?php  if( $related_posts = toolset_get_related_posts( get_the_ID(), 'channel-post', 'parent') ) : //Check Blog Post Related
+				$rba_big = array_shift( $related_posts ); ?>
+				<div class="related-blog-section channel-section">
+					<h2>Blog Articles</h2>
+					<div class="grid-cols2 grid-cols2-sm cols-parent">
+						<?php if( !empty( $rba_big ) ) : //Check Big Article ?>
 							<div class="grid-col">
-								<div class="tweet-box"><a class="twitter-timeline" data-height="600" data-width="500" href="<?php echo esc_url( $tw );?>"></a></div>
-							</div>
-						</div>
-					</div>
-				</div>
-			<?php endif; //Endif */ ?>
+								<div class="related-blog-col featured">
+									<a href="<?php echo get_permalink( $rba_big );?>">
+										<figure>
+											<?php if( $video_id = get_post_meta($rba_big, 'wpcf-post-youtube-video-id', true) ) : //Check Video ID ?>
+												<img src="https://img.youtube.com/vi/<?php echo $video_id;?>/sddefault.jpg" alt="<?php echo get_the_title( $rba_big );?>">
+											<?php elseif( $rba_big_thumb = get_the_post_thumbnail_url( $rba_big, 'medium_large') ) : //Check Thumbnail ?>
+												<img src="<?php echo $rba_big_thumb;?>" alt="<?php echo get_the_title( $rba_big );?>">
+											<?php else : //Else ?>
+												<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/630x450.jpg" alt="<?php echo get_the_title( $rbapost );?>">
+											<?php endif; //Endif ?>
+										</figure>
+										<h4><?php echo get_the_title( $rba_big );?></h4>
+									</a>
+									<?php if( $rba_category = get_the_category( $rba_big ) ) : //Check Category
+											echo '<a class="related-blog-category" href="' . esc_url( get_category_link( $rba_category[0]->term_id ) ) . '">' . esc_html( $rba_category[0]->name ) . '</a>';
+									endif; //Endif ?>
+								</div><!--/.related-blog-col-->
+							</div><!--/.grid-col-->
+						<?php endif; //Endif
+						if( !empty( $related_posts ) ) : //Regular Posts ?>
+							<div class="grid-col">
+								<div class="grid-cols2 grid-cols2-sm">
+									<?php foreach( $related_posts as $rbapost ) : //Loop to List Posts ?>
+										<div class="grid-col">
+											<div class="related-blog-col">
+												<a href="<?php echo get_permalink( $rbapost );?>">
+													<figure>
+														<?php if( $video_id = get_post_meta($rbapost, 'wpcf-post-youtube-video-id', true) ) : //Check Video ID ?>
+															<img src="https://img.youtube.com/vi/<?php echo $video_id;?>/hqdefault.jpg" alt="<?php echo get_the_title( $rba_big->ID );?>">
+														<?php elseif( $rbapost_thumb = get_the_post_thumbnail_url( $rbapost, 'product-thumbnail') ) : //Check Thumbnail ?>
+															<img src="<?php echo $rbapost_thumb;?>" alt="<?php echo get_the_title( $rbapost );?>">
+														<?php else : //Else ?>
+															<img src="<?php echo YTC_PLUGIN_URL;?>assets/images/305x215.jpg" alt="<?php echo get_the_title( $rbapost );?>">
+														<?php endif; //Endif ?>
+													</figure>
+													<h4><?php echo get_the_title( $rbapost );?></h4>
+												</a>
+												<?php if( $rba_category = get_the_category( $rbapost ) ) : //Check Category
+														echo '<a class="related-blog-category" href="' . esc_url( get_category_link( $rba_category[0]->term_id ) ) . '">' . esc_html( $rba_category[0]->name ) . '</a>';
+												endif; //Endif ?>
+											</div><!--/.related-blog-col-->
+										</div><!--/.grid-col-->
+									<?php endforeach; //Endforeach ?>
+								</div><!--/.grid-cols2-->
+							</div><!--/.grid-col-->
+						<?php endif; //Endif ?>
+					</div><!--/.grid-cols-->
+				</div><!--/.related-blog-section-->			
+			<?php endif; //Endif ?>
 		</div><!--/.container-main-->
 	</div><!--/.channel-details-wrapper-->
