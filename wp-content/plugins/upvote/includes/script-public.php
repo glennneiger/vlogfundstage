@@ -106,6 +106,16 @@ function upvote_update_vote_ajax_callback(){
 				update_post_meta( $postid, '_upvote_ips', $vote_ips );
 				$guest_votes = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? ( intval( $_COOKIE['_voted'] ) + 1 ) : 1;
 				setcookie('_voted', $guest_votes, ( time() + (3600*24*365) ), '/');
+				if( isset( $_COOKIE['_voted_posts'] ) && !empty( $_COOKIE['_voted_posts'] ) ) :
+					$guest_voted = explode(',',$_COOKIE['_voted_posts']);
+					if( !in_array($postid,$guest_voted) ) :
+						array_push($guest_voted, $postid);			
+					endif; //Endif
+					$voted_posts = implode(',', $guest_voted);
+					setcookie('_voted_posts', $voted_posts, ( time() + (3600*24*365) ), '/');
+				else : //Else					
+					setcookie('_voted_posts', $postid, ( time() + (3600*24*365) ), '/');
+				endif; //Endif
 				if( $guest_votes >= UPVOTE_ALLOWED_VOTES_GUEST ) : //Disable Guest
 					$response['guest_limit_reached'] = 1;
 				endif;
@@ -120,4 +130,60 @@ function upvote_update_vote_ajax_callback(){
 }
 add_action('wp_ajax_upvote_update_vote', 		'upvote_update_vote_ajax_callback');
 add_action('wp_ajax_nopriv_upvote_update_vote', 'upvote_update_vote_ajax_callback');
+endif;
+if( !function_exists('upvote_guest_vote_user_login_save') ) :
+/**
+ * Guest Vote Move to Users When Login
+ *
+ * Handles to guest vote move to users when login
+ *
+ * @since Upvote 1.0
+ **/
+function upvote_guest_vote_user_login_save( $username, $user ){	
+	//Update Guest Voted to User
+	upvote_transfer_guest_voted_to_user( $user->ID );
+}
+add_action('wp_login', 'upvote_guest_vote_user_login_save', 99, 2);
+endif;
+if( !function_exists('upvote_transfer_guest_voted_to_user') ) :
+/**
+ * Guest Vote Move to Users
+ *
+ * Handles to guest vote move to users
+ *
+ * @since Upvote 1.0
+ **/
+function upvote_transfer_guest_voted_to_user( $user_id ){
+	//Check Voted Posts
+	if( isset( $_COOKIE['_voted_posts'] ) && !empty( $_COOKIE['_voted_posts'] ) ) :
+		$guest_voted = explode(',',$_COOKIE['_voted_posts']);		
+		if( !empty( $guest_voted ) ) :			
+			foreach( $guest_voted as $key => $postid ) :
+				//Get Saved Votes
+				$vote_users = get_post_meta( $postid, '_upvote_users', true ) ? get_post_meta( $postid, '_upvote_users', true ) : array();
+				//Get User IPs
+				$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )	  ?	get_post_meta( $postid, '_upvote_ips', true ) 	: array();		
+				if( in_array( upvote_get_ip(), $vote_ips ) ) : //Check Users IP
+					$ip_index = array_search( upvote_get_ip(), $vote_ips );
+					if( $ip_index !== false ) :
+						unset( $vote_ips[$ip_index] );
+					endif; //Endif
+					update_post_meta( $postid, '_upvote_ips', $vote_ips );
+				endif; //Endif
+				if( !in_array( $user_id, $vote_users ) ) : //Check Users in Post
+					array_push( $vote_users, $user_id );
+					update_post_meta( $postid, '_upvote_users', $vote_users );
+				endif; //Endif								
+				if( !get_user_meta( $user_id, '_upvote_for_'.$postid, true) ) :
+					update_user_meta( $user_id, '_upvote_for_'.$postid, 1); //Track User Voted for which Posts
+					unset($guest_voted[$key]);
+				endif; //Endif
+			endforeach; //Endforeach
+			$voted_posts = !empty( $guest_voted ) ? implode(',', $guest_voted) : '';
+			$vote_count = ( count( $guest_voted ) > 0 ) ? count( $guest_voted ) : '';
+			setcookie('_voted_posts', $voted_posts, ( time() + (3600*24*365) ), '/');
+			setcookie('_voted', $vote_count, ( time() + (3600*24*365) ), '/');
+		endif; //Endif
+	endif; //Endif
+}
 endif;
