@@ -13619,6 +13619,24 @@ button.toast-close-button {
     filter: alpha(opacity=40)
 }
 
+.password-strength{
+	width:100%;	
+	text-align:center;
+	display:none;
+	font-weight:bold;
+	font-size:14px;
+	padding:5px 0 5px;
+}
+.password-strength.weak{
+	background-color:#fbc5a9;
+}
+.password-strength.good{
+	background-color:#ffe399;
+}
+.password-strength.strong{
+	background-color:#83c373;
+}
+
 @media all and (max-width:240px) {
     #toast-container>div {
         padding: 8px 8px 8px 50px;

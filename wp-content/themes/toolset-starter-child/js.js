@@ -2021,19 +2021,60 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 
 
   // Client side form validation
-  if (jQuery("#register_user").length)
-    jQuery("#register_user").validate({
-      rules: {
-        password2: {
-          equalTo: '#signonpassword'
-        }
-      }
-    });
-  else if (jQuery("#login_user").length)
+  if (jQuery("#register_user").length) {
+	  
+	  	function scorePassword(pass) {
+			var score = 0;
+			if( !pass )
+				return score;		
+			// award every unique letter until 5 repetitions
+			var letters = new Object();
+			for (var i=0; i < pass.length; i++) {
+				letters[pass[i]] = (letters[pass[i]] || 0) + 1;
+				score += 5.0 / letters[pass[i]];
+			}		
+			// bonus points for mixing it up
+			var variations = {
+				digits: /\d/.test(pass),
+				lower: /[a-z]/.test(pass),
+				upper: /[A-Z]/.test(pass),
+				nonWords: /\W/.test(pass),
+			}
+		
+			variationCount = 0;
+			for( var check in variations ){
+				variationCount += (variations[check] == true) ? 1 : 0;
+			}
+			score += (variationCount - 1) * 10;		
+			return parseInt(score);
+		}
+		// Check Password Strength
+		$('#register_user #signonpassword').on('keypress keyup keydown', function() {
+			var pass = $(this).val();
+			if( typeof pass != 'undefined' && pass !== '' ){
+				var score = scorePassword( pass );
+				$('.password-strength').css('display','block');				
+				if ( score > 80 ){ //Strong					
+					$('.password-strength').removeClass('good weak').addClass('strong').text('Strong');
+				}else if( score > 60 ){ //Good
+					$('.password-strength').removeClass('weak strong').addClass('good').text('Good');
+				}else if( score >= 30 ){ //Weak					
+					$('.password-strength').removeClass('good strong').addClass('weak').text('Weak');
+				}
+			} else {
+				$('.password-strength').hide();
+			}
+		});
+
+		jQuery("#register_user").validate({
+		  rules: {
+			password2: {
+			  equalTo: '#signonpassword'
+			}
+		  }
+		});
+  } else if (jQuery("#login_user").length) {
     jQuery("#login_user").validate();
-
-
-
     jQuery.extend(jQuery.validator.messages, {
         required: "This field is required.",
         remote: "Please fix this field.",
@@ -2053,12 +2094,13 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
         max: jQuery.validator.format("Please enter a value less than or equal to {0}."),
         min: jQuery.validator.format("Please enter a value greater than or equal to {0}.")
     });
+  }
 
 
 
   //login with email toggle
 
-    jQuery('.sf-email-login, .sf-email-registration').click(function() {
+  jQuery('.sf-email-login, .sf-email-registration').click(function() {
     jQuery('.sf-email-login-form, .sf-email-registration-form').removeClass('hide');
     jQuery('.sf-email-login, .sf-email-registration').hide();
   });
