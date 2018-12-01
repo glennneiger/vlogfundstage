@@ -663,6 +663,20 @@ function cred_custom_callback_fn($post_id, $form_data)
 
 
 
+//gets the ID of the current post which is being edited
+add_shortcode( 'showparentpostid', 'showparentpostid_func');
+function showparentpostid_func(){
+
+	$product_id = get_post( get_the_ID() ); // Get ID of current product
+  $auction_parent_page_id = toolset_get_related_post( // Get ID of parent auction page
+    $product_id,
+    'organization-campaign', //slug of relationship
+    'parent'
+);
+return $auction_parent_page_id;
+
+}
+
 //validate youtube url 1 format
 
 

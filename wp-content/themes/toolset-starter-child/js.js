@@ -561,6 +561,16 @@ jQuery(document).ready(function($) {
   /*******************************************************/
 
 
+
+// gets the ID of the current post which is being edited
+
+
+  var parentval = jQuery('input[name="parentpost"]').val();
+  jQuery("input[name=connect-organization-to-campaign][value=" + parentval + "]").prop('checked', true);
+
+
+
+
 //submit form
 
 jQuery("#sf-submit-above-form").click( function(e){
