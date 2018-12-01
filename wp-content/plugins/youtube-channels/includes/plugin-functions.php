@@ -149,11 +149,11 @@ function ytc_get_channels_list( $args = array() ){
 	if( $channels->have_posts() ) :
 		$counter = 1;
 		while( $channels->have_posts() ) : $channels->the_post();
-			
+
 			ytc_get_channel_loop(); //Channel Loop
-			
+
 			if( $counter == 10 ) : //Check 12 Channel
-				ytc_get_make_it_happen_block();				
+				ytc_get_make_it_happen_block();
 				$counter = 0; //Reset Counter
 			endif; //Endif
 		$counter++;
@@ -237,15 +237,15 @@ function ytc_get_make_it_happen_block(){ ?>
 			<div class="sfc-campaign-images">
 				<div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-left" src="/wp-content/uploads/2018/06/question-mark.png"></div>
 			  <div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-right" src="/wp-content/uploads/2018/06/question-mark.png"></div>
-			</div>						
+			</div>
 			<div class="sfc-campaign-archive-post-content">
-				<h3 class="sfc-campaign-archive-post-title"><span class="sfc-campaign-archive-post-title-inner">Create Your Own Collab</span></h3>
+				<h3 class="sfc-campaign-archive-post-title"><span class="sfc-campaign-archive-post-title-inner">Create A Collaboration</span></h3>
 				<p class="sfc-campaign-archive-post-excerpt">Submit your own idea for a YouTube collaboration, just like the other ones</p>
 				<div class="sfc-campaign-archive-vote-bar"></div>
 				<button class="sfc-campaign-make-it-happen-vote" style="background-color: #6b10d6; background-color: var(--brand-color);">Let's get it 🔥</button>
-			</div>					
+			</div>
 		</a>
 	</div>
-<?php 
+<?php
 }
 endif;

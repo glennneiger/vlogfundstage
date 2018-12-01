@@ -178,3 +178,28 @@ input[type=text]::-ms-clear {
 input::-webkit-search-cancel-button {
 	display: none;
 }
+
+
+
+
+
+.sfc-campaign-image {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    margin-top: 0;
+    height: 240px;
+}
+
+@media (min-width: 996px) {
+.sfc-campaign-images {
+    margin-top: 25px;
+}
+.sfc-campaign-image {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    margin-top: 0;
+    height: 138px!important;
+}
+}
