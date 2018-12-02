@@ -41,7 +41,7 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 .channel-section h3 { font-size:22px; -apple-system, BlinkMacSystemFont, "“Segoe UI”", Roboto, Oxygen-Sans, Ubuntu, Cantarell, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; line-height:1.2; }
 .channel-video { position:relative;  background:#242424; padding-top: 56.25%;}
 .channel-video iframe { position: absolute; left: 0; width: 100%; top: 0; height: 100%; border: 0; }
-.channel-video-box h3 { text-align:center; font-weight:600; margin:0; padding:20px; }
+.channel-video-box h3 { text-align:center; font-weight:600; margin:0; padding:20px; white-space: initial; }
 .latest-videos-section { position:relative; display: flex; flex: 1 100%; }
 .latest-vidoes-section-headline { display: flex; align-items: center; justify-content: space-between; }
 .channel-btn { background:#6b10d6; text-decoration:none; font-weight:600; text-transform:uppercase; color:#fff; text-align:center; display:inline-block; line-height: normal; padding:5px; -webkit-transition:all 0.35s ease; transition:all 0.35s ease; }
