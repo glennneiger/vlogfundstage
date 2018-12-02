@@ -2025,6 +2025,12 @@ hr {
   }
 }
 
+@media screen and (max-width: 996px) {
+  .sf-blog-col:nth-of-type(1) {
+    flex: 1 101%;
+  }
+}
+
 .sf-blog-col:nth-of-type(2) {
   flex: 1;
   box-shadow: -5px 0 10px -8px rgba(218, 221, 221, 0.8);
