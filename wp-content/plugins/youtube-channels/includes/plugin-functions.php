@@ -109,7 +109,7 @@ if( !function_exists('ytc_get_channels_list') ) :
  **/
 function ytc_get_channels_list( $args = array() ){
 
-	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'orderby' => 'meta_value_num', 'page' => $args['page'] );
+	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'orderby' => 'meta_value_num', 'paged' => ( isset( $args['page'] ) && !empty( $args['page'] ) ? $args['page'] : 1 ) );
 
 	if( isset( $args['search'] ) && !empty( $args['search'] ) ) {
 		$query_args['s'] = $args['search'];
@@ -145,7 +145,7 @@ function ytc_get_channels_list( $args = array() ){
 
 	//Get Channels
 	$channels = new WP_Query( $query_args );
-
+	
 	if( $channels->have_posts() ) :
 		$counter = 1;
 		while( $channels->have_posts() ) : $channels->the_post();
@@ -156,7 +156,7 @@ function ytc_get_channels_list( $args = array() ){
 				ytc_get_make_it_happen_block();				
 				$counter = 0; //Reset Counter
 			endif; //Endif
-		$counter++;
+			$counter++;
 		endwhile; //Endwhile
 
 	endif;
@@ -232,7 +232,7 @@ if( !function_exists('ytc_get_make_it_happen_block') ) :
  * Handles to make it happen block
  **/
 function ytc_get_make_it_happen_block(){ ?>
-	<div class="sfc-campaign-archive-post sfc-campaign-archive-create-own">
+	<div class="col-lg-3 col-sm-6 sfc-campaign-archive-post sfc-campaign-archive-create-own">
 		<a href="/create-a-new-youtube-collaboration" id="create_campaign" class="sfc-campaign-archive-post-content-a">
 			<div class="sfc-campaign-images">
 				<div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-left" src="/wp-content/uploads/2018/06/question-mark.png"></div>
@@ -247,5 +247,21 @@ function ytc_get_make_it_happen_block(){ ?>
 		</a>
 	</div>
 <?php 
+}
+endif;
+if ( !function_exists( 'ytc_find_twitter_username' ) ) :
+/**
+ * Twitter Username
+ *
+ * Handles to find twitter username
+ **/
+function ytc_find_twitter_username( $url ){
+	if( stripos($url, '?') !== false ) : //Check Query String
+		$url = array_shift( explode('?',$url) );
+	endif; //Endif
+	if( preg_match('/^https?:\/\/(www\.)?twitter\.com\/(#!\/)?(?<name>[^\/]+)(\/\w+)*$/', $url, $regs) ) :
+  		return $regs['name'];
+	endif; //Endif
+  	return false;
 }
 endif;

@@ -118,7 +118,7 @@ class YTC_Ajax_Callbacks{
 		$response = array();
 		$paged = isset( $_POST['paged'] ) && !empty( $_POST['paged'] ) ? ( intval( $_POST['paged'] ) + 1 ) : 1;
 		$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'posts_per_page' => 40,
-						'orderby' => 'meta_value_num', 'order' => $_POST['orderby'], 'paged' => $paged  );
+						'orderby' => 'meta_value_num', 'order' => $_POST['order'], 'paged' => $paged  );
 		//Orderby
 		if( isset( $_POST['orderby'] ) && !empty( $_POST['orderby'] ) ) {
 			$query_args['meta_key'] = 'wpcf-channel_' . $_POST['orderby'];
