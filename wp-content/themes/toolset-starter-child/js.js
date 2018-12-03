@@ -1934,6 +1934,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
   jQuery('form#login_user, form#register_user').on('submit', function(e) {
     if (!$(this).valid()) return false;
     $('p.status', this).show().text(ajax_auth_object.loadingmessage);
+	toastr.warning('', ajax_auth_object.loadingmessage);
     action = 'ajaxlogin';
     username = $('form#login_user #username_').val();
     password = $('form#login_user #password_').val();

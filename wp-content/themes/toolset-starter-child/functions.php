@@ -2782,10 +2782,10 @@ function  amp_add_google_analytics( $amp_template ) { ?>
 
 <?php }
 
-if( !function_exists('vlogfund_comment_type') ) :
+/*if( !function_exists('vlogfund_comment_type') ) :
 function vlogfund_comment_type( $comment_types ){
 	$comment_types[] = 'review';
 	return $comment_types;
 }
 add_filter('decomments_comment_type', 'vlogfund_comment_type');
-endif;
+endif;*/
