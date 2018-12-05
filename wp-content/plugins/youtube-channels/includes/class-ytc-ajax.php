@@ -71,8 +71,14 @@ class YTC_Ajax_Callbacks{
 		
 		if( isset( $_POST['order'] ) && $_POST['order'] == 'asc' 
 			&& isset( $_POST['sort'] ) && $_POST['sort'] == 'subscribers' ) :
+			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'value' => '', 'compare' => '!=' );
 			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'value' => 0, 'compare' => '>' );
 			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'compare' => 'EXISTS' );
+		elseif( isset( $_POST['order'] ) && $_POST['order'] == 'asc' 
+			&& isset( $_POST['sort'] ) && $_POST['sort'] == 'views' ) :
+			$meta_query[] = array( 'key' => 'wpcf-channel_views', 'value' => '', 'compare' => '!=' );
+			$meta_query[] = array( 'key' => 'wpcf-channel_views', 'value' => 0, 'compare' => '>' );
+			$meta_query[] = array( 'key' => 'wpcf-channel_views', 'compare' => 'EXISTS' );
 		endif;
 		if( !empty( $meta_query ) ) :
 			$query_args['meta_query'] = $meta_query;
@@ -125,6 +131,19 @@ class YTC_Ajax_Callbacks{
 		} else {
 			$query_args['meta_key'] = 'wpcf-channel_subscribers';
 		}
+		
+		if( isset( $_POST['order'] ) && $_POST['order'] == 'asc' 
+			&& isset( $_POST['sort'] ) && $_POST['sort'] == 'subscribers' ) :
+			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'value' => '', 'compare' => '!=' );
+			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'value' => 0, 'compare' => '>' );
+			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'compare' => 'EXISTS' );
+		elseif( isset( $_POST['order'] ) && $_POST['order'] == 'asc' 
+			&& isset( $_POST['sort'] ) && $_POST['sort'] == 'views' ) :
+			$meta_query[] = array( 'key' => 'wpcf-channel_views', 'value' => '', 'compare' => '!=' );
+			$meta_query[] = array( 'key' => 'wpcf-channel_views', 'value' => 0, 'compare' => '>' );
+			$meta_query[] = array( 'key' => 'wpcf-channel_views', 'compare' => 'EXISTS' );
+		endif;
+		
 		if( isset( $_POST['search'] ) && !empty( $_POST['search'] ) ) {
 			$query_args['s'] = $_POST['search'];
 		}

@@ -198,6 +198,11 @@
 			}
 			return false;
 		});
+		//When User Click Back/Forward from Browser
+		$(window).bind('pageshow pagehide', function() {
+			$('#ytc-search-input').val('');
+			$('#ytc-orderBy option:eq(0), #ytc-sortBy option:eq(0)').attr('selected', true);
+		});
 	});
 /*-----------------------------------------------------------*/
 })(jQuery, window, document);
