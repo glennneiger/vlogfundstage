@@ -178,8 +178,8 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 
 	$post_id = empty( $post_id ) ? get_the_ID() : $post_id;
 	$channel_id 		= get_post_meta( $post_id, 'wpcf-channel_id', true ); 		//Channel ID
-	$channel_views 		= get_post_meta( $post_id, 'wpcf-channel_views', true ) 		? get_post_meta( $post_id, 'wpcf-channel_views', true ) : 'N/A'; 	//Views
-	$channel_subscribers= get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) 	? get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) : 'N/A' ; 	//Subscribers
+	$channel_views 		= get_post_meta( $post_id, 'wpcf-channel_views', true ) 		? get_post_meta( $post_id, 'wpcf-channel_views', true ) : 0; 	//Views
+	$channel_subscribers= get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) 	? get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) : 0; 	//Subscribers
 	$channel_keywords 	= get_post_meta( $post_id, 'wpcf-channel_keywords', true ); //Keywords
 	$channel_img 		= get_post_meta( $post_id, 'wpcf-channel_img', true ) ? get_post_meta( $post_id, 'wpcf-channel_img', true ) : YTC_PLUGIN_URL . 'assets/images/default.png'; 		//Image
 	$channel_gplus 		= get_post_meta( $post_id, 'wpcf-channel_gplus', true );	//Google+
@@ -195,7 +195,7 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 			<div class="by"><i class="fa fa-eye" aria-hidden="true"></i>
 				<span id="<?php echo $channel_id; ?>-views" style="color:white">
 					<?php echo ytc_number_abbs( $channel_views ); ?>
-				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channel_subscribers == 0 ) ? 'N/A' : ytc_number_abbs( $channel_subscribers ); ?></span>
+				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;<?php echo ( $channel_subscribers == 0 ) ? 0 : ytc_number_abbs( $channel_subscribers ); ?></span>
 			</div><!--/.by-->
 			<a href="<?php the_permalink(); ?>" class="showinfoimg"><img class="b-lazy" id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
 			<h2><a href="<?php the_permalink(); ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>">
