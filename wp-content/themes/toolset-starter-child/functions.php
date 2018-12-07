@@ -3,8 +3,10 @@
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
 require_once( get_theme_file_path('/inc/campaign-status-update.php') );
+//Theme Shortcodes
+require_once( get_theme_file_path('/inc/shortcodes.php') );
 //AJAX login/register
-require_once( get_theme_file_path() . '/libs/custom-ajax-auth.php' );
+require_once( get_theme_file_path('/libs/custom-ajax-auth.php') );
 
 if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 	function ref_enqueue_main_stylesheet() {
@@ -31,10 +33,14 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
             wp_enqueue_script( 'js', get_stylesheet_directory_uri() . '/js.js', array(), null );
 
-
-
 		}
-		if ( is_page('about') && ! is_admin() ) {
+		
+		if( is_singular('product') ) {
+			wp_register_script('validate-script', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js' );
+   			wp_enqueue_script('validate-script');
+		}
+		
+		if ( ( is_page('about') || is_singular('product') ) && ! is_admin() ) {
 
 			wp_enqueue_style( 'owl-carousel', get_stylesheet_directory_uri() . '/css/owl.carousel.css', array(), null );
 
