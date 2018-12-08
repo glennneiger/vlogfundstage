@@ -139,6 +139,7 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 	.tweet-box { display:table; margin:0 auto; }
 	.related-collaborations-section .grid-cols3 { -ms-flex-pack: center; -webkit-justify-content: center; justify-content: center; }
 	.collaboration-images img + img { margin-left:-15px; }
+  .related-blog-section .grid-cols2-sm.grid-cols2 .grid-col{ max-width:100%; }
 }
 @media only screen and (max-width: 575px) {
 	.channel-banner-img{ height:calc(100vw / 4 - 1px); }

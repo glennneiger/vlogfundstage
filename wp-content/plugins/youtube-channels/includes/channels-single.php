@@ -133,19 +133,20 @@
 				<?php endif; //Endif ?>
 			</div><!--/.latest-videos-section-->
 			<div class="related-collaborations-section channel-section">
-				<h2>Related Collaborations</h2>
+
 				<?php if( $related_collabs = toolset_get_related_posts( get_the_ID(), 'channel-campaign', 'parent') ) : //Check Related Campaign
+					echo '<h2>Collaborations</h2>';
 					echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="4" ids="'.implode(',', $related_collabs).'"]');
 				else : //Else
-					echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]');
+					//echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]');
 				endif; //Endif ?>
 			</div><!--/.related-collaborations-section-->
-			
-			<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);">
+
+			<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);padding:80px 0;">
 				<h2>Make YouTube Collaborations Come True</h2>
 				<a href="/youtube-collaborations"><button class="sf-get-started">Let's get it</button></a>
 			</div><!--/.sf-blog-banner-->
-			
+
 			<?php  if( $related_posts = toolset_get_related_posts( get_the_ID(), 'channel-post', 'parent') ) : //Check Blog Post Related
 				$rba_big = array_shift( $related_posts ); ?>
 				<div class="related-blog-section channel-section">
@@ -227,7 +228,7 @@
 									endif; //Endif ?>
 								</div><!--/.related-blog-col-->
 							</div><!--/.grid-col-->
-						<?php endif; //Endif 
+						<?php endif; //Endif
 						if( !empty( $related_posts ) ) : //Regular Posts ?>
 							<div class="grid-col">
 								<div class="grid-cols2 grid-cols2-sm">
