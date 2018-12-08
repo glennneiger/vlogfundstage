@@ -172,7 +172,7 @@
 						if( typeof response.success != 'undefined' && response.success == 1 ){
 							//$('.sf-campaign-stay-loop-message').html('Subscribed successfully.').addClass('success').show().delay(2000).fadeOut();
 							$('#csl_email').css({'border' : 'none', 'box-shadow' : 'none'});
-							$('#csl_email').attr('placeholder', 'We\'ll keep you in the loop');
+							$('#csl_email').attr('placeholder', 'We\'ll keep you in the loop.');
 							toastr.success('', 'Success');
 						} else {
 							//$('.sf-campaign-stay-loop-message').html('You\'re already subscribed or something went wrong!').addClass('error').show().delay(2000).fadeOut();

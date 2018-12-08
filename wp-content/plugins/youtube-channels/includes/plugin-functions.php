@@ -109,7 +109,7 @@ if( !function_exists('ytc_get_channels_list') ) :
  **/
 function ytc_get_channels_list( $args = array() ){
 
-	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'orderby' => 'meta_value_num', 'page' => $args['page'] );
+	$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'orderby' => 'meta_value_num', 'paged' => ( isset( $args['page'] ) && !empty( $args['page'] ) ? $args['page'] : 1 ) );
 
 	if( isset( $args['search'] ) && !empty( $args['search'] ) ) {
 		$query_args['s'] = $args['search'];
@@ -152,11 +152,13 @@ function ytc_get_channels_list( $args = array() ){
 
 			ytc_get_channel_loop(); //Channel Loop
 
+
 			if( $counter == 10 ) : //Check 12 Channel
 				ytc_get_make_it_happen_block();
 				$counter = 0; //Reset Counter
 			endif; //Endif
-		$counter++;
+			$counter++;
+
 		endwhile; //Endwhile
 
 	endif;
@@ -178,8 +180,8 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 
 	$post_id = empty( $post_id ) ? get_the_ID() : $post_id;
 	$channel_id 		= get_post_meta( $post_id, 'wpcf-channel_id', true ); 		//Channel ID
-	$channel_views 		= get_post_meta( $post_id, 'wpcf-channel_views', true ) 		? get_post_meta( $post_id, 'wpcf-channel_views', true ) : 'N/A'; 	//Views
-	$channel_subscribers= get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) 	? get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) : 'N/A' ; 	//Subscribers
+	$channel_views 		= get_post_meta( $post_id, 'wpcf-channel_views', true ) 		? get_post_meta( $post_id, 'wpcf-channel_views', true ) : 0; 	//Views
+	$channel_subscribers= get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) 	? get_post_meta( $post_id, 'wpcf-channel_subscribers', true ) : 0; 	//Subscribers
 	$channel_keywords 	= get_post_meta( $post_id, 'wpcf-channel_keywords', true ); //Keywords
 	$channel_img 		= get_post_meta( $post_id, 'wpcf-channel_img', true ) ? get_post_meta( $post_id, 'wpcf-channel_img', true ) : YTC_PLUGIN_URL . 'assets/images/default.png'; 		//Image
 	$channel_gplus 		= get_post_meta( $post_id, 'wpcf-channel_gplus', true );	//Google+
@@ -195,7 +197,7 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 			<div class="by"><i class="fa fa-eye" aria-hidden="true"></i>
 				<span id="<?php echo $channel_id; ?>-views" style="color:white">
 					<?php echo ytc_number_abbs( $channel_views ); ?>
-				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i> <?php echo ( $channel_subscribers == 0 ) ? 'N/A' : ytc_number_abbs( $channel_subscribers ); ?></span>
+				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;<?php echo ( $channel_subscribers == 0 ) ? 0 : ytc_number_abbs( $channel_subscribers ); ?></span>
 			</div><!--/.by-->
 			<a href="<?php the_permalink(); ?>" class="showinfoimg"><img class="b-lazy" id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
 			<h2><a href="<?php the_permalink(); ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>">
@@ -232,11 +234,16 @@ if( !function_exists('ytc_get_make_it_happen_block') ) :
  * Handles to make it happen block
  **/
 function ytc_get_make_it_happen_block(){ ?>
+<<<<<<< HEAD
 	<div class="sfc-campaign-archive-post sfc-campaign-archive-create-own">
+=======
+	<div class="col-lg-3 col-sm-6 sfc-campaign-archive-post sfc-campaign-archive-create-own">
+>>>>>>> yt-channels
 		<a href="/create-a-new-youtube-collaboration" id="create_campaign" class="sfc-campaign-archive-post-content-a">
 			<div class="sfc-campaign-images">
 				<div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-left" src="/wp-content/uploads/2018/06/question-mark.png"></div>
 			  <div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-right" src="/wp-content/uploads/2018/06/question-mark.png"></div>
+<<<<<<< HEAD
 			</div>
 			<div class="sfc-campaign-archive-post-content">
 				<h3 class="sfc-campaign-archive-post-title"><span class="sfc-campaign-archive-post-title-inner">Create A Collaboration</span></h3>
@@ -249,3 +256,33 @@ function ytc_get_make_it_happen_block(){ ?>
 <?php
 }
 endif;
+=======
+			</div>
+			<div class="sfc-campaign-archive-post-content">
+				<h3 class="sfc-campaign-archive-post-title"><span class="sfc-campaign-archive-post-title-inner">Create Your Own Collab</span></h3>
+				<p class="sfc-campaign-archive-post-excerpt">Submit your own idea for a YouTube collaboration, just like the other ones</p>
+				<div class="sfc-campaign-archive-vote-bar"></div>
+				<button class="sfc-campaign-make-it-happen-vote" style="background-color: #6b10d6; background-color: var(--brand-color);">Let's get it 🔥</button>
+			</div>
+		</a>
+	</div>
+<?php
+}
+endif;
+if ( !function_exists( 'ytc_find_twitter_username' ) ) :
+/**
+ * Twitter Username
+ *
+ * Handles to find twitter username
+ **/
+function ytc_find_twitter_username( $url ){
+	if( stripos($url, '?') !== false ) : //Check Query String
+		$url = array_shift( explode('?',$url) );
+	endif; //Endif
+	if( preg_match('/^https?:\/\/(www\.)?twitter\.com\/(#!\/)?(?<name>[^\/]+)(\/\w+)*$/', $url, $regs) ) :
+  		return $regs['name'];
+	endif; //Endif
+  	return false;
+}
+endif;
+>>>>>>> yt-channels

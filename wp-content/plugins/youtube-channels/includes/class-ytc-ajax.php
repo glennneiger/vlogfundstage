@@ -68,12 +68,7 @@ class YTC_Ajax_Callbacks{
 		elseif( isset( $_POST['channelid'] ) && !empty( $_POST['channelid'] ) ) :
 			$meta_query[] = array( 'key' => 'wpcf-channel_id', 'value' => esc_sql( $_POST['channelid'] ) );
 		endif;
-		
-		if( isset( $_POST['order'] ) && $_POST['order'] == 'asc' 
-			&& isset( $_POST['sort'] ) && $_POST['sort'] == 'subscribers' ) :
-			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'value' => 0, 'compare' => '>' );
-			$meta_query[] = array( 'key' => 'wpcf-channel_subscribers', 'compare' => 'EXISTS' );
-		endif;
+				
 		if( !empty( $meta_query ) ) :
 			$query_args['meta_query'] = $meta_query;
 		endif;
@@ -118,13 +113,14 @@ class YTC_Ajax_Callbacks{
 		$response = array();
 		$paged = isset( $_POST['paged'] ) && !empty( $_POST['paged'] ) ? ( intval( $_POST['paged'] ) + 1 ) : 1;
 		$query_args = array( 'post_type' => 'youtube_channels', 'post_status' => 'publish', 'posts_per_page' => 40,
-						'orderby' => 'meta_value_num', 'order' => $_POST['orderby'], 'paged' => $paged  );
+						'orderby' => 'meta_value_num', 'order' => $_POST['order'], 'paged' => $paged  );
 		//Orderby
 		if( isset( $_POST['orderby'] ) && !empty( $_POST['orderby'] ) ) {
 			$query_args['meta_key'] = 'wpcf-channel_' . $_POST['orderby'];
 		} else {
 			$query_args['meta_key'] = 'wpcf-channel_subscribers';
 		}
+		
 		if( isset( $_POST['search'] ) && !empty( $_POST['search'] ) ) {
 			$query_args['s'] = $_POST['search'];
 		}
@@ -212,7 +208,7 @@ class YTC_Ajax_Callbacks{
 						if( !empty( $inserted_id ) ){
 							update_post_meta( $inserted_id, 'wpcf-channel_id', $channel_id );
 							update_post_meta( $inserted_id, 'wpcf-channel_img', 		( isset( $response->items[0]->snippet->thumbnails->medium->url ) ? $response->items[0]->snippet->thumbnails->medium->url : '' ) );
-							update_post_meta( $inserted_id, 'wpcf-channel_country', 	( isset( $response->items[0]->snippet->country ) 			? $response->items[0]->snippet->country : 'N/A' ) );
+							update_post_meta( $inserted_id, 'wpcf-channel_country', 	( isset( $response->items[0]->snippet->country ) 			? $response->items[0]->snippet->country : '' ) );
 							update_post_meta( $inserted_id, 'wpcf-channel_subscribers', ( isset( $response->items[0]->statistics->subscriberCount ) ? $response->items[0]->statistics->subscriberCount : 0 ) );
 							update_post_meta( $inserted_id, 'wpcf-channel_views', 		( isset( $response->items[0]->statistics->viewCount )		? $response->items[0]->statistics->viewCount : 0 ) );
 							update_post_meta( $inserted_id, 'wpcf-channel_videos', 		( isset( $response->items[0]->statistics->videoCount )		? $response->items[0]->statistics->videoCount : 0 ) );

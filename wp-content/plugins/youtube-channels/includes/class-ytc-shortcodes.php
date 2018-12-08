@@ -20,6 +20,47 @@ class YTC_Shortcodes{
 		add_shortcode( 'ytc_channels', array($this, 'channels_shortcode_callback') );
 		//Channels Shortcode
 		add_shortcode( 'ytc_channel_single', array($this, 'channels_single_shortcode_callback') );
+		//Channels Meta Data
+		add_action( 'wp_head', array($this, 'channel_meta_data') );
+	}
+	
+	/**
+	* Channels Meta Data
+	*
+	* @since YouTube Channels 1.0
+	**/
+	public function channel_meta_data(){
+		
+		//Check YouTube Channels Details Page
+		if( !is_singular('youtube_channels') ) : return; endif;
+		
+		$desc = get_post_meta( get_the_ID(), 'wpcf-channel_description', true ); //Description
+		$desc = !empty( $desc ) ? $desc : get_the_content();
+	
+		echo '<meta property="og:type" content="website"/>';
+		echo '<meta property="og:url" content="'.get_permalink().'"/>';
+		echo '<meta property="og:site_name" content="'.get_bloginfo('name').'"/>';
+		if( $logo = get_post_meta( get_the_ID(), 'wpcf-channel_img', true ) ) : //Check Channel Logo
+			$logo_sizes = getimagesize( $logo );
+			echo '<meta property="og:image" content="'.$logo.'"/>';
+			echo '<meta property="og:image:secure_url" content="'.$logo.'"/>';
+			echo '<meta property="og:image:width" content="'.$logo_sizes[0].'"/>';
+			echo '<meta property="og:image:height" content="'.$logo_sizes[1].'"/>';
+			echo '<meta name="twitter:image" content="'.$logo.'"/>';
+		endif; //Endif		
+		echo '<meta property="fb:app_id" content="181038895828102"/>';
+		echo '<meta property="og:title" content="'.get_the_title().'"/>';
+		echo '<meta property="og:locale" content="'.get_locale().'"/>';
+		echo '<meta property="og:description" content="'.substr($desc,0,299).'"/>';
+		echo '<meta name="twitter:domain" content="'.get_bloginfo('url').'"/>';
+		echo '<meta name="twitter:card" content="summary"/>';
+		echo '<meta name="twitter:title" content="'.get_the_title().'"/>';
+		echo '<meta name="twitter:description" content="'.substr($desc,0,199).'"/>';
+		echo '<meta name="twitter:site" content="'.get_permalink().'"/>';
+		if( $tw = get_post_meta(get_the_ID(), 'wpcf-channel_tw', true) ) : //Check Twitter			
+			echo '<meta name="twitter:creator" content="'.ytc_find_twitter_username($tw).'"/>';
+		endif; //Endif
+
 	}
 
 	/**
