@@ -234,29 +234,13 @@ if( !function_exists('ytc_get_make_it_happen_block') ) :
  * Handles to make it happen block
  **/
 function ytc_get_make_it_happen_block(){ ?>
-<<<<<<< HEAD
-	<div class="sfc-campaign-archive-post sfc-campaign-archive-create-own">
-=======
+
 	<div class="col-lg-3 col-sm-6 sfc-campaign-archive-post sfc-campaign-archive-create-own">
->>>>>>> yt-channels
+
 		<a href="/create-a-new-youtube-collaboration" id="create_campaign" class="sfc-campaign-archive-post-content-a">
 			<div class="sfc-campaign-images">
 				<div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-left" src="/wp-content/uploads/2018/06/question-mark.png"></div>
 			  <div class="sfc-campaign-image sfc-campaign-single-image"><img align="top" class="sfc-campaign-image-right" src="/wp-content/uploads/2018/06/question-mark.png"></div>
-<<<<<<< HEAD
-			</div>
-			<div class="sfc-campaign-archive-post-content">
-				<h3 class="sfc-campaign-archive-post-title"><span class="sfc-campaign-archive-post-title-inner">Create A Collaboration</span></h3>
-				<p class="sfc-campaign-archive-post-excerpt">Submit your own idea for a YouTube collaboration, just like the other ones</p>
-				<div class="sfc-campaign-archive-vote-bar"></div>
-				<button class="sfc-campaign-make-it-happen-vote" style="background-color: #6b10d6; background-color: var(--brand-color);">Let's get it 🔥</button>
-			</div>
-		</a>
-	</div>
-<?php
-}
-endif;
-=======
 			</div>
 			<div class="sfc-campaign-archive-post-content">
 				<h3 class="sfc-campaign-archive-post-title"><span class="sfc-campaign-archive-post-title-inner">Create Your Own Collab</span></h3>
@@ -285,4 +269,3 @@ function ytc_find_twitter_username( $url ){
   	return false;
 }
 endif;
->>>>>>> yt-channels
