@@ -7,14 +7,15 @@ if( !function_exists('vlogfund_stay_in_loop_form') ) :
  * Handles to subscriber campaign stay in loop mailchimp
  **/
 function vlogfund_stay_in_loop_form( $atts, $content = null ){
-	
+
 	$content = '<div class="sf-campaign-stay-loop-container">';
-	$content .= '<form action="'.get_permalink().'" method="POST" id="campaign_stay_loop_form">';
-	$content .= '<h3>Stay In The Loop</h3>';
-	$content .= '<input type="email" name="csl_email" id="csl_email" placeholder="E-Mail" required/>';
-	$content .= '<input type="submit" name="csl_subscribe" id="csl_subscribe" value="Subscribe"/>';
+	$content .= '<form action="'.get_permalink().'" method="POST" id="campaign_stay_loop_form" class="sfc-front-page-signup-controls validate">';
+	//$content .= '<h3>Stay In The Loop</h3>';
+
+	$content .= '<div class="sfc-signup-wrapper"><input type="email" name="csl_email" id="csl_email" class="sf-mc-email" placeholder="E-Mail" required/></div>';
+	$content .= '<div class="sfc-signup-wrapper"><input type="submit" name="csl_subscribe" id="csl_subscribe" class="sf-mc-button" value="Subscribe"/></div>';
 	$content .= '<input type="hidden" name="csl_campaign" id="csl_campaign" value="'.get_the_ID().'"/>';
-	$content .= '<div class="sf-campaign-stay-loop-message"></div>';
+	//$content .= '<div class="sf-campaign-stay-loop-message"></div>';
 	$content .= '</form>';
 	$content .= '</div>';
 	return $content;
@@ -28,9 +29,9 @@ if( !function_exists('vlog_campaign_stay_in_loop_subscribe_ajax_callback') ) :
  * Handles to subscriber stay in loop ajax callback
  **/
 function vlog_campaign_stay_in_loop_subscribe_ajax_callback( $atts, $content = null ){
-	
+
 	$response = array();
-	if( isset( $_POST['csl_email'] ) && !empty( $_POST['csl_email'] ) && is_email( $_POST['csl_email'] ) 
+	if( isset( $_POST['csl_email'] ) && !empty( $_POST['csl_email'] ) && is_email( $_POST['csl_email'] )
 		&& isset( $_POST['csl_campaign'] ) && !empty( $_POST['csl_campaign'] ) ) :
 		$interests = get_post_meta($_POST['csl_campaign'], 'wpcf-campaign_mc_interests', true);
 		$int_to_sub = explode(',',$interests);
@@ -46,19 +47,19 @@ function vlog_campaign_stay_in_loop_subscribe_ajax_callback( $atts, $content = n
 							'email_address' => $_POST['csl_email'],
 							'interests' => $sub_to
 						));
-			if( $mc_exist['status'] != 404 ) : //Exist Then Update 
+			if( $mc_exist['status'] != 404 ) : //Exist Then Update
 				//Update Existing Users
 				$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash, array(
 					'email_address' => $_POST['csl_email'],
 					'interests' => $sub_to
-				));			
+				));
 			else :
 				$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members', array(
-					'email_address' => $_POST['csl_email'],			
+					'email_address' => $_POST['csl_email'],
 					'status' => 'subscribed',
 					'interests' => $sub_to
 				));
-			endif;			
+			endif;
 			if( isset( $result['status'] ) && $result['status'] == 400 ) :
 				$response['error'] = 1;
 			else :

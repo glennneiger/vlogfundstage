@@ -2766,9 +2766,9 @@ div.sf-blog-yt-video-thumbnail-trending iframe {
 .sf-mc-email {
   border-color: rgb(255, 255, 255);
   padding: 10px!important;
-  border: 1px solid #eee!important;
-  box-shadow: inset 0 0 5px #eee!important;
-  border-left: 4px solid var(--brand-color)!important;
+  border: 1px solid #eee;
+  box-shadow: inset 0 0 5px #eee;
+  border-left: 4px solid var(--brand-color);
   outline: none!important;
   line-height: normal!important;
   border-radius: 0px!important;
@@ -9836,6 +9836,274 @@ ul.sfc-campaign-backers li {
   font-weight: bold;
   color: #2d2d2d;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*campaign follow form*/
+
+.sfc-front-page-signup-section {
+    padding: 0 0 25px 0;
+}
+
+.single-product .sfc-front-page-signup-section {
+    padding: 50px 0 20px 0;
+}
+
+@media (min-width: 996px) {
+    .sfc-front-page-signup-section {
+        padding: 0 0 110px 0;
+    }
+    .single-product .sfc-front-page-signup-section {
+        padding: 5px 0 30px 0;
+    }
+    .page-homepage .sfc-front-page-signup-section {
+          padding: 0 0 50px 0;
+      }
+}
+
+.sfc-front-page-signup-row {
+    background: #fff;
+    position: relative;
+    box-shadow: 3px 7px 29px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: -25px;
+    padding: 25px;
+}
+
+@media (min-width: 576px) {
+    .sfc-front-page-signup-row {
+
+    }
+}
+
+@media (min-width: 768px) {
+    .sfc-front-page-signup-row {
+
+    }
+}
+
+@media (min-width: 992px) {
+    .sfc-front-page-signup-row {
+
+    }
+}
+
+@media (min-width: 1200px) {
+    .sfc-front-page-signup-row {
+        padding: 50px 85px;
+    }
+}
+
+.sfc-front-page-signup-section .sf-signup-button {
+    margin: 10px 0 0 0;
+}
+
+@media (min-width: 996px) {
+    .sfc-front-page-signup-section .sf-signup-button {
+        margin: 0;
+    }
+}
+
+
+.sf-wrap {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.sfc-front-page-signup-item {
+    flex: auto;
+    max-width: 100%;
+    width: 100%;
+    align-self: center;
+}
+
+@media (min-width: 1096px) {
+    .sfc-front-page-signup-item {
+        flex: 1;
+    }
+}
+
+.sf-signup-form {
+    font-size: 24px;
+    position: relative;
+}
+
+.sfc-front-page-signup-heading {
+    font-size: larger;
+
+    font-style: italic;
+    line-height: 1.2;
+    align-self: center;
+    flex: 1;
+    max-width: 100%;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.sfc-front-page-signup-heading-text-indent {
+  margin-left:15px;
+}
+
+@media screen and (max-width:996px) {
+  .sfc-front-page-signup-heading-text-indent {
+  margin-left: 0;
+  }
+}
+
+.sfc-front-page-signup-heading-text-indent-german {
+    margin-left:0;
+}
+
+
+@media (min-width: 1096px) {
+    .sfc-front-page-signup-heading {
+        margin-bottom: 0;
+    }
+}
+
+.sfc-front-page-signup-heading strong {
+    font-weight: 800;
+    display: block;
+    /*font-size: 1.4772em;*/
+}
+
+.page-id-1348 .sfc-front-page-signup-heading strong {
+    display: inline;
+}
+
+
+@media (min-width: 576px) {
+    .sfc-front-page-signup-heading {
+
+    }
+}
+
+@media (min-width: 768px) {
+    .sfc-front-page-signup-heading {
+
+    }
+}
+
+@media (min-width: 992px) {
+    .sfc-front-page-signup-heading {
+        font-size: 36px;
+    }
+
+    .sfc-front-page-signup-heading strong {
+        /*font-size: 60px;*/
+    }
+}
+
+@media (min-width: 1200px) {
+    .sfc-front-page-signup-heading {
+        font-size: 30px;
+    }
+
+    .sfc-front-page-signup-heading strong {
+        font-size: 50px;
+    }
+
+    .page-id-1348 .sfc-front-page-signup-heading strong {
+    font-size: inherit;
+}
+}
+
+.sfc-front-page-signup-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.sfc-signup-wrapper {
+    position: relative;
+    font-size: 20px;
+    color: rgb(153, 153, 153);
+    flex: auto;
+    width: 100%;
+    margin: 0;
+}
+
+@media (min-width: 996px) {
+    .sfc-signup-wrapper {
+        flex: 1;
+    }
+
+    .sfc-signup-wrapper:first-child {
+        flex: 1;
+        margin-right: 5px;
+    }
+}
+
+.sfc-campaign-section-description-row {
+    display: flex;
+    justify-content: space-between;
+    /*padding: 0 25px;*/
+    padding: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+/*@media (min-width: 576px) {
+    .sfc-campaign-section-description-row {
+
+    }
+}
+
+@media (min-width: 768px) {
+    .sfc-campaign-section-description-row {
+
+    }
+}
+
+@media (min-width: 992px) {
+    .sfc-campaign-section-description-row {
+        padding-right: 25px;
+        padding-left: 25px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .sfc-campaign-section-description-row {
+        padding: 0 70px;
+    }
+}*/
+
+.sfc-campaign-widget-link {
+    text-transform: uppercase;
+    font-style: italic;
+    letter-spacing: 0.01em;
+}
+
+
+label.error {
+    font-size: 12px;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: -15px;
+}
+
+
+
+
+
 /*******************************************************/
 /**account**/
 /*******************************************************/
@@ -13642,11 +13910,11 @@ button.toast-close-button {
 .password-strength.strong{
 	background-color:#83c373;
 }
-.sf-campaign-stay-loop-container{
+/*.sf-campaign-stay-loop-container{
 	margin: 0 auto;
 	width: 80%;
 	text-align: center;
-}
+}*/
 
 @media all and (max-width:240px) {
     #toast-container>div {

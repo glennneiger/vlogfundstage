@@ -7,10 +7,10 @@
 	var $doc = $(document);
 	var $winW = function(){ return $(window).width(); };
 	var $winH = function(){ return $(window).height(); };
-	var $screensize = function(element){  
+	var $screensize = function(element){
 			$(element).width($winW()).height($winH());
 		};
-		
+
 		var screencheck = function(mediasize){
 			if (typeof window.matchMedia !== "undefined"){
 				var screensize = window.matchMedia("(max-width:"+ mediasize+"px)");
@@ -29,33 +29,33 @@
 		};
 
 	$doc.ready(function() {
-/*--------------------------------------------------------------------------------------------------------------------------------------*/		
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
 		// Remove No-js Class
 		$("html").removeClass('no-js').addClass('js');
-		
-		
+
+
 		/* Get Screen size
 		---------------------------------------------------------------------*/
 		$win.load(function(){
 			$win.on('resize', function(){
-				$screensize('your selector');	
-			}).resize();	
+				$screensize('your selector');
+			}).resize();
 		});
-		
+
 		$(window).on('resize', function(){
 			if( screencheck(1023)) {
 				$('.sf-imgbox-right').each( function(){
 					$(this).find('.sf-info-section').insertAfter($(this).find('.sf-stars-img-section'));
 				});
-			}	
+			}
 			else {
 				$('.sf-imgbox-right').each( function(){
 					$(this).find('.sf-info-section').insertBefore($(this).find('.sf-stars-img-section'));
 				});
 			}
 		}).resize();
-		
-		
+
+
 		/*Mobile menu click
 		---------------------------------------------------------------------*/
 		$("#menu-toggle").on("click", function(){
@@ -64,7 +64,7 @@
 			$(this).toggleClass("sf-menuopen");
 			return false;
 		});
-		
+
 		/* Slider Js
 		-------------------------------------------------------------------------*/
 		if($(".sf-main-slider").length) {
@@ -130,7 +130,7 @@
 				pauseOnHover:false
 			});
 		}
-		
+
 		/* Animation with Waypoints
 		================================================== */
 		if( !screencheck(767) ) {
@@ -153,7 +153,7 @@
 		} else {
 			$('.sf-animated-row').find('.animate').removeClass('animate');
 		}
-		
+
 		//Campaign Stay In Loop
 		$('form#campaign_stay_loop_form').validate({
 			rules: {
@@ -170,9 +170,13 @@
 					success:function(response){
 						//alert(response);
 						if( typeof response.success != 'undefined' && response.success == 1 ){
-							$('.sf-campaign-stay-loop-message').html('Subscribed successfully.').addClass('success').show().delay(2000).fadeOut();
+							//$('.sf-campaign-stay-loop-message').html('Subscribed successfully.').addClass('success').show().delay(2000).fadeOut();
+							$('#csl_email').css({'border' : 'none', 'box-shadow' : 'none'});
+							$('#csl_email').attr('placeholder', 'We\'ll keep you in the loop');
+							toastr.success('', 'Success');
 						} else {
-							$('.sf-campaign-stay-loop-message').html('You\'re already subscribed or Something wrong!').addClass('error').show().delay(2000).fadeOut();
+							//$('.sf-campaign-stay-loop-message').html('You\'re already subscribed or something went wrong!').addClass('error').show().delay(2000).fadeOut();
+							toastr.error('', 'Error');
 						}
 						$('#csl_email').val('');
 					}
@@ -180,13 +184,13 @@
 				return false;
 			}
 		});
-/*--------------------------------------------------------------------------------------------------------------------------------------*/		
-	});	
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
+	});
 
 /*All function nned to define here for use strict mode
 ----------------------------------------------------------------------------------------------------------------------------------------*/
 
 
-	
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 })(jQuery, window, document);
