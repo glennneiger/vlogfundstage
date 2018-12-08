@@ -9,13 +9,13 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
  * @version 2.2
  */
 if( !defined('VLOG_MAILCHIMP_LIST') ) :
-	define('VLOG_MAILCHIMP_LIST', '1a1d3ee932');
+	define('VLOG_MAILCHIMP_LIST', '');
 endif;
 if( !defined('VLOG_MAILCHIMP_CAMPAIGN_LIST') ) :
-	define('VLOG_MAILCHIMP_CAMPAIGN_LIST', '1a1d3ee932');
+	define('VLOG_MAILCHIMP_CAMPAIGN_LIST', '');
 endif;
 if( !defined('VLOG_MAILCHIMP_API') ) :
-	define('VLOG_MAILCHIMP_API', 'd56c1e40fd58c87f2dc08b5ee649e181-us16');
+	define('VLOG_MAILCHIMP_API', '');
 endif;
 class MailChimp
 {

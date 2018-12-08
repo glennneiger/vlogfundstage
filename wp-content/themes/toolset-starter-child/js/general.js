@@ -163,16 +163,18 @@
 				$.ajax({
 					url: Vlogfund.ajaxurl,
 					type:'POST',
-					data: { action: 'vlog_campaign_stay_in_loop', email: $('#csl_email').val(), campaign: $('#csl_campaign').val() },
+					data: { action: 'vlog_campaign_stay_in_loop', csl_email: $('#csl_email').val(), csl_campaign: $('#csl_campaign').val() },
 					beforeSend:function(){
 						$('.sf-campaign-stay-loop-message').removeClass('success error').hide();
 					},
 					success:function(response){
+						//alert(response);
 						if( typeof response.success != 'undefined' && response.success == 1 ){
-							$('.sf-campaign-stay-loop-message').html('Subscribed successfully.').addClass('success').show();
+							$('.sf-campaign-stay-loop-message').html('Subscribed successfully.').addClass('success').show().delay(2000).fadeOut();
 						} else {
-							$('.sf-campaign-stay-loop-message').html('You\'re already subscribed or Something wrong!').addClass('error').show();
+							$('.sf-campaign-stay-loop-message').html('You\'re already subscribed or Something wrong!').addClass('error').show().delay(2000).fadeOut();
 						}
+						$('#csl_email').val('');
 					}
 				});
 				return false;

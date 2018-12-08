@@ -30,9 +30,9 @@ if( !function_exists('vlog_campaign_stay_in_loop_subscribe_ajax_callback') ) :
 function vlog_campaign_stay_in_loop_subscribe_ajax_callback( $atts, $content = null ){
 	
 	$response = array();
-	if( isset( $_POST['email'] ) && !empty( $_POST['email'] ) && is_email( $_POST['email'] ) 
-		&& isset( $_POST['campaign'] ) && !empty( $_POST['campaign'] ) ) :
-		$interests = get_post_meta($_POST['campaign'], 'wpcf-campaign_mc_interests', true);
+	if( isset( $_POST['csl_email'] ) && !empty( $_POST['csl_email'] ) && is_email( $_POST['csl_email'] ) 
+		&& isset( $_POST['csl_campaign'] ) && !empty( $_POST['csl_campaign'] ) ) :
+		$interests = get_post_meta($_POST['csl_campaign'], 'wpcf-campaign_mc_interests', true);
 		$int_to_sub = explode(',',$interests);
 		$sub_to = array();
 		foreach( $int_to_sub as $int ) :
@@ -41,11 +41,24 @@ function vlog_campaign_stay_in_loop_subscribe_ajax_callback( $atts, $content = n
 		if( !empty( $sub_to ) ) :
 			include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
 			$MailChimp = new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
-			$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members', array(
-				'email_address' => $_POST['email'],			
-				'status' => 'subscribed',
-				'interests' => $sub_to
-			));
+			$subscriber_hash = $MailChimp->subscriberHash($_POST['csl_email']);
+			$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash, array(
+							'email_address' => $_POST['csl_email'],
+							'interests' => $sub_to
+						));
+			if( $mc_exist['status'] != 404 ) : //Exist Then Update 
+				//Update Existing Users
+				$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash, array(
+					'email_address' => $_POST['csl_email'],
+					'interests' => $sub_to
+				));			
+			else :
+				$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members', array(
+					'email_address' => $_POST['csl_email'],			
+					'status' => 'subscribed',
+					'interests' => $sub_to
+				));
+			endif;			
 			if( isset( $result['status'] ) && $result['status'] == 400 ) :
 				$response['error'] = 1;
 			else :
