@@ -281,12 +281,15 @@ function vlogfund_campaign_notes_callback( $post ){
 endif;
 if( !function_exists('vlogfund_update_org_to_cam_relationship') ) :
 /**
- * Update Organization to Campaign
+ * Update Organization to Campaign while Edit Campaign
  **/
 function vlogfund_update_org_to_cam_relationship($post_id, $form_data){
+
 	//Edit Form Update Organization to Connect with Campaign
 	if( $form_data['id'] == 216 && isset( $_POST['connect-organization-to-campaign'] ) && !empty( $_POST['connect-organization-to-campaign'] ) ) :
-		toolset_connect_posts( 'organization-campaign', $_POST['connect-organization-to-campaign'], $post_id );		
+		$org_id = toolset_get_related_post($post_id,'organization-campaign','parent'); //Get Related Post
+		toolset_disconnect_posts('organization-campaign', $org_id, $post_id); //Disconnect Related Post
+		toolset_connect_posts( 'organization-campaign', $_POST['connect-organization-to-campaign'], $post_id ); //Update Related Post
 	endif;
 }
 add_action('cred_save_data', 'vlogfund_update_org_to_cam_relationship', 10, 2);
