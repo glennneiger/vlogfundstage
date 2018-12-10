@@ -1,5 +1,27 @@
 <?php
 /**** Overall Shortcodes of Sites ****/
+if( !function_exists('vlogfund_organization_id_campaign') ) :
+/**
+ * Campaign Organization Parent ID
+ *
+ * Handles to show parent ID of campaign organization ID
+ **/
+function vlogfund_organization_id_campaign( $atts, $content = null ){
+
+	$organization_id = '';
+	
+	if( isset( $_GET['post_id'] ) && !empty( $_GET['post_id'] ) ) :
+		$organization_id = toolset_get_related_post(
+			$_GET['post_id'],
+			'organization-campaign', //slug of relationship
+			'parent'
+		);
+	endif; //Endif
+
+	return $organization_id;	
+}
+add_shortcode('vlog_org_id_campaign', 'vlogfund_organization_id_campaign');
+endif;
 if( !function_exists('vlogfund_stay_in_loop_form') ) :
 /**
  * Campaign Stay in Loop Subscribe MailChimp
