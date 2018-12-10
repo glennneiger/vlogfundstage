@@ -11,11 +11,7 @@ function vlogfund_organization_id_campaign( $atts, $content = null ){
 	$organization_id = '';
 	
 	if( isset( $_GET['post_id'] ) && !empty( $_GET['post_id'] ) ) :
-		$organization_id = toolset_get_related_post(
-			$_GET['post_id'],
-			'organization-campaign', //slug of relationship
-			'parent'
-		);
+		$organization_id = toolset_get_related_post($_GET['post_id'],'organization-campaign','parent');
 	endif; //Endif
 
 	return $organization_id;	

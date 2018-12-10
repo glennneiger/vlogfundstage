@@ -225,7 +225,7 @@ function vlogfund_post_cred_save_data($post_id, $form_data){
 				wp_mail( $author->user_email, $email_subject, $email_body );
 			endif; //Endif
         endif; //Endif
-    endif; //Endif
+    endif; //Endif	
 }
 add_action('cred_save_data', 'vlogfund_post_cred_save_data',100,2);
 endif;
@@ -278,4 +278,16 @@ function vlogfund_campaign_notes_callback( $post ){
 	echo '</p>';
 	echo '</div>';
 }
+endif;
+if( !function_exists('vlogfund_update_org_to_cam_relationship') ) :
+/**
+ * Update Organization to Campaign
+ **/
+function vlogfund_update_org_to_cam_relationship($post_id, $form_data){
+	//Edit Form Update Organization to Connect with Campaign
+	if( $form_data['id'] == 216 && isset( $_POST['connect-organization-to-campaign'] ) && !empty( $_POST['connect-organization-to-campaign'] ) ) :
+		toolset_connect_posts( 'organization-campaign', $_POST['connect-organization-to-campaign'], $post_id );		
+	endif;
+}
+add_action('cred_save_data', 'vlogfund_update_org_to_cam_relationship', 10, 2);
 endif;
