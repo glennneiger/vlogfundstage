@@ -1,5 +1,3 @@
-
-
 function onElementInserted(containerSelector, elementSelector, callback) {
 
     var onMutationsObserved = function(mutations) {
@@ -170,17 +168,9 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
       videobox.style.display = 'block';
     }
   }
-
-
-
-
-
-
-
-
+  
   var videobox2 = document.getElementById('sfc-campaign-new-videobox-2');
   var videoext2 = jQuery('[name="wpcf-youtube-video-collaborator-2"]').val();
-
 
 
   // alert(videoext2);
@@ -281,7 +271,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
 
 
   //autocomplete
-  var pageWidth = $(window).width();
+ /* var pageWidth = $(window).width();
 if (pageWidth > 996) {
   jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2'], .sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
@@ -304,7 +294,7 @@ if (pageWidth > 996) {
       };
     },
   });
-}
+}*/	
 
 
   //errors
@@ -970,7 +960,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
   //autocomplete
 
-  jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2'], .sfc-campaign-archive-search-input").autocomplete({
+  /*jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2'], .sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
         "hl": "en", // Language
@@ -990,21 +980,12 @@ jQuery( document ).on( "ajaxSuccess", function() {
         response(suggestions);
       };
     },
-  });
-
-
-
-  //errors
-  jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
-    toastr.warning('', 'Please review your collab');
-
-
-
-
-
-
-
-  });
+  });*/
+  
+	//errors
+	jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
+		toastr.warning('', 'Please review your collab');
+	});
 
 
 /*if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration')) {
@@ -1209,7 +1190,7 @@ dataLayer.push({
 
 
 //campaign archive
-  jQuery(".sfc-campaign-archive-search-input").autocomplete({
+  /*jQuery(".sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
         "hl": "en", // Language
@@ -1229,7 +1210,7 @@ dataLayer.push({
         response(suggestions);
       };
     },
-  });
+  });*/
 
 
 
@@ -2212,6 +2193,44 @@ function register($form) {
 		  	location.reload(true);
 		});
   	}
+	
+	jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2']").autocomplete({
+		source: Vlogfund.ajaxurl + '?action=ytc_search_autocomplete',
+		minLength: 2		
+	});
+	//Youtuber 1
+	jQuery("[name='wpcf-collaborator-1']").on('autocompleteselect', function(event, ui){
+		$.ajax({
+			url: '/wp-content/themes/toolset-starter-child/process.php',
+			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },			
+			type: 'POST',
+			success : function(data){				
+				jQuery("#logo1").attr('src', data.url);
+				jQuery(".imageurl1").val(data.url);
+				jQuery("#sfc-campaign-new-video-preview-1").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+				jQuery("[name='wpcf-youtube-video-collaborator-1'], [name='videourl1']").val('https://www.youtube.com/watch?v=' + data.videoid);
+				jQuery('#sfc-campaign-new-videobox-1').css('display', 'block');
+				jQuery('.sfc-campaign-yt-preview1').css('display', 'flex').fadeIn("slow");
+			}
+		});
+	});
+	//Youtuber 2
+	jQuery("[name='wpcf-collaborator-2']").on('autocompleteselect', function(event, ui){
+		$.ajax({
+			url: '/wp-content/themes/toolset-starter-child/process.php',
+			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },
+			type: 'POST',			
+			success : function(data){				
+				jQuery("#logo2").attr('src', data.url);
+				jQuery(".imageurl2").val(data.url);
+				jQuery("#sfc-campaign-new-video-preview-2").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+				jQuery("[name='wpcf-youtube-video-collaborator-2'], [name='videourl2']").val('https://www.youtube.com/watch?v=' + data.videoid);
+				jQuery('#sfc-campaign-new-videobox-2').css('display', 'block');
+				jQuery('.sfc-campaign-yt-preview2').css('display', 'flex').fadeIn("slow");
+			}
+		});
+	});
+	
 }); //end
 
 
