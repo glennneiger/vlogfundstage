@@ -2224,7 +2224,7 @@ function register($form) {
 			type: 'POST',			
 			success : function(response){
 				var data = $.parseJSON(response);
-				jQuery('.sfc-campaign-new-youtube-video-1').hide();
+				jQuery('.sfc-campaign-new-youtube-video-2').hide();
 				jQuery("#logo2").attr('src', data.url);
 				jQuery(".imageurl2").val(data.url);
 				jQuery("#sfc-campaign-new-video-preview-2").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
