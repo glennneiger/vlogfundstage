@@ -2204,7 +2204,9 @@ function register($form) {
 			url: '/wp-content/themes/toolset-starter-child/process.php',
 			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },			
 			type: 'POST',
-			success : function(data){				
+			success : function(response){
+				var data = $.parseJSON(response);
+				jQuery('.sfc-campaign-new-youtube-video-1').hide();
 				jQuery("#logo1").attr('src', data.url);
 				jQuery(".imageurl1").val(data.url);
 				jQuery("#sfc-campaign-new-video-preview-1").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
@@ -2220,7 +2222,9 @@ function register($form) {
 			url: '/wp-content/themes/toolset-starter-child/process.php',
 			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },
 			type: 'POST',			
-			success : function(data){				
+			success : function(response){
+				var data = $.parseJSON(response);
+				jQuery('.sfc-campaign-new-youtube-video-1').hide();
 				jQuery("#logo2").attr('src', data.url);
 				jQuery(".imageurl2").val(data.url);
 				jQuery("#sfc-campaign-new-video-preview-2").html('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + data.videoid + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
