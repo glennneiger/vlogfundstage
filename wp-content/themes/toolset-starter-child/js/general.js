@@ -174,9 +174,17 @@
 							$('#csl_email').css({'border' : 'none', 'box-shadow' : 'none'});
 							$('#csl_email').attr('placeholder', 'We\'ll keep you in the loop.');
 							toastr.success('', 'Success');
+							window.dataLayer = window.dataLayer || [];
+							dataLayer.push({
+							  'event': 'followCampaignSuccess'
+							});
 						} else {
 							//$('.sf-campaign-stay-loop-message').html('You\'re already subscribed or something went wrong!').addClass('error').show().delay(2000).fadeOut();
 							toastr.error('', 'Error');
+							window.dataLayer = window.dataLayer || [];
+							dataLayer.push({
+							  'event': 'followCampaignFail'
+							});
 						}
 						$('#csl_email').val('');
 					}

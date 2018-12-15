@@ -9,12 +9,12 @@ if( !function_exists('vlogfund_organization_id_campaign') ) :
 function vlogfund_organization_id_campaign( $atts, $content = null ){
 
 	$organization_id = '';
-	
+
 	if( isset( $_GET['post_id'] ) && !empty( $_GET['post_id'] ) ) :
 		$organization_id = toolset_get_related_post($_GET['post_id'],'organization-campaign','parent');
 	endif; //Endif
 
-	return $organization_id;	
+	return $organization_id;
 }
 add_shortcode('vlog_org_id_campaign', 'vlogfund_organization_id_campaign');
 endif;
@@ -28,15 +28,8 @@ function vlogfund_stay_in_loop_form( $atts, $content = null ){
 
 	$content = '<div class="sf-campaign-stay-loop-container">';
 	$content .= '<form action="'.get_permalink().'" method="POST" id="campaign_stay_loop_form" class="sfc-front-page-signup-controls validate">';
-	//$content .= '<h3>Stay In The Loop</h3>';
-	if( is_user_logged_in() ) : //Check User is Logged in
-		global $user_email;
-		$content .= '<input type="hidden" name="csl_email" id="csl_email" class="sf-mc-email" placeholder="E-Mail" required value="'.$user_email.'"/>';
-		$content .= '<input type="submit" name="csl_subscribe" id="csl_subscribe" class="sf-mc-button" value="Follow"/>';
-	else : //Else
-		$content .= '<div class="sfc-signup-wrapper"><input type="email" name="csl_email" id="csl_email" class="sf-mc-email" placeholder="E-Mail" required/></div>';
-		$content .= '<div class="sfc-signup-wrapper"><input type="submit" name="csl_subscribe" id="csl_subscribe" class="sf-mc-button" value="Subscribe"/></div>';
-	endif; //Endif
+	$content .= '<div class="sfc-signup-wrapper"><input type="email" name="csl_email" id="csl_email" class="sf-mc-email" placeholder="E-Mail" required/></div>';
+	$content .= '<div class="sfc-signup-wrapper"><input type="submit" name="csl_subscribe" id="csl_subscribe" class="sf-mc-button" value="Subscribe"/></div>';
 	$content .= '<input type="hidden" name="csl_campaign" id="csl_campaign" value="'.get_the_ID().'"/>';
 	//$content .= '<div class="sf-campaign-stay-loop-message"></div>';
 	$content .= '</form>';

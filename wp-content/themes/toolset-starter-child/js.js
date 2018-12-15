@@ -168,7 +168,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
       videobox.style.display = 'block';
     }
   }
-  
+
   var videobox2 = document.getElementById('sfc-campaign-new-videobox-2');
   var videoext2 = jQuery('[name="wpcf-youtube-video-collaborator-2"]').val();
 
@@ -294,7 +294,7 @@ if (pageWidth > 996) {
       };
     },
   });
-}*/	
+}*/
 
 
   //errors
@@ -960,7 +960,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
   //autocomplete
 
-  /*jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2'], .sfc-campaign-archive-search-input").autocomplete({
+  jQuery(".sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
         "hl": "en", // Language
@@ -980,8 +980,8 @@ jQuery( document ).on( "ajaxSuccess", function() {
         response(suggestions);
       };
     },
-  });*/
-  
+  });
+
 	//errors
 	jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
 		toastr.warning('', 'Please review your collab');
@@ -1190,7 +1190,7 @@ dataLayer.push({
 
 
 //campaign archive
-  /*jQuery(".sfc-campaign-archive-search-input").autocomplete({
+  jQuery(".sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
         "hl": "en", // Language
@@ -1210,7 +1210,7 @@ dataLayer.push({
         response(suggestions);
       };
     },
-  });*/
+  });
 
 
 
@@ -2193,16 +2193,16 @@ function register($form) {
 		  	location.reload(true);
 		});
   	}
-	
+
 	jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2']").autocomplete({
 		source: Vlogfund.ajaxurl + '?action=ytc_search_autocomplete',
-		minLength: 2		
+		minLength: 2
 	});
 	//Youtuber 1
 	jQuery("[name='wpcf-collaborator-1']").on('autocompleteselect', function(event, ui){
 		$.ajax({
 			url: '/wp-content/themes/toolset-starter-child/process.php',
-			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },			
+			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },
 			type: 'POST',
 			success : function(response){
 				var data = $.parseJSON(response);
@@ -2221,7 +2221,7 @@ function register($form) {
 		$.ajax({
 			url: '/wp-content/themes/toolset-starter-child/process.php',
 			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },
-			type: 'POST',			
+			type: 'POST',
 			success : function(response){
 				var data = $.parseJSON(response);
 				jQuery('.sfc-campaign-new-youtube-video-2').hide();
@@ -2234,7 +2234,7 @@ function register($form) {
 			}
 		});
 	});
-	
+
 }); //end
 
 
