@@ -36,7 +36,7 @@
 							$upvote.find('span').html(result.count); //For all Upvote on page for same post
 							$upvotecountcont.html(result.count);
 							//Other Vote Button
-							$othericonvotebtn.find('span').html('+ ' + result.count).attr('disabled','disabled');
+							$othericonvotebtn.find('span').html('↑ ' + result.count).attr('disabled','disabled');
 							$othericonvotebtn.parents('.upvote-progress-button').addClass('success-upvote');
 							$othervotebtn.text(result.message).attr('disabled','disabled');
 							$othervotebtn.parents('.upvote-progress-button').addClass('success-upvote');
@@ -46,7 +46,7 @@
                             toastr.success('', 'Thank you for voting!');
 							window.dataLayer = window.dataLayer || [];
 							dataLayer.push({'event': 'upvote'});
-							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {								
+							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {
 								$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
 								//location.reload();
 							}
@@ -77,7 +77,7 @@
 							$upvote.find('span').html('+ ' + result.count); //For all Upvote on page for same post
 							$upvotecountcont.html(result.count);
 							//Other Vote Button
-							$othericonvotebtn.find('span').html('+ ' + result.count).attr('disabled','disabled');
+							$othericonvotebtn.find('span').html('↑ ' + result.count).attr('disabled','disabled');
 							$othericonvotebtn.parents('.upvote-progress-button').addClass('success-upvote');
 							$othervotebtn.text(result.message).attr('disabled','disabled');
 							$othervotebtn.parents('.upvote-progress-button').addClass('success-upvote');
@@ -90,7 +90,7 @@
 							dataLayer.push({'event': 'upvote'});
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
-							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {							
+							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {
 								$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
 								location.reload();
 							}
@@ -108,7 +108,7 @@
 			$(this).parents('.upvote-container-big').find('button.upvote-btn.vote-me').trigger('click');
 			return false;
 		});
-		
+
 		//Click on Register Button
 		$(document).on('click', 'a[href^="#register"]', function(e){
 			e.preventDefault();

@@ -32,9 +32,9 @@ function upvote_button_shortcode( $atts, $content = null ){
 	$vote_users = get_post_meta( $postid, '_upvote_users', true ) 	? get_post_meta( $postid, '_upvote_users', true ) : array();
 	//Get User IPs
 	$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )		? get_post_meta( $postid, '_upvote_ips', true ) 	: array();
-	//Guest Vote	
+	//Guest Vote
 	$voted_guest = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? intval( $_COOKIE['_voted'] ) : 0;
-	
+
 	//Load Public Script
 	wp_enqueue_script('upvote-public-script');
 
@@ -59,9 +59,9 @@ function upvote_button_shortcode( $atts, $content = null ){
 	//Voted Count
 	if( $show_count == 'yes' ) :
 		if( !is_user_logged_in() || ( $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) : //Check user is not logged in
-			$content .= '<div class="upvote-count" data-id="'.$postid.'"><a href="#register">+&nbsp;<span>'.$vote_count.'</span></a></div>';
+			$content .= '<div class="upvote-count" data-id="'.$postid.'"><a href="#register">↑&nbsp;<span>'.$vote_count.'</span></a></div>';
 		else :
-			$content .= '<div class="upvote-count" data-id="'.$postid.'">+&nbsp;<span>'.$vote_count.'</span></div>';
+			$content .= '<div class="upvote-count" data-id="'.$postid.'">↑&nbsp;<span>'.$vote_count.'</span></div>';
 		endif;
 	endif; //Endif
 	$content .= '</div><!--/.upvote-container-->';
@@ -115,12 +115,12 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 	$vote_users = get_post_meta( $postid, '_upvote_users', true ) ? get_post_meta( $postid, '_upvote_users', true ) : array();
 	//Get User IPs
 	$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )   ? get_post_meta( $postid, '_upvote_ips', true ) 	: array();
-	//Guest Vote	
+	//Guest Vote
 	$voted_guest = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? intval( $_COOKIE['_voted'] ) : 0;
-	
+
 	//Load Public Script
 	wp_enqueue_script('upvote-public-script');
-	
+
 	//Button for Vote
 	$content = '<div class="upvote-container">';
 	if( !is_user_logged_in() && ( ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
@@ -155,11 +155,11 @@ if( !function_exists('upvote_progress_shortcode') ) :
  * @since Upvote 1.0
  **/
 function upvote_progress_shortcode( $atts, $content = null ){
-	
+
 	extract( shortcode_atts( array(
 		'postid'	=> get_the_ID(),//Show count by default
     ), $atts ) );
-	
+
 	//Get vote count
 	$vote_count = get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
 	$goal_count = get_post_meta( $postid, '_upvote_goal', true ) ? get_post_meta( $postid, '_upvote_goal', true ) : 1000;
@@ -169,7 +169,7 @@ function upvote_progress_shortcode( $atts, $content = null ){
 					<div class="sf-milestone-values sf-upvote-progress-label"><span>'.sprintf('<span class="upvote-count-sc" data-id="'.$postid.'">%1$s</span>↑ %2$s %3$s↑ %4$s', $vote_count, __('upvotes reached of','upvote'), $goal_count, __('goal','upvote') ).'</span></div>
 					<div class="sf-milestone-progress">
 						<div class="sf-milestone-container" style="width:'.$vote_progress.'%"><span>'.$vote_progress.'%</span></div>
-					</div>					
+					</div>
 				</div>';
 	return $content;
 }
