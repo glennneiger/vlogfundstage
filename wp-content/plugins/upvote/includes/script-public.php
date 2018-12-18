@@ -108,18 +108,28 @@ function upvote_update_vote_ajax_callback(){
 							$total_upvoted++; 
 						endif; //Endif	
 					endforeach; ///Endforeach
+				endif; //Endif				
+				$sub_to = array( VLOG_MAILCHIMP_VOTERS_GROUP => true );
+				$interests = get_post_meta($postid, 'wpcf-campaign_mc_interests', true);
+				if( !empty( $interests ) ) : //Check Campaign Have Interests of MC
+					$int_to_sub = explode(',',$interests);
+					foreach( $int_to_sub as $int ) :
+						if( $int !== VLOG_MAILCHIMP_VOTERS_GROUP ) : //Check Voters Group not in Follow
+							$sub_to[$int] = true;
+						endif; //Endif
+					endforeach; //Endforeach
 				endif; //Endif
 				include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
 				$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
 				$subscriber_hash = $MailChimp->subscriberHash($user_email);
-				$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => array( VLOG_MAILCHIMP_VOTERS_GROUP ) ) );    	
+				$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => $sub_to ) );    	
 				if( $mc_exist['status'] != 404 ) : //Exist Then Update
 					//Update Existing Users
 					$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array(
 						'email_address' => $user_email,
 						'merge_fields' => array( 'UNAME' => get_the_title( $postid ), 'UTOTAL' => $total_upvoted ),
 						'status' => 'subscribed',
-						'interests' => array( VLOG_MAILCHIMP_VOTERS_GROUP => true )
+						'interests' => $sub_to
 					));
 				else :
 					//Subscribe New Users
@@ -127,7 +137,7 @@ function upvote_update_vote_ajax_callback(){
 						'email_address' => $user_email,
 						'merge_fields' => array( 'UNAME' => get_the_title( $postid ), 'UTOTAL' => $total_upvoted ),
 						'status' => 'subscribed',
-						'interests' => array( VLOG_MAILCHIMP_VOTERS_GROUP => true )
+						'interests' => $sub_to
 					));
 				endif;
 			else :
