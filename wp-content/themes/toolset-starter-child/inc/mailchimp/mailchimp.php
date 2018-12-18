@@ -11,14 +11,15 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 if( !defined('VLOG_MAILCHIMP_LIST') ) :
 	define('VLOG_MAILCHIMP_LIST', '18f30240e9');
 endif;
-if( !defined('VLOG_MAILCHIMP_CREATOR_LIST') ) :
-	define('VLOG_MAILCHIMP_CREATOR_LIST', '12e55dde9f');
-endif;
 if( !defined('VLOG_MAILCHIMP_CAMPAIGN_LIST') ) :
 	define('VLOG_MAILCHIMP_CAMPAIGN_LIST', '670c20495a');
 endif;
 if( !defined('VLOG_MAILCHIMP_API') ) :
 	define('VLOG_MAILCHIMP_API', 'd56c1e40fd58c87f2dc08b5ee649e181-us16');
+endif;
+//MC Group Constant
+if( !defined('VLOG_MAILCHIMP_CREATORS_GROUP') ) :
+    define('VLOG_MAILCHIMP_CREATORS_GROUP', ''); //Creators Group ID
 endif;
 class MailChimp
 {

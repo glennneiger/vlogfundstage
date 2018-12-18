@@ -596,20 +596,22 @@ function vlogfund_wc_subscribe_mailchimp_campaign( $post_id, $form_data ){
 			$last_name 	= get_user_meta($userdata->ID, 'last_name', true);
 			include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
 			$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
-			$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);
-			$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_CREATOR_LIST.'/members/'.$subscriber_hash);
+			$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);			
+			$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP ) ) );
 			if( $mc_exist['status'] != 404 ) : //Exist Then Update
 				//Update Existing Users
-				$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_CREATOR_LIST.'/members/'.$subscriber_hash, array(
+				$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array(
 					'email_address' => $userdata->user_email,
 					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $postdata->post_status, 'COUNT' => $user_posts->found_posts ),
-					'status' => 'subscribed'
+					'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 				));
 			else :
-				$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CREATOR_LIST.'/members', array(
+				//Subscribe New Users
+				$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_LIST.'/members', array(
 					'email_address' => $userdata->user_email,
 					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $postdata->post_title, 'STATUS' => $postdata->post_status, 'COUNT' => count( $user_posts->found_posts ) ),
-					'status' => 'subscribed'
+					'status' => 'subscribed',
+					'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 				));
 			endif;
 			wp_reset_postdata();
@@ -637,19 +639,22 @@ function vlogfund_wc_subscribe_mailchimp_campaign_admin( $post_id, $post ){
 		include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
 		$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
 		$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);
-    	$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_CREATOR_LIST.'/members/'.$subscriber_hash);
+		$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP ) ) );    	
 		if( $mc_exist['status'] != 404 ) : //Exist Then Update
 			//Update Existing Users
-			$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_CREATOR_LIST.'/members/'.$subscriber_hash, array(
+			$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array(
 				'email_address' => $userdata->user_email,
 				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $all_status[$saved_status] ),
-				'status' => 'subscribed'
+				'status' => 'subscribed',
+				'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 			));
 		else :
-			$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_CREATOR_LIST.'/members', array(
+			//Subscribe New Users
+			$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_LIST.'/members', array(
 				'email_address' => $userdata->user_email,
 				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $all_status[$saved_status] ),
-				'status' => 'subscribed'
+				'status' => 'subscribed',
+				'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 			));
 		endif;
 
