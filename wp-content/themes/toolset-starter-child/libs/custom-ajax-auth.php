@@ -76,15 +76,15 @@ function ajax_register(){
 		$MailChimp = new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
 		$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_LIST.'/members', array(
 			'email_address' => $info['user_email'],
-			'merge_fields' => array('CAMPAIGN' => sanitize_text_field( $_POST['campaign'] ), 'CATEGORY' => sanitize_text_field( $_POST['camp_cat'] ) ),
+			'merge_fields' => array( 'SIGNUPPAGE' => $_POST['source'] ),
 			'status' => 'subscribed'
-		));		
+		));
 		//Make Logged in To User
 		$singon = array();
 		$singon['user_login'] = $info['nickname'];
 		$singon['user_password'] = $info['user_pass'];
 		$singon['remember'] = true;
-		$user_signon = wp_signon( $singon, false );	  	
+		$user_signon = wp_signon( $singon, false );
 		if( is_wp_error( $user_signon ) ){
 			echo json_encode(array('registerin'=>false, 'message'=>__('Wrong username or password.')));
 		} else {

@@ -1919,17 +1919,13 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
     action = 'ajaxlogin';
     username = $('form#login_user #username_').val();
     password = $('form#login_user #password_').val();
-    email = '';
-	campaign = '';
-	camp_cat = '';
+    email = '';	
     //security = $('form#login #security').val();
     if ($(this).attr('id') == 'register_user') {
       action = 'ajaxregister';
       username = $('#signonname').val();
       password = $('#signonpassword').val();
-      email = $('#email').val();
-	  campaign = $('form#register_user #campaign').val();
-	  camp_cat = $('form#register_user #camp_cat').val();
+      email = $('#email').val();	  
       //security = $('#signonsecurity').val();
     }
     ctrl = $(this);
@@ -1942,8 +1938,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 		'username': username,
 		'password': password,
 		'email': email,
-		'campaign' : campaign,
-		'camp_cat' : camp_cat
+		'source' : location.href
 		//'security': security
 	  },
 	  success: function(data) {

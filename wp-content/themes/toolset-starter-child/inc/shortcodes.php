@@ -60,8 +60,7 @@ function vlog_campaign_stay_in_loop_subscribe_ajax_callback( $atts, $content = n
 			$MailChimp = new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
 			$subscriber_hash = $MailChimp->subscriberHash($_POST['csl_email']);
 			$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_CAMPAIGN_LIST.'/members/'.$subscriber_hash, array(
-							'email_address' => $_POST['csl_email'],
-							'interests' => $sub_to
+							'email_address' => $_POST['csl_email'], 'interests' => $sub_to
 						));
 			if( $mc_exist['status'] != 404 ) : //Exist Then Update
 				//Update Existing Users

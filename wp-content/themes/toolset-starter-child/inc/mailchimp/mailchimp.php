@@ -19,7 +19,10 @@ if( !defined('VLOG_MAILCHIMP_API') ) :
 endif;
 //MC Group Constant
 if( !defined('VLOG_MAILCHIMP_CREATORS_GROUP') ) :
-    define('VLOG_MAILCHIMP_CREATORS_GROUP', ''); //Creators Group ID
+    define('VLOG_MAILCHIMP_CREATORS_GROUP', 'e43d20dd5a'); //Creators Group ID
+endif;
+if( !defined('VLOG_MAILCHIMP_VOTERS_GROUP') ) :
+    define('VLOG_MAILCHIMP_VOTERS_GROUP', '6e0d8faa3e'); //Voters Group ID
 endif;
 class MailChimp
 {

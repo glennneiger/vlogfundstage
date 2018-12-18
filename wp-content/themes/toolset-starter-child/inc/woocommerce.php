@@ -602,14 +602,14 @@ function vlogfund_wc_subscribe_mailchimp_campaign( $post_id, $form_data ){
 				//Update Existing Users
 				$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array(
 					'email_address' => $userdata->user_email,
-					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $postdata->post_status, 'COUNT' => $user_posts->found_posts ),
+					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CNAME' => $post->post_title, 'CSTATUS' => $postdata->post_status, 'CTOTAL' => $user_posts->found_posts ),
 					'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 				));
 			else :
 				//Subscribe New Users
 				$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_LIST.'/members', array(
 					'email_address' => $userdata->user_email,
-					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $postdata->post_title, 'STATUS' => $postdata->post_status, 'COUNT' => count( $user_posts->found_posts ) ),
+					'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CNAME' => $postdata->post_title, 'CSTATUS' => $postdata->post_status, 'CTOTAL' => count( $user_posts->found_posts ) ),
 					'status' => 'subscribed',
 					'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 				));
@@ -644,7 +644,7 @@ function vlogfund_wc_subscribe_mailchimp_campaign_admin( $post_id, $post ){
 			//Update Existing Users
 			$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array(
 				'email_address' => $userdata->user_email,
-				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $all_status[$saved_status] ),
+				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CNAME' => $post->post_title, 'CSTATUS' => $all_status[$saved_status] ),
 				'status' => 'subscribed',
 				'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 			));
@@ -652,7 +652,7 @@ function vlogfund_wc_subscribe_mailchimp_campaign_admin( $post_id, $post ){
 			//Subscribe New Users
 			$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_LIST.'/members', array(
 				'email_address' => $userdata->user_email,
-				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CAMPAIGN' => $post->post_title, 'STATUS' => $all_status[$saved_status] ),
+				'merge_fields' => array( 'FNAME' => $first_name, 'LNAME' => $last_name, 'CNAME' => $post->post_title, 'CSTATUS' => $all_status[$saved_status] ),
 				'status' => 'subscribed',
 				'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP => true )
 			));

@@ -71,7 +71,7 @@ if( ! function_exists('upvote_update_vote_ajax_callback') ) :
  **/
 function upvote_update_vote_ajax_callback(){
 
-	global $user_ID;
+	global $user_ID, $user_email;
 				
 	$response = array();
 
@@ -99,6 +99,36 @@ function upvote_update_vote_ajax_callback(){
 				update_post_meta( $postid, '_upvote_users', $vote_users );
 				if( !get_user_meta( $user_ID, '_upvote_for_'.$postid, true) ) :
 					update_user_meta( $user_ID, '_upvote_for_'.$postid, 1); //Track User Voted for which Posts
+				endif;
+				$total_upvoted = 0;
+				$usermetadata = get_user_meta( $user_ID );
+				if( !empty( $usermetadata ) ) :
+					foreach( $usermetadata as $key => $usermeta ) :
+						if( stripos($key, '_upvote_for_') !== false ) :
+							$total_upvoted++; 
+						endif; //Endif	
+					endforeach; ///Endforeach
+				endif; //Endif
+				include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
+				$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
+				$subscriber_hash = $MailChimp->subscriberHash($user_email);
+				$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => array( VLOG_MAILCHIMP_VOTERS_GROUP ) ) );    	
+				if( $mc_exist['status'] != 404 ) : //Exist Then Update
+					//Update Existing Users
+					$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array(
+						'email_address' => $user_email,
+						'merge_fields' => array( 'UNAME' => get_the_title( $postid ), 'UTOTAL' => $total_upvoted ),
+						'status' => 'subscribed',
+						'interests' => array( VLOG_MAILCHIMP_VOTERS_GROUP => true )
+					));
+				else :
+					//Subscribe New Users
+					$result = $MailChimp->post('lists/'.VLOG_MAILCHIMP_LIST.'/members', array(
+						'email_address' => $user_email,
+						'merge_fields' => array( 'UNAME' => get_the_title( $postid ), 'UTOTAL' => $total_upvoted ),
+						'status' => 'subscribed',
+						'interests' => array( VLOG_MAILCHIMP_VOTERS_GROUP => true )
+					));
 				endif;
 			else :
 				//Update Ips for Guest
