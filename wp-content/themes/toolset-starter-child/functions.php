@@ -1067,7 +1067,7 @@ function my_save_collaborator_2_image($post_id, $form_data)
 //update channel logo
 
 add_action('cred_save_data', 'my_save_collaborator_image_update', 10, 2);
-function my_save_collaborator_1_image_update($post_id, $form_data) {
+function my_save_collaborator_image_update($post_id, $form_data) {
 	if ( get_post_type( $post_id ) == 'product' && $form_data['id'] == 216 ) {
 		if (isset($_POST['channel_logo_url_1'])) {
 		
