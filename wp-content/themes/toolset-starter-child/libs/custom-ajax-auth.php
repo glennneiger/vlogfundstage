@@ -58,7 +58,7 @@ function ajax_register(){
 
     // Nonce is checked, get the POST data and sign user on
     $info = array();
-  	$info['user_nicename'] = $info['nickname'] = $info['display_name'] = $info['first_name'] = $info['user_login'] = sanitize_user($_POST['username']) ;
+  	$info['user_nicename'] = $info['nickname'] = $info['display_name'] = $info['user_login'] = sanitize_user($_POST['username']) ;
     $info['user_pass'] = sanitize_text_field($_POST['password']);
 	$info['user_email'] = sanitize_email( $_POST['email']);
 	// Register the user
