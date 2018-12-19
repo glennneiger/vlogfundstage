@@ -108,9 +108,9 @@ function upvote_update_vote_ajax_callback(){
 							$total_upvoted++; 
 						endif; //Endif	
 					endforeach; ///Endforeach
-				endif; //Endif				
-				$sub_to = array();
-				$sub_to[VLOG_MAILCHIMP_VOTERS_GROUP] = true;
+				endif; //Endif
+				include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');			
+				$sub_to = array( VLOG_MAILCHIMP_VOTERS_GROUP => true );
 				$interests = get_post_meta($postid, 'wpcf-campaign_mc_interests', true);
 				if( !empty( $interests ) ) : //Check Campaign Have Interests of MC
 					$int_to_sub = explode(',',$interests);
@@ -119,8 +119,7 @@ function upvote_update_vote_ajax_callback(){
 							$sub_to[$int] = true;
 						endif; //Endif
 					endforeach; //Endforeach
-				endif; //Endif
-				include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
+				endif; //Endif				
 				$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
 				$subscriber_hash = $MailChimp->subscriberHash($user_email);
 				$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => $sub_to ) );    	
