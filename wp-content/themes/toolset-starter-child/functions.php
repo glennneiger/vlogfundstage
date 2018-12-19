@@ -1,4 +1,5 @@
 <?php
+//Test
 //Override Woocommerce Functionality
 require_once( get_theme_file_path('/inc/woocommerce.php') );
 //Send Email Notification Functionality
@@ -34,12 +35,12 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
             wp_enqueue_script( 'js', get_stylesheet_directory_uri() . '/js.js', array(), null );
 
 		}
-		
+
 		if( is_singular('product') ) {
 			wp_register_script('validate-script', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js' );
    			wp_enqueue_script('validate-script');
 		}
-		
+
 		if ( ( is_page('about') || is_singular('product') ) && ! is_admin() ) {
 
 			wp_enqueue_style( 'owl-carousel', get_stylesheet_directory_uri() . '/css/owl.carousel.css', array(), null );
@@ -1043,10 +1044,10 @@ add_action('cred_save_data', 'my_save_collaborator_image_update', 10, 2);
 function my_save_collaborator_image_update($post_id, $form_data) {
 	if ( get_post_type( $post_id ) == 'product' && $form_data['id'] == 216 ) {
 		if (isset($_POST['channel_logo_url_1'])) {
-		
+
 			update_post_meta($post_id, 'wpcf-collaborator-1-image', $_POST['channel_logo_url_1']);
 		}
-		
+
 		if (isset($_POST['channel_logo_url_2'])) {
 			update_post_meta($post_id, 'wpcf-collaborator-2-image', $_POST['channel_logo_url_2']);
 		}
