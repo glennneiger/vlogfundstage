@@ -109,7 +109,8 @@ function upvote_update_vote_ajax_callback(){
 						endif; //Endif	
 					endforeach; ///Endforeach
 				endif; //Endif				
-				$sub_to = array( VLOG_MAILCHIMP_VOTERS_GROUP => true );
+				$sub_to = array();
+				$sub_to[VLOG_MAILCHIMP_VOTERS_GROUP] = true;
 				$interests = get_post_meta($postid, 'wpcf-campaign_mc_interests', true);
 				if( !empty( $interests ) ) : //Check Campaign Have Interests of MC
 					$int_to_sub = explode(',',$interests);
