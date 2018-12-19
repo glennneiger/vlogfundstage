@@ -1960,34 +1960,21 @@ add_action( 'wp_footer', 'wp_footer_add_welcome_back_message_new', 20 );
 
 //welcome message
 function add_welcome_message_register_redirect( $redirect_to, $request, $user ) {
-	return add_query_arg( 'welc', 1, $redirect_to );
+	return add_query_arg( array( 'welc' => 1, 'bye' => false ), $redirect_to );
 }
 add_filter( 'login_redirect', 'add_welcome_message_register_redirect', 100, 3 );
 
-
-
 //welcome back message
 function add_welcome_back_message_login_redirect( $redirect_to, $request, $user ) {
-	return add_query_arg( 'welc_back', 1, $redirect_to );
+	return add_query_arg( array( 'welc_back' => 1, 'bye' => false ), $redirect_to );
 }
 add_filter( 'login_redirect', 'add_welcome_back_message_login_redirect', 100, 3 );
-
-
-
-
-
-
 
 function add_welcome_message_logout_redirect( $logout_url, $redirect ) {
     $redirect	= add_query_arg( 'bye', 1, $redirect );
 	return add_query_arg( 'redirect_to', $redirect, $logout_url );
 }
 add_filter( 'logout_url', 'add_welcome_message_logout_redirect', 100, 2 );
-
-
-
-
-
 
 
 /** organizations **/

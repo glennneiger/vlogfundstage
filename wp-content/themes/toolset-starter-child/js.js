@@ -1907,6 +1907,22 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 
   jQuery('.page-account #rememberme').prop('checked', true);
 
+	//Remove Query String From URL
+	var removeQueryStr = function(sParam){
+		var url = window.location.href.split('?')[0]+'?';
+		var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+			sURLVariables = sPageURL.split('&'),
+			sParameterName,
+			i;	 
+		for (i = 0; i < sURLVariables.length; i++) {
+			sParameterName = sURLVariables[i].split('=');
+			if (sParameterName[0] != sParam) {
+				url = url + sParameterName[0] + '=' + sParameterName[1] + '&'
+			}
+		}
+		return url.substring(0,url.length-1);
+	}
+
 
   //perform AJAX login and registration on form submit
 
@@ -1973,7 +1989,8 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 				$('a.sf-redirect-to-welc1').get(0).click();
 			} else {
 				//setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
-				window.location.reload(true);
+				window.location.href = removeQueryStr('bye');
+				//window.location.reload(true);
 			}
 		} else if( data.registerin == false ){
 			window.dataLayer = window.dataLayer || [];
@@ -1993,7 +2010,8 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 				$('a.sf-redirect-to-welc1').get(0).click();
 			} else {
 				//setTimeout(function() {   document.location.href = ajax_auth_object.redirecturl; },500);
-				window.location.reload(true);
+				//window.location.reload(true);
+				window.location.href = removeQueryStr('bye');
 			}
 		} else if( data.loggedin == false ){
 			window.dataLayer = window.dataLayer || [];
