@@ -811,33 +811,6 @@ add_action( 'cred_save_data', 'capitalise_field_collaborator_2', 10, 2 );
 	add_action( 'cred_submit_complete_98', 'customize_cred_form_98', 10, 2 );
     add_action( 'cred_submit_complete_216', 'customize_cred_form_98', 10, 2 );
 
-
-
-
-//post content substitute 98 && 216
-
-add_action('cred_save_data', 'my_save_content',10,2);
-
-function my_save_content($post_id, $form_data)
-{
-    // if a specific form
-    if ($form_data['id']==98 || 216)
-    {
-        if (isset($_POST['post_content_substitute']))
-        {
-            // add it to saved post meta
-              $my_post = array(
-                  'ID'           => $post_id,
-                  'post_content' => $_POST['post_content_substitute']
-              );
-
-            // Update the post into the database
-              wp_update_post( $my_post );
-        }
-    }
-}
-
-
 //copy post content substitute content to excerpt field 98 && 216
 add_action('cred_save_data', 'my_save_excerpt',10,2);
 function my_save_excerpt($post_id, $form_data)
@@ -2487,6 +2460,10 @@ function vlogfund_datalayer_page( $dataLayer ) {
 		$dataLayer['page'] = 'Checkout - Billing Details';
 	} if ( is_wc_endpoint_url( 'order-received' ) ) {
 		$dataLayer['page'] = 'Checkout - Thank You';
+	} if ( is_archive( 'youtube_channels' ) ) { //YouTube Channel Archive
+		$dataLayer['page'] = 'YouTube Channel Archive';
+	} if ( is_singular( 'youtube_channels' ) ) { //YouTube Channel Single
+		$dataLayer['page'] = 'YouTube Channel';
 	}
 	return $dataLayer;
 }
