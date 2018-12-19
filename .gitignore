@@ -23,6 +23,7 @@ sitemap.xml.gz
 .htaccess
 /wp-content/plugins/wp-rocket*
 wp-content/themes/toolset-starter-child/inc/mailchimp/*
+/wp-content/themes/toolset-starter-child/inc/mailchimp*
 wp-content/themes/toolset-starter-child/inc/mailchimp/mailchimp.php
 replacements.txt
 vlogfundstage.git/*
