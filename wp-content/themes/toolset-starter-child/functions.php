@@ -2744,3 +2744,11 @@ function vlogfund_comment_type( $comment_types ){
 }
 add_filter('decomments_comment_type', 'vlogfund_comment_type');
 endif;*/
+
+function vlog_track_comment_posted( $comment_ID, $comment_approved ){ ?>
+	<script type="text/javascript">
+		window.dataLayer = window.dataLayer || [];
+		dataLayer.push({ 'event' : 'commentSuccess' });
+	</script>
+<?php }
+add_action('comment_post', 'vlog_track_comment_posted', 10, 2);
