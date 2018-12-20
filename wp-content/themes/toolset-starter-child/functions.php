@@ -2736,19 +2736,3 @@ function  amp_add_google_analytics( $amp_template ) { ?>
      <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 
 <?php }
-
-/*if( !function_exists('vlogfund_comment_type') ) :
-function vlogfund_comment_type( $comment_types ){
-	$comment_types[] = 'review';
-	return $comment_types;
-}
-add_filter('decomments_comment_type', 'vlogfund_comment_type');
-endif;*/
-
-function vlog_track_comment_posted( $comment_ID, $comment_approved ){ ?>
-	<script type="text/javascript">
-		window.dataLayer = window.dataLayer || [];
-		dataLayer.push({ 'event' : 'commentSuccess' });
-	</script>
-<?php }
-add_action('comment_post', 'vlog_track_comment_posted', 10, 2);
