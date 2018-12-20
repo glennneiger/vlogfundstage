@@ -1471,10 +1471,14 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   //campaign
   /*******************************************************/
 
-  if (localStorage.getItem("sf-notice-campaigns") === null) {
-} else {
-    jQuery('.sf-notice-campaigns').hide();
-  }
+	try{
+		if (localStorage.getItem("sf-notice-campaigns") === null) {
+		} else {
+    		jQuery('.sf-notice-campaigns').hide();
+  		}
+	} catch(e){
+		//Nothing to do
+	}
 
   $('#tabs div.tab').hide();
 $('#tabs div.tab:first').show();
