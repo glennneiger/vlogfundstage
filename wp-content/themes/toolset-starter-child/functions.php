@@ -1398,6 +1398,18 @@ function remove_all_wpseo_og() {
     }
 }
 
+
+//remove from youtube channels
+
+function remove_yoast_meta_desc_youtube_channel ( $myfilter ) {
+    if ( is_singular( 'youtube_channels' ) ) {
+        return false;
+    }
+    return $myfilter;
+}
+add_filter( 'wpseo_metadesc', 'remove_yoast_meta_desc_youtube_channel' );
+
+
 //noindex campaing form edit page
 
 add_action('wp_head', 'noindex_campaign_form_edit', 1);

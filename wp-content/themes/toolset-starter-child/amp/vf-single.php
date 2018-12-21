@@ -33,7 +33,7 @@ $this->load_parts( array( 'html-start' ) );
    "vars": {
      "eventCategory": "AMP",
      "eventAction": "Related Article AMP",
-     "eventLabel:" "Related Article Click AMP"
+     "eventLabel": "Related Article Click AMP"
     }
   },
   "trackClickOnCommentsLink" : {
@@ -43,7 +43,7 @@ $this->load_parts( array( 'html-start' ) );
     "vars": {
       "eventCategory": "AMP",
       "eventAction": "Comment Link AMP",
-      "eventLabel:" "Comment Link Click AMP"
+      "eventLabel": "Comment Link Click AMP"
     }
   },
   "trackClickOnTwitterLink" : {
