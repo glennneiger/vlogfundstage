@@ -1400,14 +1400,13 @@ function remove_all_wpseo_og() {
 
 
 //remove from youtube channels
-
-function remove_yoast_meta_desc_youtube_channel ( $myfilter ) {
-    if ( is_singular( 'youtube_channels' ) ) {
-        return false;
+add_action('wp_head', 'remove_yoast_meta_desc_youtube_channel', 1);
+function remove_yoast_meta_desc_youtube_channel() {
+    if ( is_singular( 'youtube_channels' ) ) { //is_single also works
+  remove_action( 'wpseo_head', array( $GLOBALS['wpseo_og'], 'opengraph' ), 30 );
+	remove_action( 'wpseo_head' , array( WPSEO_Twitter , 'get_instance' ) , 40 );
     }
-    return $myfilter;
 }
-add_filter( 'wpseo_metadesc', 'remove_yoast_meta_desc_youtube_channel' );
 
 
 //noindex campaing form edit page
