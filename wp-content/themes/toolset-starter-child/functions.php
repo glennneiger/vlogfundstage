@@ -2471,7 +2471,7 @@ function vlogfund_datalayer_page( $dataLayer ) {
 		$dataLayer['page'] = 'Checkout - Billing Details';
 	} if ( is_wc_endpoint_url( 'order-received' ) ) {
 		$dataLayer['page'] = 'Checkout - Thank You';
-	} if ( is_archive( 'youtube_channels' ) ) { //YouTube Channel Archive
+	} if ( is_page('youtube-channels') ) { //YouTube Channel Archive
 		$dataLayer['page'] = 'YouTube Channel Archive';
 	} if ( is_singular( 'youtube_channels' ) ) { //YouTube Channel Single
 		$dataLayer['page'] = 'YouTube Channel';
