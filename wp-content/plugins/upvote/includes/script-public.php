@@ -220,6 +220,8 @@ function upvote_transfer_guest_voted_to_user( $user_id ){
 					update_user_meta( $user_id, '_upvote_for_'.$postid, 1); //Track User Voted for which Posts
 					unset($guest_voted[$key]);
 				endif; //Endif
+				//Hook for Upvote Done
+				do_action('vlog_user_upvoted', $user_id, $postid);
 			endforeach; //Endforeach
 			$voted_posts = !empty( $guest_voted ) ? implode(',', $guest_voted) : '';
 			$vote_count = ( count( $guest_voted ) > 0 ) ? count( $guest_voted ) : '';
