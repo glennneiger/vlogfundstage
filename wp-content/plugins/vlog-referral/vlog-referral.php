@@ -33,7 +33,7 @@ function vlogref_plugin_loaded(){
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();	
 		//Create Referral Table
-		$table_name = VLOG_REFERRAL_TABLE; 
+		$table_name = $wpdb->prefix . 'vlog_referral'; 
 		$sql = "CREATE TABLE IF NOT EXISTS $table_name (
 			 `id` int(11) NOT NULL AUTO_INCREMENT,
 			 `user_id` int(11) NOT NULL,
