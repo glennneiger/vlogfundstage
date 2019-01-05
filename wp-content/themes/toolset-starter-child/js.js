@@ -1925,7 +1925,18 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 			}
 		}
 		return url.substring(0,url.length-1);
-	}
+	};
+	
+	//Get Query String
+	var getQueryStrings = function(name, url){
+		if ( !url ) url = window.location.href;
+		name = name.replace(/[\[\]]/g, '\\$&');
+		var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+			results = regex.exec(url);
+		if (!results) return null;
+		if (!results[2]) return '';
+		return decodeURIComponent(results[2].replace(/\+/g, ' '));
+	};
 
 
   //perform AJAX login and registration on form submit
@@ -1958,7 +1969,8 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 		'username': username,
 		'password': password,
 		'email': email,
-		'source' : location.href
+		'source' : location.href,
+		'referral' : getQueryStrings('referral')
 		//'security': security
 	  },
 	  success: function(data) {
