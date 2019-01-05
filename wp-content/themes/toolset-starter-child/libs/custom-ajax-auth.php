@@ -84,9 +84,9 @@ function ajax_register(){
 		$singon['user_login'] = $info['nickname'];
 		$singon['user_password'] = $info['user_pass'];
 		$singon['remember'] = true;
-		//Vlog Register Hook
-		do_action('vlog_user_register', $user_register, $_POST); //Added for Referral Plugin
 		$user_signon = wp_signon( $singon, false );
+		//Vlog Register Hook
+		do_action('vlog_user_register', $user_signon, $_POST); //Added for Referral Plugin
 		if( is_wp_error( $user_signon ) ){
 			echo json_encode(array('registerin'=>false, 'message'=>__('Wrong username or password.')));
 		} else {
