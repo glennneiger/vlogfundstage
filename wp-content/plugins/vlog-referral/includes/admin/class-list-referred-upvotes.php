@@ -68,7 +68,7 @@ class Vlog_Referred_Upvotes extends WP_List_Table {
 				$counter++;
 			endforeach; //Endforeach
 		endif; //Endif
-		return $data;	  
+		return $data;
 	}
 	
 	/**
