@@ -20,9 +20,11 @@ class Vlogref_Admin{
 		//Add Winner Process Popup
 		add_action( 'admin_footer',	array( $this, 'referral_campaign_winner_process_popup' ) );
 		//Admin Scripts
-		add_action( 'admin_enqueue_scripts',array( $this, 'register_admin_scripts' ) );
-		//Admin Referral AJAX
-		add_action( 'wp_ajax_referral_winner_details',array( $this, 'referral_winner_popup_ajax' ) );
+		add_action( 'admin_enqueue_scripts',array( $this, 'register_admin_scripts' ) );		
+		//Add Referred Upvote Column in Product
+		add_filter( 'manage_product_posts_columns', array( $this, 'referral_product_admin_columns' ), 99 );
+		//Add Referred Upvote Column in Product Table Data
+		add_action( 'manage_product_posts_custom_column' , array( $this, 'referral_product_admin_columns_data' ), 99, 2 );
 	}
 	/**
      * Register submenu
@@ -151,24 +153,37 @@ class Vlogref_Admin{
 		wp_enqueue_script('vlog-ref-admin-script', VLOGREF_PLUGIN_URL . '/assets/js/script-admin.js', array('jquery'), NULL, true );
 	}
 	/**
-	 * Admin Script
+     * Add Products Column
 	 *
-	 * Handles to admin scripts
-	 **/
-	/*public function referral_winner_popup_ajax(){
-		
-		if( isset( $_POST['campaign'] ) && !empty( $_POST['campaign'] ) 
-			&& isset( $_POST['user'] ) && !empty( $_POST['user'] ) ) :
-			$campaign = $_POST['campaign'];
-			$user = $_POST['user'];
-			$prizes = vlogref_referral_prizes( $campaign );
-			if( !empty( $prizes ) ) : //Prizes
-				
-			endif; //Endif			
-			wp_die();
-		endif; //Endif
-	}*/
-	 
+     * @since Vlog Referral 1.0
+     **/
+    public function referral_product_admin_columns( $columns ){	
+		return array_merge( $columns, 
+					array( 'referred_upvotes' => __('Referred Upvotes', 'vlog-referral') ) );
+	}
+	/**
+     * Add Products Column Data
+	 *
+     * @since Vlog Referral 1.0
+     **/
+    public function referral_product_admin_columns_data( $column, $post_id ){
+		global $wpdb;
+		$table_name = VLOG_REFERRAL_TABLE;
+		switch ( $column ) {
+			case 'referred_upvotes' :				
+				$sql = "SELECT COUNT(upvoted) AS upvotes, referred_by FROM $table_name 
+						WHERE 1=1 AND campaign='%d' AND upvoted=1 
+						GROUP BY campaign, referred_by ORDER BY upvotes DESC LIMIT 0,1";
+				$camp_topper = $wpdb->get_row( $wpdb->prepare( $sql, $post_id ), ARRAY_A );
+				if( !empty( $camp_topper ) ) : //Check Topper					
+					$user = get_userdata( $camp_topper['referred_by'] );
+					printf('<a href="%1$s" target="_blank">%2$s (%3$d)</a>', get_edit_user_link($user->ID), $user->user_login, $camp_topper['upvotes'] );
+				else : //Else
+					echo '&mdash;';	
+				endif; //Endif
+				break;
+		}
+	}
 }
 //Run Class
 $vlogref_admin = new Vlogref_Admin();
