@@ -71,7 +71,7 @@ class Vlogref_Admin{
 				.vf-ref-popup-wrapper h2{ margin-top: 0; }
 				.vf-ref-popup-wrapper .close{ position: absolute; top: 20px; right: 30px; transition: all 200ms; font-size: 30px; font-weight: bold; text-decoration: none; color: #333; }
 				.vf-ref-popup-wrapper .close:hover{ color: #06D85F; }
-				.vf-ref-popup-wrapper .content{ max-height: 30%; overflow: auto; }
+				.vf-ref-popup-wrapper .content{ overflow: auto; }
 				.vf-ref-popup-wrapper .spinner{ text-align: center; margin: 0 auto; float: none; display: block; }
 				.vf-ref-popup-wrapper .content label{ padding:5px 0; display:block; }
 				.vf-ref-popup-wrapper .content a{ margin-top:10px; }
@@ -92,11 +92,12 @@ class Vlogref_Admin{
 										if( in_array($prize,$given_prizes) ) :
 											$won_userid = array_search($prize,$given_prizes);
 											$userdata = get_userdata($won_userid);
-											$already_won .= sprintf(' - %1$s <a href="%2$s" target="_blank"><strong>%3$s</strong></a>',__('won by','vlog-referral'), get_edit_user_link($userdata->ID), $userdata->user_login);
+											$already_won .= sprintf('<span class="won"> - %1$s <a href="%2$s" target="_blank"><strong>%3$s</strong></a></span>',__('won by','vlog-referral'), get_edit_user_link($userdata->ID), $userdata->user_login);
 										endif; //Endif
 										echo '<label for="winning_prize_'.$prize.'">';										
 										echo '<input type="radio" name="winning_prize" id="winning_prize_'.$prize.'" value="'.$prize.'" '.checked($checked, $prize, false).'/>'.$prize_data['title'];
-										echo '</label>'.$already_won;
+										echo $already_won;
+										echo '</label>';
 									endforeach; //Endforeach
 									echo '<input type="hidden" name="winning_user" id="winning_user"/>';
 									echo '<a class="button-primary declare-btn" href="'.add_query_arg( array( 'page' => 'referred-upvotes', 'campaign' => $_GET['campaign'] ), admin_url('edit.php?post_type=product') ).'">'.__('Make Winner!','vlog-referral').'</a>';
