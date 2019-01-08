@@ -20,14 +20,16 @@
 			var $user_id = $(this).data('user');
 			var $user_name = $(this).data('username');
 			var $popup_wrap = $('#winner-process .vf-ref-popup-wrapper');
-			var $prize = $popup_wrap.find('input[name^="winning_prize"]').val();
-			var $declareurl = $popup_wrap.find('.declare-btn').attr('href');
-			$declareurl = updateQueryStringParameter($declareurl,'prize', $prize);
-			$declareurl = updateQueryStringParameter($declareurl,'winner', $user_id);			
 			$('#winner-process').css({'visibility': 'visible', 'opacity': 1});
 			$popup_wrap.find('input#winning_user').val($user_id);
 			$popup_wrap.find('h2.popup-title').find('span.username').html($user_name);
-			$popup_wrap.find('.declare-btn').attr('href', $declareurl);
+			if( typeof $popup_wrap.find('.declare-btn') != 'undefined' ){
+				var $prize = $popup_wrap.find('input[name^="winning_prize"]').val();
+				var $declareurl = $popup_wrap.find('.declare-btn').attr('href');
+				$declareurl = updateQueryStringParameter($declareurl,'prize', $prize);
+				$declareurl = updateQueryStringParameter($declareurl,'winner', $user_id);				
+				$popup_wrap.find('.declare-btn').attr('href', $declareurl);
+			}
 			return false;
 		});
 		//Close Popup

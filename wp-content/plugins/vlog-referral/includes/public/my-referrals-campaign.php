@@ -124,14 +124,26 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						<h3><?php _e('You won the following prize','vlog-referral');?></h3>
 						<?php $price_data = vlogref_get_prize_details( $winners[$userdata->ID] ); ?>
 						<div class="vf-referral-prize prize-1"> <i class="fas fa-trophy"></i> <span><strong><?php echo $price_data['title'];?></strong></span> </div>
-					<?php endif; //Endif ?>
-					<?php if( empty( $winner ) && vlogref_is_referral_enable( $campaign ) ) : //Loser ?>
+					<?php endif; //Endif 
+						$prizes = vlogref_referral_prizes($campaign); //Get Campaign Prizes ?>
+					<?php if( empty( $winner ) && vlogref_is_referral_enable( $campaign ) && !empty( $prizes ) ) : //On-going ?>
 						<h3><?php _e('The prizes','vlog-referral');?></h3>
-						<div class="vf-referral-prize prize-1"> <i class="fas fa-trophy"></i> <span><strong><?php _e('The Top spot','vlog-referral');?></strong> <?php _e('receives a goodie box!','vlog-referral');?></span></div>
-						<div class="vf-referral-prize prize prize-2"> <i class="fas fa-trophy"></i> <span><strong><?php _e('Top 5 referrers','vlog-referral');?></strong> <?php _e('receive a hoodie.','vlog-referral');?></span></div>
-						<div class="vf-referral-prize prize prize-3"> <i class="fas fa-trophy"></i> <span><strong><?php _e('Refer 5 friends','vlog-referral');?></strong> <?php _e('to receive an official t-shirt.','vlog-referral');?></span></div>
-						<div class="vf-referral-prize prize mbn prize-4"> <i class="fas fa-heart"></i> <span><strong><?php _e('Karma','vlog-referral');?></strong> <?php _e('for helping us spread the word and making collabs come true!','vlog-referral');?></span></div>
+						<?php $prize_counter = 1;
+						foreach( $prizes as $prize ) : //List Prizes
+							$prize_data = vlogref_get_prize_details( $prize ); ?>
+							<div class="vf-referral-prize prize-<?php echo $prize_counter;?>">
+								<?php //Image of Prize
+									echo !empty( $prize_data['img'] ) 	? '<img src="'.esc_url($prize_data['img']).'" alt="'.$prize_data['title'].'"/>' : '<i class="fas fa-trophy"></i>';	
+									//Title of Prize
+									echo !empty( $prize_data['title'] ) ? sprintf('<span><strong>%1$s</strong></span>', $prize_data['title'] ) : '';
+									//Description of Prize
+									echo !empty( $prize_data['desc'] ) 	? sprintf('<p class="description">%1$s</p>', $prize_data['desc'] ) : '';
+								?>
+							</div><!--/.vf-referral-prize-->
+						<?php $prize_counter++;
+						endforeach; //Endforeach ?>						
 					<?php endif; //Endif ?>
+					<div class="vf-referral-prize prize mbn"> <i class="fas fa-heart"></i> <span><strong><?php _e('Karma','vlog-referral');?></strong> <?php _e('for helping us spread the word and making collabs come true!','vlog-referral');?></span></div>
 				</div><!--/referral-prizes-->			
 		</div><!--/.vf-referral-col-->
 	</div><!--/.vf-referral-->

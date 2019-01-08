@@ -63,7 +63,7 @@ class Vlogref_Admin{
 	 * @since Vlog Referral 1.0
 	 **/
 	public function referral_campaign_winner_process_popup(){ 
-	
+		global $pagenow;
 		if( isset( $_GET['page'] ) && $_GET['page'] == 'referred-upvotes' 
 			&& isset( $_GET['campaign'] ) && !empty( $_GET['campaign'] ) ) : //Check Page
 			$campaign = $_GET['campaign']; ?>
@@ -83,30 +83,30 @@ class Vlogref_Admin{
 				<div class="vf-ref-popup-wrapper">
 					<h2 class="popup-title"><?php printf( '%1$s <span class="username"></span> %2$s <a href="%3$s" target="_blank">%4$s</a>', __('Make','vlog-referral'), __('winner for','vlog-referral'), get_permalink( $_GET['campaign'] ), get_the_title( $_GET['campaign'] ) );?></h2><a class="close" href="#">&times;</a>
 					<div class="content">
-						<h3><?php _e('Choose Prize', 'vlog-referral');?></h3>
-							<?php $prizes = vlogref_referral_prizes($campaign);
-								$given_prizes = vlogref_get_campaign_winners($campaign);
-								if( !empty( $prizes ) ) : //Prizes
-									foreach( $prizes as $key => $prize ) :
-										$checked = ( $key == 0 ) ? $prize : '';
-										$prize_data = vlogref_get_prize_details( $prize );
-										$already_won = '';
-										if( in_array($prize,$given_prizes) ) :
-											$won_userid = array_search($prize,$given_prizes);
-											$userdata = get_userdata($won_userid);
-											$already_won .= sprintf('<span class="won"> - %1$s <a href="%2$s" target="_blank"><strong>%3$s</strong></a></span>',__('won by','vlog-referral'), get_edit_user_link($userdata->ID), $userdata->user_login);
-										endif; //Endif
-										echo '<label for="winning_prize_'.$prize.'">';										
-										echo '<input type="radio" name="winning_prize" id="winning_prize_'.$prize.'" value="'.$prize.'" '.checked($checked, $prize, false).'/>'.$prize_data['title'];
-										echo $already_won;
-										echo '</label>';
-									endforeach; //Endforeach
-									echo '<input type="hidden" name="winning_user" id="winning_user"/>';
-									echo '<a class="button-primary declare-btn" href="'.add_query_arg( array( 'page' => 'referred-upvotes', 'campaign' => $_GET['campaign'] ), admin_url('edit.php?post_type=product') ).'">'.__('Make Winner!','vlog-referral').'</a>';
-								else :
-									echo '<p>'.__('There is no prizes setup for this campaign.','vlog-referral').'</p>';
-								endif; //Endif 
-							?>							
+						<?php $prizes = vlogref_referral_prizes($campaign);
+							$given_prizes = vlogref_get_campaign_winners($campaign);
+							if( !empty( $prizes ) ) : //Prizes
+								echo '<h3>'.__('Choose Prize', 'vlog-referral').'</h3>';
+								foreach( $prizes as $key => $prize ) :
+									$checked = ( $key == 0 ) ? $prize : '';
+									$prize_data = vlogref_get_prize_details( $prize );
+									$already_won = '';
+									if( in_array($prize,$given_prizes) ) :
+										$won_userid = array_search($prize,$given_prizes);
+										$userdata = get_userdata($won_userid);
+										$already_won .= sprintf('<span class="won"> - %1$s <a href="%2$s" target="_blank"><strong>%3$s</strong></a></span>',__('won by','vlog-referral'), get_edit_user_link($userdata->ID), $userdata->user_login);
+									endif; //Endif
+									echo '<label for="winning_prize_'.$prize.'">';										
+									echo '<input type="radio" name="winning_prize" id="winning_prize_'.$prize.'" value="'.$prize.'" '.checked($checked, $prize, false).'/>'.$prize_data['title'];
+									echo $already_won;
+									echo '</label>';
+								endforeach; //Endforeach
+								echo '<input type="hidden" name="winning_user" id="winning_user"/>';
+								echo '<a class="button-primary declare-btn" href="'.add_query_arg( array( 'page' => 'referred-upvotes', 'campaign' => $_GET['campaign'] ), admin_url('edit.php?post_type=product') ).'">'.__('Make Winner!','vlog-referral').'</a>';
+							else :
+								echo '<p>'.__('There is no prizes setup for this campaign.','vlog-referral').'</p>';
+							endif; //Endif 
+						?>							
 					</div><!--/.content-->
 				</div><!--/.vf-ref-popup-wrapper-->
 			</div><!--/.vf-ref-overlay-->
