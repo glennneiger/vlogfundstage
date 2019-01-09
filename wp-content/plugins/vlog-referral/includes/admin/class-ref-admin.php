@@ -136,7 +136,23 @@ class Vlogref_Admin{
 			endif; //Endif			
 			update_user_meta($user, 	'_referral_won', $user_won); //Update Won Capaigns
 			update_post_meta($campaign, '_referral_winners', $winners); //Update to Campaign for Winner		
-			update_post_meta($campaign, 'wpcf-campaign_referral_enable',0); //Disable Referral for Campaign			
+			update_post_meta($campaign, 'wpcf-campaign_referral_enable',0); //Disable Referral for Campaign
+			//Send Notification to User
+			$userdata 		= get_userdata( $user );
+			$prize_data 	= vlogref_get_prize_details( $prize );
+			$prize_img  	= !empty( $prize_data['img'] ) ? '<img class="vf-email-prize-img" src="'.$prize_data['img'].'" alt="'.$prize_data['title'].'"/>' : ''; //Prize Image		
+			ob_start();
+			include_once( VLOGREF_PLUGIN_PATH . 'includes/emails/upvote-winner.php' );
+			$email_body = ob_get_contents();
+			ob_get_clean();
+			$email_subject	= 'Congrats. You won!';
+			$find_vars 		= array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%PRIZE_TITLE%%', '%%PRIZE_IMG%%');
+			$replace_vars 	= array( get_the_title( $campaign ), get_permalink( $campaign ), $campaign, $prize_data['title'], $prize_img );			
+			$email_subject 	= str_replace( $find_vars, $replace_vars, $email_subject );
+			$email_body 	= str_replace( $find_vars, $replace_vars, $email_body );
+			add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );			
+			//Email to User
+			wp_mail( $userdata->user_email, $email_subject, $email_body );			
 			wp_safe_redirect( add_query_arg( array( 'winner' => false, 'won' => $user, 'prize' => $prize ) ) );
 			exit;
 		endif; //Endif
