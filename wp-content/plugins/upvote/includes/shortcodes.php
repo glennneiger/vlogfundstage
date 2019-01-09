@@ -40,7 +40,9 @@ function upvote_button_shortcode( $atts, $content = null ){
 
 	//Button for Vote
 	$content = '<div class="upvote-container-big">';
-	if( !is_user_logged_in() && ( ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
+	if( !is_user_logged_in() && 
+		( ( isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) 
+			|| ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button">
 						<a href="#register"><button class="upvote-btn" data-id="'.$postid.'">'.$label.'</button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
