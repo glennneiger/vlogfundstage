@@ -23,7 +23,7 @@
 			$('#winner-process').css({'visibility': 'visible', 'opacity': 1});
 			$popup_wrap.find('input#winning_user').val($user_id);
 			$popup_wrap.find('h2.popup-title').find('span.username').html($user_name);
-			if( typeof $popup_wrap.find('.declare-btn') != 'undefined' ){
+			if( $popup_wrap.find('.declare-btn').length ){
 				var $prize = $popup_wrap.find('input[name^="winning_prize"]').val();
 				var $declareurl = $popup_wrap.find('.declare-btn').attr('href');
 				$declareurl = updateQueryStringParameter($declareurl,'prize', $prize);

@@ -11,13 +11,13 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 	$userdata = get_currentuserinfo();
 	$campaign = get_query_var('my-referrals');
 	$page 	= ( isset( $_GET['pg'] ) && !empty( $_GET['pg'] ) ) ? $_GET['pg'] : 1; 	
-	$winners	= vlogref_get_campaign_winners($campaign);
-	$ref_prizes = vlogref_referral_prizes( $campaign );	
+	$winners= vlogref_donations_get_campaign_winners($campaign);
+	$campaign_status = vlogref_campaign_status($campaign);
 	
 	if( !empty( $winners ) && !array_key_exists($userdata->ID, $winners) ) : //Loser ?>
 		<div class="sfc-campaign-status-notification sfc-campaign-status-notification-pending vf-referral-notice">
 		  	<div class="sfc-campaign-status-notification-item">
-				<div><i class="fas fa-check-circle"></i> <?php _e('The first phase has been completed.','vlog-referral');?></div><br />
+				<div><i class="fas fa-check-circle"></i> <?php _e('The second phase has been completed.','vlog-referral');?></div><br />
 			</div><!--/.sfc-campaign-status-notification-item-->
 		</div><!--/.sfc-campaign-status-notification-->
 	<?php elseif( !empty( $winners ) && array_key_exists($userdata->ID, $winners) ) : //Winner ?>
@@ -40,9 +40,9 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 				<?php endif; //Endif ?>
 				<br><h3 class="vf-ambassador-name"><?php echo $userdata->user_login;?></h3>
 				<div class="vf-ambassador-stats">
-					<div class="vf-abassador-stat"><?php echo vlogref_user_campaign_referral_count($campaign);?><br><span><?php _e('Your Referrals','vlog-referral');?></span></div>
-					<div class="vf-abassador-stat">#<?php echo vlogref_user_position($campaign, $userdata->ID);?><br><span><?php _e('Current Position','vlog-referral');?></span></div>
-					<div class="vf-abassador-stat"><?php echo vlogref_campaign_upvotes_goal($campaign);?> <br><span><?php _e('Goal','vlog-referral');?></span></div>
+					<div class="vf-abassador-stat"><?php echo vlogref_price( vlogref_donations_user_referred_amount($campaign) );?><br><span><?php _e('Your Referrals','vlog-referral');?></span></div>
+					<div class="vf-abassador-stat">#<?php echo vlogref_donations_user_rank($campaign, $userdata->ID);?><br><span><?php _e('Current Position','vlog-referral');?></span></div>
+					<div class="vf-abassador-stat"><?php echo vlogref_price( vlogref_donations_campaign_goal($campaign) );?> <br><span><?php _e('Goal','vlog-referral');?></span></div>
         		</div><!--/.vf-ambassador-stats-->
 			</div><!--/.vf-referral-current-->
 			<div class="vf-referral-ranking">
@@ -51,11 +51,11 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						<tr>
 						  <th class="woocommerce-orders-table__header woocommerce-orders-table__header-order-number"><span class="nobr"><?php _e('Position', 'vlog-referral');?></span></th>
 						  <th class="woocommerce-orders-table__header woocommerce-orders-table__header-order-date"><span class="nobr"><?php _e('Name', 'vlog-referral');?></span></th>
-						  <th class="woocommerce-orders-table__header woocommerce-orders-table__header-order-status"><span class="nobr"><?php _e('Referred Upvotes', 'vlog-referral');?></span></th>
+						  <th class="woocommerce-orders-table__header woocommerce-orders-table__header-order-status"><span class="nobr"><?php _e('Referred Donations', 'vlog-referral');?></span></th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php if( $rankings = vlogref_get_campaign_referrals( array( 'campaign' => $campaign, 'page' => $page ) ) ) : //Chek Ranking Not Empty							
+						<?php if( $rankings = vlogref_donations_get_campaign_referrals( array( 'campaign' => $campaign, 'page' => $page, 'limit' => 20 ) ) ) : //Chek Ranking Not Empty							
 							foreach( $rankings as $rank ) : //Loop to List Referrals
 								$referred_by = get_userdata($rank['referred_by']);								
 								$winner_str = '';
@@ -66,13 +66,13 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 								endif; //Endif ?>
 								<tr class="woocommerce-orders-table__row woocommerce-orders-table__row--status-on-hold order">
 									<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-number" data-title="<?php _e('Position', 'vlog-referral');?>">
-										<?php echo '#'.vlogref_user_position($campaign, $referred_by->ID) . $winner_str;?>
+										<?php echo '#'.vlogref_donations_user_rank($campaign, $referred_by->ID) . $winner_str;?>
 									</td>
 									<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-date" data-title="<?php _e('Name', 'vlog-referral');?>">
 										<time><?php echo ucfirst($referred_by->user_login);?></time>
 									</td>
-									<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="<?php _e('Upvotes', 'vlog-referral');?>">
-										<span><strong>↑</strong><span class="upvote-count-sc"> <?php echo $rank['upvotes'];?></span></span>
+									<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="<?php _e('Donations', 'vlog-referral');?>">
+										<span><span class="upvote-count-sc"> <?php echo vlogref_price($rank['donation']);?></span></span>
 									</td>
 								</tr>
 						<?php endforeach; //Endforeach
@@ -84,7 +84,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 					</tbody>
 				</table>		
 				<?php include_once( VLOGREF_PLUGIN_PATH . '/includes/public/class-ref-paginator.php');
-					$vlogref_campaign_paginator  = new Vlogref_Paginator( "SELECT COUNT(upvoted) AS upvotes FROM ".VLOG_REFERRAL_TABLE." WHERE 1=1 AND campaign='$campaign' AND upvoted=1 GROUP BY referred_by ORDER BY upvotes DESC;" );
+					$vlogref_campaign_paginator  = new Vlogref_Paginator( "SELECT COUNT(donated) AS donated,SUM(amount) AS donations FROM ".VLOG_REFERRAL_TABLE." WHERE 1=1 AND campaign='$campaign' AND donated=1 GROUP BY referred_by ORDER BY donations DESC;" );
 					echo $vlogref_campaign_paginator->createLinks(); 
 				?>				
 			</div><!--/.vf-referral-ranking-->
@@ -92,7 +92,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 		<div class="vf-referral-col">
 			<?php echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" ids="'.$campaign.'"]'); ?>      		
 			<?php if( empty( $winners ) && vlogref_is_referral_enable( $campaign ) ) : //Check Campaign Active ?>
-				<h3 style="margin:30px 0 0 0;"><?php _e('Get your friends to upvote with this unique URL:','vlog-referral');?></h3><br>
+				<h3 style="margin:30px 0 0 0;"><?php _e('Get your friends to donations with this unique URL:','vlog-referral');?></h3><br>
 				<input type="text" class="sf-mc-email" value="<?php echo do_shortcode('[vlog_referral_url id="'.$campaign.'"]');?>" style="background: #eee;"><br>
 				<ul class="sf-sharing-buttons-inline">
 					<li class="sf-sharing-button-facebook">
@@ -116,21 +116,21 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 				</ul>
 			<?php endif; //Endif
 			if( !empty( $winners ) ) : //Check Winner Declare ?>
-				<h3 style="margin: 30px 0 0 0;"><?php _e('The first phase of this campaign has been completed','vlog-referral');?></h3><br>
+				<h3 style="margin: 30px 0 0 0;"><?php _e('The second phase of this campaign has been completed','vlog-referral');?></h3><br>
 			<?php endif; //Endif ?>
 				<br>
 				<div id="referral-prizes">
 					<?php if( !empty( $winners ) && array_key_exists($userdata->ID, $winners) ) : //Current User Winner ?>
 						<h3><?php _e('You won the following prize','vlog-referral');?></h3>
-						<?php $price_data = vlogref_get_prize_details( $winners[$userdata->ID] ); ?>
+						<?php $price_data = vlogref_donations_prize_details( $winners[$userdata->ID] ); ?>
 						<div class="vf-referral-prize prize-1"> <i class="fas fa-trophy"></i> <span><strong><?php echo $price_data['title'];?></strong></span> </div>
 					<?php endif; //Endif 
-						$prizes = vlogref_referral_prizes($campaign); //Get Campaign Prizes ?>
-					<?php if( empty( $winner ) && vlogref_is_referral_enable( $campaign ) && !empty( $prizes ) ) : //On-going ?>
+						$prizes = vlogref_donations_referral_prizes($campaign); //Get Campaign Prizes ?>
+					<?php if( empty( $winners ) && vlogref_is_referral_enable( $campaign ) && !empty( $prizes ) ) : //On-going ?>
 						<h3><?php _e('The prizes','vlog-referral');?></h3>
 						<?php $prize_counter = 1;
 						foreach( $prizes as $prize ) : //List Prizes
-							$prize_data = vlogref_get_prize_details( $prize ); ?>
+							$prize_data = vlogref_donations_prize_details( $prize ); ?>
 							<div class="vf-referral-prize prize-<?php echo $prize_counter;?>">
 								<?php //Image of Prize
 									echo !empty( $prize_data['img'] ) 	? '<img src="'.esc_url($prize_data['img']).'" alt="'.$prize_data['title'].'"/>' : '<i class="fas fa-trophy"></i>';	

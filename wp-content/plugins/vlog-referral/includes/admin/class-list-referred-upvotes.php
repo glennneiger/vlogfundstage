@@ -49,16 +49,15 @@ class Vlog_Referred_Upvotes extends WP_List_Table {
 		
 		$data = array();
 		$table_name = VLOG_REFERRAL_TABLE;		
-		$rankings = $wpdb->get_results( "SELECT COUNT(upvoted) AS upvotes, campaign
+		$rankings = $wpdb->get_results( "SELECT SUM(upvoted) AS upvotes, campaign
 										FROM $table_name WHERE 1=1 AND upvoted=1
-										GROUP BY campaign 
-										ORDER BY upvotes DESC;", ARRAY_A );
+										GROUP BY campaign ORDER BY upvotes DESC;", ARRAY_A );
 		if( !empty( $rankings ) ) :
 			$counter = 1;
 			foreach( $rankings as $rank ) :
-				$total_signup 	= $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE 1=1 AND campaign='".$rank['campaign']."';");
+				$total_signup 	= $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE 1=1 AND campaign='".$rank['campaign']."' AND upvoted=1;");
 				$total_upvotes	= vlogref_campaign_upvotes($rank['campaign']);
-				$campaign_goal 	= vlogref_campaign_upvotes_goal($rank['campaign']);
+				$campaign_goal 	= vlogref_upvotes_campaign_goal($rank['campaign']);
 				$data[] = array( 'position' 	=> $counter,
 								'campaign' 		=> sprintf('<a href="%1$s">%2$s</a>', add_query_arg( array( 'page' => 'referred-upvotes', 'campaign' => $rank['campaign'] ), admin_url('edit.php?post_type=product') ), get_the_title( $rank['campaign'] ) ),
 								'total_upvotes' => $total_upvotes.'/'.$campaign_goal,

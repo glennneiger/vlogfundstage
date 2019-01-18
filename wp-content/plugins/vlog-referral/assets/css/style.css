@@ -4,13 +4,8 @@
 .vf-referral-col .sfc-campaign-images { margin-top: 0; }
 .vf-referral-col .sfc-campaign-image { height:auto; }
 .vf-referral-prize img{ max-width:50px; width:100%; margin-right:10px; }
-.vf-referral{
-    max-width: 1200px;
-    margin: auto;
-    display: flex;
-    flex-wrap: wrap;
-
-}
+.vf-referral{ max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; }
+table.vf-my-referrals{ width:auto; }
 .vf-referral-col{
 	flex: 1;
     margin: 10px;
@@ -43,12 +38,13 @@
     justify-content: space-around;
     text-align: center;
 }
-.vf-abassador-stat{
+.vf-abassador-stat, .vf-abassador-stat span.amount, .vf-abassador-stat span.amount span{
 	margin: 15px 10px;
     font-weight: bold;
     font-size: 25px;
     flex: 1;
 }
+.vf-abassador-stat span.amount span{ margin:0; }
 .vf-abassador-stat span{
 	font-size: 13px;
     font-weight: normal;

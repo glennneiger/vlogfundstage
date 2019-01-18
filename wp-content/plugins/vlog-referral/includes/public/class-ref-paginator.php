@@ -34,8 +34,9 @@ class Vlogref_Paginator {
 		$last	= ceil( $this->_total / $this->_limit );	 
 		$start  = ( ( $this->_page - $links ) > 0 ) ? $this->_page - $links : 1;
 		$end    = ( ( $this->_page + $links ) < $last ) ? $this->_page + $links : $last;
-		$html = '';
-		if( $start != $last ) :
+		$html = '';		
+		if( $start > 1 && $start != $last ) :
+		
 			$html   .= '<ul class="wpv-pagination-nav-links-container js-wpv-pagination-nav-links-container pagination">';		
 				if( $this->_page != 1 ) :
 					$html   .= '<li class="wpv-pagination-nav-links-item js-wpv-pagination-nav-links-item page-item wpv-page-link-232-TCPID226-1 js-wpv-page-link-232-TCPID226-1 ' . $class . '"><a href="'.add_query_arg('pg',( $this->_page - 1 )).'"><i class="fa fa-angle-left"></i></a></li>';

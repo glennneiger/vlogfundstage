@@ -38,8 +38,10 @@ function ajax_login(){
   	$info = array();
     $info['user_login'] = $_POST['username'];
     $info['user_password'] = $_POST['password'];
-    $info['remember'] = true;
+    $info['remember'] = true;	
 	$user_signon = wp_signon( $info, false );
+	//Vlog Login Hook
+	do_action('vlog_user_login', $user_signon, $_POST); //Added for Referral Plugin
     if ( is_wp_error($user_signon) ){
 		echo json_encode(array('loggedin'=>false, 'message'=>__('Wrong username or password.')));
     } else {
