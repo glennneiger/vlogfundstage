@@ -219,8 +219,7 @@ class Vlogref_Admin{
      * @since Vlog Referral 1.0
      **/
     public function referral_product_admin_columns( $columns ){	
-		return array_merge( $columns, 
-					array( 'referred' => __('Referred', 'vlog-referral') ) );
+		return array_merge( $columns, array( 'referred' => __('Referred', 'vlog-referral') ) );
 	}
 	/**
      * Add Products Column Data

@@ -13,19 +13,21 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 	$page 	= ( isset( $_GET['pg'] ) && !empty( $_GET['pg'] ) ) ? $_GET['pg'] : 1; 	
 	$winners= vlogref_upvotes_get_campaign_winners($campaign);
 	
-	if( !empty( $winners ) && !array_key_exists($userdata->ID, $winners) ) : //Loser ?>
+	if( !empty( $winners ) ) : //Check Winner
+		if( !array_key_exists($userdata->ID, $winners) ) : //Loser ?>
 		<div class="sfc-campaign-status-notification sfc-campaign-status-notification-pending vf-referral-notice">
 		  	<div class="sfc-campaign-status-notification-item">
 				<div><i class="fas fa-check-circle"></i> <?php _e('The first phase has been completed.','vlog-referral');?></div><br />
 			</div><!--/.sfc-campaign-status-notification-item-->
 		</div><!--/.sfc-campaign-status-notification-->
-	<?php elseif( !empty( $winners ) && array_key_exists($userdata->ID, $winners) ) : //Winner ?>
+	<?php elseif( array_key_exists($userdata->ID, $winners) ) : //Winner ?>
 		<div class="sfc-campaign-status-notification sfc-campaign-status-notification-pending vf-referral-notice">
 		  	<div class="sfc-campaign-status-notification-item">
 				<div><i class="fas fa-check-circle"></i> <?php _e('You won! Thank you for refering this collaboration.','vlog-referral');?></div><br />
 			</div>		
 		</div>
-	<?php endif; //Endif ?>
+	<?php endif; //Endif
+	endif; //Endif ?>
 	
 	<div class="vf-referral">
     	<div class="vf-referral-col">
@@ -119,12 +121,16 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 			<?php endif; //Endif ?>
 				<br>
 				<div id="referral-prizes">
-					<?php if( !empty( $winners ) && array_key_exists($userdata->ID, $winners) ) : //Current User Winner ?>
-						<h3><?php _e('You won the following prize','vlog-referral');?></h3>
-						<?php $price_data = vlogref_upvotes_prize_details($winners[$userdata->ID]); ?>
-						<div class="vf-referral-prize prize-1"> <i class="fas fa-trophy"></i> <span><strong><?php echo $price_data['title'];?></strong></span> </div>
-					<?php endif; //Endif						
-						$prizes = vlogref_upvotes_referral_prizes($campaign); //Get Campaign Prizes						
+					<?php if( !empty( $winners ) ) : //Current User Winner ?>						
+						<h3><?php _e('You won the following prize','vlog-referral');?></h3>						
+						<?php if( array_key_exists($userdata->ID, $winners) ) : //Check Winner
+							$price_data = vlogref_upvotes_prize_details($winners[$userdata->ID]); ?>
+							<div class="vf-referral-prize prize-1"> <i class="fas fa-trophy"></i> <span><strong><?php echo $price_data['title'];?></strong></span> </div>
+						<?php elseif( array_key_exists($userdata->ID, $winners) ) : //Check Looser ?>						
+							<div class="vf-referral-prize prize mbn"> <i class="fas fa-heart"></i> <span><strong><?php _e('Karma','vlog-referral');?></strong> <?php _e('for helping us spread the word and making collabs come true!','vlog-referral');?></span></div>						
+					<?php endif; //Endif
+						endif; //Endif
+					$prizes = vlogref_upvotes_referral_prizes($campaign); //Get Campaign Prizes						
 					if( empty( $winners ) && vlogref_is_referral_enable( $campaign ) && !empty( $prizes ) ) : //On-going ?>
 						<h3><?php _e('The prizes','vlog-referral');?></h3>
 						<?php $prize_counter = 1;
@@ -142,7 +148,6 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						<?php $prize_counter++;
 						endforeach; //Endforeach ?>						
 					<?php endif; //Endif ?>					
-					<div class="vf-referral-prize prize mbn"> <i class="fas fa-heart"></i> <span><strong><?php _e('Karma','vlog-referral');?></strong> <?php _e('for helping us spread the word and making collabs come true!','vlog-referral');?></span></div>
 				</div><!--/referral-prizes-->			
 		</div><!--/.vf-referral-col-->
 	</div><!--/.vf-referral-->

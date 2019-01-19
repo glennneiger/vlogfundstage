@@ -20,6 +20,8 @@ class Vlogref_Public{
 		add_shortcode('vlog_referral_url', 	array($this, 'referral_url'));
 		//Add Referral Data to User
 		add_action('vlog_user_register', 	array($this, 'update_user_register_referral'), 10, 2);
+		//Add Referral to Login Users
+		add_action('vlog_user_login', 		array($this, 'update_user_register_referral'), 10, 2);		
 		//When User Upvote
 		add_action('vlog_user_upvoted', 	array($this, 'referral_user_upvoted'), 10, 2);
 		//Add Woocommerce Account Tab
@@ -71,6 +73,7 @@ class Vlogref_Public{
 	 * @since Vlog Referral 1.0
 	 **/
 	public function update_user_register_referral( $user_id, $postdata ){
+		global $wpdb;
 		if( isset( $postdata['referral'] ) && !empty( $postdata['referral'] ) ) :
 			$ref_data = explode('_', base64_decode( $postdata['referral'] ) );			
 			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
@@ -83,7 +86,10 @@ class Vlogref_Public{
 						update_user_meta( $user_id, '_referred_by', $referred_id );
 					endif; //Endif
 					if( !vlogref_is_campaign_donation_enabled($campaign_id) ) : //Check Campaign Not In Donation Phase
-						$this->insert_referral( $update_args );
+						$ref_id = $wpdb->get_var('SELECT id FROM '.VLOG_REFERRAL_TABLE.' WHERE 1=1 AND user_id="'.$user_id.'" AND campaign="'.$campaign_id.'";');
+						if( empty( $ref_id ) ) : //Check User Exists
+							$this->insert_referral( $update_args );
+						endif; //Endif
 					endif; //Endif
 				endif; //Endif
 			endif; //Endif
