@@ -134,17 +134,13 @@ class Vlogref_Public{
 	**/
 	public function woo_account_endpoints(){
 		//Referrals Endpoint
-		add_rewrite_endpoint( 'my-referrals', 	EP_PAGES );
-		//add_rewrite_endpoint( 'donations', 	EP_PAGES );
-		//add_rewrite_endpoint( 'upvotes',		EP_PAGES );
+		add_rewrite_endpoint( 'my-referrals', 	EP_PAGES );		
 	}
 	/**
 	* Add Query Var for Woocommerce Endpoints
 	**/
 	public function woo_account_endpoints_query_vars( $vars ){
-		$vars[] = 'my-referrals'; 	//Referrals
-		//$vars[] = 'donations'; 	//Donation
-		//$vars[] = 'upvotes';		//Upvotes
+		$vars[] = 'my-referrals'; 	//Referrals		
 		return $vars;
 	}
 	/**
