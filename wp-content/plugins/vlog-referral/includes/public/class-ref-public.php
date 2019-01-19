@@ -42,6 +42,12 @@ class Vlogref_Public{
 		add_action('woocommerce_checkout_order_processed',	array($this, 'woo_add_donate_referral_to_order'), 99, 3);
 		//Order Complete Hook to Update Referrals
 		add_action('woocommerce_order_status_changed',		array($this, 'woo_insert_donate_referral'), 99, 4);
+		
+	}
+	public function referral_tabs_rewrite_rules($rules){
+		$newrules = array();
+    	$newrules[ 'my-referrals/?$/view/?$' ] = 'index.php?pagename=my-referrals&view=$matches[2]';
+    	return $newrules + $rules;
 	}
 	/**
 	 * Register Style / Scripts
@@ -134,13 +140,14 @@ class Vlogref_Public{
 	**/
 	public function woo_account_endpoints(){
 		//Referrals Endpoint
-		add_rewrite_endpoint( 'my-referrals', 	EP_PAGES );		
+		add_rewrite_endpoint( 'my-referrals', 	EP_ROOT | EP_PAGES );
 	}
 	/**
 	* Add Query Var for Woocommerce Endpoints
 	**/
 	public function woo_account_endpoints_query_vars( $vars ){
-		$vars[] = 'my-referrals'; 	//Referrals		
+		$vars[] = 'my-referrals'; 	//Referrals
+		$vars[] = 'view'; 	//View
 		return $vars;
 	}
 	/**
@@ -148,8 +155,7 @@ class Vlogref_Public{
 	**/
 	public function woo_account_referrals_content(){
 		global $user_ID, $wpdb;
-		$campaign = get_query_var('my-referrals');
-		//echo get_query_var('my-referrals');
+		$campaign = get_query_var('my-referrals');		
 		if( !empty( $campaign ) ) : //Check Referal Details Page
 			if( vlogref_upvotes_user_referred_signup_count( $campaign ) && vlogref_donations_user_referred_count( $campaign ) ) :
 				$upvotes_active 	= ( !isset( $_GET['view'] ) || $_GET['view'] == 'upvotes' ) ? ' is-active' : '';

@@ -127,14 +127,15 @@ class Vlogref_Admin{
 									else : //Else
 										$prize_data = vlogref_upvotes_prize_details( $prize );
 									endif; //Endif
-									$already_won = '';
+									$already_won = $disabled = '';
 									if( in_array($prize,$given_prizes) ) :
 										$won_userid = array_search($prize,$given_prizes);
 										$userdata = get_userdata($won_userid);
 										$already_won .= sprintf('<span class="won"> - %1$s <a href="%2$s" target="_blank"><strong>%3$s</strong></a></span>',__('won by','vlog-referral'), get_edit_user_link($userdata->ID), $userdata->user_login);
+										$disabled = 'disabled="disabled"';
 									endif; //Endif
 									echo '<label for="winning_prize_'.$prize.'">';										
-									echo '<input type="radio" name="winning_prize" id="winning_prize_'.$prize.'" value="'.$prize.'" '.checked($checked, $prize, false).'/>'.$prize_data['title'];
+									echo '<input type="radio" name="winning_prize" id="winning_prize_'.$prize.'" value="'.$prize.'" '.checked($checked, $prize, false).$disabled.'/>'.$prize_data['title'];
 									echo $already_won;
 									echo '</label>';
 								endforeach; //Endforeach
@@ -198,7 +199,7 @@ class Vlogref_Admin{
 			add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );			
 			//Email to User
 			wp_mail( $userdata->user_email, $email_subject, $email_body );			
-			wp_safe_redirect( add_query_arg( array( 'winner' => false, 'won' => $user, 'prize' => $prize ) ) );
+			wp_safe_redirect( add_query_arg( array('winner' => false, 'won' => $user, 'prize' => $prize ) ) );
 			exit;
 		endif; //Endif
 	}

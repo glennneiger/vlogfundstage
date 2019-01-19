@@ -53,6 +53,7 @@ class Vlog_Campaign_Donations extends WP_List_Table {
 			echo '<div class="updated notice"><p>'.sprintf('<a href="%1$s" target="_blank"><strong>%2$s</strong></a> %3$s <strong>%4$s</strong>', get_edit_user_link( $userdata->ID ), $userdata->user_login, __('declared as winner with prize', 'vlog-referral'), $prize['title'] ).'</p></div>';
 		endif; //Endif
 		$camp_donations = vlogref_donations_get_campaign_referrals( array('campaign' => $campaign) );
+		$camp_prizes = vlogref_donations_referral_prizes($campaign);
 		$counter = 1;
 		foreach( $camp_donations as $rank ) :
 			$user	= get_userdata( $rank['referred_by'] );
@@ -60,7 +61,7 @@ class Vlog_Campaign_Donations extends WP_List_Table {
 			$won_camp  	= vlogref_donations_get_user_won_campaigns( $user->ID );
 			$winner_str = '';
 			//Add Winner Button for Top #3
-			if( $counter <= 3 && !array_key_exists($user->ID, $winners) ) :
+			if( $counter <= count($camp_prizes) && !array_key_exists($user->ID, $winners) ) :
 				$winner_str .= sprintf('<a href="#winner-process" class="button-primary make-winner" data-user="%1$s" data-username="%2$s">%3$s</a><br>', $user->ID, $user->user_login, __('Make Winner!', 'vlog-referral') );
 			endif; //Endif
 			//Check Already Winner of This Campaign
