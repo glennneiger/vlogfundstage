@@ -42,7 +42,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 							$winner			= vlogref_donations_get_campaign_winners($campaign);
 							$total 			= '<span><span class="upvote-count-sc">'.$total.' / '.$campaign_goal.'</span></span>';
 							$total_referred = '<span><span class="upvote-count-sc">'.$total_referred.' / '.$campaign_goal.'</span></span>';
-							$view_link		= add_query_arg( 'view', 'donations', wc_get_endpoint_url('my-referrals').$campaign);
+							$view_link		= wc_get_endpoint_url('my-referrals').$campaign.'/view/donations/';
 						else : //Else
 							$total 			= vlogref_campaign_upvotes($campaign);
 							$total_referred = vlogref_upvotes_total_referred_count($campaign);
@@ -53,7 +53,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 							//$winner_str 	= ( intval( $winner ) === $user_ID ) ? '<span class="c-owner" style="font-size: 10px; border: 1px solid brown; padding: 2px;">'.__('You won').'</span>' : '';
 							$total 			= '<span><strong>↑</strong> <span class="upvote-count-sc">'.$total.' / '.$campaign_goal.'</span></span>';							
 							$total_referred = '<span><strong>↑</strong> <span class="upvote-count-sc">'.$total_referred.' / '.$campaign_goal.'</span></span>';
-							$view_link		= add_query_arg( 'view', 'upvotes', wc_get_endpoint_url('my-referrals').$campaign);
+							$view_link		= wc_get_endpoint_url('my-referrals').$campaign.'/view/upvotes/';
 						endif; //Endif ?>
 						<tr class="woocommerce-orders-table__row woocommerce-orders-table__row--status-on-hold order">
 							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-number" data-title="<?php _e('Referred Campaign','vlog-referral');?>"><?php printf('<a href="%1$s" target="_blank">%2$s</a> %3$s', get_permalink($campaign), get_the_title($campaign), $winner_str);?></td>

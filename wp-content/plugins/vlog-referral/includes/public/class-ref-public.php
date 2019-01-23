@@ -27,13 +27,15 @@ class Vlogref_Public{
 		//Add Woocommerce Account Tab
 		add_filter('woocommerce_account_menu_items', array($this, 'woo_account_tab_menu'), 99);
 		//Add Woocommerce Endpoints
-		add_action('init',					array($this, 'woo_account_endpoints') );
+		add_action('init',					array($this, 'woo_account_endpoints') );		
 		//Add Woocommerce Endpoints Query Vars
 		add_filter('query_vars', 			array($this, 'woo_account_endpoints_query_vars'), 0 );
 		//Add Woocommerce Referral Tab Content
 		add_action('woocommerce_account_my-referrals_endpoint', array( $this, 'woo_account_referrals_content') );
 		//Redirect User to My Referrals when he manually change the campaign ID on URL
 		add_action('wp', 					array($this, 'referral_redirect') );
+		//Add Script for Referral Page
+		add_action('wp_footer',				array($this, 'referral_footer_script'));
 		
 		//Donation Phase
 		//Update Add to Cart Redirect
@@ -43,12 +45,7 @@ class Vlogref_Public{
 		//Order Complete Hook to Update Referrals
 		add_action('woocommerce_order_status_changed',		array($this, 'woo_insert_donate_referral'), 99, 4);
 		
-	}
-	public function referral_tabs_rewrite_rules($rules){
-		$newrules = array();
-    	$newrules[ 'my-referrals/?$/view/?$' ] = 'index.php?pagename=my-referrals&view=$matches[2]';
-    	return $newrules + $rules;
-	}
+	}	
 	/**
 	 * Register Style / Scripts
 	 **/
@@ -56,6 +53,19 @@ class Vlogref_Public{
 		//Register Plugin Style
 		wp_enqueue_style('vlog-referral-style', VLOGREF_PLUGIN_URL . '/assets/css/style.css', array());
 	}
+	/**
+	 * Footer Scripts
+	 **/
+	public function referral_footer_script(){ ?>
+		<script type="text/jscript">
+			jQuery(document).ready(function($){
+				$('input.vf-referral-url').on('focus click', function(){
+					$(this).select();
+					document.execCommand('copy');
+				});
+			});
+		</script>
+	<?php }
 	/**
 	 * Render Referral Permalink
 	 *
@@ -140,14 +150,13 @@ class Vlogref_Public{
 	**/
 	public function woo_account_endpoints(){
 		//Referrals Endpoint
-		add_rewrite_endpoint( 'my-referrals', 	EP_ROOT | EP_PAGES );
+		add_rewrite_endpoint('my-referrals', EP_ROOT | EP_PAGES);		
 	}
 	/**
 	* Add Query Var for Woocommerce Endpoints
 	**/
 	public function woo_account_endpoints_query_vars( $vars ){
 		$vars[] = 'my-referrals'; 	//Referrals
-		$vars[] = 'view'; 	//View
 		return $vars;
 	}
 	/**
@@ -155,17 +164,18 @@ class Vlogref_Public{
 	**/
 	public function woo_account_referrals_content(){
 		global $user_ID, $wpdb;
-		$campaign = get_query_var('my-referrals');		
+		$campaign = get_query_var('my-referrals');
+		$view = $_GET['view'];	
 		if( !empty( $campaign ) ) : //Check Referal Details Page
 			if( vlogref_upvotes_user_referred_signup_count( $campaign ) && vlogref_donations_user_referred_count( $campaign ) ) :
-				$upvotes_active 	= ( !isset( $_GET['view'] ) || $_GET['view'] == 'upvotes' ) ? ' is-active' : '';
-				$donations_active 	= ( isset( $_GET['view'] ) && $_GET['view'] == 'donations' ) ? ' is-active' : '';
+				$upvotes_active 	= ( !isset( $view ) || $view == 'upvotes' ) ? ' is-active' : '';
+				$donations_active 	= ( isset( $view ) && $view == 'donations' ) ? ' is-active' : '';
 				echo '<nav class="woocommerce-MyAccount-navigation vf-referral-navigation"><ul>';
 				echo '<li class="woocommerce-MyAccount-navigation-link'.$upvotes_active.'"><a href="'.add_query_arg('view', 'upvotes').'">'.__('Upvotes','vlog-referral').'</a></li>';
 				echo '<li class="woocommerce-MyAccount-navigation-link'.$donations_active.'"><a href="'.add_query_arg('view', 'donations').'">'.__('Donations','vlog-referral').'</a></li>';
 				echo '</ul></nav>';
 			endif; //Endif
-			if( isset( $_GET['view'] ) && $_GET['view'] == 'donations' && vlogref_donations_user_referred_count( $campaign ) ) : //Check View and Campaign Status
+			if( isset( $view ) && $view == 'donations' && vlogref_donations_user_referred_count( $campaign ) ) : //Check View and Campaign Status
 				include_once( VLOGREF_PLUGIN_PATH . '/includes/public/my-campaign-donations.php');
 			else : //Else
 				include_once( VLOGREF_PLUGIN_PATH . '/includes/public/my-campaign-upvotes.php');
