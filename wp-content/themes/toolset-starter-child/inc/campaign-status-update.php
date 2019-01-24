@@ -146,11 +146,11 @@ function vlogfund_post_status_update( $post_id, $post ){
 		if( $sub_body = vlogfund_post_status_get_email_subject_body( $new_status ) ) :
 			$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
 			$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), $_note );
-			$email_subject = str_replace( $find_vars, $replace_vars, htmlspecialchars_decode( $sub_body['subject'] ) );
+			$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 			$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 			add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
 			//Email to Author
-			wp_mail( $author->user_email, $email_subject, $email_body );
+			wp_mail( $author->user_email, htmlspecialchars_decode( $email_subject ), $email_body );
 		endif; //Endif
 
 		//Old Vote and New Status Contribute
@@ -159,12 +159,12 @@ function vlogfund_post_status_update( $post_id, $post ){
 			if( !empty( $get_voted_users ) && ( $sub_body = vlogfund_post_status_get_email_subject_body( 'vote-contribute' ) ) ) : //Find Users who voted for this post
 				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
 				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), $_note );
-				$email_subject = str_replace( $find_vars, $replace_vars, htmlspecialchars_decode( $sub_body['subject'] ) );
+				$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 				$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 				add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
 				foreach( $get_voted_users as $user ) : //Loop to Send Email
 					//Email to Author
-					wp_mail( $user->user_email, $email_subject, $email_body );
+					wp_mail( $user->user_email, htmlspecialchars_decode($email_subject), $email_body );
 				endforeach;
 			endif; //Endif
 		endif; //Endif
@@ -192,11 +192,11 @@ function vlogfund_post_inserted_update( $post_id, $post ){
 	if( $sub_body = vlogfund_post_status_get_email_subject_body( $post->post_status ) ) :
 		$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
 		$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url() );
-		$email_subject = str_replace( $find_vars, $replace_vars, htmlspecialchars_decode( $sub_body['subject'] ) );
+		$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 		$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 		add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
 		//Email to Author
-		wp_mail( $author->user_email, $email_subject, $email_body );
+		wp_mail( $author->user_email, htmlspecialchars_decode( $email_subject ), $email_body );
 	endif; //Endif
 }
 //add_action('wp_insert_post', 'vlogfund_post_inserted_update', 10, 2 );
@@ -218,11 +218,11 @@ function vlogfund_post_cred_save_data($post_id, $form_data){
 			if( $sub_body = vlogfund_post_status_get_email_subject_body( $post_status ) ) :
 				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
 				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), '' );
-				$email_subject = str_replace( $find_vars, $replace_vars, htmlspecialchars_decode( $sub_body['subject'] ) );
+				$email_subject = str_replace( $find_vars, $replace_vars, $sub_body['subject'] );
 				$email_body = str_replace( $find_vars, $replace_vars, $sub_body['body'] );
 				add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
 				//Email to Author
-				wp_mail( $author->user_email, $email_subject, $email_body );
+				wp_mail( $author->user_email, htmlspecialchars_decode($email_subject), $email_body );
 			endif; //Endif
         endif; //Endif
     endif; //Endif	
