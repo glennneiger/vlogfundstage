@@ -2764,7 +2764,7 @@ function vlog_user_custom_columns_data( $val, $column, $user_id ) {
     switch($column) :
         case 'last_login' :
 			$last_login = get_user_meta( $user_id, 'last_login', time() );
-            $val = !empty( $last_login )? date('d/m/Y H:i:s', $last_login) : '&mdash;';
+            $val = !empty( $last_login )? date('d/m/Y', $last_login) : '&mdash;';
             break;
     endswitch;
     return $val;
