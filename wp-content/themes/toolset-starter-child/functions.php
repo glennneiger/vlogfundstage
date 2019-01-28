@@ -2747,3 +2747,26 @@ function  amp_add_google_analytics( $amp_template ) { ?>
      <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 
 <?php }
+
+//Last Login
+function vlog_user_last_login( $user_login, $user ) {
+    update_user_meta( $user->ID, 'last_login', time() );
+}
+add_action('wp_login', 'vlog_user_last_login', 10, 2);
+//Admin Column
+function vlog_user_custom_columns( $column ) {
+    $column['last_login'] = 'Last Login';
+    return $column;
+}
+add_filter('manage_users_columns', 'vlog_user_custom_columns');
+//Admin Column Data
+function vlog_user_custom_columns_data( $val, $column, $user_id ) {
+    switch($column) :
+        case 'last_login' :
+			$last_login = get_user_meta( $user_id, 'last_login', time() );
+            $val = !empty( $last_login )? date('d/m/Y H:i:s', $last_login) : '&mdash;';
+            break;
+    endswitch;
+    return $val;
+}
+add_filter('manage_users_custom_column', 'vlog_user_custom_columns_data', 10, 3);
