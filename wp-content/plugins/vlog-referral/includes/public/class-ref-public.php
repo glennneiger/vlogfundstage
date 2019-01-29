@@ -78,11 +78,11 @@ class Vlogref_Public{
 		), $atts, 'vlog_referral_url' ) );
 		$url = get_permalink( $id );
 		if( ( is_singular('product') || get_query_var('my-referrals') ) && is_user_logged_in() && vlogref_is_referral_enable($id) ) :
-			$referral = base64_encode( $id.'_'.$user_ID );
+			$referral = base64url_encode( $id.'_'.$user_ID );
 			$url = add_query_arg('referral', $referral, $url);
 		elseif( isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) : //Check Referral Exist
 			$url = add_query_arg('referral', $_GET['referral'], $url);
-		endif; //Endif
+		endif; //Endif	
 		return $url;
 	}
 	/**
@@ -93,7 +93,7 @@ class Vlogref_Public{
 	public function update_user_register_referral( $user_id, $postdata ){
 		global $wpdb;
 		if( isset( $postdata['referral'] ) && !empty( $postdata['referral'] ) ) :
-			$ref_data = explode('_', base64_decode( $postdata['referral'] ) );			
+			$ref_data = explode('_', base64url_decode( $postdata['referral'] ) );			
 			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
 				$update_args = array( 'user_id' => $user_id, 'registered' => 1 );
 				$campaign_id = $update_args['campaign'] = $ref_data[0];				
@@ -217,7 +217,7 @@ class Vlogref_Public{
 			session_start();
 		endif; //Endif		
 		if( isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) :
-			$ref_data = explode('_', base64_decode( $_GET['referral'] ) );
+			$ref_data = explode('_', base64url_decode( $_GET['referral'] ) );
 			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
 				if( vlogref_is_campaign_donation_enabled($ref_data[0]) ) : //Check Campaign Status is Donation
 					$_SESSION['referral'] = $_GET['referral'];
@@ -233,7 +233,7 @@ class Vlogref_Public{
 	public function woo_add_donate_referral_to_order( $order_id, $posted_data, $order ){
 		global $wpdb;
 		if( isset( $_SESSION['referral'] ) && !empty( $_SESSION['referral'] ) ) :			
-			$ref_data = explode('_', base64_decode( $_SESSION['referral'] ) );
+			$ref_data = explode('_', base64url_decode( $_SESSION['referral'] ) );
 			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
 				$campaign_id 	= intval( $ref_data[0] );
 				$donation_enable= get_post_meta($campaign_id, '_nyp',true);

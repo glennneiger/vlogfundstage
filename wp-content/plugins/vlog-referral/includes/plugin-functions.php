@@ -19,6 +19,26 @@ function vlogref_is_referral_enable($post_id = 0){
 	return !empty( $ref_enabled ) ? true : false;
 }
 endif;
+if( !function_exists('base64url_encode') ) :
+/**
+ * Base 64 Encode in Proper Manner
+ *
+ * @since Vlog Referral 1.0
+ **/
+function base64url_encode( $data ){
+	return rtrim( strtr( base64_encode( $data ), '+/', '-_'), '=');
+}
+endif;
+if( !function_exists('base64url_decode') ) :
+/**
+ * Base 64 Decode in Proper Manner
+ *
+ * @since Vlog Referral 1.0
+ **/
+function base64url_decode( $data ){
+	return base64_decode( strtr( $data, '-_', '+/') . str_repeat('=', 3 - ( 3 + strlen( $data )) % 4 ));
+}
+endif;
 if( !function_exists('vlogref_campaign_upvotes') ) :
 /**
  * Get Campaign Upvotes
