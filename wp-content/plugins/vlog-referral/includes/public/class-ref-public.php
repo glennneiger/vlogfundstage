@@ -21,7 +21,9 @@ class Vlogref_Public{
 		//Add Referral Data to User
 		add_action('vlog_user_register', 	array($this, 'update_user_register_referral'), 10, 2);
 		//Add Referral to Login Users
-		add_action('vlog_user_login', 		array($this, 'update_user_register_referral'), 10, 2);		
+		add_action('vlog_user_login', 		array($this, 'update_user_register_referral'), 10, 2);
+		//To Work with Woocommerce Social
+		add_action('wp',					array($this, 'update_user_social_register_referral'));
 		//When User Upvote
 		add_action('vlog_user_upvoted', 	array($this, 'referral_user_upvoted'), 10, 2);
 		//Add Woocommerce Account Tab
@@ -33,7 +35,7 @@ class Vlogref_Public{
 		//Add Woocommerce Referral Tab Content
 		add_action('woocommerce_account_my-referrals_endpoint', array( $this, 'woo_account_referrals_content') );
 		//Redirect User to My Referrals when he manually change the campaign ID on URL
-		add_action('wp', 					array($this, 'referral_redirect') );
+		add_action('wp', 					array($this, 'referral_redirect') );		
 		//Add Script for Referral Page
 		add_action('wp_footer',				array($this, 'referral_footer_script'));
 		
@@ -82,7 +84,7 @@ class Vlogref_Public{
 			$url = add_query_arg('referral', $referral, $url);
 		elseif( isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) : //Check Referral Exist
 			$url = add_query_arg('referral', $_GET['referral'], $url);
-		endif; //Endif	
+		endif; //Endif		
 		return $url;
 	}
 	/**
@@ -92,7 +94,7 @@ class Vlogref_Public{
 	 **/
 	public function update_user_register_referral( $user_id, $postdata ){
 		global $wpdb;
-		if( isset( $postdata['referral'] ) && !empty( $postdata['referral'] ) ) :
+		if( ( isset( $postdata['referral'] ) && !empty( $postdata['referral'] ) ) ) :
 			$ref_data = explode('_', base64url_decode( $postdata['referral'] ) );			
 			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
 				$update_args = array( 'user_id' => $user_id, 'registered' => 1 );
@@ -103,8 +105,37 @@ class Vlogref_Public{
 					if( isset( $ref_data[1] ) && !empty( $ref_data[1] ) ) : //Update Referred User						
 						update_user_meta( $user_id, '_referred_by', $referred_id );
 					endif; //Endif
-					if( !vlogref_is_campaign_donation_enabled($campaign_id) ) : //Check Campaign Not In Donation Phase
+					if( !vlogref_is_campaign_donation_enabled( $campaign_id ) ) : //Check Campaign Not In Donation Phase
 						$ref_id = $wpdb->get_var('SELECT id FROM '.VLOG_REFERRAL_TABLE.' WHERE 1=1 AND user_id="'.$user_id.'" AND campaign="'.$campaign_id.'";');
+						if( empty( $ref_id ) ) : //Check User Exists
+							$this->insert_referral( $update_args );
+						endif; //Endif
+					endif; //Endif
+				endif; //Endif
+			endif; //Endif
+		endif; //Endif
+	}
+	/**
+	 * Social Login Referral
+	 *
+	 * @since Vlog Referral 1.0
+	 **/
+	public function update_user_social_register_referral(){
+		global $wpdb, $user_ID;
+		if( is_singular('product') && is_user_logged_in() 
+			&& isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) :
+			$ref_data = explode('_', base64url_decode( $_GET['referral'] ) );			
+			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
+				$update_args = array( 'user_id' => $user_ID, 'registered' => 1 );
+				$campaign_id = $update_args['campaign'] = $ref_data[0];				
+				if( vlogref_is_referral_enable( $campaign_id ) ) : //Check Referral Enabled					
+					$referred_id = $update_args['referred_by'] = $ref_data[1];
+					update_user_meta( $user_id, '_referred_campaign', $campaign_id );					
+					if( isset( $ref_data[1] ) && !empty( $ref_data[1] ) ) : //Update Referred User						
+						update_user_meta( $user_id, '_referred_by', $referred_id );
+					endif; //Endif
+					if( !vlogref_is_campaign_donation_enabled( $campaign_id ) ) : //Check Campaign Not In Donation Phase
+						$ref_id = $wpdb->get_var('SELECT id FROM '.VLOG_REFERRAL_TABLE.' WHERE 1=1 AND user_id="'.$user_ID.'" AND campaign="'.$campaign_id.'";');
 						if( empty( $ref_id ) ) : //Check User Exists
 							$this->insert_referral( $update_args );
 						endif; //Endif
