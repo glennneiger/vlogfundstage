@@ -23,7 +23,7 @@ class Vlogref_Public{
 		//Add Referral to Login Users
 		add_action('vlog_user_login', 		array($this, 'update_user_register_referral'), 10, 2);
 		//To Work with Woocommerce Social
-		add_action('wc_social_login_user_authenticated',array($this, 'update_user_social_register_referral'));
+		add_action('wp',					array($this, 'update_user_social_register_referral'));
 		//When User Upvote
 		add_action('vlog_user_upvoted', 	array($this, 'referral_user_upvoted'), 10, 2);
 		//Add Woocommerce Account Tab
@@ -120,10 +120,11 @@ class Vlogref_Public{
 	 *
 	 * @since Vlog Referral 1.0
 	 **/
-	public function update_user_social_register_referral($user_id){
-		global $wpdb;
+	public function update_user_social_register_referral(){
+		global $wpdb, $user_ID;
 		if( is_singular('product') && isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) :
-			$ref_data = explode('_', base64url_decode( $_GET['referral'] ) );			
+			$ref_data = explode('_', base64url_decode( $_GET['referral'] ) );
+			$user_id = $user_ID;
 			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
 				$update_args = array( 'user_id' => $user_id, 'registered' => 1 );
 				$campaign_id = $update_args['campaign'] = $ref_data[0];				
