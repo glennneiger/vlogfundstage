@@ -13968,3 +13968,7 @@ button.toast-close-button {
 .ui-autocomplete {
  text-transform: capitalize!important;
 }
+
+.page-campaign-form .media-modal.wp-core-ui .media-modal-close .screen-reader-text{ display:none !important; }
+.page-campaign-form .media-modal.wp-core-ui .embed-link-settings{ position:relative; top:0; }
+.page-campaign-form .media-modal.wp-core-ui p.media-info{ padding:0 16px 16px; }
