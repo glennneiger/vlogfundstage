@@ -61,9 +61,12 @@ class Vlogref_Public{
 	public function referral_footer_script(){ ?>
 		<script type="text/jscript">
 			jQuery(document).ready(function($){
-				$('input.vf-referral-url').on('focus click', function(){
+				$('input.vf-referral-url').on('focus', function(){
 					$(this).select();
 					document.execCommand('copy');
+					if( typeof toastr != 'undefined' ){
+						toastr.success('', 'Copied to clipboard!');
+					}
 				});
 			});
 		</script>

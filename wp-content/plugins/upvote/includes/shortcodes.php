@@ -31,7 +31,9 @@ function upvote_button_shortcode( $atts, $content = null ){
 	//Get saved votes
 	$vote_users = get_post_meta( $postid, '_upvote_users', true ) 	? get_post_meta( $postid, '_upvote_users', true ) : array();
 	//Get User IPs
-	$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )		? get_post_meta( $postid, '_upvote_ips', true ) 	: array();
+	$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )		? get_post_meta( $postid, '_upvote_ips', true )	: array();
+	//Referral Active
+	$referral_enable = get_post_meta($postid, 'wpcf-campaign_referral_enable', true);
 	//Guest Vote
 	$voted_guest = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? intval( $_COOKIE['_voted'] ) : 0;
 
@@ -42,6 +44,7 @@ function upvote_button_shortcode( $atts, $content = null ){
 	$content = '<div class="upvote-container-big">';
 	if( !is_user_logged_in() && 
 		( ( isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) 
+			|| !empty( $referral_enable )
 			|| ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button">
 						<a href="#register"><button class="upvote-btn" data-id="'.$postid.'">'.$label.'</button></a>
