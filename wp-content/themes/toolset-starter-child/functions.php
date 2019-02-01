@@ -5,6 +5,8 @@ require_once( get_theme_file_path('/inc/woocommerce.php') );
 require_once( get_theme_file_path('/inc/campaign-status-update.php') );
 //Theme Shortcodes
 require_once( get_theme_file_path('/inc/shortcodes.php') );
+//Users Related Functionalities
+require_once( get_theme_file_path('/inc/users.php') );
 //AJAX login/register
 require_once( get_theme_file_path('/libs/custom-ajax-auth.php') );
 
@@ -2747,29 +2749,6 @@ function  amp_add_google_analytics( $amp_template ) { ?>
      <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 
 <?php }
-
-//Last Login
-function vlog_user_last_login( $user_login, $user ) {
-    update_user_meta( $user->ID, 'last_login', time() );
-}
-add_action('wp_login', 'vlog_user_last_login', 10, 2);
-//Admin Column
-function vlog_user_custom_columns( $column ) {
-    $column['last_login'] = 'Last Login';
-    return $column;
-}
-add_filter('manage_users_columns', 'vlog_user_custom_columns');
-//Admin Column Data
-function vlog_user_custom_columns_data( $val, $column, $user_id ) {
-    switch($column) :
-        case 'last_login' :
-			$last_login = get_user_meta( $user_id, 'last_login', time() );
-            $val = !empty( $last_login )? date('d/m/Y', $last_login) : '&mdash;';
-            break;
-    endswitch;
-    return $val;
-}
-add_filter('manage_users_custom_column', 'vlog_user_custom_columns_data', 10, 3);
 
 //Disable Audio/Video Playlist
 function vlog_disable_frontend_media_controls(){

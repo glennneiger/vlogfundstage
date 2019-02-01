@@ -294,3 +294,97 @@ function vlogfund_update_org_to_cam_relationship($post_id, $form_data){
 }
 add_action('cred_save_data', 'vlogfund_update_org_to_cam_relationship', 10, 2);
 endif;
+if( !function_exists('vlogfund_send_email_draft_campaign_inactivity') ) :
+/**
+ * Send Email When Campaign in Inactivity Mode since 24/48/96 hours
+ **/
+function vlogfund_send_email_draft_campaign_inactivity(){
+
+	$considered_camps = array();
+	$today = current_time('timestamp');
+	$args  = array('post_type' => 'product', 'post_status' => 'draft', 'posts_per_page' => -1, 'orderby' => 'modified', 'order' => 'DESC');
+
+	$email_subject = 'Your campaign %%POST_TITLE%% is still saved as a draft';
+	ob_start();
+	include_once( get_theme_file_path('/inc/campaign-status-emails/draft-inactivity.php') );
+	$email_body = ob_get_contents();
+	ob_get_clean();
+	add_filter('wp_mail_content_type', function(){ return "text/html"; });
+	
+	//Last 96 Hours
+	$last_96 = date('Y-m-d', strtotime('-96 hours', $today));
+	$args['date_query'] = array( array('column' => 'post_modified', 'before' => $last_96, 'inclusive' => true) );	
+	$inactive_96hours 	= new WP_Query( $args );
+
+	//Check Inactive Campaigns in Last 96 Hours
+	if( $inactive_96hours->have_posts() ) :
+		while( $inactive_96hours->have_posts() ) : $inactive_96hours->the_post();
+			//Email to Author
+			$author_email 	= get_the_author_meta('user_email', $post->post_author);
+			$find_vars 		= array('%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
+			$replace_vars 	= array(get_the_title(), get_permalink(), get_the_ID(), home_url());
+			$email_subject 	= str_replace($find_vars, $replace_vars, $email_subject);
+			$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
+			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), $email_body );
+			array_push($considered_camps, get_the_ID());
+		endwhile; //Endwhile
+	endif;//Endif
+	wp_reset_postdata(); //Reset
+	
+	//Last 48 Hours
+	$last_48 = date('Y-m-d', strtotime('-48 hours', $today));
+	$args['date_query'] = array( array('column' => 'post_modified', 'before' => $last_48, 'inclusive' => true) );
+	$args['post__not_in'] = $considered_camps;
+	$inactive_48hours = new WP_Query( $args );
+
+	//Check Inactive Campaigns in Last 48 Hours
+	if( $inactive_48hours->have_posts() ) :
+		while( $inactive_48hours->have_posts() ) : $inactive_48hours->the_post();
+			//Email to Author
+			$author_email 	= get_the_author_meta('user_email', $post->post_author);
+			$find_vars 		= array('%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
+			$replace_vars 	= array(get_the_title(), get_permalink(), get_the_ID(), home_url());
+			$email_subject 	= str_replace($find_vars, $replace_vars, $email_subject);
+			$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
+			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), $email_body );
+			array_push($considered_camps, get_the_ID());
+		endwhile; //Endwhile
+	endif;//Endif
+	wp_reset_postdata(); //Reset
+	
+	//Last 24 Hours
+	$last_24 = date('Y-m-d', strtotime('-24 hours', $today) );
+	$args['date_query'] = array( array('column' => 'post_modified', 'before' => $last_24m, 'inclusive' => true) );
+	$args['post__not_in'] = $considered_camps;
+	$inactive_24hours = new WP_Query( $args );
+
+	//Check Inactive Campaigns in Last 24 Hours
+	if( $inactive_24hours->have_posts() ) :
+		while( $inactive_24hours->have_posts() ) : $inactive_24hours->the_post();
+			//Email to Author
+			$author_email 	= get_the_author_meta('user_email', $post->post_author);			
+			$find_vars 		= array('%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
+			$replace_vars 	= array(get_the_title(), get_permalink(), get_the_ID(), home_url());
+			$email_subject 	= str_replace($find_vars, $replace_vars, $email_subject);
+			$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
+			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), $email_body );
+			//array_push($considered_camps, get_the_ID());
+		endwhile; //Endwhile
+	endif;//Endif
+	wp_reset_postdata(); //Reset
+}
+//add_action('init', 'vlogfund_send_email_draft_campaign_inactivity');
+add_action('vlogfund_draft_campaign_inactivity', 'vlogfund_send_email_draft_campaign_inactivity');
+endif;
+if( !function_exists('vlogfund_schedule_draft_campaign_cron_jobs') ) :
+/**
+ * Send Email When Campaign in Inactivity Mode since 24/48/96 hours
+ **/
+function vlogfund_schedule_draft_campaign_cron_jobs(){
+	if( !wp_next_scheduled('vlogfund_draft_campaign_inactivity') ) :
+		$ve = get_option('gmt_offset' ) > 0 ? '-' : '+';
+		wp_schedule_event(strtotime( '00:00 tomorrow ' . $ve . absint( get_option( 'gmt_offset' ) ) . ' HOURS' ), 'daily', 'vlogfund_draft_campaign_inactivity');
+    endif; //Endif
+}
+add_action('wp', 'vlogfund_schedule_draft_campaign_cron_jobs');
+endif;
