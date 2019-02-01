@@ -1,4 +1,17 @@
-.sfc-campaign-status-notification.vf-referral-notice{ width:100%; background:green; }
+.sfc-campaign-status-notification.vf-referral-notice{
+	  max-width: 1200px;
+		background: transparent;
+		margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+		flex: 100%;
+		margin-top: 0;
+		color: #202020;
+	}
+
+.sfc-campaign-status-notification.vf-referral-notice .fa-check-circle {
+    color: green;
+	}
 .vf-referral-col .sfc-campaign-archive-post.sfc-campaign-archive-create-own{ display:none; }
 .vf-referral-col .sfc-campaign-archive-post { max-width: 300px; margin: 0; margin-top: 30px; box-shadow: 0 0 4px 0 #dadddd; border: none; }
 .vf-referral-col .sfc-campaign-images { margin-top: 0; }
@@ -83,4 +96,26 @@ table.vf-my-referrals{ width:auto; }
 	font-size: 50px;
 }
 .vf-referral-prize span{
+	margin-right: 5px;
+}
+
+.vf-referral-navigation {
+  padding-top: 0!important;
+}
+
+
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link {
+	background: transparent!important;
+  border: none!important;
+  color: #202020!important;
+}
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link a {
+  color: #202020!important;
+}
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link.is-active a {
+	color: #202020!important;
+  text-decoration: underline!important;
+}
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link.is-active:after {
+	content: none;
 }
