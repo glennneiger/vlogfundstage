@@ -5,12 +5,12 @@
  * Handles to list user referrals
  *
  * @since Vlog Referral 1.0
- **/ 
+ **/
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
-	global $user_ID, $wpdb; 
+	global $user_ID, $wpdb;
 	$page 	= ( isset( $_GET['pg'] ) && !empty( $_GET['pg'] ) ) ? $_GET['pg'] : 1;  ?>
 	<div class="vf-campaign-referrals-container">
-		<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table vf-my-referrals">			
+		<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table vf-my-referrals">
 			<?php if( $referred = vlogref_upvotes_get_user_referrals( array( 'page' => $page, 'limit' => 20 ) ) ) : //Check Referred Has Data ?>
 				<thead>
 					<tr>
@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						$userid 		= $camp['referred_by'];
 						$campaign_status = vlogref_campaign_status($campaign);
 						$campaign_status_title = vlogref_campaign_status_title($campaign);
-						$views 			= get_post_meta($campaign,'wpcf-campaign-view-count', true); 
+						$views 			= get_post_meta($campaign,'wpcf-campaign-view-count', true);
 						if( intval( $campaign_status ) == 2 ) :
 							$total_donation	= vlogref_donations_get_campaign_total($campaign);
 							$total			= vlogref_price($total_donation['total_amount']);
@@ -51,7 +51,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 							$campaign_goal 	= vlogref_upvotes_campaign_goal($campaign);
 							$winner			= vlogref_upvotes_get_campaign_winners($campaign);
 							//$winner_str 	= ( intval( $winner ) === $user_ID ) ? '<span class="c-owner" style="font-size: 10px; border: 1px solid brown; padding: 2px;">'.__('You won').'</span>' : '';
-							$total 			= '<span><strong>↑</strong> <span class="upvote-count-sc">'.$total.' / '.$campaign_goal.'</span></span>';							
+							$total 			= '<span><strong>↑</strong> <span class="upvote-count-sc">'.$total.' / '.$campaign_goal.'</span></span>';
 							$total_referred = '<span><strong>↑</strong> <span class="upvote-count-sc">'.$total_referred.' / '.$campaign_goal.'</span></span>';
 							$view_link		= add_query_arg( 'view','upvotes', wc_get_endpoint_url('my-referrals').$campaign.'/');
 						endif; //Endif ?>
@@ -71,10 +71,10 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 			<?php else : //Else ?>
 				<tbody class="wpv-loop js-wpv-loop">
 					<tr class="woocommerce-orders-table__row woocommerce-orders-table__row--status-on-hold order">
-						<td><?php _e('You\'ve not referred anyone yet, start referring to your friend and stand a chance to win surprising gifts.','vlog-referral');?></td>
+						<td><?php _e('You haven\'t shared any collaborations yet. Start referring your friends and stand a chance to win awesome prizes.','vlog-referral');?></td>
 					</tr>
 				</tbody>
-			<?php endif; //Endif ?>			
+			<?php endif; //Endif ?>
 		</table>
 	</div><!--/.vf-campaign-referrals-container-->
 <?php include_once( VLOGREF_PLUGIN_PATH . '/includes/public/class-ref-paginator.php');
