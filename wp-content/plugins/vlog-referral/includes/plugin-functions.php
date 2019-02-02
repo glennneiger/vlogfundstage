@@ -201,10 +201,10 @@ function vlogref_upvotes_get_user_referrals( $args = array() ){
 	$sql = "SELECT SUM(upvoted) AS upvotes,SUM(amount) AS donation,campaign,referred_by
 			FROM $table_name
 			WHERE 1=1 AND referred_by='$userid' AND (upvoted=1 OR donated=1)
-			GROUP BY campaign ORDER BY upvotes,donation DESC";
+			GROUP BY campaign ORDER BY upvotes DESC,donation DESC";
 	if( !empty( $limit ) ) : //Check Limit Set
 		$sql .= " LIMIT $offset,$limit";
-	endif;
+	endif;	
 	$referred = $wpdb->get_results($sql, ARRAY_A);
 	return $referred;
 }
@@ -311,7 +311,7 @@ function vlogref_donations_get_campaign_referrals( $args = array() ){
 	if( !empty( $limit ) ) : //Check Limit Set
 		$sql .= " LIMIT $offset,$limit";
 	endif;
-	$donations = $wpdb->get_results($sql, ARRAY_A);	
+	$donations = $wpdb->get_results($sql,ARRAY_A);	
 	return $donations;
 }
 endif;

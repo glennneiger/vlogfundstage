@@ -12,12 +12,12 @@ if( ! class_exists( 'WP_List_Table' ) ) {
 }
 if( !class_exists('Vlog_Referred_Upvotes') ) :
 class Vlog_Referred_Upvotes extends WP_List_Table {
-	
+
 	public function __construct(){
 		parent::__construct(
 			array( 'singular' => __( 'Referred Upvote', 'vlog-referral' ), //singular name of the listed records
 			'plural' => __( 'Referred Upvotes', 'vlog-referral' ), //plural name of the listed records
-			'ajax' => false //should this table support ajax?	
+			'ajax' => false //should this table support ajax?
 		) );
 	}
 	/**
@@ -28,8 +28,8 @@ class Vlog_Referred_Upvotes extends WP_List_Table {
 			'position'	=> __('Position','vlog-referral'),
 			'campaign'	=> __('Campaign','vlog-referral'),
 			'referred_upvotes'	=> __('Referred Upvotes','vlog-referral'),
-			'total_upvotes'	=> __('Total Upvotes','vlog-referral'),			
-			'total_signup'	=> __('Total Referred Signup','vlog-referral'),
+			'total_upvotes'	=> __('Total Upvotes','vlog-referral'),
+			'total_signup'	=> __('Total Referred Signups','vlog-referral'),
 		);
   		return $columns;
 	}
@@ -39,16 +39,16 @@ class Vlog_Referred_Upvotes extends WP_List_Table {
 	public function no_items() {
   		_e( 'No records found.', 'vlog-referral' );
 	}
-	
+
 	/**
 	 * List Table Data
 	 **/
-	private function table_data(){      
-      
-		global $wpdb;	
-		
+	private function table_data(){
+
+		global $wpdb;
+
 		$data = array();
-		$table_name = VLOG_REFERRAL_TABLE;		
+		$table_name = VLOG_REFERRAL_TABLE;
 		$rankings = $wpdb->get_results( "SELECT SUM(upvoted) AS upvotes, campaign
 										FROM $table_name WHERE 1=1 AND upvoted=1
 										GROUP BY campaign ORDER BY upvotes DESC;", ARRAY_A );
@@ -69,47 +69,47 @@ class Vlog_Referred_Upvotes extends WP_List_Table {
 		endif; //Endif
 		return $data;
 	}
-	
+
 	/**
 	 * List Table Columns Default
 	 **/
 	public function column_default( $item, $column_name ) {
- 
-		switch( $column_name ) { 
+
+		switch( $column_name ) {
 			case 'position':
-				return '<strong>#'.$item[$column_name].'</strong>'; 
+				return '<strong>#'.$item[$column_name].'</strong>';
 			case 'campaign':
-			case 'total_upvotes': 
+			case 'total_upvotes':
 			case 'referred_upvotes':
-			case 'total_signup': 
+			case 'total_signup':
 				return $item[$column_name];
-			 default: 
-				return print_r( $item, true ) ; 
+			 default:
+				return print_r( $item, true ) ;
 		}
- 
+
 	}
-	
+
 	/**
 	 * List Table Prepare Items
 	 **/
 	public function prepare_items(){
- 
-		global $wpdb;  		
+
+		global $wpdb;
 		echo '<h1 class="wp-heading-inline">'.__('Referred Upvotes','vlog-referral').'</h1>';
 		$columns = $this->get_columns();
 		$data = $this->table_data();
 		$totalitems = count($data);
-		$this->_column_headers = array($columns);  
-		$perpage = 20;			
-		$totalpages = ceil($totalitems/$perpage); 
+		$this->_column_headers = array($columns);
+		$perpage = 20;
+		$totalpages = ceil($totalitems/$perpage);
 		$currentPage = $this->get_pagenum();
-		$data = array_slice( $data,( ( $currentPage - 1 ) * $perpage ),$perpage);		
+		$data = array_slice( $data,( ( $currentPage - 1 ) * $perpage ),$perpage);
 		$this->set_pagination_args( array(
 			 'total_items' => $totalitems,
 			 'total_pages' => $totalpages,
 			 'per_page' => $perpage,
-		) );			 
-		$this->items = $data;		
+		) );
+		$this->items = $data;
     }
 }
 $vlog_referred_upvotes = new Vlog_Referred_Upvotes();

@@ -14,6 +14,14 @@
 	}
 .vf-referral-col .sfc-campaign-archive-post.sfc-campaign-archive-create-own{ display:none; }
 .vf-referral-col .sfc-campaign-archive-post { max-width: 300px; margin: 0; margin-top: 30px; box-shadow: 0 0 4px 0 #dadddd; border: none; }
+@media screen and (max-width:996px) {
+	.vf-referral-col {
+		margin: 0;
+	}
+	.vf-referral-col .sfc-campaign-archive-post {
+     margin-top: 0;
+	}
+}
 .vf-referral-col .sfc-campaign-images { margin-top: 0; }
 .vf-referral-col .sfc-campaign-image { height:auto; }
 .vf-referral-prize img{ max-width:50px; width:100%; margin-right:10px; }
@@ -24,7 +32,8 @@ table.vf-my-referrals{ width:auto; }
     margin: 10px;
 }
 .vf-referral-headline{
-	margin-bottom: 40px;
+	margin-bottom:60px;
+	text-align:center;
 }
 .vf-referral-current{
 	background: #eee;
@@ -33,6 +42,7 @@ table.vf-my-referrals{ width:auto; }
 }
 .vf-ambassador-avatar{
 	width: 15%;
+	height: auto;
     margin: auto;
     display: block;
     transform: translate(-50%, -50%);
@@ -42,7 +52,7 @@ table.vf-my-referrals{ width:auto; }
 	border: 1px solid #dadddd;
 }
 .vf-ambassador-name{
-	margin: 20px auto auto auto;
+	margin: 25px auto auto auto;
     text-align: center;
     display: block;
 }
@@ -118,4 +128,12 @@ table.vf-my-referrals{ width:auto; }
 }
 .vf-referral-navigation .woocommerce-MyAccount-navigation-link.is-active:after {
 	content: none;
+}
+
+.vf-referral-phase-title {
+	margin: 20px auto 0 auto;
+}
+
+.sfc-campaign-archive-post:empty, .sfc-ngo-overview-item:empty {
+	display: none;
 }
