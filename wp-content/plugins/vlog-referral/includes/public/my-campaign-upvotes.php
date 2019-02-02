@@ -12,6 +12,8 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 	$campaign = get_query_var('my-referrals');
 	$page 	= ( isset( $_GET['pg'] ) && !empty( $_GET['pg'] ) ) ? $_GET['pg'] : 1; 	
 	$winners= vlogref_upvotes_get_campaign_winners($campaign);
+	$prizes = vlogref_upvotes_referral_prizes($campaign); //Get Campaign Prizes
+	$win_text = !empty( $prizes ) ? __(' - Win awesome prizes','vlog-referral') : '';
 	
 	if( !empty( $winners ) ) : //Check Winner
 		if( !array_key_exists($userdata->ID, $winners) ) : //Loser ?>
@@ -31,7 +33,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 	
 	<div class="vf-referral">
     	<div class="vf-referral-col">
-			<h1 class="vf-referral-headline"><?php _e('Refer your friends - Win awesome prizes','vlog-referral');?></h1>
+			<h1 class="vf-referral-headline"><?php printf('%1$s%2$s', __('Refer your friends','vlog-referral'), $win_text);?></h1>
       		<div class="vf-referral-current">
 				<?php $avatar = get_avatar($userdata->ID, 92, '', $userdata->user_login, array('height' => 72, 'width' => 92, 'class' => 'vf-ambassador-avatar'));
 				if( !empty( $avatar ) ) : //Chekc Avatar
@@ -129,8 +131,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						<?php elseif( array_key_exists($userdata->ID, $winners) ) : //Check Looser ?>						
 							<div class="vf-referral-prize prize mbn"> <i class="fas fa-heart"></i> <span><strong><?php _e('Karma','vlog-referral');?></strong> <?php _e('for helping us spread the word and making collabs come true!','vlog-referral');?></span></div>						
 					<?php endif; //Endif
-						endif; //Endif
-					$prizes = vlogref_upvotes_referral_prizes($campaign); //Get Campaign Prizes						
+						endif; //Endif					
 					if( empty( $winners ) && vlogref_is_referral_enable( $campaign ) && !empty( $prizes ) ) : //On-going ?>
 						<h3><?php _e('The prizes','vlog-referral');?></h3>
 						<?php $prize_counter = 1;
