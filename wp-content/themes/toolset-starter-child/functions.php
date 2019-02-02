@@ -825,7 +825,7 @@ function my_save_excerpt($post_id, $form_data)
             // add it to saved post meta
               $my_post = array(
                   'ID'           => $post_id,
-                  'post_excerpt' => $_POST['post_content_substitute']
+                  'post_content' => $_POST['post_content_substitute']
               );
 
             // Update the post into the database
