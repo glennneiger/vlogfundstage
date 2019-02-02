@@ -10134,7 +10134,28 @@ label.error {
 }
 @media screen and (max-width:996px) {
   .woocommerce-MyAccount-navigation {
-    display: none;
+    position: fixed;
+    z-index: 9999;
+    bottom: 0;
+  }
+  .woocommerce-MyAccount-navigation ul {
+    display: flex;
+    margin: 0!important;
+    background: #fff;
+  }
+  .woocommerce-MyAccount-navigation ul li {
+    border: none!important;
+    line-height: normal!important;
+    height: auto!important;
+    margin: 0!important;
+
+    padding: 10px 0!important;
+  }
+  .woocommerce-MyAccount-navigation ul li a {
+        line-height: normal!important;
+        height: auto!important;
+        width: 100%!important;
+        font-size: 16px!important;
   }
 }
 .sfc-account-desktop-nav-ul, .woocommerce-MyAccount-navigation ul {
