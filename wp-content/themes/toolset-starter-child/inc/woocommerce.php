@@ -627,7 +627,7 @@ if( !function_exists('vlogfund_wc_subscribe_mailchimp_campaign_admin') ) :
 function vlogfund_wc_subscribe_mailchimp_campaign_admin( $post_id, $post ){
 
 	// If this is just a revision, don't send the email.
-	if ( wp_is_post_revision( $post_id ) || $post->post_type !== 'product' ) :
+	if( ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) || wp_is_post_revision( $post_id ) || $post->post_type !== 'product' ) :
 		return;
 	endif; //Endif
 	$userdata 	= get_userdata( $post->post_author );
