@@ -1,0 +1,139 @@
+.sfc-campaign-status-notification.vf-referral-notice{
+	  max-width: 1200px;
+		background: transparent;
+		margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+		flex: 100%;
+		margin-top: 0;
+		color: #202020;
+	}
+
+.sfc-campaign-status-notification.vf-referral-notice .fa-check-circle {
+    color: green;
+	}
+.vf-referral-col .sfc-campaign-archive-post.sfc-campaign-archive-create-own{ display:none; }
+.vf-referral-col .sfc-campaign-archive-post { max-width: 300px; margin: 0; margin-top: 30px; box-shadow: 0 0 4px 0 #dadddd; border: none; }
+@media screen and (max-width:996px) {
+	.vf-referral-col {
+		margin: 0;
+	}
+	.vf-referral-col .sfc-campaign-archive-post {
+     margin-top: 0;
+	}
+}
+.vf-referral-col .sfc-campaign-images { margin-top: 0; }
+.vf-referral-col .sfc-campaign-image { height:auto; }
+.vf-referral-prize img{ max-width:50px; width:100%; margin-right:10px; }
+.vf-referral{ max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; }
+table.vf-my-referrals{ width:auto; }
+.vf-referral-col{
+	flex: 1;
+    margin: 10px;
+}
+.vf-referral-headline{
+	margin-bottom:60px;
+	text-align:center;
+}
+.vf-referral-current{
+	background: #eee;
+	box-shadow: 0 0 4px 0 #dadddd;
+	position: relative;
+}
+.vf-ambassador-avatar{
+	width: 15%;
+	height: auto;
+    margin: auto;
+    display: block;
+    transform: translate(-50%, -50%);
+	left: 50%;
+	right: 50%;
+	position: absolute;
+	border: 1px solid #dadddd;
+}
+.vf-ambassador-name{
+	margin: 25px auto auto auto;
+    text-align: center;
+    display: block;
+}
+.vf-ambassador-stats{
+	display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+.vf-abassador-stat, .vf-abassador-stat span.amount, .vf-abassador-stat span.amount span{
+	margin: 15px 10px;
+    font-weight: bold;
+    font-size: 25px;
+    flex: 1;
+}
+.vf-abassador-stat span.amount span{ margin:0; }
+.vf-abassador-stat span{
+	font-size: 13px;
+    font-weight: normal;
+}
+.vf-creator {
+    font-size: 10px;
+    border: 1px solid brown;
+    padding: 2px;
+}
+.woocommerce-MyAccount-orders{
+	width: 100%;
+}
+.woocommerce-MyAccount-orders thead tr th{
+	text-align: left;
+}
+.sfc-campaign-archive-post{
+	max-width: 300px;
+    margin: 0;
+    margin-top: 30px;
+	box-shadow: 0 0 4px 0 #dadddd;
+	border: none;
+}
+.sfc-campaign-images{
+	margin-top: 0;
+}
+.sfc-campaign-image{
+	height: auto;
+}
+.vf-referral-prize{
+	margin: 20px 0;
+	display: flex;
+	align-items: center;
+}
+.vf-referral-prize i{
+	margin-right: 15px;
+	font-size: 50px;
+}
+.vf-referral-prize span{
+	margin-right: 5px;
+}
+
+.vf-referral-navigation {
+  padding-top: 0!important;
+}
+
+
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link {
+	background: transparent!important;
+  border: none!important;
+  color: #202020!important;
+}
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link a {
+  color: #202020!important;
+}
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link.is-active a {
+	color: #202020!important;
+  text-decoration: underline!important;
+}
+.vf-referral-navigation .woocommerce-MyAccount-navigation-link.is-active:after {
+	content: none;
+}
+
+.vf-referral-phase-title {
+	margin: 20px auto 0 auto;
+}
+
+.sfc-campaign-archive-post:empty, .sfc-ngo-overview-item:empty {
+	display: none;
+}

@@ -100,6 +100,8 @@ function upvote_update_vote_ajax_callback(){
 				if( !get_user_meta( $user_ID, '_upvote_for_'.$postid, true) ) :
 					update_user_meta( $user_ID, '_upvote_for_'.$postid, 1); //Track User Voted for which Posts
 				endif;
+				//Hook for Upvote Done
+				do_action('vlog_user_upvoted', $user_ID, $postid);
 				$total_upvoted = 0;
 				$usermetadata = get_user_meta( $user_ID );
 				if( !empty( $usermetadata ) ) :
@@ -219,6 +221,8 @@ function upvote_transfer_guest_voted_to_user( $user_id ){
 					unset($guest_voted[$key]);
 				endif; //Endif
 			endforeach; //Endforeach
+			//Hook for Upvote Done
+			do_action('vlog_user_upvoted', $user_id, $postid);
 			$voted_posts = !empty( $guest_voted ) ? implode(',', $guest_voted) : '';
 			$vote_count = ( count( $guest_voted ) > 0 ) ? count( $guest_voted ) : '';
 			setcookie('_voted_posts', $voted_posts, ( time() + (3600*24*365) ), '/');
