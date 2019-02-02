@@ -1540,8 +1540,8 @@ function my_custom_my_account_menu_items( $items ) {
 
     $items = array(
 
-    'my-campaigns' => 'My Campaigns',
-		'orders'            => __( 'Backed Campaigns', 'woocommerce' ),
+    'my-campaigns' => 'Campaigns',
+		'orders'            => __( 'Contributions', 'woocommerce' ),
 		'edit-account' => __('Account', 'woocommerce')
         //'settings'  => __( 'Account Settings', 'woocommerce' ),
 
@@ -2753,7 +2753,7 @@ function  amp_add_google_analytics( $amp_template ) { ?>
 //Disable Audio/Video Playlist
 function vlog_disable_frontend_media_controls(){
 	if( !is_admin() ) :
-		return false; 
+		return false;
 	endif; //Endif
 }
 add_filter('media_library_show_audio_playlist', 'vlog_disable_frontend_media_controls');
@@ -2776,10 +2776,10 @@ add_filter('media_view_strings', 'vlog_disable_frontend_media_tabs', 99);
 function vlog_change_media_default_active_tab(){ ?>
 	<script type="text/javascript">
 		jQuery(document).ready( function($){
-			$(document).on( 'click', '.insert-media', function(event){					
+			$(document).on( 'click', '.insert-media', function(event){
 				$('.media-menu .media-menu-item:last' ).trigger('click');
 				$('.media-frame .media-frame-title h1').html('Insert from URL (YouTube, Twitter, Instagram...)');
-				$('<p class="media-info">Here you can insert the link to your favorite YouTube Video, Twitter, or Instagram Post, It will render an embed on your campaign page when you save and preview the form.</p><p class="media-info">*Alternatively you can copy this shortcode [embed][/embed] add it to the editor and place your link inside it. This will render an embed as well when you save and preview your campaign.</p>').prependTo( $('.media-frame .media-frame-content') );				
+				$('<p class="media-info">Here you can insert the link to your favorite YouTube Video, Twitter, or Instagram Post, It will render an embed on your campaign page when you save and preview the form.</p><p class="media-info">*Alternatively you can copy this shortcode [embed][/embed] add it to the editor and place your link inside it. This will render an embed as well when you save and preview your campaign.</p>').prependTo( $('.media-frame .media-frame-content') );
 			});
 		});
 	</script>
