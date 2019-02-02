@@ -12,9 +12,11 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 	$campaign = get_query_var('my-referrals');
 	$page 	= ( isset( $_GET['pg'] ) && !empty( $_GET['pg'] ) ) ? $_GET['pg'] : 1;
 	$winners= vlogref_donations_get_campaign_winners($campaign);
+
 	$campaign_status = vlogref_campaign_status($campaign);
 	$prizes = vlogref_donations_referral_prizes($campaign);  //Get Campaign Prizes
 	$win_text = !empty( $prizes ) ? __(' - Win awesome prizes','vlog-referral') : '';
+
 
 	if( !empty( $winners ) ) :
 		if( !array_key_exists($userdata->ID, $winners) ) : //Loser ?>
@@ -132,7 +134,9 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						<?php elseif( array_key_exists($userdata->ID, $winners) ) : //Check Looser ?>
 							<div class="vf-referral-prize prize mbn"> <i class="fas fa-heart"></i> <span><strong><?php _e('Karma','vlog-referral');?></strong> <?php _e('for helping us spread the word and making collabs come true!','vlog-referral');?></span></div>
 					<?php endif; //Endif
+
 						endif; //Endif
+
 					if( empty( $winners ) && vlogref_is_referral_enable( $campaign ) && !empty( $prizes ) ) : //On-going ?>
 						<h3><?php _e('The prizes','vlog-referral');?></h3>
 						<?php $prize_counter = 1;
