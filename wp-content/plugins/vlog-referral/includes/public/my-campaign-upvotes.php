@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 	$campaign = get_query_var('my-referrals');
 	$page 	= ( isset( $_GET['pg'] ) && !empty( $_GET['pg'] ) ) ? $_GET['pg'] : 1; 	
 	$winners= vlogref_upvotes_get_campaign_winners($campaign);
-	$prizes = vlogref_upvotes_referral_prizes($campaign); //Get Campaign Prizes
+	$prizes = vlogref_upvotes_referral_prizes($campaign);  //Get Campaign Prizes
 	$win_text = !empty( $prizes ) ? __(' - Win awesome prizes','vlog-referral') : '';
 	
 	if( !empty( $winners ) ) : //Check Winner

@@ -311,7 +311,7 @@ function vlogref_donations_get_campaign_referrals( $args = array() ){
 	if( !empty( $limit ) ) : //Check Limit Set
 		$sql .= " LIMIT $offset,$limit";
 	endif;
-	$donations = $wpdb->get_results($sql, ARRAY_A);	
+	$donations = $wpdb->get_results($sql,ARRAY_A);	
 	return $donations;
 }
 endif;
