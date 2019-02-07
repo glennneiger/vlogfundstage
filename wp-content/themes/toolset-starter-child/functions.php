@@ -825,7 +825,7 @@ function my_save_excerpt($post_id, $form_data)
             // add it to saved post meta
               $my_post = array(
                   'ID'           => $post_id,
-                  'post_excerpt' => $_POST['post_content_substitute']
+                  'post_content' => $_POST['post_content_substitute']
               );
 
             // Update the post into the database
@@ -1540,8 +1540,8 @@ function my_custom_my_account_menu_items( $items ) {
 
     $items = array(
 
-    'my-campaigns' => 'My Campaigns',
-		'orders'            => __( 'Backed Campaigns', 'woocommerce' ),
+    'my-campaigns' => 'Campaigns',
+		'orders'            => __( 'Contributions', 'woocommerce' ),
 		'edit-account' => __('Account', 'woocommerce')
         //'settings'  => __( 'Account Settings', 'woocommerce' ),
 
@@ -2753,7 +2753,7 @@ function  amp_add_google_analytics( $amp_template ) { ?>
 //Disable Audio/Video Playlist
 function vlog_disable_frontend_media_controls(){
 	if( !is_admin() ) :
-		return false; 
+		return false;
 	endif; //Endif
 }
 add_filter('media_library_show_audio_playlist', 'vlog_disable_frontend_media_controls');
@@ -2776,7 +2776,7 @@ add_filter('media_view_strings', 'vlog_disable_frontend_media_tabs', 99);
 function vlog_change_media_default_active_tab(){ ?>
 	<script type="text/javascript">
 		jQuery(document).ready( function($){
-			$(document).on( 'click', '.insert-media', function(event){					
+			$(document).on( 'click', '.insert-media', function(event){
 				$('.media-menu .media-menu-item:last' ).trigger('click');
 				$('.media-frame .media-frame-title h1').html('Insert from URL (YouTube, Twitter, Instagram...)');
 				if( !$('.media-frame .media-frame-content p.media-info').length ){
