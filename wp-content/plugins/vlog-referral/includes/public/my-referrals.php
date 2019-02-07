@@ -9,9 +9,9 @@
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 	global $user_ID, $wpdb; 
 	$page 	= ( isset( $_GET['pg'] ) && !empty( $_GET['pg'] ) ) ? $_GET['pg'] : 1;  ?>
-	<div class="vf-campaign-referrals-container">
-		<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table vf-my-referrals">			
-			<?php if( $referred = vlogref_upvotes_get_user_referrals( array( 'page' => $page, 'limit' => 20 ) ) ) : //Check Referred Has Data ?>
+	<div class="vf-campaign-referrals-container">		
+		<?php if( $referred = vlogref_upvotes_get_user_referrals( array( 'page' => $page, 'limit' => 20 ) ) ) : //Check Referred Has Data ?>
+			<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table vf-my-referrals">
 				<thead>
 					<tr>
 						<th class="woocommerce-orders-table__header woocommerce-orders-table__header-order-number"><span class="nobr"><?php _e('Referred Campaign','vlog-referral');?></span></th>
@@ -68,14 +68,13 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						</tr>
 					<?php endforeach; //Endforeach ?>
 				</tbody>
-			<?php else : //Else ?>
-				<tbody class="wpv-loop js-wpv-loop">
-					<tr class="woocommerce-orders-table__row woocommerce-orders-table__row--status-on-hold order">
-						<td><?php _e('You\'ve not referred anyone yet, start referring to your friend and stand a chance to win surprising gifts.','vlog-referral');?></td>
-					</tr>
-				</tbody>
-			<?php endif; //Endif ?>			
-		</table>
+			</table>
+		<?php else : //Else ?>
+			<div style="margin: 5px;">
+				<h3><strong><?php _e('You haven\'t shared a collaboration yet.','vlog-referral');?></strong></h3>
+				<button class="sfc-campaign-archive-no-results-btn"><a href="/youtube-collaborations"><?php _e('Start sharing now','vlog-referral');?></a></button> 
+			</div>				
+		<?php endif; //Endif ?>
 	</div><!--/.vf-campaign-referrals-container-->
 <?php include_once( VLOGREF_PLUGIN_PATH . '/includes/public/class-ref-paginator.php');
 	$vloref_paginator  = new Vlogref_Paginator( "SELECT COUNT(upvoted) AS upvotes FROM ".VLOG_REFERRAL_TABLE." WHERE 1=1 AND upvoted=1 AND referred_by='$user_ID' GROUP BY campaign ORDER BY upvotes DESC;" );
