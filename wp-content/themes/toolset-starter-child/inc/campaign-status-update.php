@@ -369,7 +369,7 @@ function vlogfund_send_email_draft_campaign_inactivity(){
 			$replace_vars 	= array(get_the_title(), get_permalink(), get_the_ID());
 			$email_subject 	= str_replace($find_vars, $replace_vars, $subject);
 			$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
-			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), $email_body );
+			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), do_shortcode( $email_body ) );
 			//array_push($considered_camps, get_the_ID());
 		endwhile; //Endwhile
 	endif;//Endif
