@@ -159,7 +159,7 @@
                                         <table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
                                           <tr style="padding:0;text-align:left;vertical-align:top">
                                             <td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;background:#6b10d6;border:2px solid #6b10d6;border-collapse:collapse!important;color:#fefefe;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:1.3;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-                                              <center data-parsed="" style="min-width:0;width:100%"><a href="[wpv-bloginfo show='url']/edit-youtube-collaboration/?post_id=%%POST_ID%%&utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=buttonlink" align="center" class="float-center"
+                                              <center data-parsed="" style="min-width:0;width:100%"><a href="%%HOME_URL%%/edit-youtube-collaboration/?post_id=%%POST_ID%%&utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=buttonlink" align="center" class="float-center"
                                                   style="Margin:0;background:#6b10d6;border:0 solid #6b10d6;border-radius:3px;color:#fefefe;display:inline-block;font-family:Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;line-height:1.3;margin:0;padding:10px 20px 10px 20px;padding-left:0;padding-right:0;text-align:center;text-decoration:none;width:100%">Click here to finish it</a></center>
                                             </td>
                                           </tr>

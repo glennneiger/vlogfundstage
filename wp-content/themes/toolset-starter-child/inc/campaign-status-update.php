@@ -325,8 +325,8 @@ function vlogfund_send_email_draft_campaign_inactivity(){
 		while( $inactive_96hours->have_posts() ) : $inactive_96hours->the_post();
 			//Email to Author
 			$author_email 	= get_the_author_meta('user_email', $post->post_author);
-			$find_vars 		= array('%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%');
-			$replace_vars 	= array(get_the_title(), get_permalink(), get_the_ID());
+			$find_vars 		= array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
+			$replace_vars 	= array( get_the_title(), get_permalink(), get_the_ID(), home_url(), '' );
 			$email_subject 	= str_replace($find_vars, $replace_vars, $subject);
 			$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
 			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), $email_body );
@@ -345,8 +345,8 @@ function vlogfund_send_email_draft_campaign_inactivity(){
 		while( $inactive_48hours->have_posts() ) : $inactive_48hours->the_post();
 			//Email to Author
 			$author_email 	= get_the_author_meta('user_email', $post->post_author);
-			$find_vars 		= array('%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%');
-			$replace_vars 	= array(get_the_title(), get_permalink(), get_the_ID());
+			$find_vars 		= array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
+			$replace_vars 	= array( get_the_title(), get_permalink(), get_the_ID(), home_url(), '' );
 			$email_subject 	= str_replace($find_vars, $replace_vars, $subject);
 			$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
 			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), $email_body );
@@ -365,11 +365,11 @@ function vlogfund_send_email_draft_campaign_inactivity(){
 		while( $inactive_24hours->have_posts() ) : $inactive_24hours->the_post();
 			//Email to Author
 			$author_email 	= get_the_author_meta('user_email', $post->post_author);
-			$find_vars 		= array('%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%');
-			$replace_vars 	= array(get_the_title(), get_permalink(), get_the_ID());
+			$find_vars 		= array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
+			$replace_vars 	= array( get_the_title(), get_permalink(), get_the_ID(), home_url(), '' );
 			$email_subject 	= str_replace($find_vars, $replace_vars, $subject);
 			$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
-			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), do_shortcode( $email_body ) );
+			wp_mail( $author_email, htmlspecialchars_decode( $email_subject ), $email_body );
 			//array_push($considered_camps, get_the_ID());
 		endwhile; //Endwhile
 	endif;//Endif
