@@ -10,6 +10,7 @@ require_once( get_theme_file_path('/inc/users.php') );
 //AJAX login/register
 require_once( get_theme_file_path('/libs/custom-ajax-auth.php') );
 
+
 if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 	function ref_enqueue_main_stylesheet() {
 		if ( ! is_admin() ) {
@@ -2749,5 +2750,3 @@ function  amp_add_google_analytics( $amp_template ) { ?>
      <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 
 <?php }
-
-
