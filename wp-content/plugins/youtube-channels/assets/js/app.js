@@ -7,6 +7,7 @@
 
 	$(document).ready(function() {
 
+
 		//Show Tweets Click
 		$('.showtweets').on('click', function(){
 			$('#detailtitle').html($(this).attr('data-title'));
@@ -80,7 +81,7 @@
 							} else {
 								$('#ytc-channles-list').html(result.html);
 							}
-							
+
 							$('#ytc-page').val(1);
 							count++;
 							new Blazy(); //LazyLoad Images
