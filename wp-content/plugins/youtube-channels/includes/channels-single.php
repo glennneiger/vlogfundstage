@@ -136,20 +136,24 @@
 					</div><!--/.latest-tweets-section-->
 				<?php endif; //Endif ?>
 			</div><!--/.latest-videos-section-->
-			<div class="related-collaborations-section channel-section">
 
-				<?php if( $related_collabs = toolset_get_related_posts( get_the_ID(), 'channel-campaign', 'parent') ) : //Check Related Campaign
-					echo '<h2>Collaborations</h2>';
-					echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="4" ids="'.implode(',', $related_collabs).'"]');
-				else : //Else
-					//echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]');
-				endif; //Endif ?>
-			</div><!--/.related-collaborations-section-->
 
-			<div class="sf-blog-banner" style="background: url(https://2iktwd2ubfm82gjo2r3hm8g6-wpengine.netdna-ssl.com/wp-content/uploads/2018/11/vf-blog-banner-bg.jpg);padding:80px 15px;">
-				<h2>Make YouTube Collaborations Come True</h2>
-				<a href="/youtube-collaborations"><button class="sf-get-started">Let's get it</button></a>
-			</div><!--/.sf-blog-banner-->
+			<div class="vf-yt-channel-banner channel-section">
+
+				<div class="vf-yt-channel-banner-col">
+			<h2 class="vf-yt-channel-banner-text">Who should <?php the_title('<span>','</span>'); //Title of Channel ?> collaborate with next?</h2>
+			<a id="create_campaign" href="/create-a-new-youtube-collaboration"><button class="sf-get-started">Bring New Collabs To Life</button></a>
+		</div>
+
+		<div class="vf-yt-channel-banner-col">
+			<img src="<?php echo $logo;?>" alt="<?php the_title();?>">
+			<i class="fa fa-plus"></i>
+			<img src="/wp-content/uploads/2018/06/question-mark.png">
+		</div>
+
+		</div>
+
+
 
 			<?php  if( $related_posts = toolset_get_related_posts( get_the_ID(), 'channel-post', 'parent') ) : //Check Blog Post Related
 				$rba_big = array_shift( $related_posts ); ?>
@@ -235,9 +239,9 @@
 						<?php endif; //Endif
 						if( !empty( $related_posts ) ) : //Regular Posts ?>
 							<div class="grid-col">
-								<div class="grid-cols2 grid-cols2-sm">
+								<div class="grid-cols2 grid-cols2-sm mobile-scroll-row">
 									<?php foreach( $related_posts as $rbapost ) : //Loop to List Posts ?>
-										<div class="grid-col">
+										<div class="grid-col mobile-scroll-row-item">
 											<div class="related-blog-col">
 												<a href="<?php echo get_permalink( $rbapost->ID );?>">
 													<figure>
@@ -263,5 +267,19 @@
 					</div><!--/.grid-cols-->
 				</div><!--/.related-blog-section-->
 			<?php endif; //Endif ?>
+
+
+			<div class="related-collaborations-section channel-section">
+
+				<?php if( $related_collabs = toolset_get_related_posts( get_the_ID(), 'channel-campaign', 'parent') ) : //Check Related Campaign
+					echo '<h2>Collaborations</h2>';
+					echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="4" ids="'.implode(',', $related_collabs).'"]');
+				else : //Else
+					echo '<h2>New Collaborations You Might Like</h2>';
+					echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]');
+				endif; //Endif ?>
+			</div><!--/.related-collaborations-section-->
+
+
 		</div><!--/.container-main-->
 	</div><!--/.channel-details-wrapper-->
