@@ -204,7 +204,7 @@ function vlogref_upvotes_get_user_referrals( $args = array() ){
 			GROUP BY campaign ORDER BY upvotes DESC,donation DESC";
 	if( !empty( $limit ) ) : //Check Limit Set
 		$sql .= " LIMIT $offset,$limit";
-	endif;	
+	endif;
 	$referred = $wpdb->get_results($sql, ARRAY_A);
 	return $referred;
 }
