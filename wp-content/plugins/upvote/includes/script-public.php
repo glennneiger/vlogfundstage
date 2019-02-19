@@ -92,7 +92,10 @@ function upvote_update_vote_ajax_callback(){
 		else : //Else
 			//Update Vote Count
 			$vote_count = ( $votes + 1 );
-			update_post_meta( $postid, '_upvote_count', $vote_count );				
+			update_post_meta( $postid, '_upvote_count', $vote_count );
+			//Update Ips for Users
+			array_push( $vote_ips, upvote_get_ip() );
+			update_post_meta( $postid, '_upvote_ips', $vote_ips );
 			if( is_user_logged_in() ) : //User Logged In
 				//Update User
 				array_push( $vote_users, $user_ID );
@@ -142,10 +145,7 @@ function upvote_update_vote_ajax_callback(){
 						'interests' => $sub_to
 					));
 				endif;
-			else :
-				//Update Ips for Guest
-				array_push( $vote_ips, upvote_get_ip() );
-				update_post_meta( $postid, '_upvote_ips', $vote_ips );
+			else :				
 				$guest_votes = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? ( intval( $_COOKIE['_voted'] ) + 1 ) : 1;
 				setcookie('_voted', $guest_votes, ( time() + (3600*24*365) ), '/');
 				if( isset( $_COOKIE['_voted_posts'] ) && !empty( $_COOKIE['_voted_posts'] ) ) :
@@ -203,15 +203,6 @@ function upvote_transfer_guest_voted_to_user( $user_id ){
 			foreach( $guest_voted as $key => $postid ) :
 				//Get Saved Votes
 				$vote_users = get_post_meta( $postid, '_upvote_users', true ) ? get_post_meta( $postid, '_upvote_users', true ) : array();
-				//Get User IPs
-				$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )	  ?	get_post_meta( $postid, '_upvote_ips', true ) 	: array();		
-				if( in_array( upvote_get_ip(), $vote_ips ) ) : //Check Users IP
-					$ip_index = array_search( upvote_get_ip(), $vote_ips );
-					if( $ip_index !== false ) :
-						unset( $vote_ips[$ip_index] );
-					endif; //Endif
-					update_post_meta( $postid, '_upvote_ips', $vote_ips );
-				endif; //Endif
 				if( !in_array( $user_id, $vote_users ) ) : //Check Users in Post
 					array_push( $vote_users, $user_id );
 					update_post_meta( $postid, '_upvote_users', $vote_users );

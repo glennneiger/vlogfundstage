@@ -42,16 +42,16 @@ function upvote_button_shortcode( $atts, $content = null ){
 
 	//Button for Vote
 	$content = '<div class="upvote-container-big">';
-	if( !is_user_logged_in() && 
-		( ( isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) 
-			|| !empty( $referral_enable )
-			|| ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
+	if( !is_user_logged_in() && !in_array( upvote_get_ip(), $vote_ips ) &&
+		( !empty( $referral_enable ) //Check Referral Enable
+			|| ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button">
 						<a href="#register"><button class="upvote-btn" data-id="'.$postid.'">'.$label.'</button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
 					</div><!-- /progress-button -->';
 	else : //Else
-		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || in_array( upvote_get_ip(), $vote_ips ) ) : //Check user already voted or not
+		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) 
+			|| ( !is_user_logged_in() && in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user already voted or not
 			$content .= '<div class="upvote-progress-button success-upvote">
 							<button disabled="disabled">'.__('You already voted','upvote').'</button>
 						 </div><!-- /progress-button -->';//Already voted
