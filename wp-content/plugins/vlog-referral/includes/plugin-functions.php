@@ -56,7 +56,7 @@ if( !function_exists('vlogref_upvotes_campaign_goal') ) :
  * @since Vlog Referral 1.0
  **/
 function vlogref_upvotes_campaign_goal($post_id){
-	return get_post_meta( $post_id, '_upvote_goal', true ) ? get_post_meta( $post_id, '_upvote_goal', true ) : 1000;
+	return get_post_meta( $post_id, 'wpcf-upvote_milestone', true ) ? get_post_meta( $post_id, 'wpcf-upvote_milestone', true ) : 1000;
 }
 endif;
 if( !function_exists('vlogref_campaign_status') ) :
