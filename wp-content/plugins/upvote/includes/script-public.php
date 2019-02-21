@@ -86,7 +86,8 @@ function upvote_update_vote_ajax_callback(){
 		//Get User IPs
 		$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )	  ?	get_post_meta( $postid, '_upvote_ips', true ) 	: array();
 		
-		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || in_array( upvote_get_ip(), $vote_ips ) ) : //Check already voted or not
+		//if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || in_array( upvote_get_ip(), $vote_ips ) ) : //Check already voted or not
+		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || ( !is_user_logged_in() && in_array( upvote_get_ip(), $vote_ips ) ) ) :
 			$response['voted'] = 1; //Success
 			$response['message'] = __('You already voted', 'upvote'); //Success
 		else : //Else
@@ -221,4 +222,74 @@ function upvote_transfer_guest_voted_to_user( $user_id ){
 		endif; //Endif
 	endif; //Endif
 }
+endif;
+if( !function_exists('upvote_milestone_email_trigger') ) :
+/**
+ * Upvote Milestone Email Trigger
+ *
+ * Handles to upvote milestone email
+ *
+ * @since Upvote 1.0
+ **/
+function upvote_milestone_email_trigger($user_id, $postid){
+	
+	//Get saved votes
+	$votes 		= get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
+	//Get Milestone
+	$vote_milestone = get_post_meta( $postid, 'wpcf-upvote_milestone', true ) ? get_post_meta( $postid, 'wpcf-upvote_milestone', true ) : 1000;
+	
+	if( intval($votes) >= intval($vote_milestone) ) : //Check Milestone Reach
+		
+		//Get Notified Users
+		$notified_users = get_post_meta( $postid, '_upvote_milestone_notified', true ) ? get_post_meta( $postid, '_upvote_milestone_notified', true ) : array();
+		//Get saved votes
+		$vote_users 	= get_post_meta( $postid, '_upvote_users', true ) ? get_post_meta( $postid, '_upvote_users', true ) : array();
+		$campaign_data 	= get_post($postid); //Get Campaign Data
+		$author_email 	= get_the_author_meta('user_email',$campaign_data->post_author);
+		$campaign_title	= $campaign_data->post_title;
+		
+		//Voter Email
+		ob_start();
+		include_once( UPVOTE_PLUGIN_PATH . 'includes/email-milestone-voter.php' );
+		$voter_body = ob_get_contents();
+		ob_get_clean();
+		add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
+		
+		//Search Values in Template and Replace
+		$search_arr = array('%%POST_TITLE%%', '%%POST_LINK%%', '%%MILESTONE%%');
+		$replace_arr = array( $campaign_title, get_permalink($postid), $vote_milestone );
+		
+		//Notify to Those User Which are Not Notified Before
+		$get_notified = array_diff($vote_users, $notified_users);
+
+		//Send Emails to Votes
+		foreach( $get_notified as $user_id ) :
+			$email = get_the_author_meta('user_email',$user_id);			
+			if( $email !== $author_email ) : //Don't send it to Author
+				$voter_body	= str_replace( $search_arr, $replace_arr, $voter_body );
+				$sent = wp_mail( $email, $campaign_title . ' reached a Milestone', $voter_body ); //Send emails to customers
+				if( $sent ) : //Check Email Sent
+					array_push($notified_users, $user_id);
+				endif; //Endif
+			endif; //Endif
+		endforeach;
+		
+		//Update Milestone Notified Users
+		update_post_meta( $postid, '_upvote_milestone_notified', $notified_users );
+		
+		if( !get_post_meta($postid,'_upvote_milestone_author_notify',true) ) :
+			ob_start();
+			include_once( UPVOTE_PLUGIN_PATH . 'includes/email-milestone-author.php' );
+			$author_body = ob_get_contents();
+			ob_get_clean();
+			//Send emails to author
+			$author_body = str_replace( $search_arr, $replace_arr, $author_body );
+			$author_notified = wp_mail( $author_email, 'Your campaign ' . $campaign_title .' reached it\'s Milestone', $author_body );
+			if( $author_notified ) : //Check Author Notified
+				update_post_meta( $postid, '_upvote_milestone_author_notify', true );
+			endif; //Endif
+		endif; //Endif
+	endif; //Endif
+}
+add_action('vlog_user_upvoted', 'upvote_milestone_email_trigger',10,2);
 endif;

@@ -43,8 +43,7 @@ function upvote_button_shortcode( $atts, $content = null ){
 	//Button for Vote
 	$content = '<div class="upvote-container-big">';
 	if( !is_user_logged_in() && !in_array( upvote_get_ip(), $vote_ips ) &&
-		( !empty( $referral_enable ) //Check Referral Enable
-			|| ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) ) : //Check user is not logged in
+		( !empty( $referral_enable ) || ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button">
 						<a href="#register"><button class="upvote-btn" data-id="'.$postid.'">'.$label.'</button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
@@ -55,7 +54,8 @@ function upvote_button_shortcode( $atts, $content = null ){
 			$content .= '<div class="upvote-progress-button success-upvote">
 							<button disabled="disabled">'.__('You already voted','upvote').'</button>
 						 </div><!-- /progress-button -->';//Already voted
-		elseif( ( $voted_guest < UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) : //Else
+		elseif( ( is_user_logged_in() && !in_array( $user_ID, $vote_users ) ) 
+				|| ( $voted_guest < UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) : //Else
 			$content .= '<div class="upvote-progress-button">
 							<button class="upvote-btn vote-me" data-id="'.$postid.'">'.$label.'</button>
 						</div><!-- /progress-button -->';
@@ -63,7 +63,8 @@ function upvote_button_shortcode( $atts, $content = null ){
 	endif; //Endif
 	//Voted Count
 	if( $show_count == 'yes' ) :
-		if( !is_user_logged_in() || ( $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) : //Check user is not logged in
+		if( !is_user_logged_in() && !in_array( upvote_get_ip(), $vote_ips ) &&
+			( !empty( $referral_enable ) || ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) ) : //Check user is not logged in
 			$content .= '<div class="upvote-count" data-id="'.$postid.'"><a href="#register">↑&nbsp;<span>'.$vote_count.'</span></a></div>';
 		else :
 			$content .= '<div class="upvote-count" data-id="'.$postid.'">↑&nbsp;<span>'.$vote_count.'</span></div>';
@@ -120,6 +121,8 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 	$vote_users = get_post_meta( $postid, '_upvote_users', true ) ? get_post_meta( $postid, '_upvote_users', true ) : array();
 	//Get User IPs
 	$vote_ips 	= get_post_meta( $postid, '_upvote_ips', true )   ? get_post_meta( $postid, '_upvote_ips', true ) 	: array();
+	//Referral Active
+	$referral_enable = get_post_meta($postid, 'wpcf-campaign_referral_enable', true);
 	//Guest Vote
 	$voted_guest = ( isset( $_COOKIE['_voted'] ) && !empty( $_COOKIE['_voted'] ) ) ? intval( $_COOKIE['_voted'] ) : 0;
 
@@ -128,17 +131,21 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 
 	//Button for Vote
 	$content = '<div class="upvote-container">';
-	if( !is_user_logged_in() && ( ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user is not logged in
+	if( !is_user_logged_in() && !in_array( upvote_get_ip(), $vote_ips ) &&
+		( !empty( $referral_enable ) //Check Referral Enable
+			|| ( !empty( $voted_guest ) && $voted_guest >= UPVOTE_ALLOWED_VOTES_GUEST ) ) ) : //Check user is not logged in
 		$content .= '<div class="upvote-progress-button icon">
 						<a href="#register"><button class="upvote-btn icon">↑&nbsp;<span>'.$vote_count.'</span></button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
 					</div><!-- /progress-button -->';
 	else : //Else
-		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || in_array( upvote_get_ip(), $vote_ips ) ) : //Check user already voted or not
+		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) 
+			|| ( !is_user_logged_in() && in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user already voted or not
 			$content .= '<div class="upvote-progress-button icon success-upvote">
 							<button disabled="disabled">↑&nbsp;<span>'.$vote_count.'</span></button>
 						 </div><!-- /progress-button -->';//Already voted
-		elseif( ( $voted_guest < UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) : //Else
+		elseif( ( is_user_logged_in() && !in_array( $user_ID, $vote_users ) ) 
+				|| ( $voted_guest < UPVOTE_ALLOWED_VOTES_GUEST ) && !in_array( upvote_get_ip(), $vote_ips ) ) : //Else
 			$content .= '<div class="upvote-progress-button icon">
 							<button class="upvote-btn icon vote-me" data-id="'.$postid.'">↑&nbsp;<span>'.$vote_count.'</span></button>
 						</div><!-- /progress-button -->';
@@ -167,7 +174,7 @@ function upvote_progress_shortcode( $atts, $content = null ){
 
 	//Get vote count
 	$vote_count = get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
-	$goal_count = get_post_meta( $postid, '_upvote_goal', true ) ? get_post_meta( $postid, '_upvote_goal', true ) : 1000;
+	echo $goal_count = get_post_meta( $postid, 'wpcf-upvote_milestone', true ) ? get_post_meta( $postid, 'wpcf-upvote_milestone', true ) : 1000;
 	$vote_progress = ( number_format( ( $vote_count / $goal_count ) * 100, 2 ) );
 	$vote_progress = ( $vote_progress > 100 ) ? 100 : $vote_progress; // Prevent more than 100%
 	$content = '<div class="sf-milestone-progress-wrapper">

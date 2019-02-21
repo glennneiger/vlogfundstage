@@ -206,9 +206,15 @@ function vlogfund_update_product_sales_customer( $order_id, $from_status, $to_st
 			//Increse Total Customers
 			update_post_meta( $order_product['product_id'], '_product_total_customers', ( $total_customers + 1 ) );
 			//Update Campaign Milestone
-			$milestones = array(10000,100000,500000,1000000);
-			$milestone_abbrs = array('first','second','third', 'final');
+			if( $camp_milestones = get_post_meta($order_product['product_id'], 'wpcf-donation_milestones', true) ) :
+				$milestones = explode(',',trim($camp_milestones));
+			else : //Else Default Milestones
+				$milestones = array(1000,5000,10000,50000,100000,150000,200000,250000,500000,1000000);
+			endif;
+			$milestone_abbrs = array('first','second','third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 
+									'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth');
 			foreach( $milestones as $key => $milestone ) {
+				$milestone = trim($milestone);
 				$getalreadyupdated = new WP_Query( array('post_type' => 'publish', 'post_type' => 'update', 'fields' => 'ids', 'meta_query' => array( array( 'key' => '_milestone_updates', 'value' => $milestone), array( 'key' => '_wpcf_belongs_product_id', 'value' => $order_product['product_id'] ) ) ) );
 				if( !$getalreadyupdated->have_posts() && $updated_sales >= $milestone ){
 					// Insert the post into the database
@@ -251,8 +257,10 @@ function vlogfund_update_product_sales_customer( $order_id, $from_status, $to_st
 						//Send emails to author
 						$authorbody = str_replace( array('%%POST_LINK%%', '%%VISIT_CAMPAIGN_LABEL%%'),
 											array( home_url('/update-form/?parent_product_id='.$order_product['product_id']), $author_btn_label ), $body);
+						//Know the Abbr Txt
+						$abbr_txt = ( key($milestones) == $key ) ? 'final' : $milestone_abbrs[$key];
 						wp_mail( $author_email,
-								'Your campaign ' . $campaign_title .' reached it\'s '. $milestone_abbrs[$key] . ' Milestone',
+								'Your campaign ' . $campaign_title .' reached it\'s '. $abbr_txt . ' Milestone',
 								$authorbody );
 					endif;
 				}

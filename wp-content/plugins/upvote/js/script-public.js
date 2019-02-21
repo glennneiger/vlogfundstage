@@ -95,7 +95,7 @@
 								location.reload();
 							}
 						} else if( result.voted == '1' ){
-							$('<span class="already-voted">' + result.message + '</span>').insertAfter( $this );
+							$('<button disabled="disabled">' + result.message + '</button>').insertAfter( $this );
 							$this.remove();
 						} //Endif
 					} //Endif
