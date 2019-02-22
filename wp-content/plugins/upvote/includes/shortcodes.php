@@ -174,7 +174,7 @@ function upvote_progress_shortcode( $atts, $content = null ){
 
 	//Get vote count
 	$vote_count = get_post_meta( $postid, '_upvote_count', true ) ? get_post_meta( $postid, '_upvote_count', true ) : 0;
-	echo $goal_count = get_post_meta( $postid, 'wpcf-upvote_milestone', true ) ? get_post_meta( $postid, 'wpcf-upvote_milestone', true ) : 1000;
+	$goal_count = get_post_meta( $postid, 'wpcf-upvote_milestone', true ) ? get_post_meta( $postid, 'wpcf-upvote_milestone', true ) : 1000;
 	$vote_progress = ( number_format( ( $vote_count / $goal_count ) * 100, 2 ) );
 	$vote_progress = ( $vote_progress > 100 ) ? 100 : $vote_progress; // Prevent more than 100%
 	$content = '<div class="sf-milestone-progress-wrapper">
