@@ -77,9 +77,7 @@ class YTC_Shortcodes{
 			wp_register_style( 'ytc-detail-style',	YTC_PLUGIN_URL . 'assets/css/yt-detail.css', array(), null );
 			wp_enqueue_style( 'ytc-detail-style' );
 			wp_register_script( 'ytc-twitter-script', 	'https://platform.twitter.com/widgets.js', array(), null, true );
-		}
-		//App Style
-		wp_register_style( 'ytc-app-style',			YTC_PLUGIN_URL . 'assets/css/app.css', array(), null );
+		}		
 		//BLazy
 		wp_register_script( 'ytc-blazy-script', 	YTC_PLUGIN_URL . 'assets/js/blazy.min.js', array('jquery'), null, true );
 		//Script for Public Function
@@ -99,7 +97,7 @@ class YTC_Shortcodes{
 		), $atts, 'ytc_channels' ) );
 
 		//Enqueue Scripts / Styles
-		wp_enqueue_style( array( 'ytc-styles', 'ytc-app-style') );
+		wp_enqueue_style( array('ytc-styles') );
 		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-blazy-script', 'ytc-app-script') );
 
 		ob_start(); //Start Buffer ?>
