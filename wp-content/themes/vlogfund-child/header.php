@@ -1,126 +1,174 @@
 <?php
-$menu_position = get_theme_mod( 'menu_position' );
-$menu_unstyled = get_theme_mod( 'menu_unstyled' );
-$menu_custom_class = get_theme_mod( 'menu_custom_class', '' );
-
-if( $menu_unstyled == "" ) {
-	switch( $menu_position ) {
-		case 'banner-below':
-			$menu_class = 'nav navbar-nav';
-			$menu_container_class = 'navbar navbar-default toolset-menu-banner-below';
-			break;
-		case 'static-top':
-			$menu_class = 'nav navbar-nav';
-			$menu_container_class = 'navbar navbar-default navbar-static-top toolset-menu-static-top';
-			break;
-		case 'fixed-top':
-			$menu_class = 'nav navbar-nav';
-			$menu_container_class = 'navbar navbar-default navbar-fixed-top toolset-menu-fixed-top';
-			break;
-		case 'banner-inside':
-		default:
-			$menu_position = 'banner-inside';
-			$menu_class = 'nav navbar-nav';
-			$menu_container_class = 'nav-wrap navbar navbar-default toolset-menu-banner-inside';
-			break;
-	}
-} else {
-	$menu_class = '';
-	$menu_container_class = '';
-}
-
-$menu_container_class .= ' toolset-menu-container ' . $menu_custom_class;
-
-function toolset_starter_menu( $menu_position, $menu_class, $menu_container_class ) { ?>
-<nav class="<?php echo $menu_container_class; ?>" role="navigation">
-	<?php if( $menu_position === 'static-top' || $menu_position === 'fixed-top' )
-		echo '<div class="container">'; ?>
-	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-		<span class="sr-only"><?php _e( 'Toggle navigation', 'toolset_starter' ); ?></span>
-		<span class="icon-bar"></span>
-		<span class="icon-bar"></span>
-		<span class="icon-bar"></span>
-	</button>
-	<div class="collapse navbar-collapse" id="nav-main">
-		<?php
-		wp_nav_menu(array(
-				'theme_location' => 'header-menu',
-				'depth'          => 5,
-				'menu_class'     => $menu_class,
-				'fallback_cb'    => 'wpbootstrap_menu_fallback',
-				'walker'         => new Wpbootstrap_Nav_Walker(),
-		));
-		?><!-- #nav-main -->
-	</div><!-- .navbar-collapse -->
-	<?php if( $menu_position === 'static-top' || $menu_position === 'fixed-top' )
-		echo '</div>'; ?>
-</nav><!-- .navbar -->
-<?php }
+$cart_count = do_shortcode( '[cart_count]' );
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?> class="no-js">
 <head>
-	<meta charset="<?php bloginfo( 'charset' ); ?>"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<link rel="profile" href="http://gmpg.org/xfn/11"/>
-	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>"/>
-
-	<?php
-	if( is_admin_bar_showing() && ( $menu_position === 'static-top' || $menu_position === 'fixed-top' ) )
-		remove_action('wp_head', '_admin_bar_bump_cb');
-	do_action( 'wpbootstrap_before_wp_head' );
-	wp_head();
-	do_action( 'wpbootstrap_after_wp_head' );
-	?>
-	<?php
-	if( ( $menu_position === 'static-top' && is_admin_bar_showing() ) || $menu_position === 'fixed-top' ) { ?>
-		<style type="text/css" media="screen">
-			<?php if( is_admin_bar_showing() ): ?>
-			#wpadminbar{top:auto;bottom:0}@media screen and (max-width: 600px){#wpadminbar{position:fixed}}#wpadminbar .menupop .ab-sub-wrapper,#wpadminbar .shortlink-input{bottom:32px}@media screen and (max-width: 782px){#wpadminbar .menupop .ab-sub-wrapper,#wpadminbar .shortlink-input{bottom:46px}}@media screen and (min-width: 783px){.admin-bar.masthead-fixed .site-header{top:0}}
-			<?php endif; ?>
-			<?php if( $menu_position === 'fixed-top' ): ?>
-			html{margin-top: 50px;}
-			<?php endif; ?>
-		</style>
-	<?php }
-	?></head>
+<meta charset="<?php bloginfo( 'charset' ); ?>"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<link rel="profile" href="http://gmpg.org/xfn/11"/>
+<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>"/>
+<?php wp_head(); ?>
+</head>
 
 <body <?php body_class(); ?>>
 <?php if ( function_exists( 'gtm4wp_the_gtm_tag' ) ) { gtm4wp_the_gtm_tag(); } ?>
-<?php if( $menu_position === 'static-top' || $menu_position === 'fixed-top' )
-	toolset_starter_menu( $menu_position, $menu_class, $menu_container_class ); ?>
-<div class="wrapper">
-	<?php if( is_active_sidebar( 'sidebar-header' ) ): ?>
-		<div class="container container-sidebar-header">
-			<div class="header-top sidebar-header row">
-				<?php dynamic_sidebar('sidebar-header'); ?>
-			</div>
-		</div>
-	<?php endif;?>
-	<?php if( has_header_image() ): ?>
-		<div class="container-fluid header-background-image">
-			<div class="row header-background-image">
-				<img src="<?php header_image(); ?>" height="<?php echo get_custom_header()->height; ?>" width="<?php echo get_custom_header()->width; ?>" alt="" class="img-responsive"/>
-			</div>
-		</div>
-	<?php endif; ?>
-	<header class="container container-header">
-		<div class="row js-header-height header-nav">
-			<div class="col-sm-3 logo col-xs-6">
-				<?php if(get_theme_mod( 'logo', get_template_directory_uri() . '/images/toolset-starter-logo.png') != '') :?>
-					<a href="<?php echo esc_url( home_url() );?>">
-						<img src="<?php echo get_theme_mod( 'logo', get_template_directory_uri() . '/images/toolset-starter-logo.png');?>" alt="">
-					</a>
-				<?php endif;?>
-			</div>
-			<div class="col-sm-9 static col-xs-5">
-				<?php if( $menu_position === 'banner-inside' )
-					toolset_starter_menu( $menu_position, $menu_class, $menu_container_class ); ?>
-			</div>
-		</div>
-	</header>
-	<section class="<?php echo (get_theme_mod('ref_container_wrapper', 1) == 1)? 'container' : '';?> container-main" role="main">
 
-		<?php if( $menu_position === 'banner-below' )
-			toolset_starter_menu( $menu_position, $menu_class, $menu_container_class ); ?>
+
+
+
+<header id="masthead" class="site-header" role="banner">
+    <nav class="sf-navigation" role="navigation">
+
+<ul class="sf-navigation-items sf-navigation-items-left">
+
+
+<li class="sf-navigation-item sf-hidden"><a id="create_campaign" href="/create-a-new-youtube-collaboration" class="sf-navigation-link sf-navigation-link-start hide-mobile">Submit a Collab</a></li>
+<li class="sf-navigation-item sf-hidden"><a href="/youtube-collaborations" class="sf-navigation-link hide-mobile"><i class="fa fa-search"></i> Collaborations</a></li>
+<li class="sf-navigation-item sf-hidden"><a href="/blog" class="sf-navigation-link hide-mobile"> Blog</a></li>
+[wpv-conditional if="( vlogfund_smile_mode_on() eq '1' )"]<!--<li class="sf-navigation-item sf-hidden hide-mobile"><a href="/organization" class="sf-navigation-link">Causes</a></li>-->[/wpv-conditional]
+</ul>
+
+      <div class="sf-navigation-title sf-navigation-title-link sfc-brand-title"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>VLOG</span><span>FUND</span></a></span></div>
+      <div class="sf-navigation-title sf-navigation-title-link sfc-brand-title sf-blog-only"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>Blog</span></a></span></div>
+
+       <div id="sf-navigation-burger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <ul id="sf-navigation-account-menu" class="sf-navigation-items sf-navigation-items-right sf-navigation-logged-in">
+
+          [wpv-conditional if="( '[cart_count]' gte '1' )"]
+          <li class="sf-navigation-item sf-hidden"><a href="/checkout" class="sf-navigation-link"><i class="fa fa-user-plus"></i> <?php echo do_shortcode ('[wpv-woo-cart-count]') ?></a></li>
+          [/wpv-conditional]
+          [wpv-conditional if="( '[wpv-current-user info='logged_in']' eq 'true' )"]
+            <li class="sf-navigation-item">
+              <a class="sf-navigation-link sf-navigation-dropdown-toggle"><i class="fa fa-user"></i> Account</a>
+            </li>
+          [/wpv-conditional]
+          [wpv-conditional if="( '[wpv-current-user info='logged_in']' eq 'false' )"]
+          <li class="login-w-a sf-navigation-item sf-log-li"><a href="#login" class="sf-navigation-link">Login</a></li>
+          <li class="login-w-a sf-navigation-item sf-reg-li"><a href="#register" class="sf-navigation-link">Register</a></li>
+          <li class="account-li hide login-w-a sf-navigation-item">
+            <a class="sf-navigation-link sf-navigation-dropdown-toggle"><i class="fa fa-user"></i> Account</a>
+          </li>
+          [/wpv-conditional]
+        </ul>
+
+        <ul id="sf-navigation-account-items" class="sf-navigation-items sf-navigation-items-right sf-navigation-items-menu sf-navigation-logged-in sf-navigation-dropdown">
+
+
+
+          <!--<li class="sf-navigation-item sf-hidden"><a href="/account/my-donations" class="sf-navigation-link">My Donations</a></li>-->
+
+          [wpv-conditional if="( '[wpv-current-user info='logged_in']' eq 'true' )"]
+            <li class="sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
+            <li class="sf-navigation-item sf-hidden"><a href="/account/my-campaigns" class="sf-navigation-link">My Campaigns</a></li>
+            <li class="sf-navigation-item sf-hidden">[wpv-logout-link redirect_url="[wpv-post-url]?bye=1" class="sf-navigation-link"]Sign Out[/wpv-logout-link]</li>
+          [/wpv-conditional]
+          [wpv-conditional if="( '[wpv-current-user info='role']' eq 'author' )"]
+         <li class="sf-navigation-item sf-hidden"><a href="/wp-admin" class="sf-navigation-link">Admin</a></li>
+          [/wpv-conditional]
+          [wpv-conditional if="( '[wpv-current-user info='logged_in']' eq 'false' )"]
+          <li class="account-li hide sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
+          <li class="login-w-a sf-navigation-item sf-hidden"><a href="#login" class="sf-navigation-link">Login</a></li>
+          <li class="login-w-a sf-navigation-item sf-hidden"><a href="#register" class="sf-navigation-link">Register</a></li>
+          [/wpv-conditional]
+        </ul>    </nav>
+</header>
+
+
+
+
+
+
+<!--Pop Ups-->
+
+<!--Regular Login-->
+
+<div id="login" class="sf-popup">
+    <div class="sf-popup-container">
+      <span class="close"><a class="sf-popup-close" href="#"><i class="fas fa-times"></i></a></span>
+
+        <div class="sf-popup-head">
+            <a href="#register"><span class="sf-popup-head-text">Don't have an account yet? Register</span></a>
+        </div>
+
+      <!--content-login--->
+        <div class="sf-popup-content">
+            <h2>Login</h2>
+            <!--<div id="sf-popup-login-form-status" class="sf-popup-status"></div>-->
+
+          <!--[woocommerce_social_login_buttons return_url="[wpv-post-url]?welc=1"]-->
+
+          <div class="sf-popup-register-to-comment-h2">[woocommerce_social_login_buttons return_url="[wpv-post-url]?welc_back=1#comment_login"]</div>
+          <div class="sf-popup-register-h2">[woocommerce_social_login_buttons return_url="[wpv-post-url]?welc_back=1"]</div>
+            <div class="sf-popup-register-to-create-a-campaign-h2">[woocommerce_social_login_buttons return_url="/create-a-new-youtube-collaboration?welc_back=1"]</div>
+          <div class="sf-popup-register-to-edit-campaign">[woocommerce_social_login_buttons return_url="/account/my-campaigns/"]</div>
+
+            <p class="sf-popup-line">
+                <span> or </span>
+            </p>
+
+
+          <span class="sf-email-login"><i class="fa fa-envelope"></i> Login with Email</span>
+
+          <!--shortcode-->
+          <div class="sf-email-login-form hide">
+            [my_form_shortcode]
+          <span><a href="/account/lost-password">Lost your password?</a></span>
+          </div>
+          <!--shortcode-->
+
+        </div>
+
+
+    </div>
+</div>
+
+
+<!--Regular Register-->
+
+
+<div id="register" class="sf-popup">
+    <div class="sf-popup-container">
+        <span class="close"><a class="sf-popup-close" href="#"><i class="fas fa-times"></i></a></span>
+
+        <div class="sf-popup-head">
+            <a href="#login"><span class="sf-popup-head-text">Already have an account? Login here</span></a>
+        </div>
+
+      <!--content-reg--->
+        <div class="sf-popup-content">
+            <h2 class="sf-popup-register-to-comment-h2">Register to comment</h2>
+            <h2 class="sf-popup-register-h2">Register</h2>
+            <h2 class="sf-popup-register-to-create-a-campaign-h2">Register to submit a collab</h2>
+
+
+          <div class="sf-popup-register-to-comment-h2">[woocommerce_social_login_buttons return_url="[wpv-post-url]?welc=1#comment_login"]</div>
+          <div class="sf-popup-register-h2">[woocommerce_social_login_buttons return_url="[wpv-post-url]?welc=1"]</div>
+            <div class="sf-popup-register-to-create-a-campaign-h2">[woocommerce_social_login_buttons return_url="/create-a-new-youtube-collaboration?welc=1"]</div>
+          <div class="sf-popup-register-to-edit-campaign">[woocommerce_social_login_buttons return_url="/account/my-campaigns/"]</div>
+
+            <p class="sf-popup-line">
+                <span> or </span>
+            </p>
+
+         <span class="sf-email-registration"><i class="fa fa-envelope"></i> Register with Email</span>
+
+          <!--shortcode-->
+          <div class="sf-email-registration-form hide">
+          [registration_form_shortcode]
+          </div>
+          <!--shortcode-->
+
+        </div>
+
+    </div>
+</div>
+
+
+	<section class="<?php echo (get_theme_mod('ref_container_wrapper', 1) == 1)? 'container' : '';?> container-main" role="main">
