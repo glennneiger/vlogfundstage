@@ -13471,7 +13471,7 @@ body.page-about.fade-out {
   .sf-more-icon { width:68px; height:68px; display:block; margin:0 auto; border-radius:50%; box-shadow: 0 6px 20px rgba(0,0,0,0.18); position:relative; background: #2cdd9b; background: -moz-linear-gradient(top, #2cdd9b 0%, #1dc8cd 100%); background: -webkit-linear-gradient(top, #2cdd9b 0%,#1dc8cd 100%); background: linear-gradient(to bottom, #2cdd9b 0%,#1dc8cd 100%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2cdd9b', endColorstr='#1dc8cd',GradientType=0 ); }
   .sf-more-icon:before { content:''; position:absolute; left:0; right:0; top:0; height:100%; background: #fd3162; background: -moz-linear-gradient(top, #fd3162 0%, #f9614a 100%); background: -webkit-linear-gradient(top, #fd3162 0%,#f9614a 100%); background: linear-gradient(to bottom, #fd3162 0%,#f9614a 100%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fd3162', endColorstr='#f9614a',GradientType=0 ); -webkit-transform:scale(0); transform:scale(0); border-radius:50%; }
   .sf-more-icon:hover:before { -webkit-transform:scale(1); transform:scale(1); }
-  .sf-more-icon:after { content:''; position:absolute; left:0; right:0; top:0; height:100%; background:url(/wp-content/themes/toolset-starter-child/images/bgi/sprites.png) no-repeat 0 -48px; }
+  .sf-more-icon:after { content:''; position:absolute; left:0; right:0; top:0; height:100%; background:url(/wp-content/themes/vlogfund-child/images/bgi/sprites.png) no-repeat 0 -48px; }
   .sf-news-slider .slick-dots, .sf-images-slider .slick-dots { display:table!important; position:static; margin:55px auto 0; }
   .sf-news-slider .slick-dots li button { background:#fff; }
 
@@ -13484,7 +13484,7 @@ body.page-about.fade-out {
   .sf-images-slider figure img { margin-bottom:15px; }
   .sf-images-slider .slick-dots { margin-top:45px; }
 
-  .sf-charity-wrapper { padding:80px 0 90px; background:url(/wp-content/themes/toolset-starter-child/images/charity-bg.jpg) no-repeat 50% 0; -webkit-background-size:cover; background-size:cover; position:relative; z-index:1; text-align:center; color:#fff; }
+  .sf-charity-wrapper { padding:80px 0 90px; background:url(/wp-content/themes/vlogfund-child/images/charity-bg.jpg) no-repeat 50% 0; -webkit-background-size:cover; background-size:cover; position:relative; z-index:1; text-align:center; color:#fff; }
   .sf-charity-wrapper:after { content:''; position:absolute; left:0; right:0; top:0; height:100%; background:#191e1c; opacity:0.96; z-index:-1; }
   .sf-charity-wrapper h2 { color:#fff; }
   .sf-charity-wrapper h2 + p { font-weight:300; max-width:700px; width:100%; margin:0 auto 80px; opacity:0.6 !important; }
@@ -13493,8 +13493,8 @@ body.page-about.fade-out {
   .sf-chart-img img { width:100%; }
   .sf-chart-info { position:absolute; margin-left:34px; left:100%; top:30px; text-align:right; line-height:1.2; font-size:20px; font-weight:400; }
   .sf-chart-info span { display:block; font-size:42px; font-weight:900; }
-  .sf-chart-img:after { content:''; position:absolute; top:74px; left:100%; margin-left:-4px; background:url(/wp-content/themes/toolset-starter-child/images/bgi/arrow.svg) no-repeat 0 0; width:26px; height:40px; opacity:0.15; -webkit-transform:rotate(-18deg); transform:rotate(-18deg); background-size:100% 100%; }
-  .sf-chart-img:before { content:''; position:absolute; bottom:80px; right:99%; margin: 0; background:url(/wp-content/themes/toolset-starter-child/images/bgi/arrow.svg) no-repeat 0 0; width:26px; height:40px; opacity:0.15; -webkit-transform:rotate(-198deg); transform:rotate(-198deg); background-size:100% 100%; }
+  .sf-chart-img:after { content:''; position:absolute; top:74px; left:100%; margin-left:-4px; background:url(/wp-content/themes/vlogfund-child/images/bgi/arrow.svg) no-repeat 0 0; width:26px; height:40px; opacity:0.15; -webkit-transform:rotate(-18deg); transform:rotate(-18deg); background-size:100% 100%; }
+  .sf-chart-img:before { content:''; position:absolute; bottom:80px; right:99%; margin: 0; background:url(/wp-content/themes/vlogfund-child/images/bgi/arrow.svg) no-repeat 0 0; width:26px; height:40px; opacity:0.15; -webkit-transform:rotate(-198deg); transform:rotate(-198deg); background-size:100% 100%; }
   .sf-chart-info.sf-charity-info { left:auto; right:100%; top:auto; bottom:36px; margin:0 57px 0 0; min-width:100px; }
   .sf-chart-img figcaption { position:absolute; left:0; right:0; margin:0 auto; text-align:center; top:50%; -webkit-transform:translateY(-50%); transform:translateY(-50%); color:#fff; text-align:center; font-size:20px; font-weight:900; line-height:1.3; text-transform:uppercase; }
 

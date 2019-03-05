@@ -138,7 +138,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
 
       var url = jQuery(".videourl1").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -183,7 +183,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
 
       var url = jQuery(".videourl2").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -221,7 +221,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
       console.log('Pasted');
       var url = jQuery(".videourl1").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -248,7 +248,7 @@ jQuery( "input[name='channel_logo_url_1'], input[name='channel_logo_url_2'], inp
       console.log('Pasted');
       var url = jQuery(".videourl2").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -818,7 +818,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
       var url = jQuery(".videourl1").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -871,7 +871,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
       var url = jQuery(".videourl2").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -909,7 +909,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
       console.log('Pasted');
       var url = jQuery(".videourl1").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -936,7 +936,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
       console.log('Pasted');
       var url = jQuery(".videourl2").val();
       $.ajax({
-        url: '/wp-content/themes/toolset-starter-child/process.php',
+        url: '/wp-content/themes/vlogfund-child/process.php',
         type: 'POST',
         data: {
           url: url
@@ -2230,7 +2230,7 @@ function register($form) {
 	//Youtuber 1
 	jQuery("[name='wpcf-collaborator-1']").on('autocompleteselect', function(event, ui){
 		$.ajax({
-			url: '/wp-content/themes/toolset-starter-child/process.php',
+			url: '/wp-content/themes/vlogfund-child/process.php',
 			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },
 			type: 'POST',
 			success : function(response){
@@ -2248,7 +2248,7 @@ function register($form) {
 	//Youtuber 2
 	jQuery("[name='wpcf-collaborator-2']").on('autocompleteselect', function(event, ui){
 		$.ajax({
-			url: '/wp-content/themes/toolset-starter-child/process.php',
+			url: '/wp-content/themes/vlogfund-child/process.php',
 			data : { action: 'collab_form_channel_data', channelid: ui.item.channelid },
 			type: 'POST',
 			success : function(response){
