@@ -23,8 +23,10 @@
 			<div class="sf-navigation-title sf-navigation-title-link sfc-brand-title sf-blog-only"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>Blog</span></a></span></div>
 			<div id="sf-navigation-burger"><span></span><span></span><span></span></div>
 			<ul id="sf-navigation-account-menu" class="sf-navigation-items sf-navigation-items-right sf-navigation-logged-in">
-				<?php echo do_shortcode('[wpv-conditional if="('.do_shortcode('[cart_count]').' gte \'1\')"]<li class="sf-navigation-item sf-hidden"><a href="/checkout" class="sf-navigation-link"><i class="fa fa-user-plus"></i> '.do_shortcode('[wpv-woo-cart-count]').'</a></li>[/wpv-conditional]');?>
-				<?php if( is_user_logged_in() ) : //Check User Loggedin ?>
+				<?php if( do_shortcode('[cart_count]') >= 1 ) : //Check Cart Count ?>
+					<li class="sf-navigation-item sf-hidden"><a href="/checkout" class="sf-navigation-link"><i class="fa fa-user-plus"></i> <?php echo do_shortcode('[wpv-woo-cart-count]');?></a></li>
+				<?php endif; //Endif
+				if( is_user_logged_in() ) : //Check User Loggedin ?>
 					<li class="sf-navigation-item"><a class="sf-navigation-link sf-navigation-dropdown-toggle"><i class="fa fa-user"></i> Account</a></li>
 				<?php else : //Else ?>
 					<li class="login-w-a sf-navigation-item sf-log-li"><a href="#login" class="sf-navigation-link">Login</a></li>
