@@ -11,45 +11,51 @@
 
 <body <?php body_class(); ?>>
 <?php if ( function_exists( 'gtm4wp_the_gtm_tag' ) ) { gtm4wp_the_gtm_tag(); } ?>
-	<header id="masthead" class="site-header" role="banner">
-		<nav class="sf-navigation" role="navigation">
-			<ul class="sf-navigation-items sf-navigation-items-left">
-				<li class="sf-navigation-item sf-hidden"><a id="create_campaign" href="/create-a-new-youtube-collaboration" class="sf-navigation-link sf-navigation-link-start hide-mobile">Submit a Collab</a></li>
-				<li class="sf-navigation-item sf-hidden"><a href="/youtube-collaborations" class="sf-navigation-link hide-mobile"><i class="fa fa-search"></i> Collaborations</a></li>
-				<li class="sf-navigation-item sf-hidden"><a href="/blog" class="sf-navigation-link hide-mobile"> Blog</a></li>
-				<?php /*[wpv-conditional if="( vlogfund_smile_mode_on() eq '1' )"]<!--<li class="sf-navigation-item sf-hidden hide-mobile"><a href="/organization" class="sf-navigation-link">Causes</a></li>-->[/wpv-conditional]*/?>
-			</ul>
-			<div class="sf-navigation-title sf-navigation-title-link sfc-brand-title"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>VLOG</span><span>FUND</span></a></span></div>
-			<div class="sf-navigation-title sf-navigation-title-link sfc-brand-title sf-blog-only"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>Blog</span></a></span></div>
-			<div id="sf-navigation-burger"><span></span><span></span><span></span></div>
-			<ul id="sf-navigation-account-menu" class="sf-navigation-items sf-navigation-items-right sf-navigation-logged-in">
-				<?php if( do_shortcode('[cart_count]') >= 1 ) : //Check Cart Count ?>
-					<li class="sf-navigation-item sf-hidden"><a href="/checkout" class="sf-navigation-link"><i class="fa fa-user-plus"></i> <?php echo do_shortcode('[wpv-woo-cart-count]');?></a></li>
-				<?php endif; //Endif
-				if( is_user_logged_in() ) : //Check User Loggedin ?>
-					<li class="sf-navigation-item"><a class="sf-navigation-link sf-navigation-dropdown-toggle"><i class="fa fa-user"></i> Account</a></li>
-				<?php else : //Else ?>
-					<li class="login-w-a sf-navigation-item sf-log-li"><a href="#login" class="sf-navigation-link">Login</a></li>
-					<li class="login-w-a sf-navigation-item sf-reg-li"><a href="#register" class="sf-navigation-link">Register</a></li><li class="account-li hide login-w-a sf-navigation-item"><a class="sf-navigation-link sf-navigation-dropdown-toggle"><i class="fa fa-user"></i> Account</a></li>
-				<?php endif; //Endif ?>
-			</ul>
-			<ul id="sf-navigation-account-items" class="sf-navigation-items sf-navigation-items-right sf-navigation-items-menu sf-navigation-logged-in sf-navigation-dropdown">
-				<?php //<!--<li class="sf-navigation-item sf-hidden"><a href="/account/my-donations" class="sf-navigation-link">My Donations</a></li>-->?>
-				<?php if( is_user_logged_in() ) : //Check User Logged In ?>
-					<li class="sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
-					<li class="sf-navigation-item sf-hidden"><a href="/account/my-campaigns" class="sf-navigation-link">My Campaigns</a></li>
-					<li class="sf-navigation-item sf-hidden"><?php echo do_shortcode('[wpv-logout-link redirect_url="'.add_query_arg('bye', 1, do_shortcode('[wpv-post-url]')).'" class="sf-navigation-link"]Sign Out[/wpv-logout-link]');?></li>
-				<?php if( current_user_can('author') ) : //Check Author ?>
-					<li class="sf-navigation-item sf-hidden"><a href="/wp-admin" class="sf-navigation-link">Admin</a></li>
-				<?php endif; //Endif 
-				else : //Else ?>
-					<li class="account-li hide sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
-					<li class="login-w-a sf-navigation-item sf-hidden"><a href="#login" class="sf-navigation-link">Login</a></li>
-					<li class="login-w-a sf-navigation-item sf-hidden"><a href="#register" class="sf-navigation-link">Register</a></li>
-				<?php endif; //Endif ?>
-			</ul>
-		</nav>
-	</header>
+	<div class="container-fluid">
+		<div class="ddl-full-width-row row header">
+        	<div class="col-sm-12">
+				<header id="masthead" class="site-header" role="banner">
+					<nav class="sf-navigation" role="navigation">
+						<ul class="sf-navigation-items sf-navigation-items-left">
+							<li class="sf-navigation-item sf-hidden"><a id="create_campaign" href="/create-a-new-youtube-collaboration" class="sf-navigation-link sf-navigation-link-start hide-mobile">Submit a Collab</a></li>
+							<li class="sf-navigation-item sf-hidden"><a href="/youtube-collaborations" class="sf-navigation-link hide-mobile"><i class="fa fa-search"></i> Collaborations</a></li>
+							<li class="sf-navigation-item sf-hidden"><a href="/blog" class="sf-navigation-link hide-mobile"> Blog</a></li>
+							<?php /*[wpv-conditional if="( vlogfund_smile_mode_on() eq '1' )"]<!--<li class="sf-navigation-item sf-hidden hide-mobile"><a href="/organization" class="sf-navigation-link">Causes</a></li>-->[/wpv-conditional]*/?>
+						</ul>
+						<div class="sf-navigation-title sf-navigation-title-link sfc-brand-title"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>VLOG</span><span>FUND</span></a></span></div>
+						<div class="sf-navigation-title sf-navigation-title-link sfc-brand-title sf-blog-only"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>Blog</span></a></span></div>
+						<div id="sf-navigation-burger"><span></span><span></span><span></span></div>
+						<ul id="sf-navigation-account-menu" class="sf-navigation-items sf-navigation-items-right sf-navigation-logged-in">
+							<?php if( do_shortcode('[cart_count]') >= 1 ) : //Check Cart Count ?>
+								<li class="sf-navigation-item sf-hidden"><a href="/checkout" class="sf-navigation-link"><i class="fa fa-user-plus"></i> <?php echo do_shortcode('[wpv-woo-cart-count]');?></a></li>
+							<?php endif; //Endif
+							if( is_user_logged_in() ) : //Check User Loggedin ?>
+								<li class="sf-navigation-item"><a class="sf-navigation-link sf-navigation-dropdown-toggle"><i class="fa fa-user"></i> Account</a></li>
+							<?php else : //Else ?>
+								<li class="login-w-a sf-navigation-item sf-log-li"><a href="#login" class="sf-navigation-link">Login</a></li>
+								<li class="login-w-a sf-navigation-item sf-reg-li"><a href="#register" class="sf-navigation-link">Register</a></li><li class="account-li hide login-w-a sf-navigation-item"><a class="sf-navigation-link sf-navigation-dropdown-toggle"><i class="fa fa-user"></i> Account</a></li>
+							<?php endif; //Endif ?>
+						</ul>
+						<ul id="sf-navigation-account-items" class="sf-navigation-items sf-navigation-items-right sf-navigation-items-menu sf-navigation-logged-in sf-navigation-dropdown">
+							<?php //<!--<li class="sf-navigation-item sf-hidden"><a href="/account/my-donations" class="sf-navigation-link">My Donations</a></li>-->?>
+							<?php if( is_user_logged_in() ) : //Check User Logged In ?>
+								<li class="sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
+								<li class="sf-navigation-item sf-hidden"><a href="/account/my-campaigns" class="sf-navigation-link">My Campaigns</a></li>
+								<li class="sf-navigation-item sf-hidden"><?php echo do_shortcode('[wpv-logout-link redirect_url="'.add_query_arg('bye', 1, do_shortcode('[wpv-post-url]')).'" class="sf-navigation-link"]Sign Out[/wpv-logout-link]');?></li>
+							<?php if( current_user_can('author') ) : //Check Author ?>
+								<li class="sf-navigation-item sf-hidden"><a href="/wp-admin" class="sf-navigation-link">Admin</a></li>
+							<?php endif; //Endif 
+							else : //Else ?>
+								<li class="account-li hide sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
+								<li class="login-w-a sf-navigation-item sf-hidden"><a href="#login" class="sf-navigation-link">Login</a></li>
+								<li class="login-w-a sf-navigation-item sf-hidden"><a href="#register" class="sf-navigation-link">Register</a></li>
+							<?php endif; //Endif ?>
+						</ul>
+					</nav>
+				</header>
+			</div><!--/.container-fluid-->
+		</div><!--/.ddl-full-width-row-->
+	</div><!--/.container-fluid-->
 	<!--Pop Ups-->
 	<!--Regular Login-->
 	<div id="login" class="sf-popup">
@@ -94,4 +100,7 @@
 			</div><!--/.sf-popup-content-->
 		</div><!--/.sf-popup-container-->
 	</div><!--/#register-->
-	<section class="<?php echo (get_theme_mod('ref_container_wrapper', 1) == 1)? 'container' : '';?> container-main" role="main">
+	<div class="container-fluid">
+		<div class="ddl-full-width-row row">
+        	<div class="col-sm-12">
+				<section class="<?php echo (get_theme_mod('ref_container_wrapper', 1) == 1)? 'container' : '';?> container-main" role="main">

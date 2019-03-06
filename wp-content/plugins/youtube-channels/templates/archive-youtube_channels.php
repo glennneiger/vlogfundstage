@@ -1,133 +1,24 @@
 <?php
 /**
- * Shortcodes
+ * The template for displaying archive pages
  *
- * Handles all shortcodes of plugin
+ * Used to display archive-type pages if nothing more specific matches a query.
+ * For example, puts together date-based pages if no date.php file exists.
  *
- * @since YouTube Channels 1.0
- **/
-defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
-if( !class_exists('YTC_Shortcodes') ) :
+ * If you'd like to further customize these archive views, you may create a
+ * new template file for each one. For example, tag.php (Tag archives),
+ * category.php (Category archives), author.php (Author archives), etc.
+ *
+ * @link https://codex.wordpress.org/Template_Hierarchy
+ *
+ * @package WordPress
+ * @subpackage Twenty_Sixteen
+ * @since Twenty Sixteen 1.0
+ */
 
-class YTC_Shortcodes{
+get_header(); ?>
 
-	//Construct which run class
-	function __construct(){
-
-		//Enqueue Scripts
-		add_action('wp_enqueue_scripts', 	array( $this,'register_scripts' ) );
-		//Channels Shortcode
-		add_shortcode('ytc_channels', 		array($this, 'channels_shortcode_callback') );		
-		//Archive Template
-		add_filter('archive_template',		array($this, 'archive_template_loader'));
-		//Single Template
-		add_filter('single_template',		array($this, 'single_template_loader'));
-		//Channels Meta Data
-		add_action('wp_head', 				array($this, 'channel_meta_data') );
-	}
-	
-	/**
-	* Channels Meta Data
-	*
-	* @since YouTube Channels 1.0
-	**/
-	public function channel_meta_data(){
-		
-		//Check YouTube Channels Details Page
-		if( !is_singular('youtube_channels') ) : return; endif;
-		
-		$desc = get_post_meta( get_the_ID(), 'wpcf-channel_description', true ); //Description
-		$desc = !empty( $desc ) ? $desc : get_the_content();
-	
-		echo '<meta property="og:type" content="website"/>';
-		echo '<meta property="og:url" content="'.get_permalink().'"/>';
-		echo '<meta property="og:site_name" content="'.get_bloginfo('name').'"/>';
-		if( $logo = get_post_meta( get_the_ID(), 'wpcf-channel_img', true ) ) : //Check Channel Logo
-			$logo_sizes = getimagesize( $logo );
-			echo '<meta property="og:image" content="'.$logo.'"/>';
-			echo '<meta property="og:image:secure_url" content="'.$logo.'"/>';
-			echo '<meta property="og:image:width" content="'.$logo_sizes[0].'"/>';
-			echo '<meta property="og:image:height" content="'.$logo_sizes[1].'"/>';
-			echo '<meta name="twitter:image" content="'.$logo.'"/>';
-		endif; //Endif		
-		echo '<meta property="fb:app_id" content="181038895828102"/>';
-		echo '<meta property="og:title" content="'.get_the_title().'"/>';
-		echo '<meta property="og:locale" content="'.get_locale().'"/>';
-		echo '<meta property="og:description" content="'.substr($desc,0,299).'"/>';
-		echo '<meta name="twitter:domain" content="'.get_bloginfo('url').'"/>';
-		echo '<meta name="twitter:card" content="summary"/>';
-		echo '<meta name="twitter:title" content="'.get_the_title().'"/>';
-		echo '<meta name="twitter:description" content="'.substr($desc,0,199).'"/>';
-		echo '<meta name="twitter:site" content="'.get_permalink().'"/>';
-		if( $tw = get_post_meta(get_the_ID(), 'wpcf-channel_tw', true) ) : //Check Twitter			
-			echo '<meta name="twitter:creator" content="'.ytc_find_twitter_username($tw).'"/>';
-		endif; //Endif
-
-	}
-
-	/**
-	* Enqueue All Scripts / Styles
-	*
-	* @since YouTube Channels 1.0
-	**/
-	public function register_scripts(){
-
-		//Common Styles
-		wp_register_style( 'ytc-styles', 			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null );
-		
-		if( is_singular('youtube_channels') ) { //Check Youtube Channel Page
-			wp_register_style( 'ytc-detail-style',	YTC_PLUGIN_URL . 'assets/css/yt-detail.css', array(), null );
-			wp_enqueue_style( 'ytc-detail-style' );
-			wp_enqueue_script( 'ytc-twitter-script', 'https://platform.twitter.com/widgets.js', array(), null, true );			
-		}		
-		//BLazy
-		wp_register_script( 'ytc-blazy-script', 	YTC_PLUGIN_URL . 'assets/js/blazy.min.js', array('jquery'), null, true );
-		//Script for Public Function
-		wp_register_script( 'ytc-app-script', 		YTC_PLUGIN_URL . 'assets/js/app.js', array('jquery'), null, true );
-		wp_localize_script( 'ytc-app-script', 		'YTC_Obj', array( 'ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ) ) );
-		if( is_archive('youtube_channels') ) : //Check Archive
-			//Enqueue Scripts / Styles
-			wp_enqueue_style( array('ytc-styles') );
-			wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-blazy-script', 'ytc-app-script') );
-		endif;
-	}
-	/**
-	 * Archive Page Template Load
-	 **/
-	public function archive_template_loader($template){
-		//Check Post Type Archive
-		if( is_post_type_archive( 'youtube_channels' ) ) :
-			$template = YTC_PLUGIN_PATH . 'templates/archive-youtube_channels.php';	
-		endif;
-		return $template;
-	}
-	/**
-	 * Single Page Template Load
-	 **/
-	public function single_template_loader($template){
-		//Check Post Type Archive
-		if( is_singular('youtube_channels') ) :
-			$template = YTC_PLUGIN_PATH . 'templates/single-youtube_channels.php';	
-		endif;
-		return $template;
-	}
-	/**
-	* Channels Shortcode
-	*
-	* Handles to list all youtube channels with shortcode
-	**/
-	public function channels_shortcode_callback( $atts, $content = null ){
-		
-		extract( shortcode_atts( array(
-			'showresults' => 1 //Display Results by Default
-		), $atts, 'ytc_channels' ) );
-
-		//Enqueue Scripts / Styles
-		wp_enqueue_style( array('ytc-styles') );
-		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-blazy-script', 'ytc-app-script') );
-
-		ob_start(); //Start Buffer ?>
-
+	<?php if ( have_posts() ) : ?>
 		<div class="list ytc-container">
      		<div class="sfc-campaign-archive">
 				<div class="fc-campaign-archive-container">
@@ -172,10 +63,8 @@ class YTC_Shortcodes{
 				<div class="row tags-container"><div class="tag"></div></div>
 				<div id="ytc-searchloader"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
 				<div id="ytc-creators-wrap"><strong class="count"><?php echo ytc_get_channels_count(); ?></strong> creators found </div>
-				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">
-					<?php if( $showresults ) : //Check Show Results
-						ytc_get_channels_list();
-					endif; //Edif ?>
+				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">					
+					<?php ytc_get_channels_list(); ?>
 					<div class="sfc-campaign-archive-post"></div>
 					<div class="sfc-campaign-archive-post"></div>
 					<div class="sfc-campaign-archive-post"></div>
@@ -222,12 +111,8 @@ class YTC_Shortcodes{
 					</div>
 				</div>
 			</div>-->*/
-		?>
-		<?php $content = ob_get_contents(); //End Buffer
-		ob_get_clean();
-		return $content;
-	}
-}
-//Run Class
-$ytc_shortcodes = new YTC_Shortcodes();
-endif;
+	else : //Else
+		echo '<p>'.__('No channels found.','youtube-channels').'</p>';
+	endif; ?>
+	
+<?php get_footer(); ?>

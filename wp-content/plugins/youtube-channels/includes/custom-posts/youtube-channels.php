@@ -38,7 +38,7 @@ function ytc_register_youtube_channels_post_type(){
 		'show_ui'           =>	true,
 		'show_in_menu'      =>	true,
 		'query_var'         =>	true,
-		'rewrite'           =>	array( 'slug' => 'youtube-channel', 'with_front' => false ),
+		'rewrite'           =>	array( 'slug' => 'youtube-channels', 'with_front' => false ),
 		'capability_type'   =>	'post',
 		'has_archive'       =>	true,
 		'hierarchical'      =>	false,
