@@ -5,16 +5,16 @@
  * Handles to render youtube channels single page
  **/
 get_header();
- 
+
 	while( have_posts() ) : the_post(); //Loop to Show YouTube Channels Details
-	
+
 		$countries_obj = new WC_Countries();
 		$countries = $countries_obj->__get('countries');
 		$subscribers = get_post_meta(get_the_ID(), 'wpcf-channel_subscribers', true);
 		$subscribers = !empty( $subscribers ) ? ytc_number_abbs( $subscribers ) : 0;
 		$views = get_post_meta(get_the_ID(), 'wpcf-channel_views', true);
 		$views = !empty( $views ) ? ytc_number_abbs( $views ) : 0;
-	
+
 		$tw 	= get_post_meta(get_the_ID(), 'wpcf-channel_tw', true);
 		$insta 	= get_post_meta(get_the_ID(), 'wpcf-channel_insta', true);
 		$fb 	= get_post_meta(get_the_ID(), 'wpcf-channel_fb', true);
@@ -36,7 +36,7 @@ get_header();
 		<?php else : //Default Logo ?>
 			<div class="channel-banner-placeholder"></div>
 		<?php endif; //Endif ?>
-	
+
 		<div class="channel-details-wrapper">
 			<div class="container-main">
 				<div class="channel-profile-box channel-section" style="max-width:600px;">
@@ -105,7 +105,7 @@ get_header();
 						</div><!--/.keywords-row-->
 					<?php endif; //Endif ?>
 				</div><!--/.channel-profile-box-->
-	
+
 				<div class="latest-videos-section channel-section">
 					<div class="latest-videos channel-section-item">
 						<div class="latest-vidoes-section-headline">
@@ -140,10 +140,10 @@ get_header();
 						</div><!--/.latest-tweets-section-->
 					<?php endif; //Endif ?>
 				</div><!--/.latest-videos-section-->
-				<div class="vf-yt-channel-banner channel-section">	
+				<div class="vf-yt-channel-banner channel-section">
 					<div class="vf-yt-channel-banner-col">
 						<h2 class="vf-yt-channel-banner-text">Who should <?php the_title('<span>','</span>'); //Title of Channel ?> collaborate with next?</h2>
-						<a id="create_campaign" href="/create-a-new-youtube-collaboration"><button class="sf-get-started">Bring New Collabs To Life</button></a>
+						<a id="create_campaign" href="/create-a-new-youtube-collaboration"><button class="sf-get-started">Bring Your Dream Collab To Life</button></a>
 					</div><!--/.vf-yt-channel-banner-col-->
 					<div class="vf-yt-channel-banner-col">
 						<img src="<?php echo $logo;?>" alt="<?php the_title();?>">
@@ -263,8 +263,8 @@ get_header();
 						</div><!--/.grid-cols-->
 					</div><!--/.related-blog-section-->
 				<?php endif; //Endif ?>
-	
-	
+
+
 				<div class="related-collaborations-section channel-section">
 					<?php if( $related_collabs = toolset_get_related_posts( get_the_ID(), 'channel-campaign', 'parent') ) : //Check Related Campaign
 						echo '<h2>Collaborations</h2>';
@@ -276,7 +276,7 @@ get_header();
 				</div><!--/.related-collaborations-section-->
 			</div><!--/.container-main-->
 		</div><!--/.channel-details-wrapper-->
-		
+
 <?php endwhile; //Endwhile
 
 get_footer(); ?>
