@@ -103,4 +103,3 @@
 	<div class="container-fluid">
 		<div class="ddl-full-width-row row">
         	<div class="col-sm-12">
-				<section class="<?php echo (get_theme_mod('ref_container_wrapper', 1) == 1)? 'container' : '';?> container-main" role="main">

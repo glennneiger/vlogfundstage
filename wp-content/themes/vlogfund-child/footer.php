@@ -1,4 +1,4 @@
-				</section>
+				<!--</section>-->
 			</div><!--/.container-fluid-->
 		</div><!--/.ddl-full-width-row-->
 	</div><!--/.container-fluid-->
