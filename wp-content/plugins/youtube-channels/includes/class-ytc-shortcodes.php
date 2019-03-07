@@ -13,43 +13,41 @@ class YTC_Shortcodes{
 
 	//Construct which run class
 	function __construct(){
-
 		//Enqueue Scripts
-		add_action('wp_enqueue_scripts', 	array( $this,'register_scripts' ) );
+		add_action('wp_enqueue_scripts', 	array( $this,'register_scripts'));
 		//Channels Shortcode
-		add_shortcode('ytc_channels', 		array($this, 'channels_shortcode_callback') );		
+		add_shortcode('ytc_channels', 		array($this, 'channels_shortcode_callback'));
 		//Archive Template
 		add_filter('archive_template',		array($this, 'archive_template_loader'));
 		//Single Template
 		add_filter('single_template',		array($this, 'single_template_loader'));
 		//Channels Meta Data
-		add_action('wp_head', 				array($this, 'channel_meta_data') );
-	}
-	
+		add_action('wp_head', 				array($this, 'channel_meta_data'));
+	}	
 	/**
 	* Channels Meta Data
 	*
 	* @since YouTube Channels 1.0
 	**/
 	public function channel_meta_data(){
-		
+
 		//Check YouTube Channels Details Page
 		if( !is_singular('youtube_channels') ) : return; endif;
-		
-		$desc = get_post_meta( get_the_ID(), 'wpcf-channel_description', true ); //Description
+
+		$desc = get_post_meta(get_the_ID(), 'wpcf-channel_description', true); //Description
 		$desc = !empty( $desc ) ? $desc : get_the_content();
-	
+
 		echo '<meta property="og:type" content="website"/>';
 		echo '<meta property="og:url" content="'.get_permalink().'"/>';
 		echo '<meta property="og:site_name" content="'.get_bloginfo('name').'"/>';
-		if( $logo = get_post_meta( get_the_ID(), 'wpcf-channel_img', true ) ) : //Check Channel Logo
+		if( $logo = get_post_meta(get_the_ID(), 'wpcf-channel_img', true) ) : //Check Channel Logo
 			$logo_sizes = getimagesize( $logo );
 			echo '<meta property="og:image" content="'.$logo.'"/>';
 			echo '<meta property="og:image:secure_url" content="'.$logo.'"/>';
 			echo '<meta property="og:image:width" content="'.$logo_sizes[0].'"/>';
 			echo '<meta property="og:image:height" content="'.$logo_sizes[1].'"/>';
 			echo '<meta name="twitter:image" content="'.$logo.'"/>';
-		endif; //Endif		
+		endif; //Endif
 		echo '<meta property="fb:app_id" content="181038895828102"/>';
 		echo '<meta property="og:title" content="'.get_the_title().'"/>';
 		echo '<meta property="og:locale" content="'.get_locale().'"/>';
@@ -62,7 +60,6 @@ class YTC_Shortcodes{
 		if( $tw = get_post_meta(get_the_ID(), 'wpcf-channel_tw', true) ) : //Check Twitter			
 			echo '<meta name="twitter:creator" content="'.ytc_find_twitter_username($tw).'"/>';
 		endif; //Endif
-
 	}
 
 	/**
@@ -71,32 +68,26 @@ class YTC_Shortcodes{
 	* @since YouTube Channels 1.0
 	**/
 	public function register_scripts(){
-
-		//Common Styles
-		wp_register_style( 'ytc-styles', 			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null );
 		
-		if( is_singular('youtube_channels') ) { //Check Youtube Channel Page
-			wp_register_style( 'ytc-detail-style',	YTC_PLUGIN_URL . 'assets/css/yt-detail.css', array(), null );
-			wp_enqueue_style( 'ytc-detail-style' );
-			wp_enqueue_script( 'ytc-twitter-script', 'https://platform.twitter.com/widgets.js', array(), null, true );			
-		}		
-		//BLazy
-		wp_register_script( 'ytc-blazy-script', 	YTC_PLUGIN_URL . 'assets/js/blazy.min.js', array('jquery'), null, true );
-		//Script for Public Function
-		wp_register_script( 'ytc-app-script', 		YTC_PLUGIN_URL . 'assets/js/app.js', array('jquery'), null, true );
-		wp_localize_script( 'ytc-app-script', 		'YTC_Obj', array( 'ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ) ) );
-		if( is_archive('youtube_channels') ) : //Check Archive
-			//Enqueue Scripts / Styles
-			wp_enqueue_style( array('ytc-styles') );
-			wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-blazy-script', 'ytc-app-script') );
-		endif;
+		if( is_archive('youtube_channels') ) : //Check YouTube Channel Archive
+			//Common Styles
+			wp_enqueue_style('ytc-styles',			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null);
+			wp_enqueue_script(array('jquery', 'jquery-ui-core'));
+			//Script for Public Function
+			wp_enqueue_script('ytc-app-script',		YTC_PLUGIN_URL . 'assets/js/app.js', array('jquery'), null, true);
+			wp_localize_script('ytc-app-script',	'YTC_Obj', array( 'ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ) ) );
+		endif; //Endif
+		if( is_singular('youtube_channels') ) : //Check YouTube Channel Page
+			wp_enqueue_style('ytc-detail-style',	YTC_PLUGIN_URL . 'assets/css/yt-detail.css', array(), null);
+			wp_enqueue_script('ytc-twitter-script', 'https://platform.twitter.com/widgets.js', array(), null, true);
+		endif; //Endif
 	}
 	/**
 	 * Archive Page Template Load
 	 **/
 	public function archive_template_loader($template){
 		//Check Post Type Archive
-		if( is_post_type_archive( 'youtube_channels' ) ) :
+		if( is_archive('youtube_channels') ) :
 			$template = YTC_PLUGIN_PATH . 'templates/archive-youtube_channels.php';	
 		endif;
 		return $template;
@@ -116,7 +107,7 @@ class YTC_Shortcodes{
 	*
 	* Handles to list all youtube channels with shortcode
 	**/
-	public function channels_shortcode_callback( $atts, $content = null ){
+	public function channels_shortcode_callback($atts, $content = null){
 		
 		extract( shortcode_atts( array(
 			'showresults' => 1 //Display Results by Default
@@ -124,7 +115,7 @@ class YTC_Shortcodes{
 
 		//Enqueue Scripts / Styles
 		wp_enqueue_style( array('ytc-styles') );
-		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-blazy-script', 'ytc-app-script') );
+		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-app-script') );
 
 		ob_start(); //Start Buffer ?>
 
@@ -182,9 +173,9 @@ class YTC_Shortcodes{
 				</div><!--/.row-->
 			</div><!--/.sfc-campaign-archive-container-->
 			<input type="hidden" id="ytc-page" value="1"/>
-			<?php if( ytc_get_channels_count() > 40 ){ ?>
+			<?php if( ytc_get_channels_count() > 40 ): ?>
 				<button id="ytc-loadmore" class="sfc-ytc-load-more-button">Load More</button>
-			<?php } ?>
+			<?php endif; //Endif ?>
 		</div><!--/.list-->
 
 		<?php /*<!-- Channel Info Modal-->
@@ -222,8 +213,8 @@ class YTC_Shortcodes{
 					</div>
 				</div>
 			</div>-->*/
-		?>
-		<?php $content = ob_get_contents(); //End Buffer
+		
+		$content = ob_get_contents(); //End Buffer
 		ob_get_clean();
 		return $content;
 	}

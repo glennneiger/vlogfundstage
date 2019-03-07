@@ -1,5 +1,6 @@
-/* Custom General jQuery
-/*-----------------------------------------------------------*/
+/*----------------------------------------------------------*/
+/* Custom General jQuery 									*/
+/*----------------------------------------------------------*/
 ;(function($, window, document, undefined) {
 
 	var search = false;
@@ -31,10 +32,6 @@
 			this.innerHTML = "";
 			this.appendChild( iframe );
 		});
-
-		//LazyLoad Images
-		var blazy = new Blazy();
-
 		//Get URL Parameter
 		var getUrlParameter = function getUrlParameter(sParam) {
 			var sPageURL = decodeURIComponent(window.location.search.substring(1)),
@@ -83,8 +80,7 @@
 							}
 
 							$('#ytc-page').val(1);
-							count++;
-							new Blazy(); //LazyLoad Images
+							count++;							
 						}else{
 							$('#ytc-channles-list').html('No records found');
 						}
@@ -131,8 +127,7 @@
 					if( result.html ){
 						elem.prop('disabled', false);
 						elem.html('Load More');
-						$(result.html).insertAfter( $('#ytc-channles-list').find('.col-lg-3.sfc-campaign-archive-post:last') );
-						new Blazy(); //LazyLoad Images
+						$(result.html).insertAfter( $('#ytc-channles-list').find('.col-lg-3.sfc-campaign-archive-post:last') );						
 					}else{
 						elem.html('No more records');
 					}
@@ -169,7 +164,6 @@
 					if( result.html ){
 						$('#ytc-channles-list').html(result.html);
 						$('#ytc-page').val(1);
-						new Blazy(); //LazyLoad Images
 					} else {
 						elem.html('No more records');
 					}

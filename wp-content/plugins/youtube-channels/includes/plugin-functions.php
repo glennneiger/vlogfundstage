@@ -199,7 +199,7 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 					<?php echo ytc_number_abbs( $channel_views ); ?>
 				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;<?php echo ( $channel_subscribers == 0 ) ? 0 : ytc_number_abbs( $channel_subscribers ); ?></span>
 			</div><!--/.by-->
-			<a href="<?php the_permalink(); ?>" class="showinfoimg"><img class="b-lazy" id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
+			<a href="<?php the_permalink(); ?>" class="showinfoimg"><img id="<?php echo $channel_id; ?>-img" src="https://discoverbrands.co/public/img/loader.gif" data-src="<?php echo $channel_img; ?>" alt=""></a>
 			<h2><a href="<?php the_permalink(); ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>">
 				<?php echo ytc_get_channel_short_title( get_the_title() ); ?>
 			</a></h2>

@@ -8,6 +8,7 @@ get_header();
 
 	while( have_posts() ) : the_post(); //Loop to Show YouTube Channels Details
 
+		$banner = get_post_meta(get_the_ID(), 'wpcf-channel_banner', true);
 		$countries_obj = new WC_Countries();
 		$countries = $countries_obj->__get('countries');
 		$subscribers = get_post_meta(get_the_ID(), 'wpcf-channel_subscribers', true);
@@ -30,11 +31,12 @@ get_header();
 			$bdate = new DateTime(date('Y-m-d', $age));
 			$diff = $bdate->diff($cdate);
 			$age = $diff->y;
-		endif; //Endif
-		if( $banner = get_post_meta(get_the_ID(), 'wpcf-channel_banner', true) ) : //Check Banner ?>
-			<img class="channel-banner-img" src="<?php echo $banner;?>" alt="<?php the_title();?>"/>
-		<?php else : //Default Logo ?>
+		endif; //Endif		
+		$banner_exists = @get_headers($banner);
+		if( strpos($banner_exists[0],'200') === false ) : //Check Banner ?>
 			<div class="channel-banner-placeholder"></div>
+		<?php else : //Default Logo ?>
+			<img class="channel-banner-img" src="<?php echo $banner;?>" alt="<?php the_title();?>"/>			
 		<?php endif; //Endif ?>
 
 		<div class="channel-details-wrapper">
