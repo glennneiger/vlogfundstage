@@ -681,12 +681,14 @@ if( !function_exists('vlogfund_tracking_campaign_submission') ) :
 /**
  * Track Draft/Pending Campaign Submission
  **/
-function vlogfund_tracking_campaign_submission( $post_id, $form_data ){
-	if( $form_data['post_type'] == 'product' ) :  //Check?>
+function vlogfund_tracking_campaign_submission(){
+	if( ( isset( $_GET['post_type'] ) && $_GET['post_type'] == 'product' )
+		&& ( isset( $_GET['p'] ) && !empty( $_GET['p'] ) )
+		&& ( isset( $_GET['cred_referrer_form_id'] ) && $_GET['cred_referrer_form_id'] == 98 ) ) :  //Check?>
 		<script type="text/javascript">
 			window.dataLayer = window.dataLayer || [];
 			dataLayer.push({
-				<?php if( $form_data['post_status'] == 'draft' ) : //Check Draft ?>
+				<?php if( get_post_status( $_GET['p'] ) == 'draft' ) : //Check Draft ?>
 					'event': 'campaignDraft'
 				<?php else : //Check Pending ?>
 					'event': 'campaignPending'
@@ -695,5 +697,5 @@ function vlogfund_tracking_campaign_submission( $post_id, $form_data ){
 		</script>
 	<?php endif; //Endif
 }
-add_action('cred_submit_complete_98',	'vlogfund_tracking_campaign_submission', 99,2);
+add_action('wp_footer',	'vlogfund_tracking_campaign_submission', 99);
 endif;

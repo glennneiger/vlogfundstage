@@ -87,7 +87,7 @@ class YTC_Shortcodes{
 	 **/
 	public function archive_template_loader($template){
 		//Check Post Type Archive
-		if( is_archive('youtube_channels') ) :
+		if( is_post_type_archive('youtube_channels') ) :
 			$template = YTC_PLUGIN_PATH . 'templates/archive-youtube_channels.php';	
 		endif;
 		return $template;
