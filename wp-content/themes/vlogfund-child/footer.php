@@ -1,5 +1,4 @@
-				<!--</section>-->
-			</div><!--/.container-fluid-->
+     </div><!--/.container-fluid-->
 		</div><!--/.ddl-full-width-row-->
 	</div><!--/.container-fluid-->
 	<div class="container-fluid">
@@ -27,7 +26,7 @@
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/faq" class="sf-footer-navigation-child-link">FAQ</a></li>
 								<?php /*<!--<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="#" class="sf-footer-navigation-child-link">Our Rules</a></li>-->
 									<!--<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="#" class="sf-footer-navigation-child-link">Creator Handbook</a></li>-->
-									<!--<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="#" class="sf-footer-navigation-child-link">Trust & Safety</a></li>-->*/?>            
+									<!--<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="#" class="sf-footer-navigation-child-link">Trust & Safety</a></li>-->*/?>
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/terms" class="sf-footer-navigation-child-link">Terms of Use</a></li>
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/privacy" class="sf-footer-navigation-child-link">Privacy Policy</a></li>
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/privacy#cookies" class="sf-footer-navigation-child-link">Cookie Policy</a></li>
@@ -43,17 +42,17 @@
 									<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/campaign-form-get-started" class="sf-footer-navigation-child-link">Start a Collab</a></li>
 								<?php endif; //Endif ?>
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/youtube-collaborations" class="sf-footer-navigation-child-link">Collaborations</a></li>
-								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/blog" class="sf-footer-navigation-child-link">Blog</a></li> 
+								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/blog" class="sf-footer-navigation-child-link">Blog</a></li>
 								<?php if( vlogfund_smile_mode_on() ) : //Check Smile Mode ?>
 									<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/organization" class="sf-footer-navigation-child-link">Organizations</a></li>
 								<?php endif; //Endif ?>
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="#" class="sf-footer-navigation-child-link">More Coming soon</a></li>
 							</ul>
-						</li>      
+						</li>
 						<li class="sf-footer-navigation-head">
-							<a href="#" class="sf-footer-navigation-ead-link"></a>        
+							<a href="#" class="sf-footer-navigation-ead-link"></a>
 							Switch to <strong>Vlogfund Smile Mode</strong> <br>and support your favorite charitable organization <br>everytime you back a collaboration 😉
-							<ul class="sf-footer-navigation-sub">        
+							<ul class="sf-footer-navigation-sub">
 								<li class="sf-footer-navigation-child">
 									<label class="sf-smile-switch">
 										<?php if( vlogfund_smile_mode_on() ) : //Check Smile Mode ?>
@@ -77,6 +76,6 @@
 		</div><!--/.ddl-full-width-row-->
 	</div><!--/.container-fluid-->
 	<?php wp_footer(); ?>
-</div><!-- .wrapper -->
+<script src="//instant.page/1.1.0" type="module" integrity="sha384-EwBObn5QAxP8f09iemwAJljc+sU+eUXeL9vSBw1eNmVarwhKk2F9vBEpaN9rsrtp"></script>
 </body>
 </html>

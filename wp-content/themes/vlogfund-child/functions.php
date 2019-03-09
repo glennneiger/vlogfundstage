@@ -169,6 +169,17 @@ add_action( 'wp_enqueue_scripts', 'sf_remove_scripts', 20 );
 
 
 
+//add script and style handle
+add_filter( 'script_loader_tag', 'cameronjonesweb_add_script_handle', 10, 3 );
+function cameronjonesweb_add_script_handle( $tag, $handle, $src ) {
+	return str_replace( '<script', sprintf(
+		'<script data-handle="%1$s"',
+		esc_attr( $handle )
+	), $tag );
+}
+
+
+
 //dequeu scripts and styles conditionally on about, faq, terms, policy  and rules & guidelines page
 add_action( 'wp_enqueue_scripts', 'deregister_scripts', 99 );
 function deregister_scripts(){
@@ -209,7 +220,7 @@ add_action( 'wp_enqueue_scripts', 'deregister_scripts2', 99 );
 function deregister_scripts2(){
 
 	global $post;
-	if( is_single() ) :
+	if( is_single()  ) :
 
 		//Remove Unnecessary Styles
 		$deregister_styles = array('decomments1', 'decomments-ie1', 'dashicons', 'upvote-public-style1',
@@ -226,7 +237,7 @@ function deregister_scripts2(){
 						'decomments1', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
-						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default', 'thickbox' );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
@@ -242,7 +253,7 @@ add_action( 'wp_enqueue_scripts', 'deregister_scripts3', 99 );
 function deregister_scripts3(){
 
 	global $post;
-	if( is_home() ) :
+	if( is_home() || is_front_page() ) :
 
 		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
 
@@ -261,7 +272,7 @@ function deregister_scripts3(){
 						'decomments', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
-						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default', 'wp-embed' );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
@@ -294,11 +305,11 @@ function deregister_scripts4(){
 
 		//Remove Unnecessary Scripts
 		$deregister_scripts = array('views-pagination-script1', 'woocommerce_views_onsale_badge_js', 'knockout', 'ddl-layouts-frontend',
-						'wp-mediaelement1', 'mediaelement-migrate1', 'owl-carousel', 'toolset-utils', 'layouts-theme-integration-layouts_loader',
+						'mediaelement-core1', 'wp-mediaelement1', 'mediaelement-migrate1', 'owl-carousel', 'toolset-utils', 'layouts-theme-integration-layouts_loader',
 						'decomments', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
-						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default', );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
@@ -345,9 +356,25 @@ function deregister_scripts5(){
 
 
 
+//remove jquery migrate
+function remove_jquery_migrate($scripts)
+{
+    if (!is_admin() && isset($scripts->registered['jquery'])) {
+        $script = $scripts->registered['jquery'];
+
+        if ($script->deps) { // Check whether the script has any dependencies
+            $script->deps = array_diff($script->deps, array(
+                'jquery-migrate'
+            ));
+        }
+    }
+}
+
+add_action('wp_default_scripts', 'remove_jquery_migrate');
 
 
 
+//remove wp underscore
 add_action( 'wp_head', 'remove_my_action' );
 function remove_my_action(){
     remove_action( 'wp_footer', 'wp_underscore_playlist_templates', 0 );

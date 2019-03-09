@@ -8012,7 +8012,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
   font-weight: bold;
   background: black;
   color: white;
-  border: 3px solid white;
+  /*border: 3px solid white;*/
   border-top: 0;
   -ms-transform: skewX(-10deg);
   -webkit-transform: skewX(-10deg);
@@ -8993,7 +8993,7 @@ flex-basis: 15%;
   background: black;
   z-index: 100;
   color: white;
-  border: 3px solid white;
+  /*border: 3px solid white;*/
   /*border-top: none;*/
   -ms-transform: skewX(-10deg);
   -webkit-transform: skewX(-10deg);
@@ -9012,7 +9012,7 @@ flex-basis: 15%;
     background: black;
     z-index: 100;
     color: white;
-    border: 3px solid white;
+    /*border: 3px solid white;*/
     /*border-top: none;*/
     -ms-transform: skewX(-10deg);
     -webkit-transform: skewX(-10deg);
@@ -9797,11 +9797,17 @@ ul.sfc-campaign-backers li {
   padding: 20px;
 }
 
-@media (min-width:1200px) {
+@media (min-width:768px) {
   .campaign-block {
     padding: 40px;
   }
 }
+
+/*@media (min-width:1200px) {
+  .campaign-block {
+    padding: 40px;
+  }
+}*/
 
 .sfc-campaign-collaboration-type-about {
   font-size: 2.1em;

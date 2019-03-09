@@ -20,7 +20,6 @@
 							<li class="sf-navigation-item sf-hidden"><a id="create_campaign" href="/create-a-new-youtube-collaboration" class="sf-navigation-link sf-navigation-link-start hide-mobile">Submit a Collab</a></li>
 							<li class="sf-navigation-item sf-hidden"><a href="/youtube-collaborations" class="sf-navigation-link hide-mobile"><i class="fa fa-search"></i> Collaborations</a></li>
 							<li class="sf-navigation-item sf-hidden"><a href="/blog" class="sf-navigation-link hide-mobile"> Blog</a></li>
-							<?php /*[wpv-conditional if="( vlogfund_smile_mode_on() eq '1' )"]<!--<li class="sf-navigation-item sf-hidden hide-mobile"><a href="/organization" class="sf-navigation-link">Causes</a></li>-->[/wpv-conditional]*/?>
 						</ul>
 						<div class="sf-navigation-title sf-navigation-title-link sfc-brand-title"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>VLOG</span><span>FUND</span></a></span></div>
 						<div class="sf-navigation-title sf-navigation-title-link sfc-brand-title sf-blog-only"><span class="sfc-brand-title-inner"><a class="link link--ilin" href="/"><span>Blog</span></a></span></div>
@@ -37,14 +36,13 @@
 							<?php endif; //Endif ?>
 						</ul>
 						<ul id="sf-navigation-account-items" class="sf-navigation-items sf-navigation-items-right sf-navigation-items-menu sf-navigation-logged-in sf-navigation-dropdown">
-							<?php //<!--<li class="sf-navigation-item sf-hidden"><a href="/account/my-donations" class="sf-navigation-link">My Donations</a></li>-->?>
 							<?php if( is_user_logged_in() ) : //Check User Logged In ?>
 								<li class="sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
 								<li class="sf-navigation-item sf-hidden"><a href="/account/my-campaigns" class="sf-navigation-link">My Campaigns</a></li>
 								<li class="sf-navigation-item sf-hidden"><?php echo do_shortcode('[wpv-logout-link redirect_url="'.add_query_arg('bye', 1, do_shortcode('[wpv-post-url]')).'" class="sf-navigation-link"]Sign Out[/wpv-logout-link]');?></li>
-							<?php if( current_user_can('author') ) : //Check Author ?>
+							<?php if( current_user_can('author') || current_user_can('administrator') ) : //Check Author ?>
 								<li class="sf-navigation-item sf-hidden"><a href="/wp-admin" class="sf-navigation-link">Admin</a></li>
-							<?php endif; //Endif 
+							<?php endif; //Endif
 							else : //Else ?>
 								<li class="account-li hide sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
 								<li class="login-w-a sf-navigation-item sf-hidden"><a href="#login" class="sf-navigation-link">Login</a></li>
@@ -66,7 +64,7 @@
         	<div class="sf-popup-content">
 				<h2>Login</h2>
 				<?php /*<!--<div id="sf-popup-login-form-status" class="sf-popup-status"></div>-->
-					<!--[woocommerce_social_login_buttons return_url="[wpv-post-url]?welc=1"]-->*/?>	
+					<!--[woocommerce_social_login_buttons return_url="[wpv-post-url]?welc=1"]-->*/?>
 			  	<?php echo do_shortcode('<div class="sf-popup-register-to-comment-h2">[woocommerce_social_login_buttons return_url="'.do_shortcode('[wpv-post-url]').'?welc_back=1#comment_login"]</div>');?>
 			  	<?php echo do_shortcode('<div class="sf-popup-register-h2">[woocommerce_social_login_buttons return_url="'.add_query_arg('welc_back', 1, do_shortcode('[wpv-post-url]')).'"]</div>');?>
 				<?php echo do_shortcode('<div class="sf-popup-register-to-create-a-campaign-h2">[woocommerce_social_login_buttons return_url="'.add_query_arg('welc_back', 1, do_shortcode('/create-a-new-youtube-collaboration')).'"]</div>');?>
