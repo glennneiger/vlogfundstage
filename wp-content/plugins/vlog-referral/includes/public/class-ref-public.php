@@ -52,8 +52,11 @@ class Vlogref_Public{
 	 * Register Style / Scripts
 	 **/
 	public function register_style_scripts(){
-		//Register Plugin Style
-		wp_enqueue_style('vlog-referral-style', VLOGREF_PLUGIN_URL . '/assets/css/style.css', array());
+		global $wp_query;
+		if( array_key_exists('my-referrals', $wp_query->query_vars) || get_query_var('my-referrals') ) : //Check Referral Page
+			//Register Plugin Style
+			wp_enqueue_style('vlog-referral-style', VLOGREF_PLUGIN_URL . 'assets/css/style.css', array());
+		endif; //Endif
 	}
 	/**
 	 * Footer Scripts
