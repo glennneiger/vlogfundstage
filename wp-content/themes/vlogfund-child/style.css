@@ -7707,7 +7707,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
 }
 .sfc-campaign-archive-overlay-sort-by li a {
   padding: 10px 10px;
-  color: gray;
+  color: #ffffff;
   border: 1px solid gray;
 }
 .sfc-campaign-archive-overlay-close {
@@ -10158,7 +10158,7 @@ label.error {
         line-height: normal!important;
         height: auto!important;
         width: 100%!important;
-        font-size: 16px!important;
+        font-size: 15px!important;
   }
 
 
