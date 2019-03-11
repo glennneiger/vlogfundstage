@@ -14,7 +14,7 @@ class YTC_Shortcodes{
 	//Construct which run class
 	function __construct(){
 		//Enqueue Scripts
-		add_action('wp_enqueue_scripts', 	array( $this,'register_scripts'));
+		add_action('wp_enqueue_scripts', 	array($this,'register_scripts'));
 		//Channels Shortcode
 		add_shortcode('ytc_channels', 		array($this, 'channels_shortcode_callback'));
 		//Archive Template
@@ -69,7 +69,7 @@ class YTC_Shortcodes{
 	**/
 	public function register_scripts(){
 		
-		if( is_archive('youtube_channels') ) : //Check YouTube Channel Archive
+		if( is_post_type_archive('youtube_channels') ) : //Check YouTube Channel Archive
 			//Common Styles
 			wp_enqueue_style('ytc-styles',			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null);
 			wp_enqueue_script(array('jquery', 'jquery-ui-core'));
