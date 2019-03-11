@@ -2540,7 +2540,8 @@ div.sf-blog-yt-video-thumbnail-top iframe {
 div.sf-play {
   display: none;
 }
-.sf-blog-yt-video-thumbnail-top .sf-play, .single-product .sf-campaign-yt-video-thumbnail:hover div.sf-play {
+
+.sf-blog-yt-video-thumbnail-top .sf-play, .single-product .sf-campaign-yt-video-thumbnail:hover div.sf-play, .single-product .youtube-player-blog div.sf-play {
   height: 72px;
   width: 72px;
   left: 50%;
@@ -2548,7 +2549,7 @@ div.sf-play {
   margin-left: -36px;
   margin-top: -36px;
   position: absolute;
-  background: url("//i.imgur.com/TxzC70f.png") no-repeat;
+  background: url("https://i.imgur.com/TxzC70f.png") no-repeat;
   cursor: pointer!important;
   display: block;
   z-index: 9999;
@@ -4385,7 +4386,7 @@ btn {
 .sfc-campaign-widget-heading-see-more-button a {
   color: #202020;
   font-weight: bold;
-  text-transform: uppercase;
+  /*text-transform: uppercase;*/
   text-decoration: underline;
 }
 .sfc-campaign-widget-heading-see-more-button a:hover {
@@ -10125,7 +10126,66 @@ label.error {
 
 
 
+/**campaign prizes**/
 
+.vf-ref-upvote-title {
+  text-align: center;
+  margin: 0;
+}
+
+.vf-ref-upvote-desc {
+  text-align: center;
+}
+.vf-ref-upvote-prizes {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.vf-ref-upvote-prize-item {
+margin: auto;
+}
+
+.vf-ref-upvote-prize-img {
+  width: 50%;
+  margin: auto;
+  display: block;
+}
+
+.vf-ref-upvote-prize-title {
+  margin: 0 auto;
+  text-align: center;
+}
+
+@media screen and (min-width:996px) {
+  .vf-ref-upvote-prizes {
+    flex-wrap: nowrap;
+  }
+}
+
+@media screen and (max-width: 996px) {
+
+.vf-ref-upvote-prizes {
+    white-space: nowrap;
+    overflow-y: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%!important;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-top: 5px;
+    display: block!important;
+}
+
+.vf-ref-upvote-prize-item {
+    display: inline-block;
+    width: 60%;
+    float: none;
+    vertical-align: top;
+    position: relative;
+    border: 1px solid #ededed;
+}
+
+}
 /*******************************************************/
 /**account**/
 /*******************************************************/

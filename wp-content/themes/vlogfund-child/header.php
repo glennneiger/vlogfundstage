@@ -42,6 +42,7 @@
 							<?php if( is_user_logged_in() ) : //Check User Logged In ?>
 								<li class="sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
 								<li class="sf-navigation-item sf-hidden"><a href="/account/my-campaigns" class="sf-navigation-link">My Campaigns</a></li>
+								<li class="sf-navigation-item sf-hidden"><a href="/account/my-referrals" class="sf-navigation-link">My Referrals</a></li>
 								<li class="sf-navigation-item sf-hidden"><?php echo do_shortcode('[wpv-logout-link redirect_url="'.add_query_arg('bye', 1, do_shortcode('[wpv-post-url]')).'" class="sf-navigation-link"]Sign Out[/wpv-logout-link]');?></li>
 							<?php if( current_user_can('author') || current_user_can('administrator') ) : //Check Author ?>
 								<li class="sf-navigation-item sf-hidden"><a href="/wp-admin" class="sf-navigation-link">Admin</a></li>

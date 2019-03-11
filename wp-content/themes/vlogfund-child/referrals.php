@@ -892,7 +892,7 @@ height: auto;
 
     <div class="vf-ref-campaigns">
       <div class="vf-ref-wrap">
-        <h2>Get 'Em To Collab With Your Vote</h2>
+        <h2>Get 'Em To Collab With Your Voice</h2>
         <?php echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" orderby="field-_upvote_count" order="desc" limit="4" referral="1"]');?>
       </div>
     </div>
