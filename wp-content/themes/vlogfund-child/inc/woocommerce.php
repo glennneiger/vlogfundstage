@@ -706,3 +706,19 @@ function vlogfund_tracking_campaign_submission(){
 }
 add_action('wp_footer',	'vlogfund_tracking_campaign_submission', 99);
 endif;
+if( !function_exists('vlogfund_update_comment_type') ) :
+/**
+ * Update Comment Type
+ *
+ * @since 1.0
+ **/
+function vlogfund_update_comment_type($comment_data){
+	if( ! is_admin() && isset( $_POST['comment_post_ID'], $comment_data['comment_type'] ) 
+		&& '' === $comment_data['comment_type'] && 'product' === get_post_type( absint( $_POST['comment_post_ID'] ) ) ) :
+		$comment_data['comment_type'] = '';
+	endif;
+	return $comment_data;
+}
+remove_action('preprocess_comment', array( 'WC_Comments', 'update_comment_type' ), 1);
+add_filter('preprocess_comment', 'vlogfund_update_comment_type', 999);
+endif; //Endif
