@@ -567,13 +567,13 @@ add_action( 'feed_link', 'vf_custom_rss_feed', 10, 2 );
 
 //collaboration feed 1 for fb catalog (products)
 
-add_action('init', 'youtubeCollaborationsRSS');
-function youtubeCollaborationsRSS(){
-        add_feed('youtube-collaborations', 'youtubeCollaborationsFeed');
+add_action('init', 'ytCollaborationsRSS');
+function ytCollaborationsRSS(){
+        add_feed('yt-collaborations', 'ytCollaborationsFeed');
 }
 
-function youtubeCollaborationsFeed(){
-        get_template_part('rss', 'youtube-collaborations');
+function ytCollaborationsFeed(){
+        get_template_part('rss', 'yt-collaborations');
 }
 
 
