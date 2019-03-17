@@ -477,11 +477,11 @@ jQuery(document).ready(function($) {
       }
 
 
-      setTimeout(function() {
-        jQuery('html, body').animate({
-          scrollTop: $this.closest('.sfc-faq-accordion.active, .sfc-checkout-billing-faq-accordion.active').offset().top - 90
-        }, 500);
-      }, 700);
+      // setTimeout(function() {
+      //   jQuery('html, body').animate({
+      //     scrollTop: $this.closest('.sfc-faq-accordion.active, .sfc-checkout-billing-faq-accordion.active').offset().top - 90
+      //   }, 500);
+      // }, 700);
 
 
       event.preventDefault();
@@ -1917,7 +1917,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 		var sPageURL = decodeURIComponent(window.location.search.substring(1)),
 			sURLVariables = sPageURL.split('&'),
 			sParameterName,
-			i;	 
+			i;
 		for (i = 0; i < sURLVariables.length; i++) {
 			sParameterName = sURLVariables[i].split('=');
 			if (sParameterName[0] != sParam) {
@@ -1926,7 +1926,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 		}
 		return url.substring(0,url.length-1);
 	};
-	
+
 	//Get Query String
 	var getQueryStrings = function(name, url){
 		if ( !url ) url = window.location.href;
@@ -1950,13 +1950,13 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
     action = 'ajaxlogin';
     username = $('form#login_user #username_').val();
     password = $('form#login_user #password_').val();
-    email = '';	
+    email = '';
     //security = $('form#login #security').val();
     if ($(this).attr('id') == 'register_user') {
       action = 'ajaxregister';
       username = $('#signonname').val();
       password = $('#signonpassword').val();
-      email = $('#email').val();	  
+      email = $('#email').val();
       //security = $('#signonsecurity').val();
     }
     ctrl = $(this);
