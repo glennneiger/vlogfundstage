@@ -40,7 +40,7 @@ get_header(); ?>
 							</div><!--/.form-group--> */?>
 						</div><!--/.row-->
 
-						<div class="row ytc-filters" id="filters" style="display:one">
+						<div class="row ytc-filters" id="filters" style="display:none">
 							<div class="ytc-filter-group">
 								<label for="ytc-sortBy">Sort by</label>
 								<select name="sortBy" id="ytc-sortBy" class="form-control">
@@ -63,7 +63,7 @@ get_header(); ?>
 				<div class="row tags-container"><div class="tag"></div></div>
 				<div id="ytc-searchloader"><div class="col-lg-12"><center><i class="fa fa-spinner fa-2x fa-spin"></i></center></div></div>
 				<div id="ytc-creators-wrap"><strong class="count"><?php echo ytc_get_channels_count(); ?></strong> creators found </div>
-				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">					
+				<div class="row sfc-campaign-archive-posts" id="ytc-channles-list">
 					<?php ytc_get_channels_list(); ?>
 					<div class="sfc-campaign-archive-post"></div>
 					<div class="sfc-campaign-archive-post"></div>
@@ -114,5 +114,5 @@ get_header(); ?>
 	else : //Else
 		echo '<p>'.__('No channels found.','youtube-channels').'</p>';
 	endif; ?>
-	
+
 <?php get_footer(); ?>
