@@ -682,20 +682,21 @@ if( !function_exists('vlogfund_tracking_campaign_submission') ) :
  * Track Draft/Pending Campaign Submission
  **/
 function vlogfund_tracking_campaign_submission(){
-	if( ( isset( $_GET['post_type'] ) && $_GET['post_type'] == 'product' )
-		&& ( isset( $_GET['p'] ) && !empty( $_GET['p'] ) )
-		&& ( isset( $_GET['cred_referrer_form_id'] ) && ($_GET['cred_referrer_form_id'] == 98 || $_GET['cred_referrer_form_id'] == 216) ) ) :  //Validate the Hook
+	if( isset( $_GET['post_type'], $_GET['p'], $_GET['cred_referrer_form_id'] ) 
+		&& $_GET['post_type'] == 'product' && !empty( $_GET['p'] )
+		&& ( $_GET['cred_referrer_form_id'] == 98 || $_GET['cred_referrer_form_id'] == 216 ) ) :  //Validate the Hook
 		$campaign_id 	= $_GET['p'];
 		$draft_done 	= get_post_meta($campaign_id, '_dl_called_draft', true);
 		$pending_done 	= get_post_meta($campaign_id, '_dl_called_pending', true); 
-		if( empty( $draft_done ) || empty( $pending_done ) ) : ?>
+		if( ( empty( $draft_done ) && get_post_status( $campaign_id ) == 'draft' ) 
+			|| ( empty( $pending_done ) && get_post_status( $campaign_id ) == 'pending' ) ) : ?>
 			<script type="text/javascript">
 				window.dataLayer = window.dataLayer || [];
 				dataLayer.push({
 					<?php if( empty( $draft_done ) && get_post_status( $campaign_id ) == 'draft' ) : //Check Draft 
 						update_post_meta($campaign_id, '_dl_called_draft', 1); ?>
 						'event': 'campaignDraft'
-					<?php elseif( empty( $pending_done ) ) : //Check Pending 
+					<?php elseif( empty( $pending_done ) && get_post_status( $campaign_id ) == 'pending' ) : //Check Pending 
 						update_post_meta($campaign_id, '_dl_called_pending', 1);?>
 						'event': 'campaignPending'
 					<?php endif; //Endif ?>	
