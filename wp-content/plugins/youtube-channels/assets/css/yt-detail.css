@@ -36,8 +36,8 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 .grid-col { flex: 1 0 50%; width:100%; min-height:1px; text-align: center; }
 .latest-videos .grid-col { flex: 1 0 30%; }
 .channel-section h3 { font-size:22px; -apple-system, BlinkMacSystemFont, "“Segoe UI”", Roboto, Oxygen-Sans, Ubuntu, Cantarell, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; line-height:1.2; }
-.channel-video { position:relative;  background:#242424; padding-top: 56.25%;}
-.channel-video iframe { position: absolute; left: 0; width: 100%; top: 0; height: 100%; border: 0; }
+.channel-video { position:relative;  background:#242424; /*padding-top: 56.25%;*/}
+.channel-video iframe { position: relative; left: 0; width: 100%; top: 0; height: 100%; border: 0; }
 .channel-video-box h3 { text-align:center; font-weight:600; margin:0; padding:20px; white-space: initial; }
 .latest-videos-section { position:relative; display: flex; flex: 1 100%; }
 .latest-vidoes-section-headline { display: flex; align-items: center; justify-content: space-between; }
@@ -75,14 +75,14 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 .tweet-box iframe { margin:0 !important; }
 .related-collaborations-section .sfc-campaign-images{ margin-top:10px; }
 .related-collaborations-section .sfc-campaign-image{ height:200px; }
-.related-collaborations-section img{ 
-	width:100%; height:200px; object-fit:cover; 
+.related-collaborations-section img{
+	width:100%; height:200px; object-fit:cover;
 }
-.related-collaborations-section .sfc-campaign-images .sfc-campaign-image:first-child{ 
-	margin-right:-20px !important; /*margin-top:-8px;*/ 
+.related-collaborations-section .sfc-campaign-images .sfc-campaign-image:first-child{
+	margin-right:-20px !important; /*margin-top:-8px;*/
 }
-.sfc-campaign-make-it-happen-vote { 
-	margin-bottom: 0!important; 
+.sfc-campaign-make-it-happen-vote {
+	margin-bottom: 0!important;
 }
 .sf-blog-banner {
     display: flex;
@@ -231,7 +231,7 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 	.channel-banner-img{ height:calc(100vw / 2 - 1px); }
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (-o-min-device-pixel-ratio: 2 / 1), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 2) {
-	.statistic-col i, .score-btn:before { 
+	.statistic-col i, .score-btn:before {
 		background-image:url(../images/channel-sprites@2x.png);
 		-moz-background-size:162px 61px;
 		-ms-background-size:162px 61px;
@@ -282,7 +282,7 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 		order: 1;
     }
     .sfc-campaign-archive-post {
-		margin: 10px 0!important;
+		margin: 10px!important;
     }
 }
 
@@ -307,5 +307,8 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 		vertical-align: top;
 		position: relative;
 		/*padding: 0;*/
+	}
+	.related-blog-section .grid-cols2-sm.grid-cols2 .grid-col {
+		max-width: 100%
 	}
 }

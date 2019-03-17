@@ -6954,7 +6954,6 @@ input[name="wpcf-collaborator-1"], input[name="wpcf-collaborator-2"] {
 
     .sfc-collab-form .sidebar {
       position: relative;
-      ;
       padding: 0;
       position: relative;
       padding: 0 10px;
@@ -10301,7 +10300,7 @@ margin: auto;
 .sfc-account-desktop-nav-li a, .woocommerce-MyAccount-navigation ul li a {
   color: #999;
   font-size: 16px;
-  padding: 15px;
+  padding: 13px;
   line-height: 50px;
   height: 50px;
   width: 100%;
