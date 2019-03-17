@@ -110,12 +110,12 @@
 		});
 
 		//Click on Register Button
-		$(document).on('click', 'a[href^="#register"]', function(e){
-			e.preventDefault();
-			if( Upvote.logged_in == 0 ) {
-				$('a[href^="#register"]').trigger('click');
-			}
-		});
+		// $(document).on('click', 'a[href^="#register"]', function(e){
+		// 	e.preventDefault();
+		// 	if( Upvote.logged_in == 0 ) {
+		// 		$('a[href^="#register"]').trigger('click');
+		// 	}
+		// });
     });
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
