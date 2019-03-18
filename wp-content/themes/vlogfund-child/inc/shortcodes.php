@@ -88,3 +88,73 @@ function vlog_campaign_stay_in_loop_subscribe_ajax_callback( $atts, $content = n
 add_action('wp_ajax_vlog_campaign_stay_in_loop', 		'vlog_campaign_stay_in_loop_subscribe_ajax_callback');
 add_action('wp_ajax_nopriv_vlog_campaign_stay_in_loop', 'vlog_campaign_stay_in_loop_subscribe_ajax_callback');
 endif;
+//Milestone Shortcode
+if( !function_exists('vlogfund_campaign_milestone_shortcode') ) :
+function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
+	extract( shortcode_atts( array(
+		'product_id' => get_the_ID()
+	), $atts, 'vlogfund_campaign_milestone' ) );
+	//Total Sales
+	$total_sales = get_post_meta($product_id,'_product_total_sales',true) ? get_post_meta($product_id,'_product_total_sales',true) : 0;
+	$content = '';
+	//$total_sales = 1100250; //Testing Value
+	if( $total_sales <= 10000 ) : //Milestone 1 $10 000
+		$milestone_percent = ( number_format( ( $total_sales / 10000 ) * 100, 2 ) );
+		$content .= '<div class="sf-milestone-progress-wrapper">
+						<div class="sf-milestone-progress">
+							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
+						</div>
+						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$10 000</span></div>
+						<div class="sf-milestone-txt-content">
+							<span class="sf-milestone-txt">'.__('Milestone').' <strong>1</strong></span>
+							<span class="sf-next-milestone-txt">'.__('Next Milestone: $100 000').'</span>
+						</div>
+					</div>';
+	elseif( $total_sales > 10000 && $total_sales <= 100000 ) : //Milestone 2 $100 000
+		$milestone_percent = ( number_format( ( $total_sales / 100000 ) * 100, 2 ) );
+		$content .= '<div class="sf-milestone-progress-wrapper">
+						<div class="sf-milestone-progress">
+							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
+						</div>
+						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$100 000</span></div>
+						<div class="sf-milestone-txt-content">
+							<span class="sf-milestone-txt">'.__('Milestone').' <strong>2</strong></span>
+							<span class="sf-next-milestone-txt">'.__('Next Milestone: $500 000').'</span>
+						</div>
+					</div>';
+	elseif( $total_sales > 100000 && $total_sales <= 500000 ) : //Milestone 3 $500 000
+		$milestone_percent = ( number_format( ( $total_sales / 500000 ) * 100, 2 ) );
+		$content .= '<div class="sf-milestone-progress-wrapper">
+						<div class="sf-milestone-progress">
+							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
+						</div>
+						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$500 000</span></div>
+						<div class="sf-milestone-txt-content">
+							<span class="sf-milestone-txt">'.__('Milestone').' <strong>3</strong></span>
+							<span class="sf-next-milestone-txt">'.__('Next Milestone: $1 000 000').'</span>
+						</div>
+					</div>';
+	elseif( $total_sales > 500000 && $total_sales <= 1000000 ) : //Milestone 4 $1 000 000
+		$milestone_percent = ( number_format( ( $total_sales / 1000000 ) * 100, 2 ) );
+		$content .= '<div class="sf-milestone-progress-wrapper">
+						<div class="sf-milestone-progress">
+							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
+						</div>
+						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$1 000 000</span></div>
+						<div class="sf-milestone-txt-content">
+							<span class="sf-milestone-txt">'.__('Milestone').' <strong>4</strong></span>
+						</div>
+					</div>';
+	elseif( $total_sales > 1000000 ) : //All Milestone Over
+		$milestone_percent = ( number_format( ( $total_sales / 1000000 ) * 100, 2 ) );
+		$content .= '<div class="sf-milestone-progress-wrapper">
+						<div class="sf-milestone-progress">
+							<div class="sf-milestone-container" style="width:100%"><span>'.$milestone_percent.'%</span></div>
+						</div>
+						<div class="sf-milestone-values"><span class="start">Campaign Goal Reached</span><span class="end">$1 000 000</span></div>
+					</div>';
+	endif;
+	return $content;
+}
+add_shortcode('vlogfund_campaign_milestone', 'vlogfund_campaign_milestone_shortcode');
+endif;

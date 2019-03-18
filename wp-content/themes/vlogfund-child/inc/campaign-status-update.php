@@ -88,7 +88,7 @@ function vlogfund_post_status_get_email_subject_body( $status ) {
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	elseif( $status == '2' ) : //Contribute
-		$sub_body['subject'] = 'Your campaign %%POST_TITLE%% has been published';
+		$sub_body['subject'] = 'Your campaign %%POST_TITLE%% hit a new stage';
 		ob_start();
 		include_once( get_theme_file_path('/inc/campaign-status-emails/contribute.php') );
 		$sub_body['body'] = ob_get_contents();

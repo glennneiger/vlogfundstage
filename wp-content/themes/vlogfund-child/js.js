@@ -1107,22 +1107,22 @@ if (jQuery('body').hasClass('post-type-archive-product')) {
           },
         });
 
-        jQuery('a[href="#login"]').click(function(e) {
-          jQuery('#login.sf-popup').addClass('login-popup-visible');
-          jQuery('#register.sf-popup').removeClass('register-popup-visible');
+        jQuery(document).on('click', 'a[href^="#login"]', function(e) {
           e.preventDefault();
+		  jQuery('#login.sf-popup').addClass('login-popup-visible');
+          jQuery('#register.sf-popup').removeClass('register-popup-visible');          
         });
 
-        jQuery('a[href="#register"]').click(function(e) {
-          jQuery('#register.sf-popup').addClass('register-popup-visible');
-          jQuery('#login.sf-popup').removeClass('login-popup-visible');
+        jQuery(document).on('click', 'a[href^="#register"]', function(e) {
           e.preventDefault();
+		  jQuery('#register.sf-popup').addClass('register-popup-visible');
+          jQuery('#login.sf-popup').removeClass('login-popup-visible');          
         });
 
-        jQuery('a[href="#"]').click(function(e) {
-          jQuery('#register.sf-popup').removeClass('register-popup-visible');
-          jQuery('#login.sf-popup').removeClass('login-popup-visible');
+        jQuery(document).on('click', 'a[href="#"]', function(e) {
           e.preventDefault();
+		  jQuery('#register.sf-popup').removeClass('register-popup-visible');
+          jQuery('#login.sf-popup').removeClass('login-popup-visible');          
         });
 
 

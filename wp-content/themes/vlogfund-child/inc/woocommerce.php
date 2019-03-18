@@ -684,7 +684,7 @@ if( !function_exists('vlogfund_tracking_campaign_submission') ) :
 function vlogfund_tracking_campaign_submission(){
 	if( isset( $_GET['post_type'], $_GET['p'], $_GET['cred_referrer_form_id'] ) 
 		&& $_GET['post_type'] == 'product' && !empty( $_GET['p'] )
-		&& ( $_GET['cred_referrer_form_id'] == 98 || $_GET['cred_referrer_form_id'] == 216 ) ) :  //Validate the Hook
+		&& ( $_GET['cred_referrer_form_id'] == 98 || $_GET['cred_referrer_form_id'] == 216 || $_GET['cred_referrer_form_id'] == 64104 ) ) :  //Validate the Hook
 		$campaign_id 	= $_GET['p'];
 		$draft_done 	= get_post_meta($campaign_id, '_dl_called_draft', true);
 		$pending_done 	= get_post_meta($campaign_id, '_dl_called_pending', true); 
@@ -723,3 +723,18 @@ function vlogfund_update_comment_type($comment_data){
 remove_action('preprocess_comment', array( 'WC_Comments', 'update_comment_type' ), 1);
 add_filter('preprocess_comment', 'vlogfund_update_comment_type', 999);
 endif; //Endif
+if( !function_exists('vlogfund_woo_update_order_status') ) :
+/**
+ * Update Comment Type
+ *
+ * @since 1.0
+ **/
+function vlogfund_woo_update_order_status( $order_status, $order_id ) {
+	$order = new WC_Order( $order_id ); 
+ 	if( 'processing' == $order_status && ( 'on-hold' == $order->status || 'pending' == $order->status || 'failed' == $order->status ) ) :
+ 		return 'completed';
+	endif; //Endif 
+	return $order_status;
+}
+add_filter('woocommerce_payment_complete_order_status','vlogfund_woo_update_order_status', 10, 2);
+endif;

@@ -46,8 +46,8 @@
                             toastr.success('', 'Thank you for voting!');
 							window.dataLayer = window.dataLayer || [];
 							dataLayer.push({'event': 'upvote'});
-							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {
-								$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
+							if( result.guest_limit_reached == '1' /*&& Upvote.product_page != '1'*/ ) {
+								$('.upvote-btn.vote-me').wrap('<a href="#register" class="after-upvote"></a>').removeClass('vote-me').removeAttr('data-id');
 								//location.reload();
 							}
 						} else if( result.voted == '1' ){
@@ -91,7 +91,7 @@
 							//Upvote Custom Event
 							$this.trigger('upvote', result);
 							if( result.guest_limit_reached == '1' && Upvote.product_page != '1' ) {
-								$('.upvote-btn').wrap('<a href="#register"></a>').removeClass('vote-me').removeAttr('data-id');
+								$('.upvote-btn.vote-me').wrap('<a href="#register" class="after-upvote"></a>').removeClass('vote-me').removeAttr('data-id');
 								location.reload();
 							}
 						} else if( result.voted == '1' ){
@@ -110,12 +110,13 @@
 		});
 
 		//Click on Register Button
-		// $(document).on('click', 'a[href^="#register"]', function(e){
-		// 	e.preventDefault();
-		// 	if( Upvote.logged_in == 0 ) {
-		// 		$('a[href^="#register"]').trigger('click');
-		// 	}
-		// });
+		$(document).on('click', '.upvote-container-big a[href^="#register"].after-upvote, .upvote-container a[href^="#register"].after-upvote', function(e){
+			e.preventDefault();
+		 	if( Upvote.logged_in == 0 ) {
+				jQuery('#register.sf-popup').addClass('register-popup-visible');
+				jQuery('#login.sf-popup').removeClass('login-popup-visible');
+		 	}
+		});
     });
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
