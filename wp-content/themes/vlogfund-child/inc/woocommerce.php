@@ -215,6 +215,7 @@ function vlogfund_update_product_sales_customer( $order_id, $from_status, $to_st
 			//Update Campaign Milestone
 			if( $camp_milestones = get_post_meta($order_product['product_id'], 'wpcf-donation_milestones', true) ) :
 				$milestones = explode(',',trim($camp_milestones));
+				sort($milestones);
 			else : //Else Default Milestones
 				$milestones = array(1000,5000,10000,50000,100000,150000,200000,250000,500000,1000000);
 			endif;
