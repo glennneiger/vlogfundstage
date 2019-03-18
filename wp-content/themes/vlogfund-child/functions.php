@@ -1555,6 +1555,19 @@ function redirect_to_checkout() {
 return WC()->cart->get_checkout_url();
 }*/
 
+
+
+
+//new place order button text
+add_filter( 'woocommerce_order_button_text', 'woo_custom_order_button_text' );
+
+function woo_custom_order_button_text() {
+	return __( 'Donate', 'woocommerce' );
+}
+
+
+
+
 //Pre-populate Woocommerce checkout fields
 add_filter('woocommerce_checkout_get_value', function($input, $key ) {
 	global $current_user;

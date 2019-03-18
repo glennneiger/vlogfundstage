@@ -7846,10 +7846,11 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
 
 .page-frontpage .sfc-campaign-archive-post, .single-product .sfc-campaign-archive-post {
   flex: 1 0 300px;
+  flex: 1 0 250px;
 }
 
 
-.sfc-campaign-archive-post:empty, .sfc-ngo-overview-item:empty {
+.sfc-campaign-archive-post:empty, .sfc-ngo-overview-item:empty, .vf-ref-prize-prize-item:empty {
   height: 0;
   width: 0;
   padding: 0;
@@ -8334,13 +8335,13 @@ span.select2-selection__rendered {
 
 
 
-.sf-milestone-values {
+/*.sf-milestone-values {
   display: none;
 }
 
 .sf-milestone-txt-content {
   display: none;
-}
+}*/
 .sf-milestone-values.sf-upvote-progress-label{ display:block; }
 
 
@@ -8683,12 +8684,14 @@ div.sf-campaign-yt-video-thumbnail iframe {
 @media (min-width: 992px) {
   .sfc-campaign {
     width: 970px;
+    width: 900px;
   }
 }
 
 @media (min-width: 1200px) {
   .sfc-campaign {
     width: 1170px;
+    width: 900px;
   }
 }
 
@@ -8960,7 +8963,6 @@ flex-basis: 15%;
   background: var(--brand-color);
   z-index: 1;
   color: white;
-  border: 3px solid white;
   border-top: none;
   -ms-transform: skewX(-10deg);
   -webkit-transform: skewX(-10deg);
@@ -8979,7 +8981,6 @@ flex-basis: 15%;
     background: var(--brand-color);
     z-index: 1;
     color: white;
-    border: 3px solid white;
     border-top: none;
     -ms-transform: skewX(-10deg);
     -webkit-transform: skewX(-10deg);
@@ -9216,7 +9217,7 @@ ul.sfc-campaign-stats {
   flex-direction: row;
   justify-content: space-between;
   list-style-type: none;
-  padding: 0 20px;
+  padding: 0;
 }
 
 ul.sfc-campaign-stats li {
@@ -9693,15 +9694,19 @@ ul.sfc-campaign-backers li {
 /*added 22.07.18*/
 /*Refurbish campaign pages*/
 
-.sfc-campaign-upvote-part {
+.sfc-campaign-upvote-part, .sfc-campaign-donation-part {
   width:100%;
   margin:30px auto auto auto;
 }
 @media (min-width:996px) {
-  .sfc-campaign-upvote-part {
+  .sfc-campaign-upvote-part, .sfc-campaign-donation-part {
     width:80%;
   }
 }
+
+
+
+
 .sfc-campaign-page-vote-bar {
   height: 10px;
   width: 100%;
@@ -9747,11 +9752,11 @@ ul.sfc-campaign-backers li {
   width: 100%;
 }
 
-.sfc-campaign-upvote-desc {
+.sfc-campaign-upvote-desc, .sfc-campaign-donation-desc {
   margin-top: 10px;
   margin-bottom: 30px;
 }
-.sfc-campaign-upvote-desc span {
+.sfc-campaign-upvote-desc span, .sfc-campaign-donation-desc span {
   text-decoration: underline;
 }
 
@@ -10127,43 +10132,43 @@ label.error {
 
 /**campaign prizes**/
 
-.vf-ref-upvote-title {
+.vf-ref-prize-title {
   text-align: center;
   margin: 0;
 }
 
-.vf-ref-upvote-desc {
+.vf-ref-prize-desc {
   text-align: center;
 }
-.vf-ref-upvote-prizes {
+.vf-ref-prizes {
   display: flex;
   flex-wrap: wrap;
 }
 
-.vf-ref-upvote-prize-item {
+.vf-ref-prize-item {
 margin: auto;
 }
 
-.vf-ref-upvote-prize-img {
+.vf-ref-prize-img {
   width: 50%;
   margin: auto;
   display: block;
 }
 
-.vf-ref-upvote-prize-title {
+.vf-ref-prize-title {
   margin: 0 auto;
   text-align: center;
 }
 
 @media screen and (min-width:996px) {
-  .vf-ref-upvote-prizes {
+  .vf-ref-prizes {
     flex-wrap: nowrap;
   }
 }
 
 @media screen and (max-width: 996px) {
 
-.vf-ref-upvote-prizes {
+.vf-ref-prizes {
     white-space: nowrap;
     overflow-y: hidden;
     overflow-x: auto;
@@ -10175,7 +10180,7 @@ margin: auto;
     display: block!important;
 }
 
-.vf-ref-upvote-prize-item {
+.vf-ref-prize-item {
     display: inline-block;
     width: 60%;
     float: none;
@@ -11399,7 +11404,11 @@ ul.woocommerce-error li a.button.wc-forward:hover {
   color: #999;
 }
 
-.page-checkout #masthead {
+.page-checkout #masthead, .page-checkout .site-footer, .woocommerce-cart .site-footer {
+  display: none;
+}
+
+.page-checkout .container-fluid:first-of-type {
   display: none;
 }
 
@@ -11494,8 +11503,8 @@ input[name="donation_amount"]:checked + label {
   color: white;
   background-color: #6b10d6;
   background-color: var(--brand-color);
-  background: linear-gradient(to bottom, #6b10d6 0%, #7519d1 100%);
-  background: linear-gradient(to bottom, var(--brand-color) 0%, #7519d1 100%);
+  /*background: linear-gradient(to bottom, #6b10d6 0%, #7519d1 100%);
+  background: linear-gradient(to bottom, var(--brand-color) 0%, #7519d1 100%);*/
   border: 1px solid #6b10d6;
   border: 1px solid var(--brand-color);
   cursor: pointer;
@@ -12390,7 +12399,7 @@ body.woocommerce-lost-password  > *:not(.woocommerce-message) p:first-child {
   }
 }
 .sfc-checkout-billing-item {
-  flex: auto;
+  flex: 1;
   padding: 15px;
 }
 .sfc-checkout-billing-sticky {
@@ -12766,6 +12775,21 @@ input#payment_method_paypal, input#payment_method_stripe {
   display: flex!important;
 }
 
+.wc-payment-form {
+  padding: 0!important;
+  margin: 0!important;
+}
+
+.woocommerce-SavedPaymentMethods-saveNew {
+  padding: 0!important;
+}
+
+.woocommerce-privacy-policy-text p {
+  padding: 0 20px;
+  color: #515151;
+  font-size: 0.92em;
+}
+
 .woocommerce-checkout #payment ul.payment_methods li img.stripe-icon, #add_payment_method #payment ul.payment_methods li img.stripe-icon {
   float: none;
   max-width: 37px;
@@ -12915,9 +12939,9 @@ input#payment_method_paypal, input#payment_method_stripe {
 .sfc-faq-body p {
   margin: 5px 0;
 }
-.page-checkout .sfc-faq-body p {
+/*.page-checkout .sfc-faq-body p {
   width: 250px;
-}
+}*/
 
 .sfc-checkout-billing-ssl {
   width: 10%;

@@ -111,7 +111,7 @@ else {
 		<?php do_action( 'woocommerce_checkout_order_review' ); ?>
 	</div>
         <span class="sfc-checkout-terms">By continuing, you agree to our <a href="/terms" target="_blank">Terms of Use</a>
-            Our <a href="/terms" target="_blank">Privacy Policy</a>, and our <a href="/terms" target="_blank">Refund Policy</a></span>
+            Our <a href="/privacy" target="_blank">Privacy Policy</a>, and our <a href="/terms" target="_blank">Refund Policy</a></span>
 
 
                                 <?php do_action( 'woocommerce_checkout_after_order_review' ); ?>
@@ -137,8 +137,8 @@ Our website ensures to precede all requests via “https” rather than “http�
                                 <div class="sfc-checkout-billing-faq-accordion active to-animate">
                                     <h5>Will I receive a receipt for my contribution? <i class="fa fa-angle-down"></i></h5>
                                     <div class="sfc-faq-body" style="display: block;">
-                                        <p><em>Please note: Your credit card will be charged immediately if your transaction was successful you’ll receive an automatic confirmation email.</em><br> The email will be sent to the email address provided during the checkout process. Make sure to check your spam folder if you can’t find the e-mail after your transaction.
-We will not be issuing any receipts. If you choose to deduct your donation, you can use the confirmation email we sent you if your transaction was successful. Often no additional receipt is required for donations of $250 or less. Please email us at …. and we will issue a receipt if your donation was greater than or equal to $250.
+                                        <p><em>Your credit card will be charged immediately if your transaction was successful you’ll receive an automatic confirmation email.</em><br> The email will be sent to the email address provided during the checkout process. Make sure to check your spam folder if you can’t find the e-mail after your transaction.
+We will not be issuing any receipts. If you choose to deduct your donation, you can use the confirmation email we sent you if your transaction was successful. Often no additional receipt is required for donations of $250 or less. Please email us at support@vlogfund.com and we will issue a receipt if your donation was greater than or equal to $250.
 </p>
                                         <p>Read more of our FAQ <a href="/faq" target="_blank">here</a></p>
                                     </div>
