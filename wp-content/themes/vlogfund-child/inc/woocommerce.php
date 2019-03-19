@@ -219,7 +219,7 @@ function vlogfund_update_product_sales_customer( $order_id, $from_status, $to_st
 			else : //Else Default Milestones
 				$milestones = array(1000,5000,10000,50000,100000,150000,200000,250000,500000,1000000);
 			endif;
-			$milestone_abbrs = array('first','second','third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 
+			$milestone_abbrs = array('first','second','third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
 									'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth');
 			foreach( $milestones as $key => $milestone ) {
 				$milestone = trim($milestone);
@@ -612,7 +612,7 @@ function vlogfund_wc_subscribe_mailchimp_campaign( $post_id, $form_data ){
 			$last_name 	= get_user_meta($userdata->ID, 'last_name', true);
 			include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
 			$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
-			$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);			
+			$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);
 			$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP ) ) );
 			if( $mc_exist['status'] != 404 ) : //Exist Then Update
 				//Update Existing Users
@@ -655,7 +655,7 @@ function vlogfund_wc_subscribe_mailchimp_campaign_admin( $post_id, $post ){
 		include_once get_theme_file_path('/inc/mailchimp/mailchimp.php');
 		$MailChimp 	= new MailChimp( VLOG_MAILCHIMP_API ); //Check Success
 		$subscriber_hash = $MailChimp->subscriberHash($userdata->user_email);
-		$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP ) ) );    	
+		$mc_exist = $MailChimp->get('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array( 'interests' => array( VLOG_MAILCHIMP_CREATORS_GROUP ) ) );
 		if( $mc_exist['status'] != 404 ) : //Exist Then Update
 			//Update Existing Users
 			$result = $MailChimp->put('lists/'.VLOG_MAILCHIMP_LIST.'/members/'.$subscriber_hash, array(
@@ -683,25 +683,25 @@ if( !function_exists('vlogfund_tracking_campaign_submission') ) :
  * Track Draft/Pending Campaign Submission
  **/
 function vlogfund_tracking_campaign_submission(){
-	if( isset( $_GET['post_type'], $_GET['p'], $_GET['cred_referrer_form_id'] ) 
+	if( isset( $_GET['post_type'], $_GET['p'], $_GET['cred_referrer_form_id'] )
 		&& $_GET['post_type'] == 'product' && !empty( $_GET['p'] )
 		&& ( $_GET['cred_referrer_form_id'] == 98 || $_GET['cred_referrer_form_id'] == 216 || $_GET['cred_referrer_form_id'] == 64104 ) ) :  //Validate the Hook
 		$campaign_id 	= $_GET['p'];
 		$draft_done 	= get_post_meta($campaign_id, '_dl_called_draft', true);
-		$pending_done 	= get_post_meta($campaign_id, '_dl_called_pending', true); 
-		if( ( empty( $draft_done ) && get_post_status( $campaign_id ) == 'draft' ) 
+		$pending_done 	= get_post_meta($campaign_id, '_dl_called_pending', true);
+		if( ( empty( $draft_done ) && get_post_status( $campaign_id ) == 'draft' )
 			|| ( empty( $pending_done ) && get_post_status( $campaign_id ) == 'pending' ) ) : ?>
 			<script type="text/javascript">
 				window.dataLayer = window.dataLayer || [];
 				dataLayer.push({
-					<?php if( empty( $draft_done ) && get_post_status( $campaign_id ) == 'draft' ) : //Check Draft 
+					<?php if( empty( $draft_done ) && get_post_status( $campaign_id ) == 'draft' ) : //Check Draft
 						update_post_meta($campaign_id, '_dl_called_draft', 1); ?>
 						'event': 'campaignDraft'
-					<?php elseif( empty( $pending_done ) && get_post_status( $campaign_id ) == 'pending' ) : //Check Pending 
+					<?php elseif( empty( $pending_done ) && get_post_status( $campaign_id ) == 'pending' ) : //Check Pending
 						update_post_meta($campaign_id, '_dl_called_pending', 1);?>
 						'event': 'campaignPending'
-					<?php endif; //Endif ?>	
-				});			
+					<?php endif; //Endif ?>
+				});
 			</script>
 	<?php endif; //Endif
 	endif; //Endif
@@ -715,7 +715,7 @@ if( !function_exists('vlogfund_update_comment_type') ) :
  * @since 1.0
  **/
 function vlogfund_update_comment_type($comment_data){
-	if( ! is_admin() && isset( $_POST['comment_post_ID'], $comment_data['comment_type'] ) 
+	if( ! is_admin() && isset( $_POST['comment_post_ID'], $comment_data['comment_type'] )
 		&& '' === $comment_data['comment_type'] && 'product' === get_post_type( absint( $_POST['comment_post_ID'] ) ) ) :
 		$comment_data['comment_type'] = '';
 	endif;
@@ -731,10 +731,10 @@ if( !function_exists('vlogfund_woo_update_order_status') ) :
  * @since 1.0
  **/
 function vlogfund_woo_update_order_status( $order_status, $order_id ) {
-	$order = new WC_Order( $order_id ); 
+	$order = new WC_Order( $order_id );
  	if( 'processing' == $order_status && ( 'on-hold' == $order->status || 'pending' == $order->status || 'failed' == $order->status ) ) :
  		return 'completed';
-	endif; //Endif 
+	endif; //Endif
 	return $order_status;
 }
 add_filter('woocommerce_payment_complete_order_status','vlogfund_woo_update_order_status', 10, 2);

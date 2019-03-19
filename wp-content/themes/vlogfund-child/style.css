@@ -7993,6 +7993,9 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
     overflow: auto;
     text-overflow: inherit;
   }
+  .page-checkout .sfc-campaign-archive-post-title {
+     font-size: 18px;
+  }
 }
 
 .sfc-campaign-archive-post-title a {
@@ -8550,6 +8553,14 @@ div.alert.alert-success p:before {
   }
   .sfc-campaign-image {
     height: 450px;
+  }
+
+
+  .page-checkout .sfc-campaign-images {
+    margin-top: 0;
+  }
+  .page-checkout .sfc-campaign-image {
+    height: 250px;
   }
 }
 .sfc-campaign-image img {
@@ -11700,6 +11711,8 @@ p#wc-stripe-payment-request-button-separator {
 
 .shop_table_responsive.cart {
   padding: 15px;
+  width: 100%;
+  margin: auto;
 }
 .woocommerce-cart-form__cart-item.cart_item {
   display: flex;
@@ -12018,6 +12031,12 @@ div.sf-cart-yt-video-thumbnail iframe {
   align-items: center;
   color: white;
   padding: 20px;
+}
+
+@media screen and (max-width: 996px) {
+   .sfc-checkout-footer {
+      font-size: 10px;
+   }
 }
 .sfc-checkout-footer-item {
 
@@ -12383,7 +12402,7 @@ body.woocommerce-lost-password  > *:not(.woocommerce-message) p:first-child {
 
 @media (min-width: 1200px) {
   .sfc-checkout-billing-container {
-    width: 1170px;
+    width: 1000px;
   }
 }
 .sfc-checkout-billing {
@@ -12674,6 +12693,15 @@ input[name="billing_cause"]:checked + label {
 .woocommerce table.shop_table.woocommerce-cart-form__contents td {
   border-top: none!important;
   padding: inherit;
+  flex: 1;
+  box-shadow: 0 0 4px 0 #dadddd;
+  margin-top: 20px;
+}
+
+@media screen and (max-width: 996px) {
+  .woocommerce table.shop_table.woocommerce-cart-form__contents td {
+      flex: auto;
+  }
 }
 
 .woocommerce table.shop_table tbody th, .woocommerce table.shop_table tfoot td, .woocommerce table.shop_table tfoot th {
