@@ -88,34 +88,27 @@ do_action( 'woocommerce_before_cart' ); ?>
                         <td class="product-price" data-title="<?php esc_attr_e( 'Price', 'woocommerce' ); ?>">
                          <?php if( WC_Name_Your_Price_Helpers::is_nyp( $product_id ) /*|| WC_Name_Your_Price_Helpers::has_nyp( $product_id )*/ ){ ?>
 
-                           <h4 class="sfc-checkout-review-amount-title">Donation Amount</h4>
+
+							<h4 class="sfc-checkout-review-amount-title">Donation Amount</h4>
 							<div class="sfc-campaign-choose-amount-wrapper">
 
-
-
             <input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_20" value="20" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 20);?>>
-
             <label for="donation_amount_<?php echo $product_id;?>_20" class="sfc-campaign-amount-button"><span><?php echo get_woocommerce_currency_symbol();?>20</span></label>
 
             <input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_10" value="10" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 10);?>>
-
             <label for="donation_amount_<?php echo $product_id;?>_10" class="sfc-campaign-amount-button"><span><?php echo get_woocommerce_currency_symbol();?>10</span></label>
 
             <input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_5" value="5" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 5);?>>
-
             <label for="donation_amount_<?php echo $product_id;?>_5" class="sfc-campaign-amount-button"><span><?php echo get_woocommerce_currency_symbol();?>5</span></label>
 
             <input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_3" value="3" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 3);?>>
-
             <label for="donation_amount_<?php echo $product_id;?>_3" class="sfc-campaign-amount-button"><span><?php echo get_woocommerce_currency_symbol();?>3</span></label>
 
 
 
 
                            <div class="sfc-checkout-billing-donation-amount">
-
-                               <span class="product-custom-price-currency"><?php echo get_woocommerce_currency_symbol();?></span>
-
+                           <span class="product-custom-price-currency"><?php echo get_woocommerce_currency_symbol();?></span>
                            <input type="text" class="product_custom_price sfc-checkout-billing-donation-other" data-id="<?php echo $_product->get_id();?>" value="<?php echo $_product->get_price();?>" placeholder="other amount"/>
 
 

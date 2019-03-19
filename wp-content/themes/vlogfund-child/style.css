@@ -8017,7 +8017,6 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
   background: var(--brand-color);
   z-index: 1;
   color: white;
-  border: 3px solid white;
   -ms-transform: skewX(-10deg);
   -webkit-transform: skewX(-10deg);
   transform: skewX(-10deg);
@@ -8558,6 +8557,9 @@ div.alert.alert-success p:before {
 
   .page-checkout .sfc-campaign-images {
     margin-top: 0;
+  }
+  .page-checkout.woocommerce-order-received .sfc-campaign-images {
+    margin-top: 20px;
   }
   .page-checkout .sfc-campaign-image {
     height: 250px;
@@ -13094,7 +13096,7 @@ input[type="date"] {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  width:500px;
+  max-width:500px;
   margin:auto auto 30px auto;
   background: white;
   box-shadow: 0 0 4px 0 #dadddd;
@@ -13283,12 +13285,10 @@ input[type="date"] {
 
 
 
-.sfc-checkout-thank-you-confirmation-msg {
-  background: white;
-  padding: 10px;
-  margin-bottom: 40px;
-  box-shadow: 0 0 4px 0 #dadddd;
-  display: inline-block;
+.sfc-thank-you-conf-msg {
+text-align: center;
+margin: auto;
+display: block;
 }
 
 

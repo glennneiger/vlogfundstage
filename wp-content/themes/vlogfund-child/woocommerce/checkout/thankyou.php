@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$product = get_post( $ordered_product['product_id'] );
 			$excerpt = $product->post_excerpt ? $product->post_excerpt : get_bloginfo('description'); ?>
 
-    <!--new-->
+
 
 <h2 style="text-align: center;">contribution complete </h2>
 
@@ -68,13 +68,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="sfc-checkout-progress-bar-titles">
     <div class="sfc-checkout-progress-bar-title">Choose a charity</div>
-
-
     <div class="sfc-checkout-progress-bar-title">Billing details</div>
-
-
     <div class="sfc-checkout-progress-bar-title">Thank you!</div>
-
 </div>
 
 
@@ -84,55 +79,38 @@ if ( ! defined( 'ABSPATH' ) ) {
         <h1 class="sfc-checkout-thankyou-title">Thank you for your contribution!</h1>
     </div>
 
-    <div class="sfc-checkout-thankyou-container">
-
-
-        <div class="sfc-checkout-thankyou-row">
-
-
-            <div class="sfc-checkout-thankyyou-cammpaign">
 
 
 
+        <div class="sfc-checkout-thankyou-row sfc-campaign-archive-post">
 
 
-                <div class="sfc-checkout-thankyou-image-container">
-
-
-
-                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo get_permalink( $product_id );?>"
-                       target="_blank">
+					<span class="sfc-campaign-archive-post-status-donate"><span class="sfc-campaign-archive-post-status-dollar-sign">$</span></span>
 
 
 
-                        <!--<div class="sfc-checkout-thankyou-img-left image-left-1"></div>
-                        <div class="sfc-checkout-thankyou-img-right image-right-1"></div>--->
+								<div class="sfc-campaign-images">
+								<div class="sfc-campaign-image sfc-campaign-single-image">
+								 <img align="top" class="sfc-campaign-image-left"
+											src="<?php echo get_post_meta( $product_id, 'wpcf-collaborator-1-image', true ); ?>"/>
+						    </div>
+						 <div class="sfc-campaign-image sfc-campaign-single-image">
+								 <img align="top" class="sfc-campaign-image-right"
+											src="<?php echo get_post_meta( $product_id, 'wpcf-collaborator-2-image', true ); ?>"/>
+						 </div>
+					 </div>
 
-                       <div class="sf-campaign-popular-yt-video-thumbnails">
-                            <div class="sf-campaign-popular-yt-video-thumbnail" data-id="<?php echo get_post_meta( $product_id, 'wpcf-youtube-video-id-collaborator-1', true ); ?>"></div>
-                            <div class="sf-campaign-popular-yt-video-thumbnail" data-id="<?php echo get_post_meta( $product_id, 'wpcf-youtube-video-id-collaborator-2', true ); ?>"></div>
-                                        </div>
-
-
-
-                    </a>
-                </div>
-
-
+                <h3 class="sfc-campaign-archive-post-title" style="text-align:center;"><?php echo get_post_meta( $product_id, 'wpcf-collaborator-1', true ); ?> + <?php echo get_post_meta( $product_id, 'wpcf-collaborator-2', true ); ?></h3>
 
 
-                <h2><?php echo get_post_meta( $product_id, 'wpcf-collaborator-1', true ); ?> + <?php echo get_post_meta( $product_id, 'wpcf-collaborator-2', true ); ?></h2>
-
-            </div>
 
 
             <div class="sfc-checkout-thankyou-share">
-
+               <p class="thank_you_share_title" style="text-align:center;">Share this collaboration now with your friends!</p>
 							<!--Sharing buttons-->
 							<ul class="sf-sharing-buttons-inline">
 							<li class="sf-sharing-button-facebook"><a id="facebook" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode( get_permalink( $product->ID ) );?>" target="_blank"><i id="facebook" class="fab fa-facebook"></i></a></li>
 							<li class="sf-sharing-button-twitter"><a id="twitter" href="https://twitter.com/intent/tweet?text=<?php echo substr($excerpt, 0, 279);?>" target="_blank"><i id="twitter" class="fab fa-twitter"></i></a></li>
-							<li class="sf-sharing-button-google"><a id="google" href="https://plus.google.com/share?url=<?php echo urlencode( get_permalink( $product->ID ) );?>" target="_blank"><i id="google" class="fab fa-google"></i> </a></li>
 							<li class="sf-sharing-button-whatsapp"><a id="whatsapp" href="whatsapp://send?text=<?php echo $product->post_title . ' | ' . $excerpt . ' | ' . get_permalink( $product->ID );?>" data-action="share/whatsapp/share" target="_blank"><i id="whatsapp" class="fab fa-whatsapp"></i></a></li>
 							<li class="sf-sharing-button-reddit"><a id="reddit" href="http://www.reddit.com/submit?url=<?php echo get_permalink( $product_id );?>" target="_blank"><i id="reddit" class="fab fa-reddit"></i></a></li>
 							<li class="sf-sharing-button-mail"><a id="mail" href="mailto:?subject= Let's make this YouTube collaboration happen&amp;body=Check out this YouTube Collaboration <?php echo get_permalink( $product_id );?>"><i id="mail" class="fa fa-envelope"></i></a></li>
@@ -142,83 +120,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<i id="whatsapp" class="fab fa-facebook-messenger"></i></a></li>
 							</ul>
 							<!--Sharing buttons-->
-
-
-                <h3 class="thank_you_share_title"><a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo get_permalink( $product_id );?>">Share this collaboration now with your friends!</a>
-                </h3>
-
-
             </div>
+
+
         </div>
+
         <?php if( is_user_logged_in() ) { ?>
-        <div><span class="fc-checkout-thank-you-confirmation-msg"><i class="fa fa-heart"></i> Thank you for being part of our community and bringing new ideas to life!<br> You’ll receive and automatic <strong>confirmation email</strong> if your contribution is successful.</span> </div><br>
+        <div class="sfc-thank-you-conf-msg"><span>You’ll receive and automatic <strong>confirmation email</strong> if your contribution is successful.</span><br>
         Your contribution will also show up in your personal account if you created an account with us.<br>
         <a href="<?php echo $order->get_view_order_url();?>" style="text-decoration: underline">Details</a>
+				</div>
 
         <?php } else { ?>
-        <div><span class="fc-checkout-thank-you-confirmation-msg"><i class="fa fa-heart"></i> Thank you for being part of our community and bringing new ideas to life!<br> If your contribution was successful you will receive an immediate, automatic <strong>confirmation email</strong> to the email address you provided. </span> </div>
+        <div class="sfc-thank-you-conf-msg"><span><i class="fa fa-heart"></i> Thank you for being part of our community and bringing new ideas to life!<br> If your contribution was successful you will receive an immediate, automatic <strong>confirmation email</strong> to the email address you provided. </span> </div>
 				<?php } ?>
-    </div>
+
+
 </div>
 
-    <!--end-new-->
-
-
-    <div class="sfc-campaign-widget-container">
-        <div class="sfc-campaign-widget-heading sfc-campaign-widget-heading-controls">
-                        <a href="/campaign-search/"><h2>Other likeminded people contributed to the following <b class="sfc-campaign-section-title">Collaborations</b></h2></a>
-                        <div class="sfc-campaign-widget-heading-see-more">
-                            <button class="sfc-campaign-widget-heading-see-more-button"><a href="/campaign-search/">See all</a></button>
-                        </div>
-                    </div>
-    <?php echo do_shortcode ('[wpv-view name="campaign-search" view_display="layout" limit="4" orderby="field-total_sales" order="desc" orderby_second="post_date" order_second="desc" funding="2"]') ?>
-    </div>
-
-
-
-
-
-
-
-			<?php /*<p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received"><?php echo apply_filters( 'woocommerce_thankyou_order_received_text', __( 'Thank you. Your order has been received.', 'woocommerce' ), $order ); ?></p>
-
-			<ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
-
-				<li class="woocommerce-order-overview__order order">
-					<?php _e( 'Order number:', 'woocommerce' ); ?>
-					<strong><?php echo $order->get_order_number(); ?></strong>
-				</li>
-
-				<li class="woocommerce-order-overview__date date">
-					<?php _e( 'Date:', 'woocommerce' ); ?>
-					<strong><?php echo wc_format_datetime( $order->get_date_created() ); ?></strong>
-				</li>
-
-				<?php if ( is_user_logged_in() && $order->get_user_id() === get_current_user_id() && $order->get_billing_email() ) : ?>
-					<li class="woocommerce-order-overview__email email">
-						<?php _e( 'Email:', 'woocommerce' ); ?>
-						<strong><?php echo $order->get_billing_email(); ?></strong>
-					</li>
-				<?php endif; ?>
-
-				<li class="woocommerce-order-overview__total total">
-					<?php _e( 'Total:', 'woocommerce' ); ?>
-					<strong><?php echo $order->get_formatted_order_total(); ?></strong>
-				</li>
-
-				<?php if ( $order->get_payment_method_title() ) : ?>
-					<li class="woocommerce-order-overview__payment-method method">
-						<?php _e( 'Payment method:', 'woocommerce' ); ?>
-						<strong><?php echo wp_kses_post( $order->get_payment_method_title() ); ?></strong>
-					</li>
-				<?php endif; ?>
-
-			</ul>*/?>
 
 		<?php endif; ?>
 
-		<?php //do_action( 'woocommerce_thankyou_' . $order->get_payment_method(), $order->get_id() ); ?>
-		<?php //do_action( 'woocommerce_thankyou', $order->get_id() ); ?>
+
 
 
 	<?php else : ?>
@@ -244,7 +167,6 @@ if ( ! defined( 'ABSPATH' ) ) {
           <!---->
           <h2>Get the word out</h2>
             <h3>Share this collab with your friends</h3>
-            <!--<p style="color:#999;">in additional contributions and engagements</p>-->
 
 						<!--Sharing buttons-->
 						<ul class="sf-sharing-buttons-inline">
