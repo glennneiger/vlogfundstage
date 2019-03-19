@@ -107,34 +107,56 @@ if ( ! defined( 'ABSPATH' ) ) {
 
             <div class="sfc-checkout-thankyou-share">
                <p class="thank_you_share_title" style="text-align:center;">Share this collaboration now with your friends!</p>
-							<!--Sharing buttons-->
-							<ul class="sf-sharing-buttons-inline">
-							<li class="sf-sharing-button-facebook"><a id="facebook" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode( get_permalink( $product->ID ) );?>" target="_blank"><i id="facebook" class="fab fa-facebook"></i></a></li>
-							<li class="sf-sharing-button-twitter"><a id="twitter" href="https://twitter.com/intent/tweet?text=<?php echo substr($excerpt, 0, 279);?>" target="_blank"><i id="twitter" class="fab fa-twitter"></i></a></li>
-							<li class="sf-sharing-button-whatsapp"><a id="whatsapp" href="whatsapp://send?text=<?php echo $product->post_title . ' | ' . $excerpt . ' | ' . get_permalink( $product->ID );?>" data-action="share/whatsapp/share" target="_blank"><i id="whatsapp" class="fab fa-whatsapp"></i></a></li>
-							<li class="sf-sharing-button-reddit"><a id="reddit" href="http://www.reddit.com/submit?url=<?php echo get_permalink( $product_id );?>" target="_blank"><i id="reddit" class="fab fa-reddit"></i></a></li>
-							<li class="sf-sharing-button-mail"><a id="mail" href="mailto:?subject= Let's make this YouTube collaboration happen&amp;body=Check out this YouTube Collaboration <?php echo get_permalink( $product_id );?>"><i id="mail" class="fa fa-envelope"></i></a></li>
-							<li class="sf-sharing-button-messenger messenger-mobile"><a id="messenger" href="fb-messenger://share/?link=<?php echo urlencode( get_permalink( $product->ID ) );?>&app_id=181038895828102" target="_blank">
-							<i id="whatsapp" class="fab fa-facebook-messenger"></i></a></li>
-							<li class="sf-sharing-button-messenger messenger-desktop"><a id="messenger" href="http://www.facebook.com/dialog/send?app_id=181038895828102&link=<?php echo urlencode( get_permalink( $product->ID ) );?>&redirect_uri=<?php echo esc_url( get_permalink() ); ?>" target="_blank">
-							<i id="whatsapp" class="fab fa-facebook-messenger"></i></a></li>
-							</ul>
-							<!--Sharing buttons-->
+					<!--Sharing buttons-->
+					<ul class="sf-sharing-buttons-inline">
+						<?php if( vlogref_is_referral_enable( $product->ID ) ) : //Permalink
+							$permalink = do_shortcode( '[vlog_referral_url id="'.$product->ID.'"]' );
+						else : //Else Normal Permalink
+							$permalink = get_permalink( $product->ID );
+						endif; //Endif ?>
+						<li class="sf-sharing-button-facebook"><a id="facebook" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode( $permalink );?>" target="_blank"><i id="facebook" class="fab fa-facebook"></i></a></li>
+						<li class="sf-sharing-button-twitter"><a id="twitter" href="https://twitter.com/intent/tweet?text=<?php echo substr($excerpt, 0, 279);?>" target="_blank"><i id="twitter" class="fab fa-twitter"></i></a></li>
+						<li class="sf-sharing-button-whatsapp"><a id="whatsapp" href="whatsapp://send?text=<?php echo $product->post_title . ' | ' . $excerpt . ' | ' . $permalink;?>" data-action="share/whatsapp/share" target="_blank"><i id="whatsapp" class="fab fa-whatsapp"></i></a></li>
+						<li class="sf-sharing-button-reddit"><a id="reddit" href="http://www.reddit.com/submit?url=<?php echo $permalink;?>" target="_blank"><i id="reddit" class="fab fa-reddit"></i></a></li>
+						<li class="sf-sharing-button-mail"><a id="mail" href="mailto:?subject= Let's make this YouTube collaboration happen&amp;body=Check out this YouTube Collaboration <?php echo $permalink;?>"><i id="mail" class="fa fa-envelope"></i></a></li>
+						<li class="sf-sharing-button-messenger messenger-mobile"><a id="messenger" href="fb-messenger://share/?link=<?php echo urlencode( $permalink );?>&app_id=181038895828102" target="_blank"><i id="whatsapp" class="fab fa-facebook-messenger"></i></a></li>
+						<li class="sf-sharing-button-messenger messenger-desktop"><a id="messenger" href="http://www.facebook.com/dialog/send?app_id=181038895828102&link=<?php echo urlencode( $permalink );?>&redirect_uri=<?php echo esc_url( $permalink ); ?>" target="_blank"><i id="whatsapp" class="fab fa-facebook-messenger"></i></a></li>
+					</ul>
+					<!--Sharing buttons-->
             </div>
 
 
         </div>
 
         <?php if( is_user_logged_in() ) { ?>
-        <div class="sfc-thank-you-conf-msg"><span>You’ll receive and automatic <strong>confirmation email</strong> if your contribution is successful.</span><br>
-        Your contribution will also show up in your personal account if you created an account with us.<br>
-        <a href="<?php echo $order->get_view_order_url();?>" style="text-decoration: underline">Details</a>
+				<div class="sfc-thank-you-conf-msg"><span>You’ll receive and automatic <strong>confirmation email</strong> if your contribution is successful.</span><br>
+				Your contribution will also show up in your personal account if you created an account with us.<br>
+				<a href="<?php echo $order->get_view_order_url();?>" style="text-decoration: underline">Details</a>
 				</div>
 
         <?php } else { ?>
         <div class="sfc-thank-you-conf-msg"><span><i class="fa fa-heart"></i> Thank you for being part of our community and bringing new ideas to life!<br> If your contribution was successful you will receive an immediate, automatic <strong>confirmation email</strong> to the email address you provided. </span> </div>
 				<?php } ?>
-
+		<?php $prizes = vlogref_donations_referral_prizes( $product->ID );
+		if( vlogref_is_referral_enable( $product->ID ) && !empty( $prizes ) ) : //On-going ?>
+			<div class="sfc-thank-you-referral-prizes">
+				<h3><?php _e('The prizes you could win');?></h3>
+				<?php $prize_counter = 1;
+				foreach( $prizes as $prize ) : //List Prizes
+					$prize_data = vlogref_donations_prize_details( $prize ); ?>
+					<div class="vf-referral-prize prize-<?php echo $prize_counter;?>">
+						<?php //Image of Prize
+							echo !empty( $prize_data['img'] ) 	? '<img src="'.esc_url($prize_data['img']).'" alt="'.$prize_data['title'].'"/>' : '<i class="fas fa-trophy"></i>';
+							//Title of Prize
+							echo !empty( $prize_data['title'] ) ? sprintf('<span><strong>%1$s</strong></span>', $prize_data['title'] ) : '';
+							//Description of Prize
+							echo !empty( $prize_data['desc'] ) 	? sprintf('<p class="description">%1$s</p>', $prize_data['desc'] ) : '';
+						?>
+					</div><!--/.vf-referral-prize-->
+				<?php $prize_counter++;
+				endforeach; //Endforeach ?>
+			</div><!--/.sfc-thank-you-referral-prizes-->
+		<?php endif; //Endif ?>
 
 </div>
 

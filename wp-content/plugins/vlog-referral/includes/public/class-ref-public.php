@@ -85,7 +85,7 @@ class Vlogref_Public{
 			'id' => $post->ID 
 		), $atts, 'vlog_referral_url' ) );
 		$url = get_permalink( $id );
-		if( ( is_singular('product') || get_query_var('my-referrals') ) && is_user_logged_in() && vlogref_is_referral_enable($id) ) :
+		if( ( is_singular('product') || get_query_var('my-referrals') || is_wc_endpoint_url('order-received') ) && is_user_logged_in() && vlogref_is_referral_enable($id) ) :
 			$referral = base64url_encode( $id.'_'.$user_ID );
 			$url = add_query_arg('referral', $referral, $url);
 		elseif( isset( $_GET['referral'] ) && !empty( $_GET['referral'] ) ) : //Check Referral Exist
