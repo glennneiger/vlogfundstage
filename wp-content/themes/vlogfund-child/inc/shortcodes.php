@@ -108,7 +108,7 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 	//$total_sales = 1000000; //Testing Value
 	end($milestones);
 	$final_milestone = $milestones[key($milestones)];
-	if( $total_sales >= $final_milestone ) :		
+	if( $total_sales >= $final_milestone ) :
 		$milestone_percent = ( number_format( ( $total_sales / $final_milestone ) * 100, 2 ) );
 		$content .= '<div class="sf-milestone-progress-wrapper">
 						<div class="sf-milestone-progress">
@@ -116,7 +116,7 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 						</div>
 						<div class="sf-milestone-values"><span class="start">Campaign Goal Reached</span><span class="end">$'.$final_milestone.'</span></div>
 				</div>';
-	else : //Else 
+	else : //Else
 		foreach( $milestones as $key => $milestone ) :
 			$milestone = trim($milestone);
 			//Not Reach to First Milestone
@@ -136,9 +136,9 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 				$content .= '</div>
 							</div>';
 				break;
-			endif; //Endif			
+			endif; //Endif
 		endforeach;
-	endif; //endif	
+	endif; //endif
 	return $content;
 }
 add_shortcode('vlogfund_campaign_milestone', 'vlogfund_campaign_milestone_shortcode');

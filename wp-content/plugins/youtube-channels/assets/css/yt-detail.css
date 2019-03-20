@@ -281,9 +281,9 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
     .vf-yt-channel-banner-col:last-child {
 		order: 1;
     }
-    .sfc-campaign-archive-post {
+    /*.sfc-campaign-archive-post {
 		margin: 10px!important;
-    }
+    }*/
 }
 
 

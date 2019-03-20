@@ -1110,19 +1110,19 @@ if (jQuery('body').hasClass('post-type-archive-product')) {
         jQuery(document).on('click', 'a[href^="#login"]', function(e) {
           e.preventDefault();
 		  jQuery('#login.sf-popup').addClass('login-popup-visible');
-          jQuery('#register.sf-popup').removeClass('register-popup-visible');          
+          jQuery('#register.sf-popup').removeClass('register-popup-visible');
         });
 
         jQuery(document).on('click', 'a[href^="#register"]', function(e) {
           e.preventDefault();
 		  jQuery('#register.sf-popup').addClass('register-popup-visible');
-          jQuery('#login.sf-popup').removeClass('login-popup-visible');          
+          jQuery('#login.sf-popup').removeClass('login-popup-visible');
         });
 
         jQuery(document).on('click', 'a[href="#"]', function(e) {
           e.preventDefault();
 		  jQuery('#register.sf-popup').removeClass('register-popup-visible');
-          jQuery('#login.sf-popup').removeClass('login-popup-visible');          
+          jQuery('#login.sf-popup').removeClass('login-popup-visible');
         });
 
 
@@ -1502,9 +1502,9 @@ return false;
   });
 
 
-  setTimeout(function() {
-    jQuery('div.at-share-btn-elements').append(' <a href="mailto:" role="button" tabindex="1" class="at-icon-wrapper1 at-share-btn1 at-svc-email1" style="background-color: rgb(132, 132, 132); border-radius: 0%;"><span class="at4-visually-hidden">Share to Email</span><span class="at-icon-wrapper1" style="line-height: 32px; height: 32px; width: 32px;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" version="1.1" role="img" aria-labelledby="at-svg-email-15" class="at-icon at-icon-email" style="width: 32px; height: 32px;"><title id="at-svg-email-15">Email</title><g><g fill-rule="evenodd"></g><path d="M27 22.757c0 1.24-.988 2.243-2.19 2.243H7.19C5.98 25 5 23.994 5 22.757V13.67c0-.556.39-.773.855-.496l8.78 5.238c.782.467 1.95.467 2.73 0l8.78-5.238c.472-.28.855-.063.855.495v9.087z"></path><path d="M27 9.243C27 8.006 26.02 7 24.81 7H7.19C5.988 7 5 8.004 5 9.243v.465c0 .554.385 1.232.857 1.514l9.61 5.733c.267.16.8.16 1.067 0l9.61-5.733c.473-.283.856-.96.856-1.514v-.465z"></path></g></svg></span><span class="at-label" style="font-size: 11.4px; line-height: 32px; height: 32px;">Email</span></a>');
-  }, 3000);
+  // setTimeout(function() {
+  //   jQuery('div.at-share-btn-elements').append(' <a href="mailto:" role="button" tabindex="1" class="at-icon-wrapper1 at-share-btn1 at-svc-email1" style="background-color: rgb(132, 132, 132); border-radius: 0%;"><span class="at4-visually-hidden">Share to Email</span><span class="at-icon-wrapper1" style="line-height: 32px; height: 32px; width: 32px;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" version="1.1" role="img" aria-labelledby="at-svg-email-15" class="at-icon at-icon-email" style="width: 32px; height: 32px;"><title id="at-svg-email-15">Email</title><g><g fill-rule="evenodd"></g><path d="M27 22.757c0 1.24-.988 2.243-2.19 2.243H7.19C5.98 25 5 23.994 5 22.757V13.67c0-.556.39-.773.855-.496l8.78 5.238c.782.467 1.95.467 2.73 0l8.78-5.238c.472-.28.855-.063.855.495v9.087z"></path><path d="M27 9.243C27 8.006 26.02 7 24.81 7H7.19C5.988 7 5 8.004 5 9.243v.465c0 .554.385 1.232.857 1.514l9.61 5.733c.267.16.8.16 1.067 0l9.61-5.733c.473-.283.856-.96.856-1.514v-.465z"></path></g></svg></span><span class="at-label" style="font-size: 11.4px; line-height: 32px; height: 32px;">Email</span></a>');
+  // }, 3000);
 
 
   jQuery('.upvote-container f.upvote-progress-button.icon.success').click(function() {
@@ -1826,11 +1826,11 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 
   //checkout thank you
 
-  if (jQuery('body').hasClass('woocommerce-order-received')) {
-    setTimeout(function() {
-      jQuery('a.thank-you-share').get(0).click();
-    }, 2500);
-  }
+  // if (jQuery('body').hasClass('woocommerce-order-received')) {
+  //   setTimeout(function() {
+  //     jQuery('a.thank-you-share').get(0).click();
+  //   }, 2500);
+  // }
 
 
   /*******************************************************/

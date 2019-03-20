@@ -5577,9 +5577,14 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
     width: 1170px;
   }
 }
-.sfc-ngo-overview-col {
+/*.sfc-ngo-overview-col {
   padding: 0 15px;
 }
+
+.woocommerce-cart .sfc-ngo-overview-col {
+  padding: 0;
+}*/
+
 .sfc-ngo-overview-col:nth-of-type(1) {
   flex:3;
 }
@@ -5616,6 +5621,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
   border-top: 4px solid #6b10d6;
   border-top: 4px solid var(--brand-color);
   box-shadow: 0 0 4px 0 #dadddd;
+  align-self: flex-start;
 
 }
 
@@ -5870,6 +5876,7 @@ display: none;
   position: sticky;
   top: 15px;
   padding: 10px 0;
+  padding: 10px;
   padding-bottom: 25px;
 }
 @media screen and (max-width: 960px) {
@@ -7995,6 +8002,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
   }
   .page-checkout .sfc-campaign-archive-post-title {
      font-size: 18px;
+     white-space: initial;
   }
 }
 
@@ -8008,10 +8016,10 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
 
 .sfc-campaign-archive-post-status-donate {
   position: absolute;
-  top: 12px;
+  top: 0;
   right: -11px;
   padding: 5px 25px 5px 20px;
-  font-size: 24px;
+  font-size: 19px;
   font-weight: bold;
   background: #6b10d6;
   background: var(--brand-color);
@@ -8081,7 +8089,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
 
 
 .sfc-campaign-make-it-happen-live {
-  margin-bottom: 10px;
+  /*margin-bottom: 10px;*/
   width: 100%;
   font-size: 16px;
   padding: 10px 15px;
@@ -8092,7 +8100,13 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
   transition: opacity 225ms;
 
   background: linear-gradient(to bottom, #202020 0%,black 100%);
+  background: #6b10d6;
+  background: var(--brand-color);
   border: 2px solid black;
+  border: 2px solid #6b10d6;
+  border: 2px solid var(--brand-color);
+  height: 45px;
+  animation: upvote-count-pulse 2s infinite;
 }
 
 .sfc-campaign-make-it-happen-vote {
@@ -8545,6 +8559,10 @@ div.alert.alert-success p:before {
   margin-top: 22px;
   height: 200px;
 }
+
+.page-checkout .sfc-campaign-image {
+  height: 150px;
+}
 @media (min-width:996px) {
   .sfc-campaign-images {
     overflow: unset;
@@ -8788,14 +8806,15 @@ flex-basis: 15%;
 
 .sfc-campaign-title {
   margin: 0;
-  font-size: 24px;
   text-shadow: 1px 1px #fff, 2px 2px #ddd;
   /*text-transform: capitalize;*/
-  /*text-align: center;*/
+  text-align: center;
+  line-height: 35px;
+  margin-bottom: 30px;
 }
-@media (min-width:576px) {
+@media (min-width:996px) {
   .sfc-campaign-title {
-    font-size: 3em;
+    margin-bottom: 75px;
   }
 }
 
@@ -9231,12 +9250,13 @@ ul.sfc-campaign-stats {
   justify-content: space-between;
   list-style-type: none;
   padding: 0;
+  margin: auto;
 }
 
 ul.sfc-campaign-stats li {
   display: inline;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 16px;
 }
 @media (min-width:576px) {
   ul.sfc-campaign-stats li {
@@ -9636,11 +9656,14 @@ ul.sfc-campaign-backers li {
 
 
 /*** milestone progress bar ***/
+.sf-milestone-progress-wrapper {
+      padding: 0 0 10px 0;
+}
 .sf-milestone-progress {
   height: 10px;  /* Can be anything */
   position: relative;
   background: #eee;
-  margin:5px auto 10px auto;
+  margin:10px auto;
 }
 .sf-milestone-progress .sf-milestone-container {
   height: 100%;
@@ -9663,21 +9686,26 @@ ul.sfc-campaign-backers li {
   font-weight: 700;
 }
 .sf-milestone-progress-wrapper .sf-milestone-values {
-  font-size: 14px;
+  /*font-size: 14px;*/
   font-weight: 400;
 }
-.sf-milestone-progress-wrapper .sf-milestone-values .end{
+.sf-milestone-progress-wrapper .sf-milestone-values .end {
   float:right;
+}
+
+.sf-milestone-values .start {
+  /*display: none;*/
 }
 .sf-milestone-progress-wrapper .sf-milestone-txt-content{
   width:100%;
 }
 @media screen and (max-width: 996px) {
   .sf-milestone-progress-wrapper .sf-milestone-txt-content{
-    display: none;
+    /*display: none;*/
+    font-size: 16px;
   }
   .sf-milestone-progress-wrapper .sf-milestone-values {
-
+    font-size: 16px;
   }
 }
 .sf-milestone-progress-wrapper .sf-milestone-txt-content span{
@@ -10159,18 +10187,23 @@ label.error {
 }
 
 .vf-ref-prize-item {
-margin: auto;
+/*margin: auto;*/
+    flex: 1;
+    padding: 15px;
+/*margin: 5px;*/
 }
 
 .vf-ref-prize-img {
-  width: 50%;
+  width: 150px;
   margin: auto;
   display: block;
 }
 
 .vf-ref-prize-title {
   margin: 0 auto;
+  padding: 5px 0;
   text-align: center;
+  line-height: normal;
 }
 
 @media screen and (min-width:996px) {
@@ -10257,7 +10290,7 @@ margin: auto;
         line-height: normal!important;
         height: auto!important;
         width: 100%!important;
-        font-size: 15px!important;
+        font-size: 12px!important;
   }
 
 
@@ -11525,7 +11558,7 @@ input[name="donation_amount"]:checked + label {
   outline: none;
   display: block;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 16px;
   height: 60px;
   line-height: 60px;
   margin: 0;
@@ -12005,16 +12038,16 @@ div.sf-cart-yt-video-thumbnail iframe {
   background: #202020;
   color: white;
   display: flex;
-  height: 40px;
+  /*height: 40px;*/
   justify-content: flex-start;
   align-items: center;
   font-weight: bold;
   font-size: 14px;
-  padding: 20px;
+  padding: 5px;
 }
-.woocommerce-order-received .sfc-checkout-go-back span {
+/*.woocommerce-order-received .sfc-checkout-go-back span {
   display: none;
-}
+}*/
 
 .sfc-checkout-go-back-input {
   cursor: pointer;
@@ -13078,11 +13111,12 @@ input[type="date"] {
   text-align:center;
   padding:20px 0;
 }
-.sfc-checkout-thankyou-header h1 {
-  margin:auto;
+.sfc-checkout-thankyou-title {
+  margin: 30px auto;
   color: #6b10d6;
   color: var(--brand-color);
 }
+
 .sfc-checkout-thankyou-title i {
   color: white;
   border-radius:50%;

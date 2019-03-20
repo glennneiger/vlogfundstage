@@ -98,7 +98,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 		<div class="vf-referral-col">
 			<?php echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" ids="'.$campaign.'"]'); ?>
 			<?php if( empty( $winners ) && vlogref_is_referral_enable( $campaign ) ) : //Check Campaign Active ?>
-				<h3 class="vf-referral-phase-title"><?php _e('Get your friends to donations with this unique URL:','vlog-referral');?></h3><br>
+				<h3 class="vf-referral-phase-title"><?php _e('Get your friends to donate with this unique URL:','vlog-referral');?></h3><br>
 				<input type="text" class="sf-mc-email vf-referral-url" value="<?php echo do_shortcode('[vlog_referral_url id="'.$campaign.'"]');?>" style="background: #eee;" readonly="readonly"><br>
 				<ul class="sf-sharing-buttons-inline">
 					<li class="sf-sharing-button-facebook">
