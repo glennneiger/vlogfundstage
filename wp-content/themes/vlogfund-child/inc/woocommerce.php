@@ -739,3 +739,23 @@ function vlogfund_woo_update_order_status( $order_status, $order_id ) {
 }
 add_filter('woocommerce_payment_complete_order_status','vlogfund_woo_update_order_status', 10, 2);
 endif;
+if( !function_exists('vlogfund_get_product_sales') ) :
+/**
+ * Get Product Total Sales
+ *
+ * @since 1.0
+ **/
+function vlogfund_get_product_sales($productid){
+	global $wpdb;
+	$total_sales = $wpdb->get_var( "SELECT SUM( order_item_meta__line_total.meta_value) as order_item_amount
+			FROM {$wpdb->posts} AS posts
+			INNER JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON posts.ID = order_items.order_id
+			INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta__line_total ON (order_items.order_item_id = order_item_meta__line_total.order_item_id)
+				AND (order_item_meta__line_total.meta_key = '_line_total')
+			INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta__product_id_array ON order_items.order_item_id = order_item_meta__product_id_array.order_item_id
+			WHERE posts.post_type IN ( 'shop_order' )
+			AND posts.post_status IN ( 'wc-completed' ) AND ( ( order_item_meta__product_id_array.meta_key IN ('_product_id','_variation_id')
+			AND order_item_meta__product_id_array.meta_value IN ('{$productid}') ) );" );
+	return !empty( $total_sales ) ? $total_sales : 0;
+}
+endif;

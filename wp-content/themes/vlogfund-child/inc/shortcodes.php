@@ -95,7 +95,7 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 		'product_id' => get_the_ID()
 	), $atts, 'vlogfund_campaign_milestone' ) );
 	//Total Sales
-	$total_sales = get_post_meta($product_id,'_product_total_sales',true) ? get_post_meta($product_id,'_product_total_sales',true) : 0;
+	$total_sales = vlogfund_get_product_sales($product_id);
 	//Milestones
 	if( $camp_milestones = get_post_meta($product_id, 'wpcf-donation_milestones', true) ) :
 		$milestones = explode(',',trim($camp_milestones));
@@ -142,4 +142,161 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 	return $content;
 }
 add_shortcode('vlogfund_campaign_milestone', 'vlogfund_campaign_milestone_shortcode');
+endif;
+if( !function_exists('vlogfund_comments_template_shortcode') ) :
+/**
+ * Comments shortcode
+ **/
+function comments_template_shortcode() {
+	ob_start();
+	comments_template( '/comments_template.php' );
+	$cform = ob_get_contents();
+	ob_end_clean();
+	return $cform;
+}
+add_shortcode( 'comments_template', 'comments_template_shortcode' );
+endif;
+if( !function_exists('showparentpostid_func') ) :
+/**
+ * Get the ID of the current post which is being edited
+ **/
+function showparentpostid_func(){
+	$product_id = get_post( get_the_ID() ); // Get ID of current product
+  	$auction_parent_page_id = toolset_get_related_post( // Get ID of parent auction page
+    	$product_id,
+    	'organization-campaign', //slug of relationship
+    	'parent'
+	);
+	return $auction_parent_page_id;
+}
+add_shortcode('showparentpostid', 'showparentpostid_func');
+endif;
+if( !function_exists('status_by_id_in_url_shortcode') ) :
+/**
+ * Do not display CRED edit forms if the post is published
+ * Status by ID in URL
+ **/
+function status_by_id_in_url_shortcode( $atts ) {
+  $a = shortcode_atts( array(
+    'param' => 'post_id'
+  ), $atts );
+  $id = $_GET[$a['param']];
+  $status = get_post_status($id);
+  return $status;
+}
+add_shortcode('status-by-id-in-url', 'status_by_id_in_url_shortcode');
+endif;
+if( !function_exists('get_product_total_sales') ) :
+/**
+ * Get Total Spent on Particular Product
+ **/
+function get_product_total_sales( $atts, $content = null ){
+	global $wpdb;
+	extract( shortcode_atts( array(
+		'productid' => get_the_ID(),
+	), $atts, 'product_total_sales' ) );
+	$total_sales = vlogfund_get_product_sales( $productid );
+	return wc_price( $total_sales );
+}
+add_shortcode('product_total_sales', 'get_product_total_sales');
+endif;
+if( !function_exists('get_product_total_customers') ) :
+/**
+ * Get the total customers
+ **/
+function get_product_total_customers($atts, $content = null){
+
+	global $wpdb;
+
+	extract( shortcode_atts( array(
+		'productid' => get_the_ID(),
+	), $atts, 'product_total_customers' ) );
+
+	$total_customers = $wpdb->get_var( "SELECT COUNT(orders.ID) as total_customers FROM {$wpdb->prefix}woocommerce_order_itemmeta order_itemmeta
+							INNER JOIN {$wpdb->prefix}woocommerce_order_items order_items
+							ON order_itemmeta.order_item_id = order_items.order_item_id
+							INNER JOIN $wpdb->posts orders
+							ON order_items.order_id = orders.ID
+							WHERE order_itemmeta.meta_key = '_product_id'
+							AND order_itemmeta.meta_value IN ( $productid )
+							AND orders.post_status IN ( 'wc-completed' ) AND orders.post_type IN ('shop_order')
+							ORDER BY orders.ID DESC" );
+	return $total_customers;
+}
+add_shortcode('product_total_customers', 'get_product_total_customers');
+endif;
+if( !function_exists('format_completed_date_func') ) :
+/**
+ * Get the total customers
+ **/
+function format_completed_date_func($atts) {
+	$a = shortcode_atts( array(
+		'format' => 'm d Y',
+		'orderid' => 0
+	), $atts );
+	
+	$completedDate = get_post_meta( $a['orderid'], '_completed_date', true );
+	if ( !$completedDate )
+		return;
+	$time = strtotime($completedDate);
+	$date = date($a['format'], $time);
+	return $date;
+}
+add_shortcode('format_completed_date', 'format_completed_date_func');
+endif;
+if( !function_exists('get_cart_count') ) :
+/**
+ * Add Shortcode [cart_count]
+ **/
+function get_cart_count(){
+	if( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+    	global $woocommerce;
+    	return $woocommerce->cart->cart_contents_count;
+    }
+}
+add_shortcode('cart_count', 'get_cart_count');
+endif;
+if( !function_exists('my_form_shortcode') ) :
+/**
+ * Login Form
+ **/
+function my_form_shortcode() {
+    ob_start();
+    get_template_part('login_form');
+    return ob_get_clean();
+}
+add_shortcode('my_form_shortcode', 'my_form_shortcode');
+endif;
+if( !function_exists('registration_form_shortcode') ) :
+/**
+ * Registration Form
+ **/
+function registration_form_shortcode() {
+    ob_start();
+    get_template_part('registration_form');
+    return ob_get_clean();
+}
+add_shortcode('registration_form_shortcode', 'registration_form_shortcode' );
+endif;
+if( !function_exists('incrementor') ) :
+/**
+ * Incrementor
+ **/
+function incrementor() {
+	static $i = 1;
+	return $i ++;
+}
+add_shortcode('incrementor', 'incrementor');
+endif;
+if( !function_exists('post_count') ) :
+/**
+ * Organization Post Count
+ * Get post count for cpt
+ **/
+function post_count() {
+    $count_posts = wp_count_posts('organization');
+    $published_posts = $count_posts->publish;
+    return $published_posts . ' ';
+}
+add_shortcode('postcount', 'post_count');
 endif;

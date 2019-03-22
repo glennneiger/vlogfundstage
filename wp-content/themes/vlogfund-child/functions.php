@@ -622,22 +622,6 @@ function collaborationsFeed(){
         get_template_part('rss', 'collaborations');
 }
 
-
-/*******************************************************/
-//comments
-/*******************************************************/
-//comments shortcode
-
-function comments_template_shortcode() {
-ob_start();
-comments_template( '/comments_template.php' );
-$cform = ob_get_contents();
-ob_end_clean();
-return $cform;
-}
-
-add_shortcode( 'comments_template', 'comments_template_shortcode' );
-
 //remove last name
 
 /*add_filter('decomments_get_name_is_email', function($name){
@@ -707,19 +691,7 @@ function cred_custom_callback_fn($post_id, $form_data)
 
 
 
-//gets the ID of the current post which is being edited
-add_shortcode( 'showparentpostid', 'showparentpostid_func');
-function showparentpostid_func(){
 
-	$product_id = get_post( get_the_ID() ); // Get ID of current product
-  $auction_parent_page_id = toolset_get_related_post( // Get ID of parent auction page
-    $product_id,
-    'organization-campaign', //slug of relationship
-    'parent'
-);
-return $auction_parent_page_id;
-
-}
 
 //validate youtube url 1 format
 
@@ -1137,69 +1109,11 @@ $parent_id = get_post_meta( $post_id, '_wpcf_belongs_product_id', true);
 return get_permalink( $parent_id );
 }
 
-//Do not display CRED edit forms if the post is published
-//Status by ID in URL
-add_shortcode( 'status-by-id-in-url', 'status_by_id_in_url_shortcode' );
-function status_by_id_in_url_shortcode( $atts ) {
-  $a = shortcode_atts( array(
-    'param' => 'post_id'
-  ), $atts );
-  $id = $_GET[$a['param']];
-  $status = get_post_status($id);
 
-  return $status;
-}
 
 /*******************************************************/
 //campaign
 /*******************************************************/
-
-//Get Total Spent on Particular Product
-function get_product_total_sales( $atts, $content = null ) {
-
-	global $wpdb;
-
-	extract( shortcode_atts( array(
-		'productid' => get_the_ID(),
-	), $atts, 'product_total_sales' ) );
-
-	$total_sales = $wpdb->get_var( "SELECT SUM( order_item_meta__line_total.meta_value) as order_item_amount
-		FROM {$wpdb->posts} AS posts
-		INNER JOIN {$wpdb->prefix}woocommerce_order_items AS order_items ON posts.ID = order_items.order_id
-		INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta__line_total ON (order_items.order_item_id = order_item_meta__line_total.order_item_id)
-			AND (order_item_meta__line_total.meta_key = '_line_total')
-		INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS order_item_meta__product_id_array ON order_items.order_item_id = order_item_meta__product_id_array.order_item_id
-		WHERE posts.post_type IN ( 'shop_order' )
-		AND posts.post_status IN ( 'wc-completed' ) AND ( ( order_item_meta__product_id_array.meta_key IN ('_product_id','_variation_id')
-		AND order_item_meta__product_id_array.meta_value IN ('{$productid}') ) );" );
-
-	return wc_price( $total_sales );
-}
-add_shortcode('product_total_sales', 'get_product_total_sales');
-
-
-//Get the total customers
-function get_product_total_customers($atts, $content = null){
-
-	global $wpdb;
-
-	extract( shortcode_atts( array(
-		'productid' => get_the_ID(),
-	), $atts, 'product_total_customers' ) );
-
-	$total_customers = $wpdb->get_var( "SELECT COUNT(orders.ID) as total_customers FROM {$wpdb->prefix}woocommerce_order_itemmeta order_itemmeta
-							INNER JOIN {$wpdb->prefix}woocommerce_order_items order_items
-							ON order_itemmeta.order_item_id = order_items.order_item_id
-							INNER JOIN $wpdb->posts orders
-							ON order_items.order_id = orders.ID
-							WHERE order_itemmeta.meta_key = '_product_id'
-							AND order_itemmeta.meta_value IN ( $productid )
-							AND orders.post_status IN ( 'wc-completed' ) AND orders.post_type IN ('shop_order')
-							ORDER BY orders.ID DESC" );
-
-	return $total_customers;
-}
-add_shortcode('product_total_customers', 'get_product_total_customers');
 
 
 //increase post meta
@@ -1406,21 +1320,7 @@ function function_to_add_author_woocommerce() {
 
 //format _completed_date hidden custom field orders
 
-function format_completed_date_func($atts) {
-  $a = shortcode_atts( array(
-    'format' => 'm d Y',
-    'orderid' => 0
-  ), $atts );
 
-  $completedDate = get_post_meta( $a['orderid'], '_completed_date', true );
-  if ( !$completedDate )
-    return;
-  $time = strtotime($completedDate);
-  $date = date($a['format'], $time);
-  return $date;
-}
-
-add_shortcode( 'format_completed_date', 'format_completed_date_func');
 
 /*******************************************************/
 //campaign search
@@ -1619,17 +1519,7 @@ function redirection_function(){
 
 
 
-// Add Shortcode [cart_count]
-function get_cart_count() {
-/**
- * Check if WooCommerce is active
- **/
-if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-    global $woocommerce;
-    return $woocommerce->cart->cart_contents_count;
-    }
-}
-add_shortcode( 'cart_count', 'get_cart_count' );
+
 
 
 
@@ -1837,23 +1727,8 @@ function wp_social_login_track(){ ?>
 }
 add_action('wc_social_login_user_authenticated', 'wp_social_login_track');*/
 
-//login form
-
-function my_form_shortcode() {
-    ob_start();
-    get_template_part('login_form');
-    return ob_get_clean();
-}
-add_shortcode( 'my_form_shortcode', 'my_form_shortcode' );
 
 
-//Registration Form
-function registration_form_shortcode() {
-    ob_start();
-    get_template_part('registration_form');
-    return ob_get_clean();
-}
-add_shortcode( 'registration_form_shortcode', 'registration_form_shortcode' );
 
 
 
@@ -1959,14 +1834,6 @@ add_filter( 'register_post_type_args', function( $args, $post_type )
 
 
 /** blog **/
-
-
-add_shortcode('incrementor', 'incrementor');
-function incrementor() {
-static $i = 1;
-return $i ++;
-}
-
 
 add_action( 'pvc_after_count_visit', 'update_toolset_view_count2' );
 function update_toolset_view_count2 ( $post_id ) {
@@ -2472,94 +2339,6 @@ function vlogfund_datalayer_campaign_infos ( $dataLayer ) {
 	return $dataLayer;
 }
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_campaign_infos' );
-
-
-
-
-
-
-
-//Organization Post Count
-// Get post count for cpt
-add_shortcode('postcount', 'post_count');
-function post_count() {
-    $count_posts = wp_count_posts('organization');
-    $published_posts = $count_posts->publish;
-    return $published_posts . ' ';
-}
-
-
-
-//Milestone Shortcode
-if( !function_exists('vlogfund_campaign_milestone_shortcode') ) :
-function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
-	extract( shortcode_atts( array(
-		'product_id' => get_the_ID()
-	), $atts, 'vlogfund_campaign_milestone' ) );
-	//Total Sales
-	$total_sales = get_post_meta($product_id,'_product_total_sales',true) ? get_post_meta($product_id,'_product_total_sales',true) : 0;
-	$content = '';
-	//$total_sales = 1100250; //Testing Value
-	if( $total_sales <= 10000 ) : //Milestone 1 $10 000
-		$milestone_percent = ( number_format( ( $total_sales / 10000 ) * 100, 2 ) );
-		$content .= '<div class="sf-milestone-progress-wrapper">
-						<div class="sf-milestone-progress">
-							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
-						</div>
-						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$10 000</span></div>
-						<div class="sf-milestone-txt-content">
-							<span class="sf-milestone-txt">'.__('Milestone').' <strong>1</strong></span>
-							<span class="sf-next-milestone-txt">'.__('Next Milestone: $100 000').'</span>
-						</div>
-					</div>';
-	elseif( $total_sales > 10000 && $total_sales <= 100000 ) : //Milestone 2 $100 000
-		$milestone_percent = ( number_format( ( $total_sales / 100000 ) * 100, 2 ) );
-		$content .= '<div class="sf-milestone-progress-wrapper">
-						<div class="sf-milestone-progress">
-							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
-						</div>
-						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$100 000</span></div>
-						<div class="sf-milestone-txt-content">
-							<span class="sf-milestone-txt">'.__('Milestone').' <strong>2</strong></span>
-							<span class="sf-next-milestone-txt">'.__('Next Milestone: $500 000').'</span>
-						</div>
-					</div>';
-	elseif( $total_sales > 100000 && $total_sales <= 500000 ) : //Milestone 3 $500 000
-		$milestone_percent = ( number_format( ( $total_sales / 500000 ) * 100, 2 ) );
-		$content .= '<div class="sf-milestone-progress-wrapper">
-						<div class="sf-milestone-progress">
-							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
-						</div>
-						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$500 000</span></div>
-						<div class="sf-milestone-txt-content">
-							<span class="sf-milestone-txt">'.__('Milestone').' <strong>3</strong></span>
-							<span class="sf-next-milestone-txt">'.__('Next Milestone: $1 000 000').'</span>
-						</div>
-					</div>';
-	elseif( $total_sales > 500000 && $total_sales <= 1000000 ) : //Milestone 4 $1 000 000
-		$milestone_percent = ( number_format( ( $total_sales / 1000000 ) * 100, 2 ) );
-		$content .= '<div class="sf-milestone-progress-wrapper">
-						<div class="sf-milestone-progress">
-							<div class="sf-milestone-container" style="width:'.$milestone_percent.'%"><span>'.$milestone_percent.'%</span></div>
-						</div>
-						<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$1 000 000</span></div>
-						<div class="sf-milestone-txt-content">
-							<span class="sf-milestone-txt">'.__('Milestone').' <strong>4</strong></span>
-						</div>
-					</div>';
-	elseif( $total_sales > 1000000 ) : //All Milestone Over
-		$milestone_percent = ( number_format( ( $total_sales / 1000000 ) * 100, 2 ) );
-		$content .= '<div class="sf-milestone-progress-wrapper">
-						<div class="sf-milestone-progress">
-							<div class="sf-milestone-container" style="width:100%"><span>'.$milestone_percent.'%</span></div>
-						</div>
-						<div class="sf-milestone-values"><span class="start">Campaign Goal Reached</span><span class="end">$1 000 000</span></div>
-					</div>';
-	endif;
-	return $content;
-}
-add_shortcode('vlogfund_campaign_milestone', 'vlogfund_campaign_milestone_shortcode');
-endif;
 
 //Check Smile Mode
 if( !function_exists('vlogfund_smile_mode_on') ) :
