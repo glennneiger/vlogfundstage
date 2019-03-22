@@ -1785,6 +1785,10 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
         jQuery('.product_custom_price').each(function() {
           var offerprice = jQuery(this).val();
           var productid = jQuery(this).data('id');
+		  if( offerprice < 5 ) { //Don't allow less than 5
+			offerprice = 5;
+			jQuery(this).val(5);
+		  }
           if (typeof offerprice !== 'undefined' && offerprice != '') {
             productprices[productid] = offerprice;
           }
