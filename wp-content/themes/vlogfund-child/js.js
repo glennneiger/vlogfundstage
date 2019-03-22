@@ -1681,9 +1681,9 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 
   /** checkout add to basket **/
 
-  jQuery('input[name="nyp"]').attr('min', '1');
+  //jQuery('input[name="nyp"]').attr('min', '5');
 
-  jQuery('input[name="nyp"]').attr('value', '3');
+  //jQuery('input[name="nyp"]').attr('value', '3');
 
   jQuery('input[name="nyp"]').keyup(function() {
     var value = jQuery(this).val();

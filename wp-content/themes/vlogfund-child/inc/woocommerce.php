@@ -759,3 +759,15 @@ function vlogfund_get_product_sales($productid){
 	return !empty( $total_sales ) ? $total_sales : 0;
 }
 endif;
+if( !function_exists('vlogfund_nyp_minimum_price') ) :
+/**
+ * Name Your Price Minimum Price
+ *
+ * @since 1.0
+ **/
+function vlogfund_nyp_minimum_price($price){
+	$nyp_price = ( $price >= 5 ) ? $price : 5;
+	return $nyp_price;
+}
+add_filter('woocommerce_raw_minimum_price', 'vlogfund_nyp_minimum_price', 999);
+endif;
