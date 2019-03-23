@@ -11450,9 +11450,11 @@ ul.woocommerce-error li a.button.wc-forward:hover {
   color: #999;
 }
 
-.page-checkout #masthead, .page-checkout .site-footer, .woocommerce-cart .site-footer {
+.page-checkout #masthead, .page-checkout .site-footer, .woocommerce-cart .site-footer, .woocommerce-cart .container-fluid:first-of-type {
   display: none;
 }
+
+
 
 .page-checkout .container-fluid:first-of-type {
   display: none;
@@ -12220,6 +12222,26 @@ div.sf-cart-yt-video-thumbnail iframe {
   width: 100%;
 }
 
+
+.post-type-archive-product .woocommerce-message {
+    background: white;
+    font-weight: normal;
+    font-size: 16px;
+    position: relative;
+    width: 100%;
+    padding: 5px 20px;
+}
+
+.post-type-archive-product .woocommerce-info {
+  background: white;
+  padding: 5px 20px;
+  font-weight: normal;
+  font-size: 16px;
+  position: relative;
+  width: 100%;
+  border-bottom: 2px solid #6b10d6;
+  border-bottom: 2px solid var(--brand-color);
+}
 
 .woocommerce-error {
   list-style-type: none;
@@ -13101,6 +13123,7 @@ input[type="date"] {
   color: #31325F;
   font-size: 16px!important;
 }
+
 
 /** checkout thank you **/
 

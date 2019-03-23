@@ -1894,7 +1894,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
     e.preventDefault();
   });
 
-  jQuery('a[href="#donate"], .sfc-ngo-single-donate-button').click(function(e) {
+  jQuery('a[href="#donate"]').click(function(e) {
     jQuery('#donate.sf-popup').addClass('donate-popup-visible');
   jQuery('#register.sf-popup').removeClass('register-popup-visible');
     jQuery('#login.sf-popup').removeClass('login-popup-visible');
