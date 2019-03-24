@@ -125,8 +125,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 							$permalink = get_permalink( $product->ID );
 						endif; //Endif ?>
 						<li class="sf-sharing-button-facebook"><a id="facebook" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode( $permalink );?>" target="_blank"><i id="facebook" class="fab fa-facebook"></i></a></li>
-						<li class="sf-sharing-button-twitter"><a id="twitter" href="https://twitter.com/intent/tweet?text=<?php echo substr($excerpt, 0, 279);?>" target="_blank"><i id="twitter" class="fab fa-twitter"></i></a></li>
-						<li class="sf-sharing-button-whatsapp"><a id="whatsapp" href="whatsapp://send?text=<?php echo $product->post_title . ' | ' . $excerpt . ' | ' . $permalink;?>" data-action="share/whatsapp/share" target="_blank"><i id="whatsapp" class="fab fa-whatsapp"></i></a></li>
+						<li class="sf-sharing-button-twitter"><a id="twitter" href="https://twitter.com/intent/tweet?text=<?php echo $product->post_title . ' ' . $permalink;?>" target="_blank"><i id="twitter" class="fab fa-twitter"></i></a></li>
+						<li class="sf-sharing-button-whatsapp"><a id="whatsapp" href="whatsapp://send?text=<?php echo $product->post_title . ' | ' . $permalink;?>" data-action="share/whatsapp/share" target="_blank"><i id="whatsapp" class="fab fa-whatsapp"></i></a></li>
 						<li class="sf-sharing-button-reddit"><a id="reddit" href="http://www.reddit.com/submit?url=<?php echo $permalink;?>" target="_blank"><i id="reddit" class="fab fa-reddit"></i></a></li>
 						<li class="sf-sharing-button-mail"><a id="mail" href="mailto:?subject= Let's make this YouTube collaboration happen&amp;body=Check out this YouTube Collaboration <?php echo $permalink;?>"><i id="mail" class="fa fa-envelope"></i></a></li>
 						<li class="sf-sharing-button-messenger messenger-mobile"><a id="messenger" href="fb-messenger://share/?link=<?php echo urlencode( $permalink );?>&app_id=181038895828102" target="_blank"><i id="whatsapp" class="fab fa-facebook-messenger"></i></a></li>

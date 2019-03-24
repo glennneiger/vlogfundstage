@@ -11468,8 +11468,8 @@ ul.woocommerce-error li a.button.wc-forward:hover {
   display: none;
 }
 
-.woocommerce-order-received .container-fluid:first-of-type {
-  display: none;
+.woocommerce-order-received .header {
+  display: none!important;
 }
 
 .sfc-campaign-choose-amount-wrapper {
@@ -13142,6 +13142,12 @@ input[type="date"] {
 .sfc-checkout-thankyou {
   margin-bottom: 30px;
 }
+@media screen and (max-width:996px) {
+  .sfc-checkout-thankyou {
+    padding: 5px 10px;
+  }
+}
+
 .sfc-checkout-thankyou-header {
   text-align:center;
   padding:20px 0;
