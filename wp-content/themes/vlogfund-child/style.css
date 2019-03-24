@@ -11464,9 +11464,11 @@ ul.woocommerce-error li a.button.wc-forward:hover {
   display: none;
 }
 
-
-
 .page-checkout .container-fluid:first-of-type {
+  display: none;
+}
+
+.woocommerce-order-received .container-fluid:first-of-type {
   display: none;
 }
 
@@ -15047,6 +15049,7 @@ button.toast-close-button {
         max-width: none;
         left: 0;
         right: 0;
+        bottom: 0;
   }
 }
 .cc-btn {
