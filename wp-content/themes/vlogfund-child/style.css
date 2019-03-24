@@ -14992,3 +14992,73 @@ button.toast-close-button {
 	display: flex;
 	align-items: center;
 }
+
+
+
+
+
+
+/**cookie consent**/
+.close-consent {
+  position: absolute;
+  float: right!important;
+  font-size: 20px!important;
+  font-weight: bold!important;
+  cursor: pointer!important;
+  background: transparent!important;
+  color: white!important;
+  position: absolute!important;
+  top: 0!important;
+  right: 0!important;
+}
+
+@media screen and (min-width: 996px) {
+  .close-consent {
+   display: none!important;
+  }
+}
+
+
+.cc-window {
+    position: fixed;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-size: 16px;
+    line-height: 1.5em;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    z-index: 9999;
+
+    bottom: 1em;
+    left: 1em;
+
+    padding: 2em;
+    max-width: 24em;
+    /*-ms-flex-direction: column;
+    flex-direction: column;*/
+
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+@media screen and (max-width:996px) {
+  .cc-window {
+        max-width: none;
+        left: 0;
+        right: 0;
+  }
+}
+.cc-btn {
+    display: block;
+    padding: .4em .8em;
+    font-size: .9em;
+    font-weight: 700;
+    border-width: 2px;
+    border-style: solid;
+    text-align: center;
+    white-space: nowrap;
+}
+.cc-invisible{
+  opacity:0
+}
