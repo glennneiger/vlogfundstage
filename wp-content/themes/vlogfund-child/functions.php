@@ -191,7 +191,7 @@ function deregister_scripts(){
 		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
 
 		//Remove Unnecessary Styles
-		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style',
+		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style1',
 						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
 						'select2-style', 'tmpl-wp-playlist-current-item' );
 		foreach( $deregister_styles as $style_handle ) :
@@ -258,7 +258,7 @@ function deregister_scripts3(){
 		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
 
 		//Remove Unnecessary Styles
-		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style',
+		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style1',
 						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
 						'select2-style', 'tmpl-wp-playlist-current-item' );
 		foreach( $deregister_styles as $style_handle ) :
