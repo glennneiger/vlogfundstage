@@ -19,7 +19,7 @@
 				"background": "#fafafa"
 			},
 			"button": {
-				"background": "#dc2c5d"
+				"background": "#3adbac"
 			}
 		},
 		"position": "bottom-left",

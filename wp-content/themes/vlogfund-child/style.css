@@ -10194,6 +10194,7 @@ label.error {
 .vf-ref-prizes {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .vf-ref-prize-item {
@@ -10218,7 +10219,7 @@ label.error {
 
 @media screen and (min-width:996px) {
   .vf-ref-prizes {
-    flex-wrap: nowrap;
+    /*flex-wrap: nowrap;*/
   }
 }
 
@@ -11460,16 +11461,16 @@ ul.woocommerce-error li a.button.wc-forward:hover {
   color: #999;
 }
 
-.page-checkout #masthead, .page-checkout .site-footer, .woocommerce-cart .site-footer, .woocommerce-cart .container-fluid:first-of-type {
+.page-checkout #masthead, .page-checkout .site-footer, .woocommerce-cart .site-footer, .woocommerce-cart .header {
   display: none;
 }
 
-.page-checkout .container-fluid:first-of-type {
+.page-checkout .header {
   display: none;
 }
 
 .woocommerce-order-received .header {
-  display: none!important;
+  display: none;
 }
 
 .sfc-campaign-choose-amount-wrapper {
