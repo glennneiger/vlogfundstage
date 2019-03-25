@@ -10215,6 +10215,7 @@ label.error {
   padding: 5px 0;
   text-align: center;
   line-height: normal;
+  white-space: normal;
 }
 
 @media screen and (min-width:996px) {
