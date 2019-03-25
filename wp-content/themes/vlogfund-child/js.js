@@ -1470,6 +1470,12 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   /*******************************************************/
   //campaign
   /*******************************************************/
+  
+  $('#close-site-notice-campaigns, #close-site-notice-campaigns-btn').click(function() {
+  var vfnotice = document.getElementById("sf-notice");
+  vfnotice.classList.add("hide");
+  localStorage.setItem('sf-notice-campaigns', 'true');
+  });
 
 	try{
 		if (localStorage.getItem("sf-notice-campaigns") === null) {
