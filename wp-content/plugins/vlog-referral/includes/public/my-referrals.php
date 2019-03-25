@@ -59,13 +59,13 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 						<tr class="woocommerce-orders-table__row woocommerce-orders-table__row--status-on-hold order">
 							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-number" data-title="<?php _e('Referred Campaign','vlog-referral');?>"><?php printf('<a href="%1$s" target="_blank">%2$s</a> %3$s', get_permalink($campaign), get_the_title($campaign), $winner_str);?></td>
 							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-date" data-title="<?php _e('Online Since','vlog-referral');?>"><time><?php echo get_the_date('d/m/y', $campaign);?></time></td>
-							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="<?php _e('Total Upvotes','vlog-referral');?>"><?php echo $total;?></td>
-							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="<?php _e('Total Referred Upvotes','vlog-referral');?>"><?php echo $total_referred;?></td>
-							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-total" data-title="<?php _e('Your Referred Upvotes','vlog-referral');?>"><span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol"></span><?php echo $user_referred.' / '.$campaign_goal;?></span></span></td>
+							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="<?php _e('Total','vlog-referral');?>"><?php echo $total;?></td>
+							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="<?php _e('Total Referred','vlog-referral');?>"><?php echo $total_referred;?></td>
+							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-total" data-title="<?php _e('Your Referrals','vlog-referral');?>"><span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol"></span><?php echo $user_referred.' / '.$campaign_goal;?></span></span></td>
 							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-total" data-title="<?php _e('Your Position','vlog-referral');?>"><span><i class="fas fa-users __web-inspector-hide-shortcut__" aria-hidden="true"></i> <?php echo '#'.$user_position;?></span></td>
 							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-actions" data-title="<?php _e('Views','vlog-referral');?>"><span><i class="fas fa-signal" aria-hidden="true"></i> <?php echo $views;?></span></td>
 							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-status" data-title="<?php _e('Campaign Status','vlog-referral');?>"><span class="woocommerce-button button view <?php echo strtolower($campaign_status_title).' sfc-my-campaigns-status-'.strtolower($campaign_status_title);?>"><?php echo $campaign_status_title;?></span></td>
-							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-actions" data-title="<?php _e('Actions','vlog-referral');?>"><?php printf('<a href="%1$s">%2$s</a>', $view_link, __('View','vlog-referral'));?></td>
+							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-order-actions" data-title="<?php _e('Action','vlog-referral');?>"><?php printf('<a href="%1$s">%2$s</a>', $view_link, __('View','vlog-referral'));?></td>
 						</tr>
 					<?php endforeach; //Endforeach ?>
 				</tbody>

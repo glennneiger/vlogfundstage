@@ -46,7 +46,8 @@ class Vlogref_Public{
 		add_action('woocommerce_checkout_order_processed',	array($this, 'woo_add_donate_referral_to_order'), 99, 3);
 		//Order Complete Hook to Update Referrals
 		add_action('woocommerce_order_status_changed',		array($this, 'woo_insert_donate_referral'), 99, 4);
-		
+		//Make Create Account Box Checked
+		add_filter('woocommerce_create_account_default_checked', array($this, 'woo_create_account_default_checked'));
 	}	
 	/**
 	 * Register Style / Scripts
@@ -64,8 +65,8 @@ class Vlogref_Public{
 	public function referral_footer_script(){ ?>
 		<script type="text/jscript">
 			jQuery(document).ready(function($){
-				$('input.vf-referral-url').on('focus', function(){
-					$(this).select();
+				$('input.vf-referral-url').on('focus tap', function(){
+					$(this).get(0).setSelectionRange(0,9999);
 					document.execCommand('copy');
 					if( typeof toastr != 'undefined' ){
 						toastr.success('', 'Copied to clipboard!');
@@ -269,7 +270,7 @@ class Vlogref_Public{
 	 **/
 	public function woo_add_donate_referral_to_order( $order_id, $posted_data, $order ){
 		global $wpdb;
-		if( isset( $_SESSION['referral'] ) && !empty( $_SESSION['referral'] ) ) :			
+		if( isset( $_SESSION['referral'] ) && !empty( $_SESSION['referral'] ) ) :
 			$ref_data = explode('_', base64url_decode( $_SESSION['referral'] ) );
 			if( isset( $ref_data[0] ) && !empty( $ref_data[0] ) ) : //Update Referred Campaign
 				$campaign_id 	= intval( $ref_data[0] );
@@ -325,6 +326,15 @@ class Vlogref_Public{
 				$this->insert_referral( $ref_args );				
 			endif;
 		endif; //Endif
+	}
+	/**
+	 * Make Checkbox Checked for Referral Donor Guest
+	 **/
+	public function woo_create_account_default_checked($enabled){
+		if( isset( $_SESSION['referral'] ) && !empty( $_SESSION['referral'] ) ) : 
+			$enabled = true;
+		endif;
+		return $enabled;
 	}
 }
 //Run Class
