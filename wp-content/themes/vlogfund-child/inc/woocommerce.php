@@ -78,7 +78,6 @@ if( !function_exists('vlogfund_woocommerce_checkout_process') ) :
  * Checkout Process
  **/
 function vlogfund_woocommerce_checkout_process(){
-	if( !vlogfund_smile_mode_on() ) return;  //Don't show organization
 	//If user not choose organization
 	if ( !isset( $_POST['billing_cause'] ) || empty( $_POST['billing_cause'] ) ) :
 		wc_add_notice( __('Please select a cause.') , 'error' );
@@ -91,7 +90,6 @@ if( !function_exists('vlogfund_woocommerce_checkout_update_fields') ) :
  * Update Checkout Fields
  **/
 function vlogfund_woocommerce_checkout_update_fields( $order_id ){
-	if( !vlogfund_smile_mode_on() ) return;  //Don't show organization
 	if( !empty( $_POST['billing_cause'] ) ) :
 		update_post_meta($order_id, 'billing_cause', sanitize_text_field( $_POST['billing_cause'] ) );
 	endif;
@@ -167,7 +165,7 @@ if( !function_exists('vlogfund_wc_stripe_payment_metadata') ) :
  * Stripe Payment Metadata
  **/
 function vlogfund_wc_stripe_payment_metadata( $metadata, $order ){
-	if( $cause = get_post_meta( $order->id, 'billing_cause', true ) && vlogfund_smile_mode_on() ) :
+	if( $cause = get_post_meta( $order->id, 'billing_cause', true ) ) :
 		$metadata['billing_cause'] = get_the_title($cause);
 	endif;
 	return $metadata;
@@ -314,30 +312,6 @@ function vlogfund_woocommerce_social_login_subscribe_mailchimp( $userdata ){
 }
 add_filter('wc_social_login_facebook_new_user_data', 'vlogfund_woocommerce_social_login_subscribe_mailchimp', 10 );
 add_filter('wc_social_login_google_new_user_data', 'vlogfund_woocommerce_social_login_subscribe_mailchimp', 10 );
-endif;
-if( !function_exists('vlogfund_redirect_for_smile_mode') ) :
-/**
- * Redirect to checkout page when smile mode and user add product to cart
- **/
-function vlogfund_redirect_for_smile_mode( $url ) {
-	if( !vlogfund_smile_mode_on() ) :
-	    $url = get_permalink( get_option( 'woocommerce_checkout_page_id' ) );
-	endif;
-    return $url;
-}
-add_filter( 'woocommerce_add_to_cart_redirect', 'vlogfund_redirect_for_smile_mode' );
-endif;
-if( !function_exists('vlogfund_redirect_for_smile_mode_cart') ) :
-/**
- * Redirect to checkout page when smile mode and someone hits cart page
- **/
-function vlogfund_redirect_for_smile_mode_cart(){
-	if( is_page( get_option('woocommerce_cart_page_id') ) && !vlogfund_smile_mode_on() ) :
-		wp_safe_redirect( get_permalink( get_option( 'woocommerce_checkout_page_id' ) ) );
-        die;
-	endif; //Endif
-}
-add_action( 'template_redirect', 'vlogfund_redirect_for_smile_mode_cart' );
 endif;
 if( !function_exists('vlogfund_empty_cart_on_logout') ) :
 /**

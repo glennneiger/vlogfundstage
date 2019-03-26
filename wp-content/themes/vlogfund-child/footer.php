@@ -37,9 +37,9 @@
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/youtube-collaborations" class="sf-footer-navigation-child-link">Collaborations</a></li>
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/youtube-channels" class="sf-footer-navigation-child-link">YouTubers</a></li>
 								<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/blog" class="sf-footer-navigation-child-link">Blog</a></li>
-								<!-- <?php if( vlogfund_smile_mode_on() ) : //Check Smile Mode ?>
+								<?php /*if( vlogfund_smile_mode_on() ) : //Check Smile Mode ?>
 									<li class="sf-footer-navigation-child"><i class="fa fa-angle-right"></i> <a href="/organization" class="sf-footer-navigation-child-link">Organizations</a></li>
-								<?php endif; //Endif ?> -->
+								<?php endif; //Endif*/ ?>
 							</ul>
 						</li>
 						<li class="sf-footer-navigation-head">
@@ -48,11 +48,7 @@
 							<ul class="sf-footer-navigation-sub">
 								<li class="sf-footer-navigation-child">
 									<label class="sf-smile-switch">
-										<?php if( vlogfund_smile_mode_on() ) : //Check Smile Mode ?>
-											<input type="checkbox" checked="checked">
-										<?php else : //Else ?>
-											<input type="checkbox">
-										<?php endif; //Endif ?>
+										<input type="checkbox" <?php echo vlogfund_smile_mode_on() ? 'checked="checked"' : '';?>>
 										<span class="sf-smile-slider"></span>
 									</label>
 								</li>
