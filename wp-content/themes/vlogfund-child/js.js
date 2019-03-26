@@ -1816,6 +1816,21 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
       }, 500);
     });
   }
+  
+  //When Checkout Processing  
+  $(document).ajaxSuccess(function( event, xhr, settings ) {
+	  if( settings.url == '/?wc-ajax=checkout' ) {
+		$('.sfc-checkout-progress-step-2 form.sfc-checkout-billing-container').block({
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6
+			}
+		});
+		toastr.success('', 'Your donation is processing');		
+	  }
+  });
+  
 
 
   jQuery(document).on('updated_cart_totals', function() {
