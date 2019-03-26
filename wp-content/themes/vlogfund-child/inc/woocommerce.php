@@ -39,12 +39,18 @@ if( !function_exists('vlogfund_woocommerce_add_checkout_organization_fields') ) 
  **/
 function vlogfund_woocommerce_add_checkout_organization_fields($checkout){
 
-	if( !vlogfund_smile_mode_on() ) return;  //Don't show organization
-
-	$organization_options = array();
-	$organization = get_posts( array('post_type' => 'organization', 'posts_per_page' => -1, 'post_status' => 'publish', 'fields' => 'ids') );
+	$org_args = array('post_type' => 'organization', 'posts_per_page' => -1, 'post_status' => 'publish', 'fields' => 'ids');
+	$chosen_org = isset( $_COOKIE['vlogfundorg'] ) ? $_COOKIE['vlogfundorg'] : '';
+	//Check Cart Not Empty And Related Organization Set
+	if( WC()->cart->get_cart_contents_count() > 0 ) :
+		$cart_items = array_shift( WC()->cart->get_cart() );
+		$camp_orgs = toolset_get_related_posts($cart_items['product_id'], 'organization-campaign', 'child');
+		$org_args['post__in'] = $camp_orgs;
+		$chosen_org = array_shift($camp_orgs);
+	endif; //Endif
+	$organization = get_posts( $org_args );
 	if( !empty( $organization ) ) :
-		$chosen_org = isset( $_COOKIE['vlogfundorg'] ) ? $_COOKIE['vlogfundorg'] : '';
+		$organization_options = array();
 		foreach( $organization as $key => $org_id ) :
 			$chosen_org = ( $key == 0 && empty( $chosen_org ) ) ? $org_id : $chosen_org;
 			$organization_options[$org_id] = get_the_title($org_id) . '&nbsp;';
@@ -770,4 +776,35 @@ function vlogfund_nyp_minimum_price($price){
 	return $nyp_price;
 }
 add_filter('woocommerce_raw_minimum_price', 'vlogfund_nyp_minimum_price', 999);
+endif;
+if( !function_exists('vlogfund_clear_org_cookie') ) :
+/**
+ * Delete Choosen Organization Cookie After Order Complete
+ *
+ * @since 1.0
+ **/
+function vlogfund_clear_org_cookie() {
+	setcookie('vlogfundorg', '', time()-3600);
+}
+add_action( 'woocommerce_thankyou', 'vlogfund_clear_org_cookie' );
+endif;
+if( !function_exists('vlogfund_user_redirect_checkout') ) :
+/**
+ * Redirect to Checkout Page When Organization Set
+ *
+ * @since 1.0
+ **/
+function vlogfund_user_redirect_checkout( $url ) {
+	if( WC()->cart->get_cart_contents_count() > 0 ) :
+		$cart_items = array_shift( WC()->cart->get_cart() );
+		$organization = toolset_get_related_posts($cart_items['product_id'], 'organization-campaign', 'child');
+		$organization = is_array($organization) ? array_shift($organization) : (array) $organization;
+		if( !empty( $organization ) ) :
+			setcookie('vlogfundorg', $organization, time()+3600);			
+			return wc_get_checkout_url();
+		endif; //Endif
+	endif; //Endif
+    return $url;
+} 
+add_filter('woocommerce_add_to_cart_redirect', 'vlogfund_user_redirect_checkout', 99);
 endif;
