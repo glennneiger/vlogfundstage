@@ -1,7 +1,7 @@
 <?php
 /**
  * Template for the forms notifications GUI, trigger section, user forms.
- * 
+ *
  * @var array $notification Data for the current notification
  * @var string $ii Index for the current notification
  * @var boolean $enableTestMail
@@ -9,7 +9,7 @@
  * @var string $form_type Post type of the current edited form
  *
  * @since 2.1
- * 
+ *
  * @todo Evaluate the error message about trigger event, it does not belong here
  */
 $context = isset( $context ) ? $context : array();
@@ -44,17 +44,40 @@ $notification_html_name = "_cred[notification][notifications][{$ii}]";
                             ]
                         }
                     }
-                }" 
-                type='radio' 
-                class='js-cred-notification-trigger' 
-                name='<?php echo esc_attr( $notification_html_name ); ?>[event][type]' 
-                value='form_submit' 
+                }"
+                type='radio'
+                class='js-cred-notification-trigger'
+                name='<?php echo esc_attr( $notification_html_name ); ?>[event][type]'
+                value='form_submit'
                 <?php checked( 'form_submit', toolset_getnest( $notification, array( 'event', 'type' ) ) ); ?> />
             <span class="when_submitting_form_text"><?php _e( 'When submitting the form', 'wp-cred' ); ?></span>
         </label>
     </p>
-
-    <?php do_action('cred_admin_notification_notify_event_options', $form, array( $ii, "_cred[notification][notifications][$ii][event][type]", $notification['event']['type'] ), $notification ); ?>
+    <?php
+	/**
+	 * Hook to include extra trigger actions for post forms notifications.
+	 *
+	 * @param WP_Post $form
+	 * @param array
+	 *   int The index of the current notification.
+	 *   string The name of the radio inputs for the trigger options of this notification.
+	 *   string The current notification type.
+	 * @param array $notification
+	 * @deprecated 2.3 Use toolset_forms_post_form_extend_notification_trigger
+	 */
+	do_action( 'cred_admin_notification_notify_event_options', $form, array( $ii, "_cred[notification][notifications][$ii][event][type]", $notification['event']['type'] ), $notification );
+	?>
+	<?php
+	/**
+	 * Hook to include extra trigger actions for post forms notifications.
+	 *
+	 * @param WP_Post $form
+	 * @param int|string $ii The index of the current notification.
+	 * @param array $notification
+	 * @since 2.3
+	 */
+	do_action( 'toolset_forms_post_form_extend_notification_trigger', $form, $ii, $notification );
+	?>
     <p>
         <label class='cred-label'>
             <input data-cred-bind="{
@@ -66,24 +89,24 @@ $notification_html_name = "_cred[notification][notifications][{$ii}]";
                             ]
                         }
                     }
-                }" 
-                type='radio' 
-                class='js-cred-notification-trigger' 
-                name='<?php echo esc_attr( $notification_html_name ); ?>[event][type]' 
-                value='meta_modified' 
+                }"
+                type='radio'
+                class='js-cred-notification-trigger'
+                name='<?php echo esc_attr( $notification_html_name ); ?>[event][type]'
+                value='meta_modified'
                 <?php checked( 'meta_modified', toolset_getnest( $notification, array( 'event', 'type' ) ) ); ?> />
             <span><?php _e( 'When custom fields are modified', 'wp-cred' ); ?></span>
         </label>
-        <span style="display:inline-block;" 
-            data-cred-bind="{ 
-                action:'show', 
-                condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][type]=meta_modified' 
+        <span style="display:inline-block;"
+            data-cred-bind="{
+                action:'show',
+                condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][type]=meta_modified'
             }">
-            <span style="display:inline-block;" 
-                class="cred-notification cred-error" 
-                data-cred-bind="{ 
-                    action: 'show', 
-                    condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][condition]:count=0' 
+            <span style="display:inline-block;"
+                class="cred-notification cred-error"
+                data-cred-bind="{
+                    action: 'show',
+                    condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][condition]:count=0'
                 }">
                 <i class="fa fa-warning"></i>
                 <?php _e( 'You need to add fields to trigger notifications.', 'wp-cred' ); ?>
@@ -91,9 +114,9 @@ $notification_html_name = "_cred[notification][notifications][{$ii}]";
         </span>
     </p>
 
-    <div class="cred_notify_event_field_conditions_container" data-cred-bind="{ 
-        action: 'show', 
-        condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][type]=meta_modified' 
+    <div class="cred_notify_event_field_conditions_container" data-cred-bind="{
+        action: 'show',
+        condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][type]=meta_modified'
         }">
         <p class='cred-explain-text'><?php _e('Additional field conditions:', 'wp-cred'); ?></p>
         <div id="cred_notify_event_field_conditions_container_fields-<?php echo $ii; ?>" class="cred_notify_event_field_conditions_container_fields">
@@ -110,22 +133,22 @@ $notification_html_name = "_cred[notification][notifications][{$ii}]";
             ?>
         </div>
 
-        <div data-cred-bind="{ 
-            action: 'show', 
-            condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][condition]:count>=2' 
+        <div data-cred-bind="{
+            action: 'show',
+            condition: '<?php echo esc_attr( $notification_html_name ); ?>[event][condition]:count>=2'
         }">
             <p>
             <label>
-                    <input type="radio" 
-                        name="<?php echo esc_attr( $notification_html_name ); ?>[event][any_all]" 
-                        value="ALL" 
+                    <input type="radio"
+                        name="<?php echo esc_attr( $notification_html_name ); ?>[event][any_all]"
+                        value="ALL"
                         <?php checked( 'ALL', toolset_getnest( $notification, array( 'event', 'any_all' ) ) ); ?>/>
                     <span><?php _e('All are true', 'wp-cred'); ?></span>
                 </label>
                 <label>
-                    <input type="radio" 
-                        name="<?php echo esc_attr( $notification_html_name ); ?>[event][any_all]" 
-                        value="ANY" 
+                    <input type="radio"
+                        name="<?php echo esc_attr( $notification_html_name ); ?>[event][any_all]"
+                        value="ANY"
                         <?php checked( 'ANY', toolset_getnest( $notification, array( 'event', 'any_all' ) ) ); ?>/>
                     <span><?php _e('Any is true', 'wp-cred'); ?></span>
                 </label>

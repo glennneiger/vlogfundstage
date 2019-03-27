@@ -370,6 +370,32 @@ function cred_export_to_xml_string( $forms ) {
 }
 
 /**
+ * Maybe traslate a string, only if it is already registered.
+ * This way we avoid registering it by defalt.
+ *
+ * @param string $name
+ * @param string $string
+ * @param string $context
+ * @return string
+ * @since 2.3.2
+ */
+function cred_maybe_translate( $name, $string, $context = 'CRED_CRED' ) {
+	if ( ! apply_filters( 'toolset_is_wpml_active_and_configured', false ) ) {
+		return $string;
+	}
+
+	if ( ! function_exists( 'icl_st_is_registered_string' ) ) {
+		return $string;
+	}
+
+	if ( ! icl_st_is_registered_string( $context, $name ) ) {
+		return $string;
+	}
+
+	return cred_translate( $name, $string, $context );
+}
+
+/**
  * cred_translate
  *
  * @param string $name
@@ -396,13 +422,7 @@ function cred_translate( $name, $string, $context = 'CRED_CRED' ) {
 		}
 	}
 
-	$has_translation = null;
-	$translation = icl_t( $context, $name, stripslashes( $string ), $has_translation );
-	if ( $has_translation ) {
-		return $translation;
-	} else {
-		return $string;
-	}
+	return icl_t( $context, $name, stripslashes( $string ) );
 }
 
 /**
@@ -417,7 +437,7 @@ function cred_translate_register_string( $context, $name, $value, $allow_empty_v
 	if ( ! apply_filters( 'toolset_is_wpml_active_and_configured', false ) ) {
 		return;
 	}
-	
+
 	if ( strpos( $context, 'cred-form-' ) !== false ) {
 		$tmp = explode( "-", $context );
 		$form_id = $tmp[ count( $tmp ) - 1 ];
@@ -427,10 +447,10 @@ function cred_translate_register_string( $context, $name, $value, $allow_empty_v
 		}
 	}
 
-	do_action( 
-		'wpml_register_single_string', 
-		$context, 
-		$name, 
+	do_action(
+		'wpml_register_single_string',
+		$context,
+		$name,
 		stripslashes( $value ),
 		$allow_empty_value
 	);

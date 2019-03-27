@@ -8,56 +8,58 @@ use OTGS\Toolset\CRED\Model\Factory as ModelFactory;
 
 /**
  *Fforms main controller.
- * 
+ *
  * @since 2.1
  */
 class Main {
 
-    const DOMAIN = '';
+	const DOMAIN = '';
+
+	const SHORTCODE_NAME_FORM_FIELD = 'cred_field';
 
 	/**
 	 * @var \ControllerFactory
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $controller_factory = null;
 
 	/**
 	 * @var \ModelFactory
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $model_factory = null;
 
 	/**
 	 * @var boolean
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $condition_post_request = false;
 
 	/**
 	 * @var boolean
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $condition_front_end = false;
 
 	/**
 	 * @var boolean
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $condition_ajax_request = false;
 
 	/**
 	 * @var boolean
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $condition_back_end = false;
 
-	public function __construct( 
+	public function __construct(
         ControllerFactory $controller_factory,
         ModelFactory $model_factory
     ) {
@@ -76,7 +78,7 @@ class Main {
 
 	/**
 	 * Initialize forms.
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	public function run() {
@@ -89,7 +91,7 @@ class Main {
 	 * Load the right controller depending on the current condition.
 	 *
 	 * @return OTGS\Toolset\CRED\Controller\Forms\Base|null
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected function route() {
@@ -117,13 +119,13 @@ class Main {
 
 	/**
 	 * Add controller hooks.
-     * 
+     *
      * @since 2.1
 	 */
 	protected function add_hooks() {
 		// Add hooks if necessary here
 	}
-	
+
 	/**
 	 * Set the condition on whether this is an AJAX request.
 	 *
@@ -139,8 +141,8 @@ class Main {
 	 * @since 2.1
 	 */
 	protected function set_condition_is_back_end() {
-		if ( 
-            is_admin() 
+		if (
+            is_admin()
             && ! $this->condition_ajax_request
         ) {
 			$this->condition_back_end = true;

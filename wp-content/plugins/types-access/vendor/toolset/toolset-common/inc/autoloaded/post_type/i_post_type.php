@@ -150,4 +150,30 @@ interface IToolset_Post_Type {
 	 * @since 2.5.11
 	 */
 	public function is_involved_in_relationship();
+
+
+	/**
+	 * What editor should be used for posts of this type.
+	 *
+	 * Valid values are defined in the EditorMode pseudo-enum.
+	 * Note that this will return the *preferred* editor mode. The actual editor can be different depending on
+	 * factors like WordPress version, the Gutenberg plugin presence or third-party software hooking into
+	 * relevant core filters.
+	 *
+	 * @return string
+	 * @since Types 3.2.2
+	 */
+	public function get_editor_mode();
+
+
+	/**
+	 * Set what editor should be used for posts of this type.
+	 *
+	 * See get_editor_mode() for details.
+	 *
+	 * @param string $value One of the EditorMode values.
+	 * @return void
+	 * @since Types 3.2.2
+	 */
+	public function set_editor_mode( $value );
 }

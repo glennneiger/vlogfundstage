@@ -182,10 +182,16 @@ class Toolset_Files {
 	 *
 	 * @param string $pathname
 	 *
+	 * @param int $mode
+	 * @param bool $recursive
+	 *
 	 * @return bool
 	 */
-	public function mkdir( $pathname ) {
-		return mkdir( $pathname );
+	public function mkdir( $pathname, $mode = null, $recursive = false ) {
+		if( null === $mode ) {
+			$mode = $mode & ~umask();
+		}
+		return mkdir( $pathname , $mode, $recursive );
 	}
 
 }

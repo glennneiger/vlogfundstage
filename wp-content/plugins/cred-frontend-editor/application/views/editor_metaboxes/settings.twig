@@ -10,7 +10,7 @@
     {{
     forms.twoColumnRow(
         forms.label(__( 'Relationship', 'wp-cred' ), true),
-        forms.selectInput("value: relationship, css: { error: relationship.hasError }", '', relationships_set, true, 'relationship', 'relationship')
+        forms.selectInput("value: relationship, css: { error: relationship.hasError }, event: { change: loadRelationshipData }", '', relationships_set, true, 'relationship', 'relationship')
     )
     }}
     {{

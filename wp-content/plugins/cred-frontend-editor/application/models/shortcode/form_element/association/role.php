@@ -25,27 +25,27 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 	 * @var string|null
 	 */
 	private $user_content;
-	
+
 	/**
 	 * @var array
 	 */
 	private $user_atts;
-	
+
 	/**
 	 * @var string|null
 	 */
 	private $relationship;
-	
+
 	/**
 	 * @var string|null
 	 */
 	private $role;
-	
+
 	/**
 	 * @var array
 	 */
 	private $classnames;
-	
+
 	/**
 	 * @var array
 	 */
@@ -54,7 +54,7 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 	public function __construct( CRED_Shortcode_Association_Helper $helper ) {
 		parent::__construct( $helper );
 	}
-	
+
 	/**
 	 * Get current role object ID, if any, based on the role attribute.
 	 *
@@ -90,31 +90,31 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 		$this->user_atts    = shortcode_atts( $this->shortcode_atts, $atts );
 		$this->user_content = $content;
 		$this->enlimbo_args = array();
-		
+
 		if ( empty( $this->user_atts['role'] ) ) {
 			return;
 		}
-		
+
 		$this->role = $this->user_atts['role'];
 		$this->relationship = $this->helper->get_current_relationship();
-		$this->classnames = empty( $this->user_atts['class'] ) 
-			? array() 
+		$this->classnames = empty( $this->user_atts['class'] )
+			? array()
 			: explode( ' ', $this->user_atts['class'] );
-		
+
 		if ( ! $this->relationship ) {
 			return;
 		}
-		
+
 		$request_relationship = $this->get_relationship_service()->find_by_string( $this->relationship );
-		
+
 		if ( ! $request_relationship instanceof Toolset_Relationship_Definition ) {
 			return;
 		};
-		
+
 		$this->maybe_set_sorting();
-		
+
 		$this->maybe_set_filter_by_author();
-		
+
 		switch( $this->role ) {
 			case Toolset_Relationship_Role::PARENT:
 				return $this->get_frontend_control( $this->get_parent_post_type( $request_relationship ), Toolset_Relationship_Role::PARENT );
@@ -123,10 +123,10 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 			default:
 				return;
 		}
-		
+
 		return ;
 	}
-	
+
 	/**
 	 * Maybe set sorting options based on shortcode attribute values.
 	 *
@@ -136,14 +136,14 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 		if ( ! in_array( $this->user_atts['orderby'], array( 'date', 'title', 'ID' ) ) ) {
 			$this->user_atts['orderby'] = 'ID';
 		}
-		
+
 		if ( ! in_array( $this->user_atts['order'], array( 'ASC', 'DESC' ) ) ) {
 			$this->user_atts['order'] = 'DESC';
 		}
-		
+
 		return;
 	}
-	
+
 	/**
 	 * Maybe filter the offered role options based on shortcode attribute values or a set of API filters.
 	 *
@@ -157,32 +157,32 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 			$this->user_atts['author'] = (int) $this->user_atts['author'];
 			return;
 		}
-		
+
 		// Try to force an author from API filters
 		$form_id = $this->helper->get_frontend_form_flow()->get_current_form_id();
-		
+
 		$query_arguments = new Toolset_Potential_Association_Query_Arguments();
-		
-		$query_arguments->addFilter( 
-			new CRED_Potential_Association_Query_Filter_Posts_Author_For_Association_Role( $form_id, $this->role ) 
+
+		$query_arguments->addFilter(
+			new CRED_Potential_Association_Query_Filter_Posts_Author_For_Association_Role( $form_id, $this->role )
 		);
-		
+
 		$additional_query_arguments = $query_arguments->get();
 		$query_args = toolset_ensarr( toolset_getarr( $additional_query_arguments, 'wp_query_override' ) );
-		
+
 		if ( array_key_exists( 'author', $query_args ) ) {
 			$this->user_atts['author'] = (int) $query_args['author'];
 			return;
 		}
-		
+
 		if ( array( '0' ) === toolset_getarr( $query_args, 'post__in' ) ) {
 			$this->user_atts['author'] = 0;
 			return;
 		}
-		
+
 		return;
 	}
-	
+
 	/**
 	 * Set the frontend selector current selected value, if any.
 	 *
@@ -192,7 +192,7 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 	 */
 	private function maybe_set_frontend_control_current_value() {
 		$this->enlimbo_args['field']['#default_value'] = '';
-		
+
 		$current_value = $this->get_current_role_id( $this->role );
 		if ( $current_value ) {
 			$this->enlimbo_args['field']['#options'][ $current_value ] = array(
@@ -205,7 +205,7 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Populate the frontend selector options with posts of a given post type.
 	 *
@@ -236,7 +236,7 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 		}
 
 	}
-	
+
 	/**
 	 * Get the frontend selector output.
 	 *
@@ -254,7 +254,7 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 
 		$this->classnames[] = 'cred_association_select_role js-cred_association_select_role';
 		$this->classnames[] = 'cred_association_' . $this->relationship . '_' . $this->role;
-		
+
 		$this->enlimbo_args = array(
 			'field' => array(
 				'#type' => 'select',
@@ -273,24 +273,24 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 				'#options' => array(),
 			)
 		);
-		
+
 		$needs_hidden_field = false;
-		
+
 		if ( $this->maybe_set_frontend_control_current_value() ) {
 			$needs_hidden_field = true;
 		}
-		
+
 		$this->enlimbo_args['field']['#attributes']['class'] = implode( ' ', $this->classnames );
-		
+
 		$return = toolset_form_control( $this->enlimbo_args );
-		
+
 		if ( $needs_hidden_field ) {
 			$return .= '<input type="hidden" name="' . $this->enlimbo_args['field']['#name'] . '" value="' . $this->enlimbo_args['field']['#default_value'] . '" />';
 		}
-		
+
 		return $return;
 	}
-	
+
 	/**
 	 * Get the relationship parent post type.
 	 *
@@ -306,11 +306,11 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 		if ( count( $parent_types ) != 1 ) {
 			return;
 		}
-		
+
 		$parent_post_type = current( $parent_types );
 		return $parent_post_type;
 	}
-	
+
 	/**
 	 * Get the relationship child post type.
 	 *
@@ -326,9 +326,9 @@ class CRED_Shortcode_Association_Role extends CRED_Shortcode_Association_Base im
 		if ( count( $child_types ) != 1 ) {
 			return;
 		}
-		
+
 		$child_post_type = current( $child_types );
 		return $child_post_type;
 	}
-	
+
 }

@@ -90,11 +90,6 @@ class Toolset_Upgrade_Controller {
 				return;
 			}
 
-			// This is required by the tcl-status plugin.
-			// if( apply_filters( 'toolset_disable_upgrade_routine', false ) ) {
-			//	return;
-			// }
-
 			$this->do_upgrade( $database_version, $library_version );
 		}
 	}

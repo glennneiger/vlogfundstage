@@ -1,9 +1,10 @@
 <?php
-/**
- * Contains Types_Page_Custom_Fields page controller and Types_Page_Custom_Fields_Data_Formatter JSON data formatter.
- *
- * @package Types
- */
+
+use OTGS\Toolset\Types\Field\Group\PostGroupViewmodel;
+use OTGS\Toolset\Types\Field\Group\TermGroupViewmodel;
+use OTGS\Toolset\Types\Field\Group\UserGroupViewmodel;
+use OTGS\Toolset\Types\Field\Group\ViewmodelFactory;
+use OTGS\Toolset\Types\Field\Group\ViewmodelInterface;
 
 /**
  * "Custom Fields" page controller.
@@ -70,6 +71,10 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 	private $dialog_factory;
 
 
+	/** @var Types_Asset_Manager */
+	private $asset_manager;
+
+
 	/**
 	 * Class instance
 	 *
@@ -93,15 +98,19 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 	 * Types_Page_Custom_Fields constructor
 	 *
 	 * @since 2.3
+	 *
 	 * @param array $args List of arguments.
 	 * @param Toolset_Twig_Dialog_Box_Factory|null $dialog_factory Twig dialogs factory.
+	 * @param Types_Asset_Manager|null $asset_manager_di
 	 */
-	public function __construct( $args, Toolset_Twig_Dialog_Box_Factory $dialog_factory = null ) {
+	public function __construct(
+		$args, Toolset_Twig_Dialog_Box_Factory $dialog_factory = null, Types_Asset_Manager $asset_manager_di = null ) {
 		parent::__construct( $args );
 
 		self::$instance = $this;
 
 		$this->dialog_factory = $dialog_factory;
+		$this->asset_manager = $asset_manager_di ?: Types_Asset_Manager::get_instance();
 	}
 
 
@@ -219,8 +228,7 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 		$main_handle = 'types-page-custom-fields-main';
 
 		// Enqueuing with the wp-admin dependency because we need to override something !important.
-		$asset_manager = Types_Asset_Manager::get_instance();
-		$asset_manager->enqueue_styles(
+		$this->asset_manager->enqueue_styles(
 			array(
 				'wp-admin',
 				'common',
@@ -334,33 +342,37 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 		// Checks user can?
 		$add_button = false;
 		switch ( $this->get_current_domain() ) {
-			case Toolset_Field_Utils::DOMAIN_POSTS:
+			case Toolset_Element_Domain::POSTS:
 				$add_button = WPCF_Roles::user_can_create( 'custom-field' );
 				break;
-			case Toolset_Field_Utils::DOMAIN_USERS:
+			case Toolset_Element_Domain::USERS:
 				$add_button = WPCF_Roles::user_can_create( 'user-meta-field' );
 				break;
-			case Toolset_Field_Utils::DOMAIN_TERMS:
+			case Toolset_Element_Domain::TERMS:
 				$add_button = WPCF_Roles::user_can_create( 'term-field' );
 				break;
 		}
 
 		if ( $add_button ) {
 			$add_new_title = __( 'Add New', 'wpcf' );
+		} else {
+			$add_new_title = '';
 		}
-		$current_page = sanitize_text_field( wpcf_getget( 'page' ) );
+
+		$current_page = sanitize_text_field( toolset_getget( 'page' ) );
 		// Legacy actions.
 		do_action( 'wpcf_admin_header' );
 		do_action( 'wpcf_admin_header_' . $current_page );
 		// Legacy menu options.
+		$legacy_page = '';
 		switch ( $this->get_current_domain() ) {
-			case Toolset_Field_Utils::DOMAIN_POSTS:
+			case Toolset_Element_Domain::POSTS:
 				$legacy_page = 'wpcf-cf';
 				break;
-			case Toolset_Field_Utils::DOMAIN_USERS:
+			case Toolset_Element_Domain::USERS:
 				$legacy_page = 'wpcf-um';
 				break;
-			case Toolset_Field_Utils::DOMAIN_TERMS:
+			case Toolset_Element_Domain::TERMS:
 				$legacy_page = 'wpcf_termmeta_listing';
 				break;
 		}
@@ -422,7 +434,7 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 				'order' => 'asc',
 			);
 
-			$group_factory = Types_Viewmodel_Field_Group_Factory::get_factory_by_domain( $domain );
+			$group_factory = Toolset_Field_Group_Factory::get_factory_by_domain( $domain );
 
 			if ( null !== $group_factory ) {
 				$groups = $group_factory->query_groups( $query_args );
@@ -430,11 +442,17 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 				$groups = array();
 			}
 
-			foreach ( $groups as $group ) {
-				$json_data = $group->to_json();
+			$viewmodel_factory = new ViewmodelFactory();
+			/** @var ViewmodelInterface[] $group_viewmodels */
+			$group_viewmodels = array_map( function( $group ) use ( $viewmodel_factory ) {
+				return $viewmodel_factory->create_viewmodel( $group );
+			}, $groups );
+
+			foreach ( $group_viewmodels as $group_viewmodel ) {
+				$json_data = $group_viewmodel->to_json();
 				$group_data['data'][ $domain ][] = $json_data;
-			} // End foreach().
-		} // End foreach().
+			}
+		}
 
 		return $group_data;
 	}
@@ -447,7 +465,7 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 	 * Prepares I18N strings used in views
 	 *
 	 * @since 2.3
-	 * @return Array
+	 * @return array
 	 */
 	private function build_strings_for_twig() {
 
@@ -499,19 +517,19 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 					'posts' => sprintf(
 						'<p>%s</p><a class="button-primary" href="%s">%s</a>',
 						__( 'To use post fields, please create a group to hold them.', 'wpcf' ),
-						admin_url() . 'admin.php?page=' . Types_Viewmodel_Field_Group_Post::EDIT_PAGE_SLUG,
+						admin_url() . 'admin.php?page=' . PostGroupViewmodel::EDIT_PAGE_SLUG,
 						__( 'Add New Group', 'wpcf' )
 					),
 					'users' => sprintf(
 						'<p>%s</p><a class="button-primary" href="%s">%s</a>',
 						__( 'To use user fields, please create a group to hold them.', 'wpcf' ),
-						admin_url() . 'admin.php?page=' . Types_Viewmodel_Field_Group_User::EDIT_PAGE_SLUG,
+						admin_url() . 'admin.php?page=' . UserGroupViewmodel::EDIT_PAGE_SLUG,
 						__( 'Add New Group', 'wpcf' )
 					),
 					'terms' => sprintf(
 						'<p>%s</p><a class="button-primary" href="%s">%s</a>',
 						__( 'To use term fields, please create a group to hold them.', 'wpcf' ),
-						admin_url() . 'admin.php?page=' . Types_Viewmodel_Field_Group_Term::EDIT_PAGE_SLUG,
+						admin_url() . 'admin.php?page=' . TermGroupViewmodel::EDIT_PAGE_SLUG,
 						__( 'Add New Group', 'wpcf' )
 					),
 					'search' => __( 'No items found.', 'wpcf' ),
@@ -834,23 +852,23 @@ class Types_Page_Custom_Fields extends Types_Page_Persistent {
 		 * @var array Each tab represents a different domain.
 		 */
 		$tabs_dialog = array(
-			Toolset_Field_Utils::DOMAIN_POSTS => array(
+			Toolset_Element_Domain::POSTS => array(
 				'title' => __( 'Post Fields', 'wpcf' ),
 				'icon'  => 'fa fa-file',
 				'description' => __( 'Fields that belong to pages, posts or custom types', 'wpcf' ),
-				'link' => admin_url() . 'admin.php?page=' . Types_Viewmodel_Field_Group_Post::EDIT_PAGE_SLUG,
+				'link' => admin_url() . 'admin.php?page=' . PostGroupViewmodel::EDIT_PAGE_SLUG,
 			),
-			Toolset_Field_Utils::DOMAIN_USERS => array(
+			Toolset_Element_Domain::USERS => array(
 				'title' => __( 'User Fields', 'wpcf' ),
 				'icon'  => 'fa fa-user',
 				'description' => __( 'Fields that belong to users', 'wpcf' ),
-				'link' => admin_url() . 'admin.php?page=' . Types_Viewmodel_Field_Group_User::EDIT_PAGE_SLUG,
+				'link' => admin_url() . 'admin.php?page=' . UserGroupViewmodel::EDIT_PAGE_SLUG,
 			),
-			Toolset_Field_Utils::DOMAIN_TERMS => array(
+			Toolset_Element_Domain::TERMS => array(
 				'title' => __( 'Term Fields', 'wpcf' ),
 				'icon'  => 'fa fa-tags',
 				'description' => __( 'Fields that belong to taxonomy terms', 'wpcf' ),
-				'link' => admin_url() . 'admin.php?page=' . Types_Viewmodel_Field_Group_Term::EDIT_PAGE_SLUG,
+				'link' => admin_url() . 'admin.php?page=' . TermGroupViewmodel::EDIT_PAGE_SLUG,
 			),
 		);
 

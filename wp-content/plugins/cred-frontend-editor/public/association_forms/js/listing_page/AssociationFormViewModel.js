@@ -8,6 +8,9 @@ Toolset.CRED.AssociationFormsListing.viewmodels.AssociationFormViewModel = funct
     // Data properties
     self.displayName = ko.observable( model.post_title );
     self.relationshipName = ko.observable( model.relationship_slug );
+    self.relationshipLabel = ko.observable( model.relationship_label );
+    self.lastModified = ko.observable( model.post_modified );
+    self.lastModifiedVisible = ko.observable( model.post_modified_visible );
     self.form_type = ko.observable( model.type );
     self.id = ko.observable( model.ID );
     self.slug = ko.observable( model.post_name );

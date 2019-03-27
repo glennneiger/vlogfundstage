@@ -5,12 +5,12 @@ Plugin URI: http://toolset.com/home/types-access/?utm_source=accessplugin&utm_ca
 Description: User access control and roles management
 Author: OnTheGoSystems
 Author URI: http://www.onthegosystems.com/
-Version: 2.5.2
+Version: 2.6.2
 */
 
 
 // current version
-define( 'TACCESS_VERSION', '2.5.2' );
+define( 'TACCESS_VERSION', '2.6.2' );
 
 if ( function_exists('realpath') ) {
 	define( 'TACCESS_PLUGIN_PATH', realpath( dirname( __FILE__ ) ) );
@@ -127,6 +127,21 @@ function otg_access_shortcode_generator_initialize() {
 	TAccess_Loader::load('CLASS/Shortcode');
 	new OTG_Access_Shortcode_Generator();
 }
+
+/**
+ * Initialize the Gutenberg blocks compatibility for Access.
+ *
+ * @since 2.6
+ */
+function otg_access_blocks_initialize() {
+	$toolset_common_bootstrap = Toolset_Common_Bootstrap::getInstance();
+	$toolset_common_sections = array( Toolset_Common_Bootstrap::TOOLSET_BLOCKS );
+	$toolset_common_bootstrap->load_sections( $toolset_common_sections );
+	TAccess_Loader::load( 'CLASS/Blocks' );
+	$access_blocks = new Access_Blocks();
+	$access_blocks->init_hooks();
+}
+add_action( 'after_setup_theme', 'otg_access_blocks_initialize', 999 );
 
 // update on activation
 function taccess_on_activate()
@@ -401,8 +416,8 @@ function otg_access_plugin_row_meta( $plugin_meta, $plugin_file, $plugin_data, $
 	if ( $plugin_file == $this_plugin ) {
 		$plugin_meta[] = sprintf(
 				'<a href="%s" target="_blank">%s</a>',
-				'https://toolset.com/version/access-2-5-2/?utm_source=accessplugin&utm_campaign=access&utm_medium=release-notes-plugins-list&utm_term=Access 2.5.2 release notes',
-				__( 'Access 2.5.2 release notes', 'wpcf-access' )
+				'https://toolset.com/version/access-2-6-2/?utm_source=accessplugin&utm_campaign=access&utm_medium=release-notes-plugins-list&utm_term=Access 2.6.2 release notes',
+				__( 'Access 2.6.2 release notes', 'wpcf-access' )
 			);
 	}
 	return $plugin_meta;

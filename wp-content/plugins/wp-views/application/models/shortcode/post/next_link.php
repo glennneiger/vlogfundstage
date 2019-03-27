@@ -5,7 +5,7 @@
  *
  * @since 2.5.0
  */
-class WPV_Shortcode_Post_Next_Link extends WPV_Shortcode_Base {
+class WPV_Shortcode_Post_Next_Link extends WPV_Shortcode_Post_Navigation_Link {
 
 	const SHORTCODE_NAME = 'wpv-post-next-link';
 
@@ -17,35 +17,9 @@ class WPV_Shortcode_Post_Next_Link extends WPV_Shortcode_Base {
 		'id'           => null, // synonym for 'item'
 		'post_id'      => null, // synonym for 'item'
 		'format'       => '%%LINK%% &raquo;',
-		'link'         => '%%TITLE%%'
+		'link'         => '%%TITLE%%',
+		'wpml_context' => self::SHORTCODE_NAME,
 	);
-
-	/**
-	 * @var string|null
-	 */
-	private $user_content;
-	
-	/**
-	 * @var array
-	 */
-	private $user_atts;
-
-
-	/**
-	 * @var Toolset_Shortcode_Attr_Interface
-	 */
-	private $item;
-
-	/**
-	 * WPV_Shortcode_Post_Next_Link constructor.
-	 *
-	 * @param Toolset_Shortcode_Attr_Interface $item
-	 */
-	public function __construct(
-		Toolset_Shortcode_Attr_Interface $item
-	) {
-		$this->item  = $item;
-	}
 
 	/**
 	* Get the shortcode output value.
@@ -73,22 +47,11 @@ class WPV_Shortcode_Post_Next_Link extends WPV_Shortcode_Base {
 		if ( null === $item ) {
 			return $out;
 		}
-		
-		if ( \OTGS\Toolset\Views\Controller\Compatibility\Wpml::get_instance()->is_wpml_st_loaded() ) {
-			$view_settings = apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
-			$context = 'View ' . $view_settings['view_slug'];
-			$this->user_atts['format'] = wpv_translate(
-				'post_control_for_next_link_format_' . md5( $this->user_atts['format'] ),
-				$this->user_atts['format'],
-				false,
-				$context
-			);
-			$this->user_atts['link'] = wpv_translate(
-				'post_control_for_next_link_text_' . md5( $this->user_atts['link'] ),
-				$this->user_atts['link'],
-				false,
-				$context
-			);
+
+		$wpml_st_active = new Toolset_Condition_Plugin_Wpml_String_Translation_Is_Active();
+		if ( $wpml_st_active->is_met() ) {
+			$this->user_atts['format'] = $this->get_attribute_translation( 'post_control_for_next_link_format_', $this->user_atts['format'], $this->user_atts['wpml_context'] );
+			$this->user_atts['link'] = $this->get_attribute_translation( 'post_control_for_next_link_text_', $this->user_atts['link'], $this->user_atts['wpml_context'] );
 		}
 
 		$processed_shortcode_placeholders = process_post_navigation_shortcode_placeholders( $this->user_atts['format'], $this->user_atts['link'] );

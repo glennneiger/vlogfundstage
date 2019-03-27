@@ -5,7 +5,7 @@ use OTGS\Toolset\CRED\Controller\Forms\User\Main as UserMain;
 
 /**
  * Template for the forms notifications GUI.
- * 
+ *
  * @var array $notification Data for the current notification
  * @var string $ii Index for the current notification
  * @var boolean $enableTestMail
@@ -72,8 +72,8 @@ if ( ! is_array( $notification['to']['type'] ) ) {
     $notification['to']['type'] = (array) $notification['to']['type'];
 }
 
-$notification_name = ( '' === toolset_getarr( $notification, 'name' ) ) 
-    ? __( '(notification-name)', 'wp-cred' ) 
+$notification_name = ( '' === toolset_getarr( $notification, 'name' ) )
+    ? __( '(notification-name)', 'wp-cred' )
     : $notification['name'];
 
 
@@ -87,12 +87,24 @@ $templates_data = array(
     'form_type' => $form_type
 );
 
+if ( PostMain::POST_TYPE === $form_type ) {
+	$templates_data['stati'] = array(
+		'basic' => toolset_getnest( $context, array( 'stati', 'basic' ), array() ),
+		'native' => toolset_getnest( $context, array( 'stati', 'native' ), array() ),
+		'custom' => toolset_getnest( $context, array( 'stati', 'custom' ), array() ),
+	);
+	$templates_data['stati_label'] = array(
+		'native' => toolset_getnest( $context, array( 'stati_label', 'native' ), array() ),
+		'custom' => toolset_getnest( $context, array( 'stati_label', 'custom' ), array() ),
+	);
+}
+
 $is_notifications_generic_template = ( '__i__' === $ii );
 ?>
 
 <!-- BEGIN row -->
-<div rel="cred_notification_settings_panel-<?php echo esc_attr( $ii ); ?>" 
-    id="cred_notification_settings_row-<?php echo esc_attr( $ii ); ?>" 
+<div rel="cred_notification_settings_panel-<?php echo esc_attr( $ii ); ?>"
+    id="cred_notification_settings_row-<?php echo esc_attr( $ii ); ?>"
     class="cred-notification-settings-row clearfix<?php if ( $is_notifications_generic_template ) { ?> cred-notification-settings-row-open<?php } ?>">
 
     <div class="cred-notification-handle-actions">
@@ -103,15 +115,15 @@ $is_notifications_generic_template = ( '__i__' === $ii );
         <?php } ?>
 
         <div class="cred-notification-actions">
-            <button class="button button-secondary cred-notification-action cred-notification-close js-cred-notification-close" 
+            <button class="button button-secondary cred-notification-action cred-notification-close js-cred-notification-close"
         data-index="<?php echo esc_attr( $ii ); ?>"<?php if ( ! $is_notifications_generic_template ) { ?> style="display:none"<?php } ?>>
                 <i class="fa fa-chevron-up"></i> <?php _e( 'Close', 'wp-cred' );?>
             </button>
-            <button class="button button-secondary cred-notification-action cred-notification-edit js-cred-notification-edit" 
+            <button class="button button-secondary cred-notification-action cred-notification-edit js-cred-notification-edit"
                 data-index="<?php echo esc_attr( $ii ); ?>"<?php if ( $is_notifications_generic_template ) { ?> style="display:none"<?php } ?>>
                 <i class="fa fa-edit"></i> <?php _e( 'Edit', 'wp-cred' );?>
             </button>
-            <a class='button button-secondary cred-notification-action cred-notification-delete' 
+            <a class='button button-secondary cred-notification-action cred-notification-delete'
                 data-cred-bind="{
                     event: 'click',
                     action: 'removeItem',
@@ -128,12 +140,12 @@ $is_notifications_generic_template = ( '__i__' === $ii );
     </div>
 
     <!-- BEGIN container -->
-    <div id="cred_notification_settings_panel-<?php echo esc_attr( $ii ); ?>" 
-                class='cred_notification_settings_panel cred_validation_section cred-notifications-settings-container js-cred-notifications-settings-container' 
+    <div id="cred_notification_settings_panel-<?php echo esc_attr( $ii ); ?>"
+                class='cred_notification_settings_panel cred_validation_section cred-notifications-settings-container js-cred-notifications-settings-container'
                 <?php if ( ! $is_notifications_generic_template ) { ?>style="display:none;"<?php } ?>>
 
-        <div  id="notification_validation_error-<?php echo esc_attr( $ii ); ?>" 
-            class="cred-notification cred-error cred-section-validation-message" 
+        <div  id="notification_validation_error-<?php echo esc_attr( $ii ); ?>"
+            class="cred-notification cred-error cred-section-validation-message"
             style="display:none">
             <p>
                 <i class="fa fa-warning"></i>
@@ -141,18 +153,18 @@ $is_notifications_generic_template = ( '__i__' === $ii );
             </p>
         </div>
 
-    <?php 
+    <?php
     if ( has_action( 'cred_admin_notification_fields_before' ) ) {
         /**
          * Action to extend the notifications GUI,
          * possibly with extra settings above the official ones.
-         * 
+         *
          * This will get deprecated and eventually replaced in a future version of Forms,
          * so please do not use it.
-         * 
+         *
          * @note Why would you pass the $ii counter here?
          */
-        do_action('cred_admin_notification_fields_before', $form, $ii, $notification); 
+        do_action('cred_admin_notification_fields_before', $form, $ii, $notification);
     }
     ?>
 
@@ -196,18 +208,18 @@ $is_notifications_generic_template = ( '__i__' === $ii );
     );
     ?>
 
-    <?php 
+    <?php
     if ( has_action( 'cred_admin_notification_fields_after' ) ) {
         /**
          * Action to extend the notifications GUI,
          * possibly with extra settings below the official ones.
-         * 
+         *
          * This will get deprecated and eventually replaced in a future version of Forms,
          * so please do not use it.
-         * 
+         *
          * @note Why would you pass the $ii counter here?
          */
-        do_action('cred_admin_notification_fields_after', $form, $ii, $notification); 
+        do_action('cred_admin_notification_fields_after', $form, $ii, $notification);
     }
     ?>
 

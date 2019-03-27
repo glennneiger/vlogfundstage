@@ -29,14 +29,14 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		'label_class'			=> '',
 		'output'				=> 'bootstrap'
 	);
-	
+
 	/**
 	 * @var string[]
 	 */
 	protected $required_atts = array(
 		'url_param', 'type', 'ancestor_type', 'ancestor_tree'
 	);
-	
+
 	/**
 	 * @var string[]
 	 */
@@ -52,87 +52,87 @@ class WPV_Shortcode_Control_Post_Ancestor {
 	 * @var string|null
 	 */
 	protected $user_content;
-	
+
 	/**
 	 * @var string[]
 	 */
 	protected $user_atts;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $shortcode;
-	
+
 	/**
 	 * @var WPV_Filter_Base
 	 */
 	protected $filter;
-	
+
 	/**
 	 * @var string[]
 	 */
 	protected $relationship_closest;
-	
+
 	/**
 	 * @var array
 	 */
 	protected $relationship_pieces;
-	
+
 	/**
 	 * @var array
 	 */
 	protected $relationship_tree;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $relationship_tree_ground;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $relationship_tree_roof;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $ancestor_data;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $url_param;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $orderby;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $order;
-	
+
 	/**
 	 * @var array
 	 */
 	protected $dependency_and_counters_data;
-	
+
 	/**
 	 * @var array
 	 */
 	protected $filter_options;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $style;
-	
+
 	/**
 	 * @var string[]
 	 */
 	protected $class_array;
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -157,53 +157,53 @@ class WPV_Shortcode_Control_Post_Ancestor {
 	public function get_value( $atts, $content = null ) {
 		$this->user_atts    = shortcode_atts( $this->shortcode_atts, $atts );
 		$this->user_content = $content;
-		
+
 		$filter_manager = WPV_Filter_Manager::get_instance();
 		$this->filter = $filter_manager->get_filter( Toolset_Element_Domain::POSTS, 'relationship' );
-		
+
 		if ( ! $this->filter->is_types_installed() ) {
 			return __( 'You need the Types plugin to render this custom search control.', 'wpv-views' );
 		}
-		
+
 		$this->relationship_closest = $this->filter->get_closest_related_to_returned_post_types();
-		
+
 		// Remove once ported
 		$this->user_atts['returned_pt_parents'] = implode( ',' , $this->relationship_closest );
-		
+
 		$this->user_atts['url_param'] = $this->filter->get_filter_data( 'url_param' );
 		$this->user_atts['ancestor_tree'] = $this->filter->get_filter_data( 'ancestors' );
-		
+
 		$format = $this->filter->get_filter_data( 'format' );
-		
+
 		if ( ! empty( $format ) ) {
 			$this->user_atts['format'] = $format;
 		}
-		
+
 		foreach ( $this->required_atts as $required_att ) {
 			if ( empty( $this->user_atts[ $required_att ] ) ) {
 				return sprintf( __( 'The %s attribute is missing.', 'wpv-views' ), $required_att );
 			}
 		}
-		
+
 		// Set basic data about the relationships tree (including roof and ground),
 		// and the current ancestor, plus output classes and styles
 		$this->set_data();
-		
+
 		if ( ! array_key_exists( $this->ancestor_data['type'], $this->relationship_tree ) ) {
 			return __( 'The ancestor_type argument refers to a post type that is not included in the relationship tree.', 'wpv-views' );
 		}
-		
+
 		if ( ! in_array( $this->relationship_tree_ground, $this->relationship_closest ) ) {
 			return __( 'The ancestors argument does not end with a valid post that is related for the returned post types on this View.', 'wpv-views' );
 		}
-		
+
 		// Orderby and order
 		if ( ! array_key_exists( $this->user_atts['orderby'], $this->allowed_orderby_values ) ) {
 			$this->user_atts['orderby'] = 'title';
 		}
 		$this->orderby = $this->allowed_orderby_values[ $this->user_atts['orderby'] ];
 		$this->order = ( 'DESC' == strtoupper( $this->user_atts['order'] ) ) ? 'DESC' : 'ASC';
-		
+
 		// URL parameter and extra classes
 		if ( $this->ancestor_data['type'] == $this->relationship_tree_ground ) {
 			$this->url_param = $this->user_atts['url_param'];
@@ -212,16 +212,16 @@ class WPV_Shortcode_Control_Post_Ancestor {
 			$this->url_param = $this->user_atts['url_param'] . '-' . $this->ancestor_data['type'];
 			$this->class_array[] = 'js-wpv-post-relationship-update';
 		}
-		
+
 		// Default label
 		if ( ! empty( $this->user_atts['default_label'] ) ) {
 			$aux_array = apply_filters( 'wpv_filter_wpv_get_rendered_views_ids', array() );
 			$view_name = get_post_field( 'post_name', end( $aux_array ) );
-			$this->user_atts['default_label'] = wpv_translate( 
+			$this->user_atts['default_label'] = wpv_translate(
 				$this->ancestor_data['type'] . '_default_label',
-				$this->user_atts['default_label'], 
-				false, 
-				'View ' . $view_name 
+				$this->user_atts['default_label'],
+				false,
+				'View ' . $view_name
 			);
 
 			$this->user_atts['default_label'] = wpv_translate(
@@ -250,7 +250,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				'View ' . $view_name
 			);
 		}
-		
+
 		// Filter options:
 		$this->filter_options = array();
 		if ( $this->ancestor_data['type'] == $this->relationship_tree_roof ) {
@@ -258,12 +258,12 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		} else {
 			$this->filter_options = $this->get_relationship_tree_item_options();
 		}
-		
+
 		// Dependency and counters are different
 		$this->setup_frontend_dependency_and_counters_data_with_cache();
-		
+
 		$output = '';
-		
+
 		// Lets try to keep output methods shared too
 		switch ( $this->user_atts['output'] ) {
 			case 'legacy':
@@ -273,11 +273,11 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				$output = $this->get_bootstrap_value();
 				break;
 		}
-		
+
 		$this->clear_data();
 		return $output;
 	}
-	
+
 	/**
 	 * Set shortcode basic data, including:
 	 * - Relationships tree, roof and ground.
@@ -289,25 +289,25 @@ class WPV_Shortcode_Control_Post_Ancestor {
 	protected function set_data() {
 		$this->relationship_pieces = explode( '>', $this->user_atts['ancestor_tree'] );
 		$this->relationship_tree = $this->filter->get_relationship_tree( $this->user_atts['ancestor_tree'] );
-		
+
 		$ancestors_keys = array_keys( $this->relationship_tree );
 		$this->relationship_tree_roof = $ancestors_keys[0];
 		$this->relationship_tree_ground = array_pop( $ancestors_keys );
-		
+
 		$ancestor_data = explode( '@', $this->user_atts['ancestor_type'] );
-		$this->ancestor_data = array_key_exists( $ancestor_data[0], $this->relationship_tree ) 
-			? $this->relationship_tree[ $ancestor_data[0] ] 
+		$this->ancestor_data = array_key_exists( $ancestor_data[0], $this->relationship_tree )
+			? $this->relationship_tree[ $ancestor_data[0] ]
 			: array(
 				'type' => '',
 				'relationship' => '',
 				'role' => '',
 				'role_target' => ''
 			);
-		
+
 		$this->class_array = explode( ' ', $this->user_atts['class'] );
 		$this->style = $this->user_atts['style'];
 	}
-	
+
 	/**
 	 * Get the posts to include in the ancestor roof selector.
 	 *
@@ -318,13 +318,13 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		$values_to_prepare = array();
 		// Adjust query for WPML support
 		$wpml_join = $wpml_where = "";
-		if ( 
-			$this->filter->is_wpml_installed_and_ready() 
+		if (
+			$this->filter->is_wpml_installed_and_ready()
 			&& apply_filters( 'wpml_is_translated_post_type', false, $this->ancestor_data['type'] )
 		) {
 			$wpml_current_language = apply_filters( 'wpml_current_language', null );
-			$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-			$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
+			$wpml_join = " JOIN {$wpdb->prefix}icl_translations icl_t ";
+			$wpml_where = " AND p.ID = icl_t.element_id AND icl_t.language_code = %s AND icl_t.element_type LIKE 'post_%' ";
 			$values_to_prepare[] = $wpml_current_language;
 		}
 		$values_to_prepare[] = $this->ancestor_data['type'];
@@ -332,15 +332,15 @@ class WPV_Shortcode_Control_Post_Ancestor {
 			$wpdb->prepare(
 				"SELECT p.ID, p.post_title
 				FROM {$wpdb->posts} p {$wpml_join}
-				WHERE p.post_status = 'publish' 
-				{$wpml_where} 
-				AND p.post_type = %s 
+				WHERE p.post_status = 'publish'
+				{$wpml_where}
+				AND p.post_type = %s
 				ORDER BY p.{$this->orderby} {$this->order}",
 				$values_to_prepare
 			)
 		);
 	}
-	
+
 	/**
 	 * Get the posts to include in any ancestor selector but the tree roof.
 	 *
@@ -354,7 +354,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		throw new RuntimeException( 'This method needs to be implemented in a subclass' );
 		return array();
 	}
-	
+
 	/**
 	 * Get the cache target data for search dependency and counters.
 	 *
@@ -367,7 +367,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 	protected function set_target_for_cache_extended_for_post_relationship() {
 		throw new RuntimeException( 'This method needs to be implemented in a subclass' );
 	}
-	
+
 	/**
 	 * Calculate the needed data to be used by dependency and counters, including auxiliar queries.
 	 *
@@ -384,7 +384,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 			'relationship_cache' => array(),
 			'auxiliar_query_count' => false
 		);
-		
+
 		if (
 			isset( $object_settings['dps'] )
 			&& is_array( $object_settings['dps'] )
@@ -403,15 +403,15 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		) {
 			$this->dependency_and_counters_data['counters'] = 'enabled';
 		}
-		
-		$this->dependency_and_counters_data['use_query_cache'] = 
-			( 
-				'enabled' == $this->dependency_and_counters_data['dependency'] 
-				|| 'enabled' == $this->dependency_and_counters_data['counters'] 
-			) 
-			? 'enabled' 
+
+		$this->dependency_and_counters_data['use_query_cache'] =
+			(
+				'enabled' == $this->dependency_and_counters_data['dependency']
+				|| 'enabled' == $this->dependency_and_counters_data['counters']
+			)
+			? 'enabled'
 			: 'disabled';
-		
+
 		if ( 'disabled' === $this->dependency_and_counters_data['use_query_cache'] ) {
 			return;
 		}
@@ -430,7 +430,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		if ( isset( $object_settings['dps'][ 'empty_' . $empty_action_type ] ) ) {
 			$this->dependency_and_counters_data['empty_action'] = $object_settings['dps'][ 'empty_' . $empty_action_type ];
 		}
-		
+
 		if ( ! $this->is_ancestor_filter_submitted() ) {
 			// This is when there is no value selected
 			// And will return the natural cache
@@ -461,9 +461,9 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				is_array( $aux_cache_query->posts )
 				&& ! empty( $aux_cache_query->posts )
 			) {
-				WPV_Cache::generate_cache_extended_for_post_relationship( 
-					$aux_cache_query->posts, 
-					$this->set_target_for_cache_extended_for_post_relationship() 
+				WPV_Cache::generate_cache_extended_for_post_relationship(
+					$aux_cache_query->posts,
+					$this->set_target_for_cache_extended_for_post_relationship()
 				);
 				$this->dependency_and_counters_data['auxiliar_query_count'] = count( $aux_cache_query->posts );
 			} else {
@@ -480,7 +480,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		WPV_Cache::generate_post_relationship_tree_cache( $ancestor_tree_array, $calculate_counters );
 		$this->dependency_and_counters_data['relationship_cache'] = WPV_Cache::$stored_relationship_cache;
 	}
-	
+
 	/**
 	 * Check whether the current search filter has been submitted.
 	 *
@@ -505,7 +505,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Clear any shortcode stored data.
 	 *
@@ -516,9 +516,9 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		$this->relationship_tree = array();
 		$this->relationship_tree_ground = null;
 		$this->relationship_tree_roof = null;
-		
+
 	}
-	
+
 	/**
 	 * Get the shortcode value for the legacy output.
 	 *
@@ -528,7 +528,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 	 */
 	protected function get_legacy_value() {
 		$return = '';
-		
+
 		switch ( $this->user_atts['type'] ) {
 			case 'select':
 			case 'multi-select':
@@ -540,16 +540,16 @@ class WPV_Shortcode_Control_Post_Ancestor {
 					} else {
 						if ( strpos( $this->user_atts['default_label'], '%%COUNT%%' ) !== false ) {
 							if ( $this->dependency_and_counters_data['auxiliar_query_count'] !== false ) {
-								$default_label = str_replace( 
-									'%%COUNT%%', 
-									$this->dependency_and_counters_data['auxiliar_query_count'], 
-									$this->user_atts['default_label'] 
+								$default_label = str_replace(
+									'%%COUNT%%',
+									$this->dependency_and_counters_data['auxiliar_query_count'],
+									$this->user_atts['default_label']
 								);
 							} else {
 								$current_post_query = apply_filters( 'wpv_filter_wpv_get_post_query', null );
-								$this->user_atts['default_label'] = str_replace( 
-									'%%COUNT%%', 
-									$current_post_query->found_posts, $this->user_atts['default_label'] 
+								$this->user_atts['default_label'] = str_replace(
+									'%%COUNT%%',
+									$current_post_query->found_posts, $this->user_atts['default_label']
 								);
 							}
 						}
@@ -557,13 +557,13 @@ class WPV_Shortcode_Control_Post_Ancestor {
 					}
 				}
 				// Create the basic $element that will hold the wpv_form_control attributes
-				$element = array( 
+				$element = array(
 					'field'	=> array(
 						'#type'			=> 'select',
-						'#attributes'	=> array( 
-							'style'					=> $this->user_atts['style'], 
-							'class'					=> implode( ' ', $this->class_array ), 
-							'data-currentposttype'	=> $this->ancestor_data['type'] 
+						'#attributes'	=> array(
+							'style'					=> $this->user_atts['style'],
+							'class'					=> implode( ' ', $this->class_array ),
+							'data-currentposttype'	=> $this->ancestor_data['type']
 						),
 						'#inline'		=> true
 					)
@@ -572,10 +572,10 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				$element['field']['#default_value'] = array( 0 );
 				$element['field']['#name'] = $this->url_param . '[]';
 				if ( $this->ancestor_data['type'] == $this->relationship_tree_ground ) {
-					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type'] 
+					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type']
 						. '_' . $this->user_atts['url_param'];
 				} else {
-					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type'] 
+					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type']
 						. '_' . $this->user_atts['url_param'] . '_' . $this->ancestor_data['type'];
 				}
 				if ( isset( $_GET[ $this->url_param ] ) ) {
@@ -593,35 +593,35 @@ class WPV_Shortcode_Control_Post_Ancestor {
 						'#inline'	=> true,
 						'#after'	=> '<br />'
 					);
-					if ( 
-						'enabled' === $this->dependency_and_counters_data['dependency']  
-						|| 'enabled' === $this->dependency_and_counters_data['counters'] 
+					if (
+						'enabled' === $this->dependency_and_counters_data['dependency']
+						|| 'enabled' === $this->dependency_and_counters_data['counters']
 					) {
 						if (
 							isset( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ] )
 							&& is_array( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ] )
 						) {
-							if ( 
-								'enabled' === $this->dependency_and_counters_data['counters'] 
+							if (
+								'enabled' === $this->dependency_and_counters_data['counters']
 								&& isset( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'] )
 							) {
-								$options[ $pa_item->ID ]['#title'] = str_replace( 
-									'%%COUNT%%', 
-									$this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'], 
-									$options[ $pa_item->ID ]['#title'] 
+								$options[ $pa_item->ID ]['#title'] = str_replace(
+									'%%COUNT%%',
+									$this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'],
+									$options[ $pa_item->ID ]['#title']
 								);
 							}
 						} else {
 							if ( 'enabled' === $this->dependency_and_counters_data['counters'] ) {
-								$options[ $pa_item->ID ]['#title'] = str_replace( 
-									'%%COUNT%%', 
-									'0', 
-									$options[ $pa_item->ID ]['#title'] 
+								$options[ $pa_item->ID ]['#title'] = str_replace(
+									'%%COUNT%%',
+									'0',
+									$options[ $pa_item->ID ]['#title']
 								);
 							}
-							if ( 
-								'enabled' === $this->dependency_and_counters_data['dependency']  
-								&& ! in_array( $pa_item->ID, $element['field']['#default_value'] ) 
+							if (
+								'enabled' === $this->dependency_and_counters_data['dependency']
+								&& ! in_array( $pa_item->ID, $element['field']['#default_value'] )
 							) {
 								$options[ $pa_item->ID ]['#disable'] = 'true';
 								$options[ $pa_item->ID ]['#labelclass'] = 'wpv-parametric-disabled';
@@ -634,16 +634,16 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				}
 				$element['field']['#options'] = $options;
 				// If there are no options and is multi-select, break NOTE this break is for hide, maybe disable, we will see
-				if ( 
-					$this->user_atts['type'] == 'multi-select' 
-					&& count( $options ) == 0 
+				if (
+					$this->user_atts['type'] == 'multi-select'
+					&& count( $options ) == 0
 				) {
 				//	break;
 				}
 				// If there is only one option for select or none for multi-select, disable this form control NOTE review this
-				if ( 
-					count( $options ) == 1 
-					&& $this->user_atts['type'] == 'select' 
+				if (
+					count( $options ) == 1
+					&& $this->user_atts['type'] == 'select'
 				) {
 					$element['field']['#attributes']['disabled'] = 'disabled';
 				}
@@ -657,17 +657,17 @@ class WPV_Shortcode_Control_Post_Ancestor {
 			case 'checkboxes':
 				$options = array();
 				// Create the basic $element that will hold the wpv_form_control attributes
-				$element = array( 
+				$element = array(
 					'field'	=> array(
 						'#type'			=> $this->user_atts['type'],
-						'#attributes'	=> array( 
-							'style' => $this->user_atts['style'], 
-							'class' => implode( ' ', $this->class_array ), 
+						'#attributes'	=> array(
+							'style' => $this->user_atts['style'],
+							'class' => implode( ' ', $this->class_array ),
 						),
 						'#inline'		=> true,
 						'#before'		=> '<div class="wpcf-checkboxes-group">', //we need to wrap them for js purposes
 						'#after'		=> '</div>'
-					) 
+					)
 				);
 				// Build the name, id and default values depending whether we are dealing with a real parent or not
 				$element['field']['#default_value'] = array( -1 );
@@ -676,10 +676,10 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				}
 				$element['field']['#name'] = $this->url_param . '[]';
 				if ( $this->ancestor_data['type'] == $this->relationship_tree_ground ) {
-					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type'] 
+					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type']
 						. '_' . $this->user_atts['url_param'];
 				} else {
-					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type'] 
+					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type']
 						. '_' . $this->user_atts['url_param'] . '_' . $this->ancestor_data['type'];
 				}
 				// Security check: this must always be an array!
@@ -704,31 +704,31 @@ class WPV_Shortcode_Control_Post_Ancestor {
 						'#labelclass'		=> $this->user_atts['label_class'],
 						'#labelstyle'		=> $this->user_atts['label_style']
 					);
-					if ( 
-						'enabled' === $this->dependency_and_counters_data['dependency']  
-						|| 'enabled' === $this->dependency_and_counters_data['counters'] 
+					if (
+						'enabled' === $this->dependency_and_counters_data['dependency']
+						|| 'enabled' === $this->dependency_and_counters_data['counters']
 					) {
 						if (
 							isset( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ] )
 							&& is_array( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ] )
 						) {
-							if ( 
-								'enabled' === $this->dependency_and_counters_data['counters'] 
+							if (
+								'enabled' === $this->dependency_and_counters_data['counters']
 								&& isset( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'] )
 							) {
-								$options[ $pa_item->ID ]['#title'] = str_replace( 
-									'%%COUNT%%', 
-									$this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'], 
-									$options[ $pa_item->ID ]['#title'] 
+								$options[ $pa_item->ID ]['#title'] = str_replace(
+									'%%COUNT%%',
+									$this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'],
+									$options[ $pa_item->ID ]['#title']
 								);
 							}
 						} else {
 							if ( 'enabled' === $this->dependency_and_counters_data['counters'] ) {
 								$options[ $pa_item->ID ]['#title'] = str_replace( '%%COUNT%%', '0', $options[ $pa_item->ID ]['#title'] );
 							}
-							if ( 
-								'enabled' === $this->dependency_and_counters_data['dependency'] 
-								& ! in_array( $pa_item->ID, $element['field']['#default_value'] ) 
+							if (
+								'enabled' === $this->dependency_and_counters_data['dependency']
+								& ! in_array( $pa_item->ID, $element['field']['#default_value'] )
 							) {
 								$options[ $pa_item->ID ]['#attributes']['#disabled'] = 'true';
 								$options[ $pa_item->ID ]['#labelclass'] .= ' wpv-parametric-disabled';
@@ -746,51 +746,51 @@ class WPV_Shortcode_Control_Post_Ancestor {
 			case 'radio':
 			case 'radios':
 				// Create the basic $element that will hold the wpv_form_control attributes
-				$element = array( 
+				$element = array(
 					'field'	=> array(
 						'#type'			=> 'radios',
-						'#attributes'	=> array( 
-							'style'					=> $this->user_atts['style'], 
-							'class'					=> implode( ' ', $this->class_array ), 
-							'data-currentposttype'	=> $this->ancestor_data['type'], 
-							'data-triggerer'		=> 'rel-relationship' 
+						'#attributes'	=> array(
+							'style'					=> $this->user_atts['style'],
+							'class'					=> implode( ' ', $this->class_array ),
+							'data-currentposttype'	=> $this->ancestor_data['type'],
+							'data-triggerer'		=> 'rel-relationship'
 						),
 						'#inline'		=> true
 					)
 				);
 				$options = array();
 				if ( ! empty( $this->user_atts['default_label'] ) ) {
-					
+
 					if ( strpos( $this->user_atts['default_label'], '%%COUNT%%' ) !== false ) {
 						if ( $this->dependency_and_counters_data['auxiliar_query_count'] !== false ) {
-							$this->user_atts['default_label'] = str_replace( 
-								'%%COUNT%%', 
-								$this->dependency_and_counters_data['auxiliar_query_count'], 
-								$this->user_atts['default_label'] 
+							$this->user_atts['default_label'] = str_replace(
+								'%%COUNT%%',
+								$this->dependency_and_counters_data['auxiliar_query_count'],
+								$this->user_atts['default_label']
 							);
 						} else {
 							$current_post_query = apply_filters( 'wpv_filter_wpv_get_post_query', null );
-							$this->user_atts['default_label'] = str_replace( 
-								'%%COUNT%%', 
-								$current_post_query->found_posts, 
-								$this->user_atts['default_label'] 
+							$this->user_atts['default_label'] = str_replace(
+								'%%COUNT%%',
+								$current_post_query->found_posts,
+								$this->user_atts['default_label']
 							);
 						}
 					}
-					
+
 					$options[ $this->user_atts['default_label'] ] = array(
 						'#title'	=> $this->user_atts['default_label'],
 						'#value'	=> 0,
 						'#inline'	=> true,
 						'#after'	=> '<br />'
 					);
-					if ( 
-						$this->ancestor_data['type'] == $this->relationship_tree_ground 
-						&& 'enabled' === $this->dependency_and_counters_data['dependency'] 
-						&& count( $this->filter_options ) == 0 
+					if (
+						$this->ancestor_data['type'] == $this->relationship_tree_ground
+						&& 'enabled' === $this->dependency_and_counters_data['dependency']
+						&& count( $this->filter_options ) == 0
 						&& (
-							! isset( $_GET[ $this->url_param ] ) 
-							|| $_GET[ $this->url_param ] != '' 
+							! isset( $_GET[ $this->url_param ] )
+							|| $_GET[ $this->url_param ] != ''
 						)
 					) {
 						$options[ $this->user_atts['default_label'] ]['#disable'] = 'true';
@@ -800,17 +800,17 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				// Build the name, id and default values depending whether we are dealing with a real parent or not
 				$element['field']['#default_value'] = 0;
 				$element['field']['#name'] = $this->url_param;
-				if ( 
-					isset( $_GET[ $this->url_param ] ) 
-					&& $_GET[ $this->url_param ] != 0 
+				if (
+					isset( $_GET[ $this->url_param ] )
+					&& $_GET[ $this->url_param ] != 0
 				) {
 					$element['field']['#default_value'] = $_GET[ $this->url_param ];
 				}
 				if ( $this->ancestor_data['type'] == $this->relationship_tree_ground  ) {
-					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type'] 
+					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type']
 						. '_' . $this->user_atts['url_param'];
 				} else {
-					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type'] 
+					$element['field']['#id'] = 'wpv_control_' . $this->user_atts['type']
 						. '_' . $this->user_atts['url_param'] . '_' . $this->ancestor_data['type'];
 				}
 				// Security check: this must always be a string!
@@ -827,31 +827,31 @@ class WPV_Shortcode_Control_Post_Ancestor {
 						'#labelclass'	=> $this->user_atts['label_class'],
 						'#labelstyle'	=> $this->user_atts['label_style']
 					);
-					if ( 
-						'enabled' === $this->dependency_and_counters_data['dependency'] 
-						|| 'enabled' === $this->dependency_and_counters_data['counters'] 
+					if (
+						'enabled' === $this->dependency_and_counters_data['dependency']
+						|| 'enabled' === $this->dependency_and_counters_data['counters']
 					) {
 						if (
 							isset( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ] )
 							&& is_array( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ] )
 						) {
-							if ( 
-								'enabled' === $this->dependency_and_counters_data['counters'] 
+							if (
+								'enabled' === $this->dependency_and_counters_data['counters']
 								&& isset( $this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'] )
 							) {
-								$options[ $pa_item->ID ]['#title'] = str_replace( 
-									'%%COUNT%%', 
-									$this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'], 
-									$options[ $pa_item->ID ]['#title'] 
+								$options[ $pa_item->ID ]['#title'] = str_replace(
+									'%%COUNT%%',
+									$this->dependency_and_counters_data['relationship_cache'][ $pa_item->ID ]['count'],
+									$options[ $pa_item->ID ]['#title']
 								);
 							}
 						} else {
 							if ( 'enabled' === $this->dependency_and_counters_data['counters'] ) {
 								$options[ $pa_item->ID ]['#title'] = str_replace( '%%COUNT%%', '0', $options[ $pa_item->ID ]['#title'] );
 							}
-							if ( 
-								'enabled' === $this->dependency_and_counters_data['dependency'] 
-								&& $pa_item->ID != $element['field']['#default_value'] 
+							if (
+								'enabled' === $this->dependency_and_counters_data['dependency']
+								&& $pa_item->ID != $element['field']['#default_value']
 							) {
 								$options[ $pa_item->ID ]['#disable'] = 'true';
 								$options[ $pa_item->ID ]['#labelclass'] .= ' wpv-parametric-disabled';
@@ -876,7 +876,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 		}
 		return $return;
 	}
-	
+
 	/**
 	 * Get the shortcode value for the bootstrap output.
 	 *
@@ -885,7 +885,7 @@ class WPV_Shortcode_Control_Post_Ancestor {
 	 * @since m2m
 	 */
 	protected function get_bootstrap_value() {
-		
+
 		$walker_args = array(
 			'name'				=> $this->url_param,
 			'selected'			=> array( 0 ),
@@ -913,18 +913,18 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				$walker_args['selected'] = array( $_GET[ $this->url_param ] );
 			}
 		}
-		
+
 		$return = '';
-		
+
 		switch ( $this->user_atts['type'] ) {
 			case 'select':
 			case 'multi-select':
 				$select_args = array(
-					'id'	=> 'wpv_control_' . $this->user_atts['type'] 
+					'id'	=> 'wpv_control_' . $this->user_atts['type']
 						. '_' . $this->user_atts['url_param'] . '_' . $this->ancestor_data['type'],
 					'name'	=> $walker_args['name'],
 					'class'	=> ( empty( $walker_args['class'] ) ) ? array() : explode( ' ', $walker_args['class'] ),
-					'data-currentposttype'	=> $this->ancestor_data['type'] 
+					'data-currentposttype'	=> $this->ancestor_data['type']
 				);
 
 				$minimum_options_count_to_disable = 0;
@@ -1019,8 +1019,8 @@ class WPV_Shortcode_Control_Post_Ancestor {
 				return $return;
 				break;
 		}
-		
+
 		return '';
 	}
-	
+
 }

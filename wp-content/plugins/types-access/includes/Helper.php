@@ -69,7 +69,7 @@ final class Access_Helper
         add_filter( 'wpv_custom_inner_shortcodes',	array( __CLASS__, 'wpv_access_string_in_custom_inner_shortcodes' ) );
 
 		add_action( 'otg_access_action_access_roles_updated', array( __CLASS__, 'otg_access_reload_access_roles' ) );
-        
+
     }
 
 	/**
@@ -283,7 +283,7 @@ final class Access_Helper
                 $wpcf_access->settings->types['_archive_custom_read_errors_value'][ $post_type ]['permissions']['read'][ $role ] = $error_id;
                 $update_user = true;
             }
-            
+
             if ( $update_user ) {
                 if ( $role != 'guest' ) {
                     $current_user->roles[0] = $role;
@@ -530,7 +530,7 @@ final class Access_Helper
         $wpcf_access->wpml_installed_groups	= false;
 		$wpcf_access->active_languages		= array();
 		$wpcf_access->current_language		= null;
-		$wpcf_access->language_permissions	= array();		
+		$wpcf_access->language_permissions	= array();
 		// API
 		add_filter( 'otg_access_filter_is_wpml_installed', array( __CLASS__, 'otg_access_is_wpml_installed' ) );
 	}
@@ -582,11 +582,11 @@ final class Access_Helper
 	 *
 	 */
 	public static function wpcf_access_late_plugins_loaded() {
-		
+
 		global $wpcf_access;
 
 		$model = TAccess_Loader::get('MODEL/Access');
-        
+
         if ( ! isset( $wp_roles ) ) {
             $wp_roles = new WP_Roles();
 		}
@@ -628,7 +628,7 @@ final class Access_Helper
         // get_user_locale() was introduced in WordPress 4.7
         $locale = ( function_exists('get_user_locale') ? get_user_locale() : get_locale() );
         TAccess_Loader::loadLocale( 'wpcf-access', 'access-' . $locale . '.mo' );
-        
+
         // Load admin code
         if ( is_admin() ) {
             /*
@@ -645,7 +645,7 @@ final class Access_Helper
         add_action( 'init', array( __CLASS__, 'wpcf_access_get_taxonomies_shared_init' ), 19 );
 
         if ( $wpcf_access->wpml_installed ){
-            self::wpcf_load_wpml_groups_caps();   
+            self::wpcf_load_wpml_groups_caps();
         }
         TAccess_Loader::load('CLASS/Ajax');
 
@@ -657,7 +657,7 @@ final class Access_Helper
         add_filter('wpcf_taxonomy_data', array(__CLASS__,  'wpcf_access_init_tax_rules'), 10, 3);
         // WATCHOUT:  this hook callback does not exist
         //add_action('wpcf_taxonomy_registered', array(__CLASS__, 'wpcf_access_collect_tax_rules'));
-        
+
 
 	   // @toto whouser WTF; we set 3 arguments and we pass only one!!!! Smells!!!
         add_filter('types_access_check', array(__CLASS__,  'wpcf_access_filter_rules'), 15, 3);
@@ -665,17 +665,17 @@ final class Access_Helper
 
         /*
          * Check functions.
-         * 
+         *
          * 'user_has_cap' is main WP filter we use to filter capability check.
          * All changes are done on-the-fly and per call. No caching.
-         * 
+         *
          * WP accepts $allcaps array of capabilities returned.
          * It?s actually property of $WP_User->allcaps.
          *
          * TODO we should use other way to assign capabilities
          * This is runing on each current_user_can() call and it might happen docens of times per pagenow
          * At least we have added caching per cap
-         * 
+         *
          */
 
 
@@ -692,7 +692,7 @@ final class Access_Helper
             add_action('admin_footer', array(__CLASS__,  'wpcf_access_dependencies_render_js'));
         }
 
-        
+
         add_filter('types_access_dependencies', array(__CLASS__,  'wpcf_access_dependencies_filter'));
 
 		/**
@@ -1154,13 +1154,13 @@ final class Access_Helper
     }
 
 
-	
+
 	/**
 	* ----------------------------
 	* WPML related methods
 	* ----------------------------
 	*/
-    
+
     /*
         Replace Translation management permissions with Access settings
     */
@@ -1198,9 +1198,9 @@ final class Access_Helper
      */
     public static function otg_access_filter_wpml_icon( $icon, $post_id, $lang, $trid ){
         $status = self::otg_access_wpml_check_access_by_post_id( $post_id, $lang);
-        if ( 
-			! $status['edit_any'] 
-			&& ! $status['edit_own'] 
+        if (
+			! $status['edit_any']
+			&& ! $status['edit_own']
 		) {
             if ( $icon == 'add_translation.png' ){
                 $icon = 'add_translation_disabled.png';
@@ -1225,7 +1225,7 @@ final class Access_Helper
         }
         return $text;
     }
-    
+
     /*
      *
      */
@@ -1235,41 +1235,41 @@ final class Access_Helper
              return $languages;
         }
         $post_id = $post_id = self::wpcf_access_get_current_page();
-        
+
         if ( empty($post_type) && !empty($typenow) ){
             $post_type = $typenow;
         }
-        
+
         if ( empty($post_type) && !empty($post_id) ){
             $post_type = get_post_field( 'post_type', $post_id );
         }
-        
+
         if ( empty($post_type) && isset($_GET['post_type']) ){
             $post_type = $_GET['post_type'];
         }
-        
+
         if ( empty($post_type) ){
             $post_type = 'post';
         }
-        
-        
+
+
         if ( !isset($wpcf_access->settings->types[$post_type])){
             return $languages;
         }
-        
+
         $access_settings = $wpcf_access->language_permissions;
         if ( isset($access_settings[$post_type]) && !empty($access_settings[$post_type]) ){
-            $languages_permissions = $access_settings[$post_type];            
+            $languages_permissions = $access_settings[$post_type];
             foreach( $languages_permissions as $language => $language_permissions ){
                 $status = self::otg_access_wpml_check_access_by_post_id( '', $language, $post_type, array('read'=>true));
                 if ( !$status['read'] ){
                     unset($languages[$language]);
                 }
             }
-        }       
+        }
         return $languages;
     }
-    
+
     /*
     * Check WPML permissions by post id
     */
@@ -1429,7 +1429,14 @@ final class Access_Helper
      * Get post type name by plural name
      */
     public static function get_post_type_singular_by_plural( $post_type_name ) {
-        $model = TAccess_Loader::get( 'MODEL/Access' );
+	    //Default post types
+	    if ( $post_type_name == 'posts' ) {
+		    return 'post';
+	    }
+	    if ( $post_type_name == 'pages' ) {
+		    return 'page';
+	    }
+	    $model = TAccess_Loader::get( 'MODEL/Access' );
         $_post_types = $model->getPostTypes();
         foreach ( $_post_types as $post_type => $post_type_data ) {
             if (
@@ -1518,19 +1525,19 @@ final class Access_Helper
         $action = $args['action'];
         $post_id =  isset($args['post_id']) ? $args['post_id'] : '';
         $post_type =  isset($args['post_type']) ? $args['post_type'] : '';
-        
+
         if ( empty($post_type) && !empty($typenow) ){
             $post_type = $typenow;
         }
-        
+
         if ( empty($post_id) && isset($_GET['post']) ){
             $post_id = $_GET['post'];
         }
-        
+
         if ( empty($post_type) && !empty($post_id) ){
             $post_type = get_post_field( 'post_type', $post_id );
         }
-        
+
         if ( empty($post_type) && isset($_GET['post_type']) ){
             $post_type = $_GET['post_type'];
         }
@@ -1541,7 +1548,7 @@ final class Access_Helper
                 $post_type = $post->post_type;
             }
         }
-        
+
         if ( empty($post_type) ){
             $post_type = 'post';
         }
@@ -1597,17 +1604,17 @@ final class Access_Helper
     }
 
 	/*
-	 * Check if user have media permission 
+	 * Check if user have media permission
 	*/
 	public static function wpcf_access_check_if_user_can_do_media( $post_type = 'attachment', $action = 'read' ){
 		global $current_user, $wpcf_access;
         $settings_access = $wpcf_access->settings->types;
-		
+
 		if ( !isset($settings_access[$post_type]) ){
-			return true;	
+			return true;
 		}
 		if ( $settings_access[$post_type]['mode'] == 'not_managed' ){
-			return true;	
+			return true;
 		}
 
 		$role = self::wpcf_get_current_logged_user_role();
@@ -1617,11 +1624,11 @@ final class Access_Helper
 		}
 
 		if ( in_array($role, $settings_access[$post_type]['permissions'][$action]['roles']) !== FALSE ){
-			return true;	
+			return true;
 		}else{
-			return false;	
+			return false;
 		}
-		
+
 	}
 
 	/*
@@ -1638,7 +1645,7 @@ final class Access_Helper
 		$user_can_read = self::wpcf_access_check_if_user_can_do_media( 'attachment', 'read' );
 		if ( !$user_can_edit_own ){
 			remove_submenu_page( 'upload.php', 'media-new.php' );
-			add_action('wp_handle_upload_prefilter',array(__CLASS__,'wpcf_access_disable_media_upload'),1);	
+			add_action('wp_handle_upload_prefilter',array(__CLASS__,'wpcf_access_disable_media_upload'),1);
 		}
 		if ( !$user_can_read ){
             global $menu;
@@ -1647,7 +1654,7 @@ final class Access_Helper
             }
 			remove_action( 'media_buttons', 'media_buttons' );
 		}
-		
+
 		if ( $_SERVER['SCRIPT_NAME'] == '/wp-admin/upload.php' ) {
 			if ( !$user_can_read ){
 				wp_redirect( get_admin_url() ); exit;
@@ -1666,7 +1673,7 @@ final class Access_Helper
      */
 	public static function wpcf_access_show_only_user_media( $query ){
 		if ( $query->query['post_type'] === 'attachment' ){
-			global $user_ID; 
+			global $user_ID;
 	        $query->set('author',  $user_ID);
 		}
         return $query;
@@ -1680,7 +1687,7 @@ final class Access_Helper
 		$file['error'] = __('You have no access to upload files', 'wpcf-access');
 	  	return $file;
 	}
-	
+
 	/*
 	 * Show public preview
 	 */
@@ -1771,13 +1778,13 @@ final class Access_Helper
         }
         return $items;
     }
-    
+
     /*
 	 * Add group permissions to feeds
 	 */
 	public static function wpcf_access_set_feed_permissions( $query ){
 		if ( isset($query['feed']) ){
-           
+
             global $current_user, $wpcf_access;
             $role = self::wpcf_get_current_logged_user_role();
             if ( $role == 'administrator' ){
@@ -1806,40 +1813,40 @@ final class Access_Helper
 
 	/*
 	 * Access shortcode: toolset_access
-	 * 
+	 *
 	 * Description: Set access to part of content in posts/pages/content templates/views
-	 * 
+	 *
 	 * Parameters:
 	 * 'role' => List of roles separated by comma
-	 * 'operator' => 'allow|deny' 
+	 * 'operator' => 'allow|deny'
 	 * allow - show content for only listed roles
 	 * deny - deny content for listed roles, all other roles will see this content
 	 * 'raw' => "false|true", default false
-	 * 
+	 *
 	 * Note: Roles can be uppercase/lowercase
 	 * Note: Shortcodes can be used inside toolset_access
-	 * 
+	 *
 	 * Example: [toolset_access role="Administrator,guest" operator="allow"]Content here[/toolset_access]
-	 * 
+	 *
 	*/
 	public static function wpcf_access_create_shortcode_toolset_access( $atts, $content ){
-		 extract( 
-			shortcode_atts( 
+		 extract(
+			shortcode_atts(
 				array(
 			      'role'		=> '',
 			      'operator'	=> 'allow',
 			      'raw'			=> 'false'
-				), 
-				$atts 
-			) 
+				),
+				$atts
+			)
 		);
-		 
+
 		 if ( empty($content) ){
-		 	return;	
+		 	return;
 		 }
-		 
+
 		 if ( empty($role) ){
-		 	return;	
+		 	return;
 		 }
 
 		global $wp_roles;
@@ -1847,81 +1854,103 @@ final class Access_Helper
         $received_roles_normal = explode(',', strtolower($role) );
 		$roles = $wp_roles->roles;
 		$recived_roles_fixed = array();
-		foreach ($roles as $levels => $roles_data) 
+		foreach ($roles as $levels => $roles_data)
         {
         	if ( in_array($roles_data['name'], $received_roles) || in_array($roles_data['name'], $received_roles_normal) ){
-        		$recived_roles_fixed[] = $levels;	
+        		$recived_roles_fixed[] = $levels;
 			}
 			if ( in_array($levels, $received_roles) ){
-        		$recived_roles_fixed[] = $levels;	
+        		$recived_roles_fixed[] = $levels;
 			}
 		}
 		if ( in_array('Guest', $received_roles) || in_array('guest', $received_roles_normal) ){
-        		$recived_roles_fixed[] = 'guest';	
+        		$recived_roles_fixed[] = 'guest';
 		}
 		$current_role = self::wpcf_get_current_logged_user_role();
-		
+
 		if ( in_array($current_role, $recived_roles_fixed) ){
 			if ( $operator == 'allow' ){
-				return self::wpcf_access_do_shortcode_content( $content, $raw );	
-		 	}		
+				return self::wpcf_access_do_shortcode_content( $content, $raw );
+		 	}
 		}else{
 			if ( $operator == 'deny' ){
-				return self::wpcf_access_do_shortcode_content( $content, $raw );	
-		 	}	
+				return self::wpcf_access_do_shortcode_content( $content, $raw );
+		 	}
 		}
-		
+
 	}
-	
+
 	/*
-	 * Add filters to shortcode content 
-	 * 
+	 * Add filters to shortcode content
+	 *
 	*/
-	public static function wpcf_access_do_shortcode_content( $content, $raw ) 
+	public static function wpcf_access_do_shortcode_content( $content, $raw )
     {
     	if ( function_exists( 'WPV_wpcf_record_post_relationship_belongs' ) ) {
 			$content = WPV_wpcf_record_post_relationship_belongs( $content );
-		}		
-    	
-		
+		}
+
+
 		if ( class_exists( 'WPV_template' ) ) {
 			global $WPV_templates;
 			$content = $WPV_templates->the_content($content);
 		}
-		
+
 		if ( isset( $GLOBALS['wp_embed'] ) ) {
 			global $wp_embed;
 			$content = $wp_embed->run_shortcode($content);
 			$content = $wp_embed->autoembed($content);
-		}	
-    		
+		}
+
     	if ( function_exists( 'wpv_resolve_internal_shortcodes' ) ) {
 			$content = wpv_resolve_internal_shortcodes($content);
 		}
 		if ( function_exists( 'wpv_resolve_wpv_if_shortcodes' ) ) {
 			$content = wpv_resolve_wpv_if_shortcodes($content);
 		}
-		
+
 
 		$content = convert_smilies($content);
 		//Enable wpautop if raw = false
 		if ( $raw == 'false' ){
 			$content = wpautop($content);
-		}	
-		
+		}
+
 		$content = shortcode_unautop($content);
 		$content = prepend_attachment($content);
-		
+
 
 		$content = do_shortcode($content);
 		$content = capital_P_dangit($content);
-    	return $content;	
+    	return $content;
 	}
-    	
+
+	/**
+	 * Check whether the Access metabox should be included in the current post type edit page.
+	 *
+	 * @param string $post_type
+	 * @return boolean
+	 * @since 2.6
+	 */
+	public static function is_metabox_excluded_by_post_type( $post_type ) {
+		if ( 'attachment' === $post_type ) {
+			return true;
+		}
+
+		$toolset_post_type_exclude = new Toolset_Post_Type_Exclude_List();
+		$toolset_post_type_exclude_list = $toolset_post_type_exclude->get();
+
+		return in_array( $post_type, $toolset_post_type_exclude_list, true );
+	}
+
 	public static function wpcf_access_select_group_metabox_files() {
 		global $post, $pagenow;
 
-		if ( $pagenow === 'post.php' && isset( $post->post_type ) && $post->post_type != 'attachment' ) {
+		if (
+			$pagenow === 'post.php'
+			&& isset( $post->post_type )
+			&& ! Access_Helper::is_metabox_excluded_by_post_type( $post->post_type )
+		) {
             TAccess_Loader::loadAsset( 'SCRIPT/wpcf-access-post', 'wpcf-access' );
             TAccess_Loader::loadAsset( 'STYLE/wpcf-access-post', 'wpcf-access' );
 			wp_enqueue_style( 'toolset-notifications-css' );
@@ -1931,10 +1960,15 @@ final class Access_Helper
     /**
      *
      */
-    public static function wpcf_access_select_group_metabox( ) 
+    public static function wpcf_access_select_group_metabox( )
     {
     	global $post, $wp_version, $pagenow;
-        if ( isset( $post ) && is_object( $post ) && $post->ID != '' && $post->post_type != 'attachment' ){
+        if (
+			isset( $post )
+			&& is_object( $post )
+			&& $post->ID != ''
+			&& ! Access_Helper::is_metabox_excluded_by_post_type( $post->post_type )
+		) {
 			if ( current_user_can('manage_options') || current_user_can('access_change_post_group') || current_user_can('access_create_new_group') ){
                 if ( $pagenow == 'post.php' ){
                     add_meta_box('access_group', __('Post group', 'wpcf-access'), array(__CLASS__,'meta_box'), $post->post_type, 'side', 'high');
@@ -1954,27 +1988,27 @@ final class Access_Helper
         if ( isset($settings_access[$post->post_type]['mode']) && $settings_access[$post->post_type]['mode'] != 'not_managed' ){
             if (isset($_GET['post'])) {
                 $group = get_post_meta($_GET['post'], '_wpcf_access_group', true);
-                
-              
+
+
                 if ( isset($settings_access[$group]) && !empty($settings_access[$group]) ){
-                    $message = sprintf( 
-                        __( '<p><strong>%s</strong> permissions will be applied to this post.', 'wpcf-access' ), $settings_access[$group]['title'] ).' 
+                    $message = sprintf(
+                        __( '<p><strong>%s</strong> permissions will be applied to this post.', 'wpcf-access' ), $settings_access[$group]['title'] ).'
                         </p>';
                         if ( current_user_can('manage_options') ){
                             $message .= '<p><a href="admin.php?page=types_access&tab=custom-group">'.
                             sprintf(__( 'Edit %s group privileges', 'wpcf-access' ), $settings_access[$group]['title']).'</a></p>';
                         }
                 }
-            } 
+            }
             $out = '<div class="js-wpcf-access-post-group">'.$message.'</div>';
             if ( current_user_can('manage_options') ){
                 $out .= '<input type="hidden" value="1" id="access-show-edit-link" />';
             }
             $out .= '<input type="button" value="'.__( 'Change Post Group', 'wpcf-access' ).'" data-id="'.$post->ID.'" class="js-wpcf-access-assign-post-to-group button">';
             $out .= wp_nonce_field('wpcf-access-error-pages', 'wpcf-access-error-pages', true, false);
-        }		
+        }
         else{
-             $out = '<p>' . __( 'This content type is not currently managed by the Access plugin. To be able to add it to Post Group, first go to the Access admin and allow Access to control it.', 'wpcf-access' ).' 
+             $out = '<p>' . __( 'This content type is not currently managed by the Access plugin. To be able to add it to Post Group, first go to the Access admin and allow Access to control it.', 'wpcf-access' ).'
 					</p>';
         }
 		print $out;
@@ -2004,9 +2038,9 @@ final class Access_Helper
 	}
 
     /**
-     * Init function. 
+     * Init function.
      */
-    public static function wpcf_access_init() 
+    public static function wpcf_access_init()
     {
         // Add debug info
         if (WPCF_ACCESS_DEBUG) {
@@ -2016,9 +2050,9 @@ final class Access_Helper
             add_action('admin_footer', array('Access_Debug', 'wpcf_access_debug'));
             add_action('wp_footer', array('Access_Debug', 'wpcf_access_debug'));
         }
-		
+
         // Filter WP default capabilities for current user on 'init' hook
-        // 
+        //
         // We need to remove some capabilities added because of user role.
         // Example: editor has upload_files but may be restricted
         // because of Access settings.
@@ -2034,18 +2068,18 @@ final class Access_Helper
 
 
     /**
-     * Post init function. 
+     * Post init function.
      */
-    public static function wpcf_access_late_init() 
+    public static function wpcf_access_late_init()
     {
         global $wpcf_access;
         // Register all 3rd party hooks now
-        // 
+        //
         // All 3rd party hooks should be registered all the time.
         // Otherwise they won't be called.
         self::wpcf_access_hooks_collect();
-        if ( $wpcf_access->wpml_installed ){           
-            self::wpcf_load_wpml_languages_permissions();        
+        if ( $wpcf_access->wpml_installed ){
+            self::wpcf_load_wpml_languages_permissions();
         }
 
 	    /**
@@ -2073,15 +2107,15 @@ final class Access_Helper
         do_action('wpcf_access_late_init');
 
     }
-    
+
     /**
      * Sets shared taxonomies check.
-     * 
+     *
      * @global type $wpcf_access
      * @staticvar null $cache
-     * @return null 
+     * @return null
      */
-    public static function wpcf_access_get_taxonomies_shared_init() 
+    public static function wpcf_access_get_taxonomies_shared_init()
     {
         self::wpcf_access_get_taxonomies_shared();
     }
@@ -4000,7 +4034,7 @@ final class Access_Helper
      * @return bool|string
      */
 	public static function wpcf_access_get_current_page( ) {
-		// Avoid breaking CLI   
+		// Avoid breaking CLI
 		if (
 			! isset( $_SERVER['HTTP_HOST'] )
 			|| ! isset( $_SERVER['REQUEST_URI'] )
@@ -4103,7 +4137,7 @@ final class Access_Helper
 
         //Hide post type by default
         $hide = true;
-		
+
 		$settings_access = $wpcf_access->settings->types;
 
         if ( ( ! isset( $settings_access[ $post_type ] ) || $settings_access[ $post_type ]['mode'] == 'follow' ) && isset( $settings_access[ 'post' ] ) ) {
@@ -4161,7 +4195,7 @@ final class Access_Helper
         }
 
         // Set post type properties to hide on frontend
-        if ($hide && isset($wp_post_types[$post_type])) 
+        if ($hide && isset($wp_post_types[$post_type]))
         {
             if ( isset($wpcf_access->settings->types['post']) && $wpcf_access->settings->types['post']['mode'] != 'not_managed' ){
                 $wp_post_types[$post_type]->public = false;
@@ -4233,10 +4267,10 @@ final class Access_Helper
                 add_filter('posts_where', array('Access_Helper', 'wpcf_access_filter_posts'));
                 add_filter('get_pages', array('Access_Helper', 'wpcf_access_exclude_pages'));
                 add_filter('the_comments', array('Access_Helper', 'wpcf_access_filter_comments'));
-				
+
             //}
-        } 
-        else if ($wp_post_types[$post_type]) 
+        }
+        else if ($wp_post_types[$post_type])
         {
             $wp_post_types[$post_type]->public = true;
             $wpcf_access->debug_visible_post_types[] = $post_type;
@@ -4248,7 +4282,7 @@ final class Access_Helper
      */
 	public static function wpcf_access_replace_archive_php_template(){
 		global  $wp_query;
-		
+
 		$post_type_object = $wp_query->get_queried_object();
 		if ($post_type_object) {
 			$post_type = $post_type_object->name;
@@ -4261,29 +4295,29 @@ final class Access_Helper
 					exit;
 				}
 			}
-		}	
+		}
 	}
-	
+
 	/*
-	 * Override existing WPA for post type 
+	 * Override existing WPA for post type
 	 */
 	public static function wpcf_access_replace_archive_view($view){
 		global  $wp_query;
-		
+
 		$post_type_object = $wp_query->get_queried_object();
-		
+
 		if ($post_type_object) {
 			$post_type = $post_type_object->name;
 			$error = Access_Cacher::get( 'wpcf_archive_error_value_'.$post_type );
 			if ( false !== $error ) {
-				$view = $error;				
+				$view = $error;
 				Access_Cacher::delete('wpcf_archive_error_value_'.$post_type);
-			}	
+			}
 		}
 
-		return $view;	
+		return $view;
 	}
-	
+
 	/*
 	 * check if archive have custom errors
 	 */
@@ -4291,7 +4325,7 @@ final class Access_Helper
         global $wpcf_access;
 		$role = self::wpcf_get_current_logged_user_role();
 		if ( $role == 'administrator' ){
-			return;	
+			return;
 		}
 
 		$settings_access = $wpcf_access->settings->types;
@@ -4338,12 +4372,12 @@ final class Access_Helper
 				if ( $error_type == 'error_ct' ){
 					if ( isset($settings_access['_archive_custom_read_errors_value'][$post_type]['permissions']['read']) ){
 						$error_value = $settings_access['_archive_custom_read_errors_value'][$post_type]['permissions']['read']['everyone'];
-						
+
 						Access_Cacher::set( 'wpcf_archive_error_value_'.$post_type, $error_value );
 						return array('unhide','view',$error_value);
 					}
 					else{
-						return;	
+						return;
 					}
 				}
 				if ( $error_type == 'error_ct' || $error_type == 'error_layouts' ){
@@ -4364,23 +4398,23 @@ final class Access_Helper
 						return array('unhide','php',$error_value);
 					}
 					else{
-						return;	
+						return;
 					}
-				}	
+				}
 			}
-		}	 
+		}
 	}
-	
-	
+
+
 	/*
 	 * Replace archive output when no read permissions
 	 */
 	public static function wpcf_access_replace_archive_output($query){
 		global  $wp_query, $wpcf_access;
-		
+
 		if ( is_post_type_archive() ) {
-			
-			
+
+
 			$post_type_object = $wp_query->get_queried_object();
 
 	        // See if we have a settings for this post type
@@ -4388,33 +4422,33 @@ final class Access_Helper
 				$role = self::wpcf_get_current_logged_user_role();
 
 				if ( $role == 'administrator' ){
-					return;	
+					return;
 				}
 
                 $settings_access = $wpcf_access->settings->types;
-	        	
+
 				if ( isset($settings_access['_archive_custom_read_errors'][$post_type_object->name]) ){
 					if ( isset($settings_access['_archive_custom_read_errors_value'][$post_type_object->name]['permissions']['read']) ){
 						$error_type = $settings_access['_archive_custom_read_errors'][$post_type_object->name]['permissions']['read'][$role];
 						$error_value = $settings_access['_archive_custom_read_errors_value'][$post_type_object->name]['permissions']['read'][$role];
 					}else{
-						return;	
+						return;
 					}
 				}else{
-					return;	
-				}				
-			}			
+					return;
+				}
+			}
 		}
 	}
-	
-	
+
+
 	/*
-	 * Disable comments on page where custom error - Content template 
+	 * Disable comments on page where custom error - Content template
 	 */
 	public static function wpcf_access_disable_comments(){
 		return false;
 	}
-	
+
 	/*
 	 * Get current user role
 	 */
@@ -4434,11 +4468,11 @@ final class Access_Helper
 			}
 		}
 		if ($role == ''){
-			$role = 'guest';		
-		} 
+			$role = 'guest';
+		}
 		return $role;
 	}
-	
+
 	/*
 	 * Get current user role
 	 */
@@ -4447,12 +4481,12 @@ final class Access_Helper
 			$caps = $user->allcaps;
 			for ($i=10;$i>=0;$i--){
 				if ( isset($caps['level_'.$i] ) ){
-					return $i;	
-				}	
+					return $i;
+				}
 			}
 			return 0;
 		}else{
-			return 0;	
+			return 0;
 		}
 	}
 
@@ -4462,31 +4496,31 @@ final class Access_Helper
      * @return int|mixed|string
      */
 	public static function wpcf_convert_user_role( $role, $user_level ){
-		
+
 		if ($role == 'guest'){
-			return $role;	
+			return $role;
 		}
-		
+
 		$managed_roles = array();
     	$roles = Access_Helper::wpcf_get_editable_roles();
 		$default_roles = Access_Helper::wpcf_get_default_roles();
 		foreach ($roles as $role => $details)
     	{
-    		
+
     		for ($i=10;$i>=0;$i--){
     			if ( isset( $details['capabilities']['level_'.$i]) ){
     				if ( !isset( $managed_roles[$i] ) ){
     					$managed_roles[$i] = $role;
 						$i=-1;
-					}	
-				}	
-			}	
+					}
+				}
+			}
 		}
-		
+
 		if ( isset($managed_roles[$user_level]) ){
 			return $managed_roles[$user_level];
 		}else{
-			return 'guest';	
+			return 'guest';
 		}
 	}
 
@@ -4500,7 +4534,7 @@ final class Access_Helper
 		$role = self::wpcf_get_current_logged_user_role();
 
 		if ( $role == 'administrator' ){
-			return;	
+			return;
 		}
 
 		$settings_access = $wpcf_access->settings->types;
@@ -4534,7 +4568,7 @@ final class Access_Helper
                 if ( isset($check_cap['group']) ){
                     $group = $check_cap['group'];
                 }
-            }            
+            }
         }
 
 		//If group assigned to this post
@@ -4543,7 +4577,7 @@ final class Access_Helper
 			$read = false;
 			if ( isset($current_user->ID) ){
 				if ( isset($settings_access[$group]['permissions']['read']['users']) && in_array($current_user->ID, $settings_access[$group]['permissions']['read']['users']) !== FALSE ){
-					return array($show, '', true); 
+					return array($show, '', true);
 				}
 			}
 			if ( in_array($role, $settings_access[$group]['permissions']['read']['roles']) !== FALSE ){
@@ -4552,14 +4586,14 @@ final class Access_Helper
                 $read = false;
             }
 
-			
-			//Check if current post and role have specific error.	
+
+			//Check if current post and role have specific error.
 			if ( isset($settings_access['_custom_read_errors'][$group]['permissions']['read'][$role]) && $go ){
 				$error_type = $settings_access['_custom_read_errors'][ $group ]['permissions']['read'][ $role ];
 				if ( $error_type == 'error_404'){
 					$show = $error_type;
 					$go = false;
-					
+
 				}
 				if ( ( $error_type == 'error_ct' || $error_type == 'error_layouts' ) &&
 					isset($settings_access['_custom_read_errors_value'][$group]['permissions']['read'][$role])){
@@ -4575,9 +4609,9 @@ final class Access_Helper
 					$go = false;
 				}
 			}
-			
+
 			//Check if current group have specific error
-			if ( isset($settings_access['_custom_read_errors'][$group]['permissions']['read']['everyone']) && $go ){				
+			if ( isset($settings_access['_custom_read_errors'][$group]['permissions']['read']['everyone']) && $go ){
 				$error_type = $settings_access['_custom_read_errors'][ $group ]['permissions']['read']['everyone'];
 				if ( $error_type == 'error_404'){
 					$show = $settings_access['_custom_read_errors'][$group]['permissions']['read']['everyone'];
@@ -4594,11 +4628,11 @@ final class Access_Helper
 					$show = $error_type;
 					$template_id = $settings_access['_custom_read_errors_value'][$group]['permissions']['read']['everyone'];
 					$go = false;
-				}	
+				}
 			}
-			
-			return array($show, $template_id, $read); 
-			
+
+			return array($show, $template_id, $read);
+
 		}
 
         // Check post type permissions
@@ -4610,7 +4644,7 @@ final class Access_Helper
 
 		if ( $go ){
 
-			//Check if current post and role have specific error.	
+			//Check if current post and role have specific error.
 			if ( isset($settings_access['_custom_read_errors'][$post_type]['permissions']['read'][$role]) && $go ){
 
 				$error_type = $settings_access['_custom_read_errors'][ $post_type ]['permissions']['read'][ $role ];
@@ -4652,7 +4686,7 @@ final class Access_Helper
 					$show = $error_type;
 					$template_id = $settings_access['_custom_read_errors_value'][$post_type]['permissions']['read']['everyone'];
 					$go = false;
-				}	
+				}
 			}
 
 		}
@@ -4672,7 +4706,7 @@ final class Access_Helper
 
 		$post_id = self::wpcf_access_get_current_page();
 		if ( !isset($post_id) || empty($post_id) ){
-			return array(0,'');	
+			return array(0,'');
 		}
 
 		$return = 0;
@@ -4682,7 +4716,7 @@ final class Access_Helper
 			$template = self::wpcf_access_get_custom_error($post_id);
 			Access_Cacher::set( 'wpcf-access-post-permissions-'.$post_id, $template );
 		}
-		
+
 		$custom_error = toolset_getarr( $template, 0, '' );
 		$custom_error_value = toolset_getarr( $template, 1, '' );
 
@@ -4714,15 +4748,15 @@ final class Access_Helper
 		}
 		if ( $template[2] ) {
 			$do = 'unhide';
-			$return = 1;	
+			$return = 1;
 		}
 		if ( ! $template[2] &&  empty( $custom_error ) ) {
 			$do = 'hide';
-			$return = 1;	
+			$return = 1;
 		}
 
 
-		return array($return, $do, $disable_comments);	
+		return array($return, $do, $disable_comments);
 	}
 
 	/**
@@ -4740,7 +4774,7 @@ final class Access_Helper
             }
 		}
     }
-	
+
 	/*
 	 * Exclude current post from list of queries
 	 */
@@ -4755,15 +4789,15 @@ final class Access_Helper
             $query->set('post__not_in', $not_in);
         }
 	}
-	
+
 	/*
 	 * Load PHP Template error
 	 */
 	public static function wpv_access_error_php_template( $template ){
 		global $post;
-		
+
 		if ( !isset($post) || empty($post)){
-			return;	
+			return;
 		}
 		$post_id = $post->ID;
 		$template = self::wpcf_access_get_custom_error($post_id);
@@ -4787,9 +4821,9 @@ final class Access_Helper
 			 exit;
 		}
 		else{
-			return;	
+			return;
 		}
-		
+
 	}
 
     /**
@@ -4926,29 +4960,29 @@ final class Access_Helper
     }
 
 
-	
+
 	/*
 	 * Load Content template error
 	 */
 	public static function wpv_access_error_content_template( $template_selected, $post_id, $kind = '' ){
 		$template = self::wpcf_access_get_custom_error($post_id);
 		if ( isset($template[0]) && !empty($template[0])){
-			return $template[1];	
+			return $template[1];
 		}else{
-			return;	
+			return;
 		}
-		
+
 	}
-	
+
     /**
      * Filters posts.
-     * 
+     *
      * @global type $wpcf_access
      * @global type $wpdb
      * @param type $args
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_filter_posts($args) 
+    public static function wpcf_access_filter_posts($args)
     {
         global $wpcf_access, $wpdb;
         if (!empty($wpcf_access->hide_built_in)) {
@@ -4961,12 +4995,12 @@ final class Access_Helper
 
     /**
      * Excludes pages if necessary.
-     * 
+     *
      * @global type $wpcf_access
      * @param type $pages
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_exclude_pages($pages) 
+    public static function wpcf_access_exclude_pages($pages)
     {
         global $wpcf_access;
         if (!empty($wpcf_access->hide_built_in)) {
@@ -4979,12 +5013,12 @@ final class Access_Helper
 
     /**
      * Filters comments.
-     * 
+     *
      * @global type $wpcf_access
      * @param type $comments
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_filter_comments($comments) 
+    public static function wpcf_access_filter_comments($comments)
     {
         global $wpcf_access;
         if (!empty($wpcf_access->hide_built_in)) {
@@ -5005,15 +5039,15 @@ final class Access_Helper
 
     /**
      * Filters default WP capabilities for user.
-     * 
+     *
      * WP adds default capabilities depending on built-in role
      * that sometimes by-pass user_can() check.
-     * 
+     *
      * @todo Check if upload_files should be suspended from 3.5
      * @global type $current_user
-     * @global type $wpcf_access 
+     * @global type $wpcf_access
      */
-    public static function wpcf_access_user_filter_caps() 
+    public static function wpcf_access_user_filter_caps()
     {
         $role = self::wpcf_get_current_logged_user_role();
         if (!empty($current_user->allcaps)) {
@@ -5037,12 +5071,12 @@ final class Access_Helper
 
     /**
      * Determines post type.
-     * 
+     *
      * @global type $post
      * @global type $pagenow
-     * @return string 
+     * @return string
      */
-    public static function wpcf_access_determine_post_type() 
+    public static function wpcf_access_determine_post_type()
     {
         global $post;
         $post_type = false;
@@ -5092,12 +5126,12 @@ final class Access_Helper
 
     /**
      * Determines post ID.
-     * 
+     *
      * @global type $post
      * @global type $pagenow
      * @return string bbbb
      */
-    public static function wpcf_access_determine_post_id() 
+    public static function wpcf_access_determine_post_id()
     {
         global $post;
         if (!empty($post)) {
@@ -5126,10 +5160,10 @@ final class Access_Helper
 
     /**
      * Gets attachment parent post type.
-     * 
+     *
      * @return boolean
      */
-    public static function wpcf_access_attachment_parent_type() 
+    public static function wpcf_access_attachment_parent_type()
     {
         if (isset($_POST['attachment_id'])) {
             $post_id = intval($_POST['attachment_id']);
@@ -5150,14 +5184,14 @@ final class Access_Helper
 
     /**
      * Maps predefinied capabilities to specific post_type or taxonomy capability.
-     * 
+     *
      * Example in case of Page post type:
      * edit_post => edit_page
-     * 
+     *
      * @param type $context
      * @param type $name
      * @param type $cap
-     * @return type 
+     * @return type
      */
     public static function wpcf_access_predefined_to_wp_caps($context = 'post_type',
             $name = 'post', $cap = 'read') {
@@ -5185,11 +5219,11 @@ final class Access_Helper
 
     /**
      * Check Media post type.
-     * 
+     *
      * @global type $wp_version
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_is_media_registered() 
+    public static function wpcf_access_is_media_registered()
     {
         global $wp_version;
         // WP 3.5
@@ -5198,10 +5232,10 @@ final class Access_Helper
 
     /**
      * Maps capability according to current user and post_id.
-     * 
+     *
      * @param type $parse_args
      * @param type $post_id
-     * @return type 
+     * @return type
      */
     public static function wpcf_access_map_cap($cap, $post_id, $user_id = null)
     {
@@ -5219,24 +5253,24 @@ final class Access_Helper
             }
         }
         return $cap;
-    }    
-    
+    }
+
     /**
      * Returns cap settings declared in embedded.php
-     * 
+     *
      * @param type $cap
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_get_cap_settings($cap) 
+    public static function wpcf_access_get_cap_settings($cap)
     {
         $caps_types = self::wpcf_access_types_caps();
         if (isset($caps_types[$cap]))
             return $caps_types[$cap];
-        
+
         $caps_tax = self::wpcf_access_tax_caps();
         if (isset($caps_tax[$cap]))
             return $caps_tax[$cap];
-        
+
         return array(
             'title' => $cap,
             'roles' => self::toolset_access_get_roles_by_role('administrator'),
@@ -5246,11 +5280,11 @@ final class Access_Helper
 
     /**
      * Returns cap settings declared in embedded.php
-     * 
+     *
      * @param type $cap
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_get_cap_predefined_settings($cap) 
+    public static function wpcf_access_get_cap_predefined_settings($cap)
     {
         $predefined = self::wpcf_access_types_caps_predefined();
         if (isset($predefined[$cap]))
@@ -5262,7 +5296,7 @@ final class Access_Helper
     /**
      * @return array|null
      */
-    public static function wpcf_access_get_taxonomies_shared(/*$tax=false*/) 
+    public static function wpcf_access_get_taxonomies_shared(/*$tax=false*/)
     {
         global $wpcf_access;
         static $cache = null;
@@ -5273,7 +5307,7 @@ final class Access_Helper
             $found = array();
             $model = TAccess_Loader::get('MODEL/Access');
             $taxonomies = $model->getTaxonomies(null);
-            foreach ($taxonomies as $slug => $data) 
+            foreach ($taxonomies as $slug => $data)
             {
                 if (count($data->object_type) > 1) {
                     $found[$slug] = $data->object_type;
@@ -5283,14 +5317,14 @@ final class Access_Helper
         }
         return $cache;
     }
-    
+
     /**
      * Checks if taxonomy is shared.
-     * 
+     *
      * @param type $taxonomy
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_is_taxonomy_shared($taxonomy) 
+    public static function wpcf_access_is_taxonomy_shared($taxonomy)
     {
         $shared = self::wpcf_access_get_taxonomies_shared(/*$taxonomy*/);
         return !empty($shared[$taxonomy]) ? $shared[$taxonomy] : false;
@@ -5298,33 +5332,33 @@ final class Access_Helper
 
     /**
      * Sets taxonomy mode.
-     * 
+     *
      * @param type $taxonomy
      * @param type $mode
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_get_taxonomy_mode($taxonomy, $mode = 'follow') 
+    public static function wpcf_access_get_taxonomy_mode($taxonomy, $mode = 'follow')
     {
         // default to 'not_managed' if shared to have uniform handling of imported caps
         return self::wpcf_access_is_taxonomy_shared($taxonomy) ? /*'permissions'*/'not_managed' : $mode;
     }
-    
+
     /**
      * Adds or removes caps for roles down to level.
-     * 
+     *
      * @param type $role
      * @param type $cap
      * @param type $allow
-     * @param type $distinct 
+     * @param type $distinct
      */
-    public static function wpcf_access_assign_cap_by_level($role, $cap) 
+    public static function wpcf_access_assign_cap_by_level($role, $cap)
     {
 		$access_roles = self::wpcf_get_editable_roles();
         $ordered_roles = self::wpcf_access_order_roles_by_level($access_roles);
         $flag = $found = false;
-        foreach ($ordered_roles as $level => $roles) 
+        foreach ($ordered_roles as $level => $roles)
         {
-            foreach ($roles as $role_name => $role_data) 
+            foreach ($roles as $role_name => $role_data)
             {
                 $role_set = get_role($role_name);
                 if (!$flag)
@@ -5338,17 +5372,17 @@ final class Access_Helper
                 $flag = true;
         }
     }
-    
+
     /**
      * Sorts default capabilities by predefined key.
-     * 
-     * @return type 
+     *
+     * @return type
      */
-    public static function wpcf_access_sort_default_types_caps_by_predefined() 
+    public static function wpcf_access_sort_default_types_caps_by_predefined()
     {
         $default_caps = self::wpcf_access_types_caps();
         $caps = array();
-        foreach ($default_caps as $cap => $cap_data) 
+        foreach ($default_caps as $cap => $cap_data)
             $caps[$cap_data['predefined']][] = $cap;
         return $caps;
     }
@@ -5357,10 +5391,10 @@ final class Access_Helper
      * @param bool $overwrite
      * @return null
      */
-    public static function wpcf_access_get_areas($overwrite=false) 
+    public static function wpcf_access_get_areas($overwrite=false)
     {
         static $areas=null;
-        
+
         if (is_null($areas) || $overwrite)
         {
             $areas = apply_filters('types-access-show-ui-area', array());
@@ -5373,9 +5407,9 @@ final class Access_Helper
      */
 	public static function admin_enqueue_scripts() {
 		global $pagenow;
-			if ( 
-				$pagenow == 'admin.php' 
-				&& isset( $_GET['page'] ) 
+			if (
+				$pagenow == 'admin.php'
+				&& isset( $_GET['page'] )
 				&& ($_GET['page'] == 'types_access')
 			) {
 				Access_Helper::wpcf_access_admin_menu_load();
@@ -5487,11 +5521,11 @@ final class Access_Helper
             add_contextual_help( $hook, $contextual_help );
         }
     }
-    
+
     /**
-     * Menu page load hook. 
+     * Menu page load hook.
      */
-    public static function wpcf_access_admin_menu_load() 
+    public static function wpcf_access_admin_menu_load()
     {
         TAccess_Loader::loadAsset('STYLE/wpcf-access-dev', 'wpcf-access');
         TAccess_Loader::loadAsset('SCRIPT/wpcf-access-dev', 'wpcf-access');
@@ -5526,19 +5560,19 @@ final class Access_Helper
     /**
      *
      */
-    public static function wpcf_access_admin_import_export_load() 
+    public static function wpcf_access_admin_import_export_load()
     {
     	TAccess_Loader::loadAsset('SCRIPT/wpcf-access-dev', 'wpcf-access');
         TAccess_Loader::loadAsset('SCRIPT/wpcf-access-utils-dev', 'wpcf-access-utils');
 		TAccess_Loader::loadAsset('STYLE/wpcf-access-dialogs-css', 'wpcf-access-dialogs-css');
 		TAccess_Loader::loadAsset('STYLE/notifications', 'notifications');
-		add_thickbox(); 
+		add_thickbox();
     }
-    
+
     /**
-     * Menu page render hook. 
+     * Menu page render hook.
      */
-    public static function wpcf_access_admin_menu_page() 
+    public static function wpcf_access_admin_menu_page()
     {
         if( !class_exists('Access_Admin_Edit') ){
             TAccess_Loader::load('CLASS/Admin_Edit');
@@ -5555,11 +5589,11 @@ final class Access_Helper
      */
 	public static function wpcf_access_import_on_form_submit() {
 		if (
-			current_user_can('manage_options') 
-			&& isset( $_FILES['access-import-file'] ) 
-			&& isset( $_POST['access-import'] ) 
-			&& isset( $_POST['access-import-form'] ) 
-			&& wp_verify_nonce( $_POST['access-import-form'], 'access-import-form' ) 
+			current_user_can('manage_options')
+			&& isset( $_FILES['access-import-file'] )
+			&& isset( $_POST['access-import'] )
+			&& isset( $_POST['access-import-form'] )
+			&& wp_verify_nonce( $_POST['access-import-form'], 'access-import-form' )
 		) {
 			// @todo move this to wp_loaded and check current_user_can FGS!
             TAccess_Loader::load( 'CLASS/XML_Processor' );
@@ -5620,18 +5654,18 @@ final class Access_Helper
     /**
      * @return bool
      */
-    public static function wpcf_access_is_wpcf_active() 
+    public static function wpcf_access_is_wpcf_active()
     {
         if (defined('WPCF_VERSION') || defined('WPCF_RUNNING_EMBEDDED'))
             return true;
         return false;
     }
-    
+
     /**
      * Parses submitted data.
-     * 
+     *
      * @param type $data
-     * @return type 
+     * @return type
      */
     public static function wpcf_access_parse_permissions( $data, $caps, $custom = false, $saved_data = array() )
     {
@@ -5639,36 +5673,36 @@ final class Access_Helper
         // TODO Monitor this (fails sometimes as 3.5)
         if (empty($data['permissions']))
             return $permissions;
-        
+
         foreach ($data['permissions'] as $cap => $data_cap)
         {
             $cap = sanitize_text_field($cap);
             $users = isset($saved_data['permissions'][$cap]['users']) ? $saved_data['permissions'][$cap]['users'] : array();
             // Check if submitted
-            if (isset($data['permissions'][$cap])) 
+            if (isset($data['permissions'][$cap]))
             {
                 $permissions[$cap] = $data['permissions'][$cap];
-            } 
-            else 
+            }
+            else
             {
                 $permissions[$cap] = $data_cap;
             }
-            
+
             if (!isset($permissions[$cap]['roles']) || empty($permissions[$cap]['roles']))
             {
                 $permissions[$cap] = array_merge($permissions[$cap], array('roles' => self::toolset_access_get_roles_by_role('administrator') ) );
             }
-            
+
             // Make sure only pre-defined are used on ours, third-party rules
             // can have anything they want.
-            if (!$custom && !isset($caps[$cap])) 
+            if (!$custom && !isset($caps[$cap]))
             {
                 unset($permissions[$cap]);
                 continue;
             }
-            
+
             // Add users
-            if (!empty($users)) 
+            if (!empty($users))
             {
                 $permissions[$cap]['users'] = $users;
             }
@@ -5686,8 +5720,8 @@ final class Access_Helper
 
     /**
      * Defines predefined capabilities.
-     * 
-     * @return array 
+     *
+     * @return array
      */
     public static function wpcf_access_types_caps_predefined_array()
     {
@@ -5767,9 +5801,9 @@ final class Access_Helper
             'update_themes',
             //'upload_files'
         );
-        
+
         $cap_conflict=array_intersect($wp_default_caps, (array)$caps);
-        
+
         if (!empty($cap_conflict))
             return true;
         return false;
@@ -5833,8 +5867,8 @@ final class Access_Helper
 
     /**
      * Defines capabilities.
-     * 
-     * @return type 
+     *
+     * @return type
      */
     public static function wpcf_access_types_caps_array()
     {
@@ -5967,12 +6001,12 @@ final class Access_Helper
     {
         $tax_caps_map = self::wpcf_access_tax_caps();
         $tax_caps = array();
-        
+
         $tax_map_cap = isset($taxdata['cap']) ? $taxdata['cap'] : array();
-        
+
         if (!isset($post_caps['permissions']))
             return $tax_caps;
-            
+
         foreach ($tax_caps_map as $tcap => $mdata)
         {
         	$match_var = array_keys($mdata['match']);
@@ -6008,8 +6042,8 @@ final class Access_Helper
 
     /**
      * Defines capabilities.
-     * 
-     * @return type 
+     *
+     * @return type
      */
     public static function wpcf_access_tax_caps_array()
     {
@@ -6069,24 +6103,24 @@ final class Access_Helper
         );
         return apply_filters('wpcf_access_tax_caps', $caps);
     }
-    
+
     /**
      * Maps role to level.
      *
      * Returns an array of roles => levels
      * As this is used a lot of times, we added caching
-     * 
+     *
      * @return array $map
      */
-    public static function wpcf_access_role_to_level_map() 
+    public static function wpcf_access_role_to_level_map()
     {
         $access_cache_map_group = 'access_cache_map_group';
 		$access_cache_map_key = md5( 'access::role_to_level_map' );
 		$map = Access_Cacher::get( $access_cache_map_key, $access_cache_map_group );
 		if ( false === $map ) {
-        
+
 			$default_roles=self::wpcf_get_default_roles();
-			
+
 			$map = array(
 				'administrator' => 'level_10',
 				'editor' => 'level_7',
@@ -6096,14 +6130,14 @@ final class Access_Helper
 			);
 			require_once ABSPATH . '/wp-admin/includes/user.php';
 			$roles = self::wpcf_get_editable_roles();
-			foreach ($roles as $role => $data) 
+			foreach ($roles as $role => $data)
 			{
 				$role_data = get_role($role);
 				if (!empty($role_data))
 				{
-					for ($index = 10; $index > -1; $index--) 
+					for ($index = 10; $index > -1; $index--)
 					{
-						if (isset($data['capabilities']['level_' . $index])) 
+						if (isset($data['capabilities']['level_' . $index]))
 						{
 							$map[$role] = 'level_' . $index;
 							break;
@@ -6133,11 +6167,11 @@ final class Access_Helper
 
     /**
      * Maps role to level.
-     * 
+     *
      * @param type $role
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_role_to_level($role) 
+    public static function wpcf_access_role_to_level($role)
     {
         $map = self::wpcf_access_role_to_level_map();
         return isset($map[$role]) ? $map[$role] : false;
@@ -6148,9 +6182,9 @@ final class Access_Helper
      * @deprecated
      * @param type $role
      * @param type $compare
-     * @return boolean 
+     * @return boolean
      */
-    public static function wpcf_access_is_role_ranked_higher($role, $compare) 
+    public static function wpcf_access_is_role_ranked_higher($role, $compare)
     {
         if ($role == $compare)
             return true;
@@ -6161,12 +6195,12 @@ final class Access_Helper
 
     /**
      * Checks if level is ranked higher.
-     * 
+     *
      * @param type $level
      * @param type $compare
-     * @return boolean 
+     * @return boolean
      */
-    public static function wpcf_access_is_level_ranked_higher($level, $compare) 
+    public static function wpcf_access_is_level_ranked_higher($level, $compare)
     {
         if ($level == $compare) {
             return true;
@@ -6178,11 +6212,11 @@ final class Access_Helper
 
     /**
      * Orders roles by level.
-     * 
+     *
      * @param type $roles
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_order_roles_by_level($roles) 
+    public static function wpcf_access_order_roles_by_level($roles)
     {
         $ordered_roles = array();
         for ($index = 10; $index > -1; $index--) {
@@ -6199,15 +6233,15 @@ final class Access_Helper
 
     /**
      * Gets all caps by level.
-     * 
+     *
      * Loops over all collected rules and sees each one matches current user.
-     * 
+     *
      * @global type $wpcf_access
      * @param type $level
      * @param type $context
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_user_get_caps_by_type($user_id, $context = 'types') 
+    public static function wpcf_access_user_get_caps_by_type($user_id, $context = 'types')
     {
         global $wpcf_access;
         static $cache = array();
@@ -6245,12 +6279,12 @@ final class Access_Helper
 
     /**
      * Determines highest ranked role and it's level.
-     * 
+     *
      * @param type $user_id
      * @param type $rank
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_rank_user($user_id, $rank = 'high') 
+    public static function wpcf_access_rank_user($user_id, $rank = 'high')
     {
         global $wpcf_access;
         static $cache = array();
@@ -6284,20 +6318,20 @@ final class Access_Helper
             return array('guest', false);
         }
         $cache[$user_id] = array($role, $level);
-        
+
         $wpcf_access->user_rank[$user_id] = $cache[$user_id];
-        
+
         return array($role, $level);
     }
 
     /**
      * Search for cap in collected rules.
-     * 
+     *
      * @global type $wpcf_access
      * @param type $cap
-     * @return type 
+     * @return type
      */
-    public static function wpcf_access_search_cap($cap) 
+    public static function wpcf_access_search_cap($cap)
     {
         global $wpcf_access;
         $settings = array();
@@ -6310,7 +6344,7 @@ final class Access_Helper
         }
         return empty($settings) ? false : $settings;
     }
-	
+
 	public static function otg_access_reload_access_roles() {
 		self::$roles = null;
 		self::$roles = self::wpcf_get_editable_roles();
@@ -6318,14 +6352,14 @@ final class Access_Helper
 
     /**
      * Track fetching editable roles.
-     * 
+     *
      * Sometimes WP includes get_editable_role func too late.
      * Especially if user is not logged.
-     * 
+     *
      * @global type $wpcf_access
-     * @return type 
+     * @return type
      */
-    public static function wpcf_get_editable_roles() 
+    public static function wpcf_get_editable_roles()
     {
         if ( !is_null( self::$roles ) ) {
             return self::$roles;
@@ -6350,13 +6384,13 @@ final class Access_Helper
     /*
     *   Auxilliary function
     */
-    public static function wpcf_object_to_array($data, $depth = 1) 
+    public static function wpcf_object_to_array($data, $depth = 1)
     {
         if ( $depth > 4 ) {
             return array();
         }
-        
-        if (is_array($data) || is_object($data)) 
+
+        if (is_array($data) || is_object($data))
         {
             $result = array();
             foreach ($data as $key => $value) {
@@ -6366,30 +6400,30 @@ final class Access_Helper
         }
         return $data;
     }
-    
+
     /**
      * Check if object (post type or taxonomy) is valid to be managed by Access
-     * 
-     * @return bool 
+     *
+     * @return bool
      */
-    public static function wpcf_is_object_valid( $type, $data ) 
+    public static function wpcf_is_object_valid( $type, $data )
     {
         global $wpcf_access;
-        
+
         if (!in_array($type,array('type','taxonomy')))
             return false;
-        
+
         $data=self::wpcf_object_to_array($data);
-        
+
         // valid for builtin types/taxes as they have predefined caps regardless of locale and labels
         if (isset($data['_builtin']) && $data['_builtin'])
             return true;
-            
+
         $whitelist=array(
             'type'=>array('Media'),
             'taxonomy'=>array()
             );
-            
+
         // no label, bypass
         if (!isset($data) || empty($data) || !isset($data['labels'])) {
             return false;
@@ -6397,7 +6431,7 @@ final class Access_Helper
             // same plural and singular names, bypass, else problems (NOTE the actual label to test is menu_name, which by default is equal to (plural) name)
             $singular=$data['labels']['singular_name'];
             $plural=(isset($data['labels']['menu_name'])&&$data['labels']['name']!=$data['labels']['menu_name'])?$data['labels']['menu_name']:$data['labels']['name'];
-            
+
             if ($plural==$singular && !in_array($data['labels']['name'],$whitelist[$type])) {
                // return false;
             }
@@ -6430,29 +6464,29 @@ final class Access_Helper
      * @param $text
      * @return mixed
      */
-    public static function wpcf_esc_like( $text ) { 
-        global $wpdb; 
-        if ( method_exists( $wpdb, 'esc_like' ) ) { 
-             return $wpdb->esc_like( $text ); 
-        } else { 
-             return like_escape( esc_sql( $text ) ); 
-        } 
+    public static function wpcf_esc_like( $text ) {
+        global $wpdb;
+        if ( method_exists( $wpdb, 'esc_like' ) ) {
+             return $wpdb->esc_like( $text );
+        } else {
+             return like_escape( esc_sql( $text ) );
+        }
     }
 
     /**
      * @return mixed
      */
 	public static function otg_access_get_post_types_with_custom_groups() {
-		
+
 		global $wpdb;
 		$values_to_prepare = array();
 		$values_to_prepare[] = '_wpcf_access_group';
 		$values_to_prepare[] = 'publish';
-		
-		$results = $wpdb->get_col( 
+
+		$results = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT DISTINCT posts.post_type 
-				FROM {$wpdb->posts} AS posts 
+				"SELECT DISTINCT posts.post_type
+				FROM {$wpdb->posts} AS posts
 				LEFT JOIN {$wpdb->postmeta} AS meta
 				ON (
 					posts.ID = meta.post_id
@@ -6463,7 +6497,7 @@ final class Access_Helper
 				$values_to_prepare
 			)
 		);
-		
+
 		return $results;
 	}
 
@@ -6574,5 +6608,5 @@ final class Access_Helper
         }
         return $group_permissions;
     }
-	
+
 }

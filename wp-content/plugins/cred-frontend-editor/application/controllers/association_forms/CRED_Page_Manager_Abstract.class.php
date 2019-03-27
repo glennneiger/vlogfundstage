@@ -83,7 +83,6 @@ abstract class CRED_Page_Manager_Abstract {
 		$this->_twig->addFunction( new Twig_SimpleFunction( 'admin_url', array( $this, 'admin_url' ) ) );
 		$this->_twig->addFunction( new Twig_SimpleFunction( 'get_permalink', array( $this, 'get_permalink' ) ) );
 		$this->_twig->addFunction( new Twig_SimpleFunction( 'get_lang', array( $this, 'get_lang' ) ) );
-		$this->_twig->addFunction( new Twig_SimpleFunction( 'is_wpml', array( $this, 'is_wpml' ) ) );
 		$this->_twig->addFunction( new Twig_SimpleFunction( 'wp_nonce_field', array( $this, 'wp_nonce_field' ) ) );
 		$this->_twig->addFunction( new Twig_SimpleFunction( 'print_content_editor_toolbar_buttons', array( $this, 'print_content_editor_toolbar_buttons' ) ) );
 	}
@@ -117,10 +116,6 @@ abstract class CRED_Page_Manager_Abstract {
 		}
 
 		return '';
-	}
-
-	public function is_wpml() {
-		return apply_filters( 'ddl-is_wpml_active_and_configured', false );
 	}
 
 	public function wp_nonce_field( $action = '', $name = '', $referer = true, $echo = true ){

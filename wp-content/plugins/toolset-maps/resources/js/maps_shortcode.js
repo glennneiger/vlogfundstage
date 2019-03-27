@@ -164,7 +164,7 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 				let computedAttributeValues = _.omit( shortcodeAttributeValues, function( value, attribute ) {
 					return ( attribute.lastIndexOf( '_', 0) === 0 );
 				} );
-				
+
 				// Remove all extra attributes
 				computedAttributeValues.marker_source_options = false;
 				computedAttributeValues.marker_source_meta = false;
@@ -268,6 +268,37 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 			}
 		);
 
+		// Change "reload" button output from a shortcode to a HTML element
+		Toolset.hooks.addFilter(
+			'toolset-filter-shortcode-gui-reload_button-crafted-shortcode',
+			function( shortcode, formData )	{
+				let attributes = formData.rawAttributes;
+				let elementStart = '';
+				let elementEnd = '';
+				let styles = attributes.styles ? ' style="' + attributes.styles + '"' : '';
+				let classNames = attributes.classnames ? ' ' + attributes.classnames : '';
+
+				if ( attributes.html_element === 'link' ) {
+					elementStart = '<a href="#"';
+					elementEnd = '</a>';
+				} else {
+					elementStart = '<button';
+					elementEnd = '</button>';
+				}
+
+				return elementStart
+					+' class="js-wpv-addon-maps-reload-map'
+					+classNames
+					+'" data-map="'
+					+attributes.map_id
+					+'"'
+					+styles
+					+'>'
+					+attributes.anchor_text
+					+elementEnd;
+			}
+		);
+
 		// Using this filter because it contains formData, so we can update marker id and defaults for map & marker ids.
 		// Not changing shortcode itself.
 		Toolset.hooks.addFilter(
@@ -305,27 +336,26 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 				// Set current active editor
 				WPViews.addon_maps_dialogs.current_active_editor = window.wpcfActiveEditor;
 
-				// For marker dialog
-				if ( dialogData.shortcode === "wpv-map-marker" ) {
-					// Field dependencies init
-					self.initDependsOn( dialogData );
-
-					// Marker icons highlights and upload button
-					self.initMarkerIcons();
-
-					// Move some fields around so that forms look nicer
-					self.initMarkerSource();
-				}
-				// For distance conditional display dialog
-				else if ( dialogData.shortcode === "toolset-maps-distance-conditional-display" ) {
-					self.initDistanceConditionalDisplaySource();
-				}
-				// For distance value dialog
-				else if ( dialogData.shortcode === "toolset-maps-distance-value" ) {
-					// Field dependencies init
-					self.initDependsOn( dialogData );
-
-					self.initDistanceValueSource();
+				// Dialog specific functionalities, tweaks, etc.
+				switch ( dialogData.shortcode ) {
+					case "wpv-map-marker":
+						// Field dependencies init
+						self.initDependsOn( dialogData );
+						// Marker icons highlights and upload button
+						self.initMarkerIcons();
+						// Move some fields around so that forms look nicer
+						self.initMarkerSource();
+						break;
+					case "toolset-maps-distance-conditional-display":
+						self.initDistanceConditionalDisplaySource();
+						break;
+					case "toolset-maps-distance-value":
+						self.initDependsOn( dialogData );
+						self.initDistanceValueSource();
+						break;
+					case "reload_button":
+						self.makeDialogNarrower();
+						break;
 				}
 			}
 		);
@@ -360,12 +390,20 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 	};
 
 	/**
+	 * Dialogs with no tabs look somewhat better when a bit narrower.
+	 * @since 1.7.1
+	 */
+	self.makeDialogNarrower = function() {
+		$( 'div#js-maps-shortcode-gui-dialog-container-shortcode').parent( 'div' ).css( 'width', '80%' );
+	};
+
+	/**
 	 * Stuff specific for distance conditional display dialog
 	 * @since 1.6
 	 */
 	self.initDistanceConditionalDisplaySource = function() {
 		// Since it has no tabs, this dialog looks somewhat better when a bit narrower
-		$( 'div#js-maps-shortcode-gui-dialog-container-shortcode').parent( 'div' ).css( 'width', '80%' );
+		self.makeDialogNarrower();
 
 		// Init autocomplete for address field
 		self.addAddressAutocomplete( $( 'input#toolset-maps-distance-conditional-display-location' ) );
@@ -376,8 +414,7 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 	 * @since 1.6
 	 */
 	self.initDistanceValueSource = function() {
-		// Since it has no tabs, this dialog looks somewhat better when a bit narrower
-		$( 'div#js-maps-shortcode-gui-dialog-container-shortcode').parent( 'div' ).css( 'width', '80%' );
+		self.makeDialogNarrower();
 
 		// Init autocomplete for address field
 		self.addAddressAutocomplete( $( 'input#toolset-maps-distance-value-location' ) );
@@ -482,7 +519,6 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 		 * @since 1.5
 		 */
 		if ( ! $( '#js-maps-shortcode-gui-dialog-container-shortcode' ).length ) {
-			// TODO: move HTML to template
 			$( 'body' ).append(
 				'<div id="js-maps-shortcode-gui-dialog-container-shortcode" class="toolset-shortcode-gui-dialog-container js-toolset-shortcode-gui-dialog-container js-maps-shortcode-gui-dialog-container js-maps-shortcode-gui-dialog-container-shortcode"></div>'
 			);
@@ -577,7 +613,7 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 	self.initMarkerSource = function() {
 		var $container = $( '.js-toolset-shortcode-gui-attribute-wrapper-for-marker_source_meta', '#wpv-map-marker-marker' ),
 			attributesToDetach = [ 'address', 'postmeta', 'postmeta_id', 'termmeta', 'termmeta_id', 'usermeta', 'usermeta_id', 'lat', 'lon', 'map_render' ];
-		
+
 		// Hide the dummy attribute used to have a tabbed GUI
 		$( '#wpv-map-marker-marker_source_meta' ).hide();
 
@@ -648,9 +684,9 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 			.addClass( 'js-toolset-shortcode-gui-field-select2-inited' )
 			.css( { width: '100%' } )
 			.toolset_select2(
-				{ 
+				{
 					width:				'resolve',
-					dropdownAutoWidth:	true, 
+					dropdownAutoWidth:	true,
 					dropdownParent:		$selectorParent,
 					minimumInputLength:	0,
 					ajax: {
@@ -770,7 +806,7 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 	self.offDependsOn = function() {
 		$( 'div#js-maps-shortcode-gui-dialog-container-shortcode input[type="radio"]' ).off('change');
 	};
-	
+
 	/**
 	 * Perform AJAX call to save the new values - both of them.
 	 */
@@ -815,23 +851,23 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 			// - Value crafting: each object source will force the right classname to compute the attributes.
 			var source = $( 'input[name="wpv-map-marker-marker_source_options"]:checked', '#wpv-map-marker-marker' ).val(),
 				$metaOptions = $( '.js-toolset-shortcode-gui-attribute-wrapper-for-marker_source_meta', '#wpv-map-marker-marker' );
-			
+
 			$metaOptions.find( '.js-toolset-shortcode-gui-required' )
 				.removeClass( 'js-toolset-shortcode-gui-required' );
-			
+
 			$metaOptions.find( '.js-toolset-shortcode-gui-invalid-attr' )
 				.removeClass( 'toolset-shortcode-gui-invalid-attr js-toolset-shortcode-gui-invalid-attr' );
 
 			$metaOptions.find( '.js-toolset-shortcode-gui-item-selector-standby' )
 				.removeClass( 'js-toolset-shortcode-gui-item-selector');
-			
+
 			$metaOptions
 				.find( '[name="specific_object_id"]' )
 					.attr( 'name', 'specific_object_id_standby' );
 			$metaOptions
 				.find( '[name="specific_object_id_raw"]' )
 					.attr( 'name', 'specific_object_id_raw_standby' );
-			
+
 			switch( source ) {
 				case 'address':
 					$( '#wpv-map-marker-address' ).addClass( 'js-toolset-shortcode-gui-required' );
@@ -927,7 +963,7 @@ Toolset.Maps.ShortcodeManager = function( $ ) {
 					.trigger( 'change' );
 			}
 		);
-		
+
 		return self;
 	};
 

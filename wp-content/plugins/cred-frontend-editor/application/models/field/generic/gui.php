@@ -5,7 +5,7 @@ namespace OTGS\Toolset\CRED\Model\Field\Generic;
 class Gui {
 
 	const SHORTCODE_NAME_FORM_GENERIC_FIELD = 'cred_generic_field';
-	
+
 	/**
 	 * Generate the attribute options to fill a set of fields values
 	 * from a shortcode outcome.
@@ -27,21 +27,21 @@ class Gui {
 
     /**
 	 * Gather a list of generic fields available togther with their attributes.
-     * 
+     *
      * Used to add generic fields to a form editor, and also to add or edit options
      * for non Toolset fields under Forms control.
-     * 
+     *
      * @note Do not modify grouped attributes, since the fields controls GUI needs to
      *       filter out some of the top-level items.
 	 *
 	 * @return array
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	public function get_generic_fields() {
-		return array(
+		$fields = array(
 			'audio' => array(
-				'label' => __( 'Audio', 'wp-cred' ), 
+				'label' => __( 'Audio', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'audio'
@@ -73,7 +73,7 @@ class Gui {
 				)
 			),
 			'checkboxes' => array(
-				'label' => __( 'Checkboxes', 'wp-cred' ), 
+				'label' => __( 'Checkboxes', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'checkboxes'
@@ -110,7 +110,7 @@ class Gui {
 				)
 			),
 			'checkbox' => array(
-				'label' => __( 'Checkbox', 'wp-cred' ), 
+				'label' => __( 'Checkbox', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'checkbox'
@@ -150,7 +150,7 @@ class Gui {
 				)
 			),
 			'colorpicker' => array(
-				'label' => __( 'Colorpicker', 'wp-cred' ), 
+				'label' => __( 'Colorpicker', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'colorpicker'
@@ -200,7 +200,7 @@ class Gui {
 				)
 			),
 			'date' => array(
-				'label' => __( 'Date', 'wp-cred' ), 
+				'label' => __( 'Date', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'date'
@@ -241,7 +241,7 @@ class Gui {
 				)
 			),
 			'email' => array(
-				'label' => __( 'Email', 'wp-cred' ), 
+				'label' => __( 'Email', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'email'
@@ -291,8 +291,8 @@ class Gui {
 				)
 			),
 			'embed' => array(
-				'label' => __( 'Embedded Media', 'wp-cred' ), 
-				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD, 
+				'label' => __( 'Embedded Media', 'wp-cred' ),
+				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'embed'
 				),
@@ -341,7 +341,7 @@ class Gui {
 				)
 			),
 			'file' => array(
-				'label' => __( 'File', 'wp-cred' ), 
+				'label' => __( 'File', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'file'
@@ -373,7 +373,7 @@ class Gui {
 				)
 			),
 			'hidden' => array(
-				'label' => __( 'Hidden', 'wp-cred' ), 
+				'label' => __( 'Hidden', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'hidden'
@@ -406,7 +406,7 @@ class Gui {
 				)
 			),
 			'image' => array(
-				'label' => __( 'Image', 'wp-cred' ), 
+				'label' => __( 'Image', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'image'
@@ -438,7 +438,7 @@ class Gui {
 				)
 			),
 			'integer' => array(
-				'label' => __( 'Integer', 'wp-cred' ), 
+				'label' => __( 'Integer', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'integer'
@@ -488,7 +488,7 @@ class Gui {
 				)
 			),
 			'multiselect' => array(
-				'label' => __( 'Multiselect', 'wp-cred' ), 
+				'label' => __( 'Multiselect', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'multiselect'
@@ -543,7 +543,7 @@ class Gui {
 				)
 			),
 			'numeric' => array(
-				'label' => __( 'Numeric', 'wp-cred' ), 
+				'label' => __( 'Numeric', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'numeric'
@@ -593,7 +593,7 @@ class Gui {
 				)
 			),
 			'password' => array(
-				'label' => __( 'Password', 'wp-cred' ), 
+				'label' => __( 'Password', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'password'
@@ -625,7 +625,7 @@ class Gui {
 				)
 			),
 			'phone' => array(
-				'label' => __( 'Phone', 'wp-cred' ), 
+				'label' => __( 'Phone', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'phone'
@@ -661,7 +661,7 @@ class Gui {
 				)
 			),
 			'radio' => array(
-				'label' => __( 'Radio', 'wp-cred' ), 
+				'label' => __( 'Radio', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'radio'
@@ -726,7 +726,7 @@ class Gui {
 				)
 			),
 			'select' => array(
-				'label' => __( 'Select', 'wp-cred' ), 
+				'label' => __( 'Select', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'select'
@@ -791,7 +791,7 @@ class Gui {
 				)
 			),
 			'skype' => array(
-				'label' => __( 'Skype', 'wp-cred' ), 
+				'label' => __( 'Skype', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'skype'
@@ -823,7 +823,7 @@ class Gui {
 				)
 			),
 			'textarea' => array(
-				'label' => __( 'Multiple Lines', 'wp-cred' ), 
+				'label' => __( 'Multiple Lines', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'textarea'
@@ -859,7 +859,7 @@ class Gui {
 				)
 			),
 			'textfield' => array(
-				'label' => __( 'Single Line', 'wp-cred' ), 
+				'label' => __( 'Single Line', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'textfield'
@@ -895,7 +895,7 @@ class Gui {
 				)
 			),
 			'url' => array(
-				'label' => __( 'URL', 'wp-cred' ), 
+				'label' => __( 'URL', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'url'
@@ -945,7 +945,7 @@ class Gui {
 				)
 			),
 			'video' => array(
-				'label' => __( 'Video', 'wp-cred' ), 
+				'label' => __( 'Video', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'video'
@@ -977,7 +977,7 @@ class Gui {
 				)
 			),
 			'wysiwyg' => array(
-				'label' => __( 'WYSIWYG', 'wp-cred' ), 
+				'label' => __( 'WYSIWYG', 'wp-cred' ),
 				'shortcode' => self::SHORTCODE_NAME_FORM_GENERIC_FIELD,
 				'attributes' => array(
 					'type' => 'wysiwyg'
@@ -995,11 +995,13 @@ class Gui {
 				)
 			)
 		);
+
+		return $fields;
     }
 
     public function get_generic_fields_labels() {
         $labels = array();
-        
+
         $generic_fields = $this->get_generic_fields();
         foreach ( $generic_fields as $field_slug => $field_data ) {
             $labels[ $field_slug ] = $field_data['label'];
@@ -1007,5 +1009,5 @@ class Gui {
 
         return $labels;
     }
-    
+
 }

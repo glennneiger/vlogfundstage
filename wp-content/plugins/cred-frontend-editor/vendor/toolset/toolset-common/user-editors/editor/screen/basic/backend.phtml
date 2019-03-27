@@ -63,10 +63,4 @@
             <span class="js-wpv-message-container"></span>
             <span class="spinner ajax-loader" data-bind="spinnerActive: isContentSectionUpdating"></span>
         </span>
-	<button data-bind="
-                enable: isContentSectionUpdateNeeded,
-                attr: { class: isContentSectionUpdateNeeded() ? 'button-primary' : 'button-secondary' },
-                click: contentSectionUpdate">
-		<?php _e( 'Update', 'wpv-views' ); ?>
-	</button>
 </p>

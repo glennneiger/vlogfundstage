@@ -1,5 +1,7 @@
 <?php
 
+use OTGS\Toolset\Common\PublicAPI as publicAPI;
+
 /**
  * Definition of a field.
  *
@@ -15,8 +17,7 @@
  *
  * @since 1.9
  */
-abstract class Toolset_Field_Definition extends Toolset_Field_Definition_Abstract {
-
+abstract class Toolset_Field_Definition extends Toolset_Field_Definition_Abstract implements publicAPI\CustomFieldDefinition {
 
 	/**
 	 * For a Types field, this is a default prefix to it's slug that defines the meta_key for storing this field's values.
@@ -170,6 +171,7 @@ abstract class Toolset_Field_Definition extends Toolset_Field_Definition_Abstrac
 
 
 	/**
+	 * @deprecated Use is_repeatable() instead.
 	 * @return bool True if the field is repetitive, false otherwise.
 	 */
 	public function get_is_repetitive() {
@@ -671,4 +673,26 @@ abstract class Toolset_Field_Definition extends Toolset_Field_Definition_Abstrac
 		}
 		return $result;
 	}
+
+
+	/**
+	 * Shortcut required by the CustomFieldDefinition interface.
+	 *
+	 * @return string
+	 */
+	public function get_type_slug() {
+		return $this->get_type()->get_slug();
+	}
+
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return bool
+	 */
+	public function is_repeatable() {
+		return $this->get_is_repetitive();
+	}
+
+
 }

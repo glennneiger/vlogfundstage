@@ -2,11 +2,8 @@
 /*  GLOBAL SETTINGS */
 /* ---------------- */
 
-.toolset_page_views-editor .metabox-prefs, 
-.toolset_page_views-editor .screen-meta-toggle, 
-.toolset_page_view-archives-editor .metabox-prefs, 
-.toolset_page_view-archives-editor .screen-meta-toggle {
-	z-index: 9999;
+.wrap.toolset-views-editor {
+	margin-top: 35px;
 }
 
 .toolset-views .hidden,
@@ -81,11 +78,11 @@
 		-o-transition: all 0.15s linear;
 		transition: all 0.15s linear;
 	}
-	
+
 	.wpv-taglike-list li.remove {
 		background: orange;
 	}
-	
+
 	.wpv-taglike-list li .icon-remove-sign {
 		position: absolute;
 		top: -7px;
@@ -107,11 +104,11 @@
 		padding-right:4%;
 		margin: 0 0 6px;
 	}
-	
+
 	.wpv-mightlong-list li.wpv-mightlong-list-item-fixwidth {
 		width: 45%;
 	}
-	
+
 	.wpv-mightlong-list li.wpv-mightlong-list-item-clear {
 		clear: left;
 	}
@@ -145,11 +142,6 @@
 /* / clearfix */
 
 /* Icons */
-
-.toolset-views  #icon-edit, #icon-post, #icon-views {
-
-}
-
 .toolset-views  [class^="icon-"] {
 	font-size: 14px;
 }
@@ -295,17 +287,17 @@
 		display: table-cell;
 		border-right: solid 20px transparent;
 	}
-	
+
 	.wpv-controls-with-preview-container .wpv-controls-with-preview-container-preview {
 		display: table-cell;
 		width: 25%;
 		background-color: #f6f6f6;
 	}
-	
+
 	.wpv-controls-with-preview-container-preview .wpv-controls-with-preview-container-preview-item {
-		
+
 	}
-	
+
 	.wpv-controls-with-preview-container-preview .wpv-controls-with-preview-container-preview-item.disabled {
 		color: #000;
 		opacity: .3;
@@ -321,19 +313,19 @@
 		text-decoration: none;
 		cursor: default;
 	}
-	
+
 	.wpv-controls-with-preview-container-preview span.current {
 		background: #d6d6d6;
 	}
-	
+
 	.wpv-controls-with-preview-container-preview img {
 		vertical-align: bottom;
 	}
-	
+
 .wpv-editable-list-wrapper {
 	position: relative;
 }
-	
+
 .wpv-editable-list {
 	width: 100%;
 	text-align: left;
@@ -342,9 +334,9 @@
 
 	.wpv-editable-list thead,
 	.wpv-editable-list tfoot {
-		
+
 	}
-	
+
 	.wpv-editable-list th.wpv-collapsed-width {
 		width: 1px;
 	}
@@ -355,35 +347,35 @@
 		background: #fafafa;
 		transition: background-color 0.5s;
 	}
-	
+
 	.wpv-editable-list .wpv-editable-list-item.ui-sortable-helper {
 		display: table-row !important;
 	}
-	
-		.wpv-editable-list div.wpv-editable-list-item, 
+
+		.wpv-editable-list div.wpv-editable-list-item,
 		.wpv-editable-list .wpv-editable-list-item td {
 			padding: 5px;
 			vertical-align: baseline;
 		}
-	
+
 	.wpv-editable-list .wpv-editable-list-item:nth-child(2n) {
 		background: #f3f3f3;
 	}
-	
+
 	.wpv-editable-list .wpv-editable-list-item.wpv-editable-list-item-default {
 		background: #d9edf7;
 		box-shadow: inset 0 0 0 2px #bce8f1;
 	}
-	
+
 	.wpv-editable-list .wpv-editable-list-item.wpv-editable-list-item-warning {
 		background-color: #fcf8e3;
 	}
-	
+
 	.wpv-editable-list .wpv-editable-list-item.wpv-editable-list-item-deleted {
 		color: red;
 		background-color: #f99;
 	}
-	
+
 	.wpv-editable-list .wpv-editable-list-item-default-info-overlay {
 		position: absolute;
 		top: 0;
@@ -394,13 +386,13 @@
 		padding-top: 30px;
 		z-index: 10000;
 	}
-	
+
 		.wpv-editable-list .wpv-editable-list-item-default-info-overlay .wpv-editable-list-item-default-info-close {
 			position: absolute;
 			top: -1px;
 			right: -1px;
 		}
-	
+
 	.wpv-editable-list .wpv-editable-list-item-move {
 		cursor: move;
 		top: 9px;
@@ -408,15 +400,15 @@
 		margin: 0 5px;
 		padding: 3px;
 	}
-	
+
 	.wpv-editable-list .wpv-editable-list-item-delete:hover i {
 		color: red;
 	}
-	
+
 	.wpv-editable-list .wpv-editable-list-item-default-info:hover i {
 		color: green;
 	}
-	
+
 .wpv-editable-list-item-add {
 	float: right;
 }
@@ -438,7 +430,7 @@
 	padding: 10px 0;
 	border-bottom: 1px solid #ededed;
 	clear: both;
-/*	background: #fff;*/
+	transition: background-color 1s linear;
 }
 .wpv-setting-container:last-child {
 	border-bottom: none;
@@ -451,7 +443,6 @@
 	.wpv-help-section,
     .wpv-settings-section {
 		margin-top: 10px;
-		margin-right: 100px;
 	}
 
 	.wpv-query-section:before,
@@ -474,36 +465,6 @@
 	.wpv-help-section:after {
 		clear: both;
 	}
-	
-		.wpv-title-section .wpv-titlewrap {
-			display: -webkit-box;
-			display: -moz-box;
-			display: -ms-flexbox;
-			display: -webkit-flex;
-			display: flex;
-		}
-		
-		.wpv-title-section .wpv-title {
-			-webkit-box-flex: 1;
-			-moz-box-flex: 1;
-			width: 80%;
-			-webkit-flex: 1;
-			-ms-flex: 1;
-			flex: 1;
-		}
-		
-		.wpv-title-section .wpv-setting span.update-button-wrap {
-			margin: 0;
-		}
-		
-		#edit-slug-box.wpv-slug-container {
-			padding: 0;
-		}
-			
-		.wpv-title-section .wpv-action-secondary {
-			float: right;
-			margin-left: 10px;
-		}
 
 		.wpv-section-title {
 			display: block;
@@ -534,7 +495,7 @@
 			float: left;
 			width: 30%;
 		}
-		
+
 		.wpv-setting-container-horizontal .wpv-settings-header {
 			float: none;
 			width: auto;
@@ -561,12 +522,12 @@
 			.wpv-setting-container .wpv-settings-header h3 i {
 				font-size: 12px;
 			}
-		
+
 			.wpv-setting-container .wpv-settings-header h3 [class^="icon-layouts"] {
 				position: relative;
 				top: -4px;
 			}
-			
+
 			.wpv-setting-container .wpv-settings-header h2 {
 				margin-top: 8px;
 				font-weight: normal;
@@ -577,12 +538,12 @@
 			.wpv-setting-container .wpv-settings-header h2 i {
 				font-size: 12px;
 			}
-		
+
 			.wpv-setting-container .wpv-settings-header h2 [class^="icon-layouts"] {
 				position: relative;
 				top: -4px;
 			}
-			
+
 		.wpv-setting-container .auto-update {
 			position: absolute;
 			top: 25px;
@@ -603,7 +564,7 @@
 		.wpv-setting-container-horizontal .wpv-setting {
 			width: 90%;
 		}
-		
+
 			/*
 			* @todo use the wpv-helper-text classname instead
 			*/
@@ -614,7 +575,7 @@
 				margin-left: 22px;
 				margin-right: 22px;
 			}
-			
+
 			.wpv-setting h3 {
 				color: #333;
 				font-size: 14px;
@@ -626,11 +587,11 @@
 				background:#f6f6f6;
 				border-left:solid 3px #cdcdcd;
 			}
-			
+
 			.wpv-setting .wpv-advanced-setting.wpv-mightlong-list {
 				padding-top: 15px;
 			}
-			
+
 			/* DEPRECATED this h4 */
 			.wpv-setting .wpv-advanced-setting h4,
 			.wpv-setting .wpv-editor-instructions h4,
@@ -640,7 +601,7 @@
 				background: #999;
 				padding: 1px 5px;
 			}
-			
+
 			.wpv-setting .wpv-advanced-setting h3,
 			.wpv-setting .wpv-editor-instructions h3,
 			#post-body-content .wpv-editor-instructions h3,
@@ -651,26 +612,26 @@
 				font-size: 14px;
 				font-weight: bold;
 			}
-			
+
 			.wpv-setting .wpv-advanced-setting .wpv-setting-extra {
 				margin: 5px 0 5px 20px;
 				padding:1px 0 1px 20px;
 				background: none repeat scroll 0 0 #e9e9e9;
 			}
-			
+
 			.wpv-setting .wpv-advanced-setting table {
 				margin-bottom: 10px;
 			}
-			
-	
+
+
 			.wpv-setting .wpv-options-box-info {
 				display: block;
 				clear: both;
 				margin: 10px 0;
-				padding-top: 10px; 
+				padding-top: 10px;
 				border-top:solid 1px #cdcdcd;
 			}
-			
+
 			.wpv-itembox-header {
 				background: none repeat scroll 0 0 #e6e6e6;
 				border: 1px solid #ccc;
@@ -680,18 +641,18 @@
 				line-height: 28px;
 				padding: 0 10px;
 			}
-			
+
 			.wpv-itembox-header .wpv-code-editor-toggler {
 				position: absolute;
 				top: 2px;
 				right :2px;
 			}
-			
+
 			.wpv-itembox-header .wpv-code-editor-toggler i {
 				margin-right: 5px;
 				color:green;
 			}
-			
+
 			.wpv-setting textarea {
 				width: 100%;
 			}
@@ -726,16 +687,16 @@
 					float: none;
 					margin: 0 5px;
 					vertical-align: middle;
-				}                
+				}
 				.wpv-setting .update-button-wrap .spinner.hidden {
 					display: none;
 				}
-                
+
                 .wpv-setting .update-button-wrap .wpv-spinner.hidden {
 					display: none;
 				}
                 .wpv-setting .update-button-wrap .wpv-spinner,
-				.wpv-settings-save-all .wpv-spinner, 
+				.wpv-settings-save-all .wpv-spinner,
 				.wpv-spinner {
 					display: inline-block;
 					float: none;
@@ -800,7 +761,7 @@
 				.wpv-setting .code-editor {
 					position: relative;
 				}
-				
+
 					.wpv-ct-editors .quicktags-toolbar,
 					.wpv-setting .quicktags-toolbar {
 						border: 1px solid #ccc;
@@ -823,16 +784,16 @@
 						background: linear-gradient(to bottom,  #e5e5e5 0%,#f4f4f4 100%);
 						filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e5e5e5', endColorstr='#f4f4f4',GradientType=0 );
 					}
-					
+
 					.wpv-ct-inline-edit .code-editor-toolbar {
 						border-radius: none;
 						border-top: none;
 					}
-					
+
 					.wpv-setting .wpv-assets-editor {
 						border-left: 30px solid #ccc;
 					}
-					
+
 						.wpv-setting .wpv-assets-editor .code-editor-toolbar {
 							border-width: 0 1px 1px;
 						}
@@ -873,42 +834,42 @@
 							.wpv-setting .code-editor-toolbar>ul>li>button {
 								margin: 0 2px 5px 2px;
 							}
-							
+
 							.wpv-setting .code-editor-toolbar button {
 								position: relative;
 							}
-							
+
 							.wpv-setting .code-editor-toolbar button.wpv-button-flagged {
 								position:relative;
 								padding-right: 25px;
 							}
-							
+
 							.wpv-setting .code-editor-toolbar button.wpv-button-flagged > .icon-bookmark {
 								position: absolute;
 								top: -2px;
 								right: 2px;
 								color: #333;
 							}
-							
+
 							.wpv-setting .code-editor-toolbar button.wpv-button-flagged > .icon-bookmark.flow-complete {
 								color: green
 							}
-							
+
 							.wpv-setting .code-editor-toolbar button.wpv-button-flagged > .icon-bookmark.flow-warning {
 								color: red;
 							}
-							
+
 							.wpv-setting .code-editor-toolbar button.wpv-button-flagged > .icon-bookmark.flow-info {
 								color: blue;
 							}
-							
+
 								/* temp: to be removed;  */
 								.wpv-setting .code-editor-toolbar button>[class^="icon-"] {
 									position: static;
 									color: #222;
 									vertical-align: middle;
 								}
-								
+
 								.wpv-setting .code-editor-toolbar button.button-primary>[class^="icon-"],
 								.wpv-setting .code-editor-toolbar button.button-primary-toolset>[class^="icon-"] {
 									color: #fff;
@@ -923,7 +884,7 @@
 								.wpv-setting .code-editor-toolbar .close-editor {
 									float: right;
 								}
-								
+
 								.wpv-setting .code-editor-toolbar .cred-media-button {
 									margin: 0;
 								}
@@ -937,7 +898,7 @@
 						top: 6px;
 						right: 5px;
 					}
-					
+
 					.wpv-setting .wpv-editor-instructions-toggle,
 					.wpv-setting .wpv-editor-metadata-toggle,
 					#post-body-content .wpv-editor-instructions-toggle,
@@ -959,13 +920,13 @@
 						background: linear-gradient(to bottom,  #e5e5e5 0%,#f4f4f4 100%);
 						filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e5e5e5', endColorstr='#f4f4f4',GradientType=0 );
 					}
-					
+
 					.wpv-setting .wpv-editor-instructions-toggle,
 					.wpv-setting .wpv-editor-metadata-toggle,
 					.postbox .wpv-editor-instructions-toggle {
 						border-top: none;
 					}
-					
+
 					.wpv-setting .wpv-toggle-toggler-icon,
 					#post-body-content .wpv-toggle-toggler-icon,
 					.postbox .wpv-toggle-toggler-icon {
@@ -976,7 +937,7 @@
 						text-align: center;
 						border-right: solid 1px #ccc;
 					}
-					
+
 					.wpv-setting .wpv-editor-instructions,
 					#post-body-content .wpv-editor-instructions,
 					.postbox .wpv-editor-instructions {
@@ -987,18 +948,18 @@
 						max-height: 400px;
 						overflow-y: auto;
 					}
-					
-					.wpv-editor-instructions dl dt { 
-						font-weight: bold; 
-						margin-top: 0.5em; 
+
+					.wpv-editor-instructions dl dt {
+						font-weight: bold;
+						margin-top: 0.5em;
 					}
-					
+
 					.wpv-setting .wpv-editor-instructions .widefat,
 					#post-body-content .wpv-editor-instructions .widefat,
 					.postbox .wpv-editor-instructions .widefat {
 						margin-bottom: 20px;
 					}
-					
+
 					.wpv-setting .wpv-editor-instructions code,
 					#post-body-content .wpv-editor-instructions code,
 					.postbox .wpv-editor-instructions code {
@@ -1008,21 +969,21 @@
 						padding: 10px;
 						margin: 10px 0;
 					}
-					
+
 		.wpv-setting .wpv-ct-assets-inline-editor {
 			overflow:hidden;
 		}
-		
+
 			.wpv-setting .wpv-ct-assets-inline-editor .CodeMirror,
 			.wpv-setting .wpv-assets-editor .CodeMirror {
 				border-top: none;
 			}
-		
+
 			.wpv-setting .wpv-editor-metadata-toggle .icon-pushpin {
 				color: green;
 				margin-right: 5px;
 			}
-					
+
 /* Views edit page globals END */
 
 
@@ -1057,7 +1018,7 @@
 		.wpv-settings-pagination .wpv-setting-extra.wpv-spinner-selection {
 			padding: 10px 0 5px 20px;
 		}
-		
+
 		.wpv-settings-pagination .js-wpv-pagination-spinner-image-preview {
 			margin-left: 10px;
 		}
@@ -1092,7 +1053,7 @@
 		/*border: 3px solid #ededed;
 		border-radius: 2px;*/
 	}
-	
+
 		.wpv-settings-content-filter .wpv-filter-title {
 			display: block;
 			height: 28px;
@@ -1107,36 +1068,36 @@
 			line-height: 28px;
 			transition: all 1s linear;
 		}
-		
+
 		.wpv-settings-content-filter .wpv-filter-saved .wpv-filter-title {
 			border-color: #7ad03a;
 			color: #7ad03a;
 		}
-		
+
 		.wpv-settings-content-filter .wpv-filter-deleted .wpv-filter-title {
 			border-color: red;
 			color: red;
 		}
-	
+
 		.wpv-settings-content-filter .filter-list h4 {
 			margin: 1em 0 0.33em;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list .wpv-filter-edit {
 			display: none;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list .wpv-filter-title-notice {
 			position: absolute;
 			top: 40px;
 			left: 0;
 			color: #f6921e;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list .wpv-filter-title-notice.wpv-filter-title-notice-error {
 			color: #d54e21;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list .wpv-filter-options-set {
 			margin: 0 0 10px 20px;
 		}
@@ -1151,25 +1112,25 @@
 			background: #f9f9f9;
 			transition: box-shadow 0.5s linear;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list.filter-list-readonly > li {
 			padding: 15px 28px;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list > li.wpv-filter-row-current {
 			/*border-color: #999;*/
 			border-left: solid 2px #f6921e;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list > li.wpv-filter-saved {
 			box-shadow: 0 0 10px 2px #7ad03a;
 			border-color: #7ad03a;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list > li.wpv-filter-deleted {
 			border-color: red;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list > li.wpv-filter-row-current .wpv-filter-title {
 			/*border-color: #999;*/
 		}
@@ -1213,11 +1174,11 @@
 				position: relative;
 				background: none repeat scroll 0 0 #f3f3f3;
 			}
-			
+
 			.wpv-settings-content-filter .filter-list .wpv-filter-multiple-element-removed {
 				border-color: red;
 			}
-			
+
 			.wpv-settings-content-filter .filter-list .wpv-filter-multiple-element h4 {
 				border-bottom: solid 1px #dfdfdf;
 				margin: 0;
@@ -1225,35 +1186,35 @@
 				height: 28px;
 				line-height: 28px;
 			}
-			
+
 			.wpv-settings-content-filter .filter-list .wpv-filter-multiple-element-removed h4 {
 				border-color: red;
 				color: red;
 			}
-			
+
 			.wpv-settings-content-filter .wpv-filter-multiple-element p.toolset-alert {
 				margin: 0 10px 15px;
 			}
-			
+
 			.wpv-settings-content-filter .filter-list .wpv-filter-multiple-element-options {
 				position: relative;
 				margin: 0;
 				padding: 5px 10px;
 			}
-			
+
 			.wpv-settings-content-filter .filter-list .wpv-filter-multiple-element-options-mode {
 				margin: 10px 0;
 				padding: 10px;
 				background: #f9f9f9;
 				border: solid 1px #dfdfdf;
 			}
-			
+
 			.wpv-settings-content-filter .filter-list .wpv-filter-multiple-element-delete {
 				position: absolute;
 				top: 2px;;
 				right: 2px;
 			}
-			
+
 			.wpv-settings-content-filter .filter-list .wpv-filter-multiple-element-delete .ajax-loader {
 				margin: 0 10px 0 0;
 			}
@@ -1262,12 +1223,12 @@
 			padding-right: 0;
 			position: relative;
 		}
-		
+
 		.wpv-settings-content-filter .filter-list .filter-row-multiple .wpv-filter-multiple-summary-item {
 			display: block;
 			padding: 0 10px 0 20px;
 		}
-		
+
 				.wpv-settings-content-filter .filter-doc-help {
 					display: block;
 					position: absolute;
@@ -1286,18 +1247,18 @@
 					right: 2px;
 					z-index: 1;
 				}
-				
+
 				.wpv-settings-content-filter .edit-filter .ajax-loader,/*DEPRECATED*/
 				.wpv-settings-content-filter .wpv-edit-filter .ajax-loader,
 				.wpv-content-template-view-list .wpv-inline-content-template-action-buttons .ajax-loader {
 					margin: 0 10px;
 				}
-				
+
 				.wpv-settings-content-filter .edit-filter i,/*DEPRECATED*/
 				.wpv-settings-content-filter .wpv-edit-filter i {
 					/*color: #757575;*/
 				}
-				
+
 				.wpv-settings-content-filter .edit-filter i:hover,/*DEPRECATED*/
 				.wpv-settings-content-filter .wpv-edit-filter i:hover {
 					/*color: #666;*/
@@ -1337,7 +1298,7 @@
 		padding: 0;
 		margin: 0 !important;
 	}
-	
+
 	.wpv-sort-list-dropdown .wpv-sort-list-item {
 		display: none;
 		position: relative;
@@ -1348,7 +1309,7 @@
 		margin: 0;
 		z-index: 2;
 	}
-	
+
 		.wpv-sort-list-dropdown .wpv-sort-list-item.wpv-sort-list-current {
 			display: block;
 			z-index: 1;
@@ -1364,13 +1325,13 @@
 			line-height: 1;
 			box-shadow: none;
 		}
-			
+
 			.wpv-sort-list-dropdown .wpv-sort-list-item.wpv-sort-list-current a {
 				cursor: default;
 				color: #000;
 				background-color: #eee;
 			}
-		
+
 			.wpv-sort-list-dropdown a span {
 				vertical-align: middle;
 			}
@@ -1395,7 +1356,7 @@
 				right: auto;
 				left: 10px;
 			}
-		
+
 				.wpv-sort-list-dropdown > span.wpv-sort-list:hover .wpv-sort-list-item a:after {
 					border: none;
 				}
@@ -1404,7 +1365,7 @@
 		color: #000;
 		background: #eee;
 	}
-	
+
 /* Settings section: Filter HTML/CSS/JS END */
 
 /* Settings section: Filter Templates for this View */
@@ -1447,11 +1408,11 @@
 	.wpv-settings-archive-loops h3 {
 	/*	margin-bottom: 0;*/
 	}
-	
+
 	.wpv-settings-archive-loops.wpv-setting-replacing label {
 		opacity: 0.7;
 	}
-	
+
 	.wpv-settings-archive-loops .wpv-archive-loop-post-types-info {
 		background: #efefef none repeat scroll 0 0;
 		border: 1px solid #dbdbdb;
@@ -1462,28 +1423,23 @@
 		font-size: 11px;
 		line-height: 22px;
 	}
-	
+
 		.wpv-settings-archive-loops .wpv-archive-loop-post-types-info .button {
 			margin: 0 4px;
 		}
-	
+
 /* Settings section: Loops selection END */
 
 /* Settings section: Save all sections at once */
 .wpv-settings-save-all {
 	background-color: #F1F1F1;
 }
-	.wpv-settings-save-all p {
+	.wpv-settings-save-all p,
+	.wpv-settings-save-all .wpv-message-container {
 		margin: 0;
 	}
-	
-	.wpv-settings-save-all .update-button-wrap {
-		float: right;
-		padding: 10px 0 10px 10px;
-	}
-	
-	.wpv-settings-save-all .wpv-message-container {
-		float: left;
+
+	.wpv-settings-save-all .wpv-message-container p {
 		margin-top: 5px;
 	}
 /* Settings section: Save all sections at once END */
@@ -1506,12 +1462,12 @@
 	.wpv-content-template-view-list {
 
 	}
-		
+
 		.wpv-inline-content-template-listing > li {
 			position: relative;
 			transition: all 1s linear;
 		}
-		
+
 		.wpv-inline-content-template-title {
 			background: none repeat scroll 0 0 #e6e6e6;
 			display: block;
@@ -1523,38 +1479,38 @@
 			box-shadow: none;
 			transition: all 1s linear;
 		}
-		
+
 		.wpv-inline-content-template-title button {
-			
+
 		}
-		
+
 		.wpv-inline-content-template-title strong {
 			margin-left: 5px;
 		}
-		
+
 		.wpv-inline-content-template-title .wpv-inline-content-template-action-buttons {
 			display: block;
 			position: absolute;
 			top: 5px;
 			right: 5px;
 		}
-		
+
 		.wpv-inline-content-template-title .wpv-inline-content-template-action-buttons button {
-			
+
 		}
-		
+
 		.wpv-inline-content-template-listing > li.wpv-inline-content-template-saved {
 			box-shadow: 0 0 25px 5px #7ad03a;
 		}
-		
+
 		.wpv-inline-content-template-listing > li.wpv-inline-content-template-saved .wpv-inline-content-template-title {
 			color: #7ad03a;
 		}
-		
+
 		.wpv-inline-content-template-listing > li.wpv-inline-content-template-deleted {
-			
+
 		}
-		
+
 		.wpv-inline-content-template-listing > li.wpv-inline-content-template-deleted .wpv-inline-content-template-title {
 			border-color: red;
 			color: red;
@@ -1641,7 +1597,7 @@
 				padding: 25px 0 25px 0;
 				text-align: right;
 			}
-	
+
 	.wpv-layout-wizard-item {
 		width: 60%;
 	}
@@ -1655,7 +1611,7 @@
 		/*background: url('../img/views-icon-color_16X16.png') 0 0 no-repeat;*/
 		line-height: 16px;
 	}
-	
+
 	.wpv-layout-wizard-layout-style {
 		position: relative;
 		float: left;
@@ -1663,28 +1619,28 @@
 		margin: 0 0 10px;
 		border-right: solid 1px transparent;
 	}
-	
+
 	.wpv-layout-wizard-layout-style.wpv-layout-wizard-layout-style-has-settings {
 		border-right: solid 1px #ededed;
 	}
-	
+
 	.wpv-layout-wizard-layout-style .wpv-dialog-arrow-left {
 		position: absolute;
 		top: 0;
 		right: 0;
-		width: 0; 
-		height: 0; 
+		width: 0;
+		height: 0;
 		border-top: 16px solid transparent;
-		border-bottom: 16px solid transparent; 
-		border-right: 16px solid #ededed; 
+		border-bottom: 16px solid transparent;
+		border-right: 16px solid #ededed;
 	}
-	
+
 	.wpv-layout-wizard-layout-style-options {
 		position: relative;
 		float: right;
 		width: 270px;
 	}
-	
+
 		.wpv-layout-wizard-layout-style-options h4 {
 			margin-top: 0;
 			background: none repeat scroll 0 0 #999;
@@ -1726,7 +1682,6 @@
 
 		.wpv-layout-wizard-layout-style-icon.wpv-layout-wizard-layout-style-separators-list {
 			background: url('../img/layout-wizard-icons/separators_list.svg') center center no-repeat;
-			.svg') center center no-repeat;
 		}
 /* -----------*/
 /* WIZARD END */
@@ -1826,7 +1781,7 @@
 			.wpv-views-listing-page .wpv-views-listing td .desc {
 				color: #999;
 			}
-			
+
 			.wpv-views-listing-page .wpv-views-listing .button.button-leveled {
 				vertical-align: baseline;
 			}
@@ -1964,12 +1919,12 @@
 	.wpv-screen-options h6 {
 		margin-bottom: 0;
 	}
-	
+
 	.wpv-screen-options-wrapper .wpv-screen-options-metasection {
 		padding: 0 0 0 10px;
 		border-left: 5px solid;
 	}
-	
+
 		.wpv-screen-options-wrapper .wpv-screen-options-metasection h6 {
 			padding: 2px 10px;
 			margin: 2.33em 0 1em;
@@ -1981,7 +1936,7 @@
 	.wpv-screen-options-wrapper .wpv-screen-options-metasection-query {
 		border-color: #4AA4A4;
 	}
-		
+
 		.wpv-screen-options-wrapper .wpv-screen-options-metasection-query h6 {
 			background-color: #4AA4A4;
 		}
@@ -1989,7 +1944,7 @@
 	.wpv-screen-options-wrapper .wpv-screen-options-metasection-filter {
 		border-color: #C09853;
 	}
-	
+
 		.wpv-screen-options-wrapper .wpv-screen-options-metasection-filter h6 {
 			background-color: #C09853;
 		}
@@ -1997,16 +1952,16 @@
 	.wpv-screen-options-wrapper .wpv-screen-options-metasection-layout {
 		border-color: #348BB6;
 	}
-	
+
 		.wpv-screen-options-wrapper .wpv-screen-options-metasection-layout h6 {
 			background-color: #348BB6;
 		}
-	
+
 	.wpv-screen-options-wrapper .wpv-screen-options {
 		transition: all 0.5s linear;
 		box-shadow: none;
 	}
-	
+
 	.wpv-screen-options-wrapper .wpv-screen-options.wpv-screen-options-changing {
 		box-shadow: 0 0 5px 3px #f6921e;
 	}
@@ -2164,7 +2119,7 @@
 		overflow: hidden;
 		margin: 0 0 10px;
 	}
-	
+
 			.wpv-add-item-settings .icon-remove-sign {
 				color: #d54e21;
 				opacity: .8;
@@ -2218,7 +2173,7 @@
 }
 
 .wp-toolset-pointer .wp-pointer-buttons {
-	
+
 }
 
 .wp-toolset-pointer .wp-pointer-buttons button.alignright {
@@ -2366,7 +2321,7 @@
 /* ----------------- */
 /* STICKY ACTION BAR */
 /* ----------------- */
-
+/*
 .wpv-general-actions-bar {
 	margin-right: 100px;
 	background: #f1f1f1;
@@ -2376,52 +2331,86 @@
 .toolset-views-embedded .wpv-general-actions-bar {
 	max-width: 930px;
 }
+*/
+.wpv-general-actions-bar {
+	background: #f1f1f1;
+	border: none;
+	border-bottom: solid 1px #ccc;
+	z-index: 999;
+	padding: 10px 0 8px;
+}
 
-.wpv-general-actions-bar.wpv-action-success,
-.wpv-general-actions-bar-fixed .wpv-general-actions-bar.wpv-action-success {
+.wpv-general-actions-bar #titlediv {
+	display: flex;
+}
+
+.wpv-general-actions-bar #titlewrap {
+	flex: 1;
+	margin-top: 5px;
+}
+
+.wpv-general-actions-bar div#titlewrap #title {
+    width: auto;
+}
+
+.wpv-general-actions-bar #titlewrap button {
+	float: right;
+	margin-top: 7px;
+}
+
+.wpv-general-actions-bar #title-alt {
+	display: inline-block;
+	font-size: 1.7em;
+	font-style: italic;
+	height: 1.7em;
+	line-height: 1.7em;
+	margin: 0 0 3px;
+	padding: 0 10px;
+	cursor: pointer;
+}
+
+.wpv-general-actions-bar #description-alt {
+	display: inline-block;
+	font-style: italic;
+	cursor: pointer;
+}
+
+.wpv-general-actions-bar #title-alt i {
+	font-size: 0.8em;
+}
+
+.wpv-general-actions-bar #title-alt i,
+.wpv-general-actions-bar #description-alt i {
+    padding: 0 0 0 10px;
+    color: #888;
+}
+
+.wpv-general-actions-bar #title-alt:hover,
+.wpv-general-actions-bar #description-alt:hover {
+	text-decoration: underline;
+}
+
+.wpv-general-actions-bar .submit-trash,
+.wpv-general-actions-bar .submit-create-page {
+	float: right;
+	margin-top: 5px;
+	margin-left: 10px;
+}
+
+.wpv-general-actions-bar.wpv-action-success {
 	border-color: #7ad03a;
 	box-shadow: 0 13px 15px -12px #7ad03a;
 }
 
-.wpv-general-actions-bar.wpv-action-failure,
-.wpv-general-actions-bar-fixed .wpv-general-actions-bar.wpv-action-failure {
+.wpv-general-actions-bar.wpv-action-failure {
     border-color: #b94a48;
     box-shadow: 0 13px 15px -12px #b94a48;
 }
 
-.wpv-general-actions-bar-fixed .wpv-general-actions-bar {
-	position: fixed;
-	top: 0;
-	z-index: 999;
-	border-bottom: 1px solid #ccc;
+.wpv-general-actions-bar .spinner.ajax-loader {
+	float: right;
+	margin: 10px;
 }
-
-/* if wp toolbar is active and editor toolbar has fixed position */
-.wp-toolbar.wpv-general-actions-bar-fixed .wpv-general-actions-bar {
-	top: 32px; /* wp-toolbar height */
-}
-
-.wpv-general-actions-bar-fixed .wpv-title-section {
-	margin-top: 81px;
-}
-
-.wpv-general-actions-bar-fixed .toolset-views-embedded .wpv-title-section {
-	margin-top: 208px;
-}
-
-.wpv-general-actions-bar .wpv-view-save-all-progress {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	width: 0;
-	height: 2px;
-	background: transparent;
-	transition: all 1s linear;
-}
-	.wpv-general-actions-bar .wpv-view-save-all-progress.wpv-view-save-all-progress-working {
-		background: #7ad03a;
-	}
-
 
 /* ************************************************************************** *\
  		Tab design for admin screens
@@ -2456,7 +2445,7 @@
     position: relative;
     width: 100%;
 }
- 
+
 /* Computed version of WP4.1 .filter-links */
 .wpv-settings-filter-links,
 .wpv-admin-tabs-links {
@@ -2658,12 +2647,12 @@ html[dir='rtl'] .wpv-itembox-header .wpv-code-editor-toggler {
  		select2 fixes: z-index race conditions only on Views edit pages
 \* ************************************************************************** */
 
-.toolset_page_views-editor .toolset_select2-container--open, 
+.toolset_page_views-editor .toolset_select2-container--open,
 .toolset_page_view-archives-editor .toolset_select2-container--open {
 	z-index: 998;
 }
 
-.toolset_page_views-editor.disable-scrollbar .toolset_select2-container--open, 
+.toolset_page_views-editor.disable-scrollbar .toolset_select2-container--open,
 .toolset_page_view-archives-editor.disable-scrollbar .toolset_select2-container--open {
 	z-index: 20000;
 }
@@ -2672,18 +2661,18 @@ html[dir='rtl'] .wpv-itembox-header .wpv-code-editor-toggler {
 	z-index: 998;
 }
 
-.toolset_page_views-editor .toolset_select2-container.toolset_select2-container-in-setting, 
+.toolset_page_views-editor .toolset_select2-container.toolset_select2-container-in-setting,
 .toolset_page_view-archives-editor .toolset_select2-container.toolset_select2-container-in-setting {
 	z-index: 99;
 	min-width: 150px;
 }
 
-.toolset_page_views-editor .toolset_select2-container--open.toolset_select2-dropdown-in-setting, 
+.toolset_page_views-editor .toolset_select2-container--open.toolset_select2-dropdown-in-setting,
 .toolset_page_view-archives-editor .toolset_select2-container--open.toolset_select2-dropdown-in-setting {
 	z-index: 99;
 }
 
-.toolset_page_views-editor .toolset_select2-container--open.toolset_select2-dropdown-in-dialog, 
+.toolset_page_views-editor .toolset_select2-container--open.toolset_select2-dropdown-in-dialog,
 .toolset_page_view-archives-editor .toolset_select2-container--open.toolset_select2-dropdown-in-dialog {
 	z-index: 100110;
 }

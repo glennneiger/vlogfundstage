@@ -99,6 +99,12 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 
 
 	/**
+	 * @var boolean
+	 */
+	private $is_inline = false;
+
+
+	/**
 	 * Toolset_Admin_Notice constructor.
 	 *
 	 * @param string $id
@@ -400,6 +406,14 @@ abstract class Toolset_Admin_Notice_Abstract implements Toolset_Admin_Notice_Int
 	 */
 	public function get_template_context() {
 		return toolset_ensarr( $this->template_context );
+	}
+
+
+	/**
+	 * Sets inline mode.
+	 */
+	public function set_inline_mode( $inline ) {
+		$this->is_inline = $inline;
 	}
 
 }

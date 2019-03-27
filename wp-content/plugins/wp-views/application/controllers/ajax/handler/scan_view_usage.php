@@ -31,7 +31,7 @@ class WPV_Ajax_Handler_Scan_View_Usage extends Toolset_Ajax_Handler_Abstract {
 		$values_to_prepare = array();
 		$trans_join = '';
 		if( Toolset_WPML_Compatibility::get_instance()->is_wpml_active_and_configured() ) {
-			$trans_join = " LEFT JOIN {$wpdb->prefix}icl_translations t on t.element_id = ID AND t.element_type LIKE  \"post_%\" ";
+			$trans_join = " LEFT JOIN {$wpdb->prefix}icl_translations icl_t on icl_t.element_id = ID AND icl_t.element_type LIKE  \"post_%\" ";
 		}
 
 		$view = get_post( $post_id );
@@ -120,19 +120,19 @@ class WPV_Ajax_Handler_Scan_View_Usage extends Toolset_Ajax_Handler_Abstract {
 			}
 		}
 
-		$q = "SELECT * FROM {$wpdb->posts} {$trans_join} 
+		$q = "SELECT * FROM {$wpdb->posts} {$trans_join}
 		WHERE post_status = 'publish'
 		AND post_type NOT IN ('revision')
 		AND (
-			ID IN ( 
+			ID IN (
 				SELECT DISTINCT ID FROM {$wpdb->posts}
-				WHERE ( {$post_content_where} ) 
+				WHERE ( {$post_content_where} )
 				AND post_type NOT IN ('revision')
-				AND post_status = 'publish' 
+				AND post_status = 'publish'
 			)
 			OR ID IN (
 				SELECT DISTINCT post_id FROM {$wpdb->postmeta}
-				WHERE ( {$postmeta_where} ) 
+				WHERE ( {$postmeta_where} )
 			)
 		)";
 
@@ -192,7 +192,7 @@ class WPV_Ajax_Handler_Scan_View_Usage extends Toolset_Ajax_Handler_Abstract {
 					'post_title'	=> $row->post_title,
 					'post_type'	=> $type,
 				);
-				usort( $items, 'wpv_scan_view_usage_sort' );
+				usort( $items, array( $this, 'view_usage_sort' ) );
 			}
 		}
 		$data = array(
@@ -200,5 +200,24 @@ class WPV_Ajax_Handler_Scan_View_Usage extends Toolset_Ajax_Handler_Abstract {
 		);
 
 		$this->ajax_finish( $data, true );
+	}
+
+	/**
+	 * View Scan sort helper
+	 *
+	 * Sort items by two fields:
+	 * - first by post type
+	 * - second by post title
+	 *
+	 * @since unknown
+	 */
+	function view_usage_sort( $a, $b ) {
+		if ( $a["post_type"] === $b["post_type"] ) {
+			if ( $a["post_title"] === $b["post_title"] ) {
+				return 0;
+			}
+			return ( $a["post_title"] < $b["post_title"] ) ? -1 : 1;
+		}
+		return ( $a["post_type"] < $b["post_type"] ) ? -1 : 1;
 	}
 }

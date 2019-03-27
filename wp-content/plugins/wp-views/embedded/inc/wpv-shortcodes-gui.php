@@ -35,16 +35,16 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 	if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'wpv_editor_callback' ) ) {
 		die();
 	}
-	
+
 	global $wpdb, $WP_Views, $wp_version;
-	
+
 	$view_id = intval( $_GET['view_id'] );
 	$view_title = sanitize_text_field( $_GET['view_title'] );
 	$view_name = sanitize_text_field( $_GET['view_name'] );
 	$orig_id = intval( $_GET['orig_id'] );
-	
+
 	$has_extra_attributes = get_view_allowed_attributes( $view_id );
-	
+
 	$has_parametric_search = $WP_Views->does_view_have_form_controls( $view_id );
 	$has_submit = false;
 	$view_settings = $WP_Views->get_view_settings( $view_id );
@@ -96,7 +96,7 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 						</span>
 					</li>
 					<li>
-						<?php 
+						<?php
 						$placeholder = '';
 						$helper = '';
 						switch ( $query_type ) {
@@ -121,7 +121,7 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 						<label for="wpv-insert-view-shortcode-orderby" class="label-alignleft"><?php _e( 'Order by', 'wpv-views' ); ?></label>
 						<input type="text" id="wpv-insert-view-shortcode-orderby" class="regular-text js-wpv-insert-view-shortcode-orderby js-wpv-has-placeholder" data-type="holdon" placeholder="<?php echo esc_attr( $placeholder ); ?>" data-placeholder="<?php echo esc_attr( $placeholder ); ?>" />
 						<span class="wpv-helper-text">
-							<?php 
+							<?php
 							echo __( 'Change how the results will be ordered.', 'wpv-views' ) . '<br />';
 							echo $helper;
 							?>
@@ -150,8 +150,8 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 						</span>
 					</li>
 					<?php
-					if ( 
-						in_array( $query_type, array( 'posts' ) ) 
+					if (
+						in_array( $query_type, array( 'posts' ) )
 						&& ! version_compare( $wp_version, '4.0', '<' )
 					) {
 						$placeholder = __( 'ID, date, author or title', 'wpv-views' );
@@ -173,7 +173,7 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 							<option value="post_type"><?php _e('Post type', 'wpv-views'); ?></option>
 						</select>
 						<span class="wpv-helper-text">
-							<?php 
+							<?php
 							echo __( 'Change how the results that share the same value on the orderby setting will be ordered.', 'wpv-views' ) . '<br />';
 							//echo $helper;
 							?>
@@ -202,16 +202,16 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 					<?php _e( 'This View can be filtered by the values listed here.', 'wpv-views' ); ?>
 				</p>
 				<ul>
-				<?php 
+				<?php
 				foreach ( $has_extra_attributes as $attr_settings ) {
 					?>
 					<li>
 						<label for="wpv-insert-view-shortcode-extra-attribute-<?php echo $attr_settings['filter_type']; ?>" class="label-alignleft"><?php echo $attr_settings['filter_label']; ?></label>
-						<input type="text" 
-							id="wpv-insert-view-shortcode-extra-attribute-<?php echo $attr_settings['filter_type']; ?>" 
-							class="regular-text js-wpv-insert-view-shortcode-extra-attribute js-wpv-has-placeholder" 
-							placeholder="<?php echo $attr_settings['placeholder']; ?>" 
-							data-placeholder="<?php echo $attr_settings['placeholder']; ?>" 
+						<input type="text"
+							id="wpv-insert-view-shortcode-extra-attribute-<?php echo $attr_settings['filter_type']; ?>"
+							class="regular-text js-wpv-insert-view-shortcode-extra-attribute js-wpv-has-placeholder"
+							placeholder="<?php echo $attr_settings['placeholder']; ?>"
+							data-placeholder="<?php echo $attr_settings['placeholder']; ?>"
 							data-attribute="<?php echo $attr_settings['attribute']; ?>"
 							data-type="<?php echo $attr_settings['expected']; ?>" />
 						<span class="wpv-helper-text"><?php echo $attr_settings['description']; ?></span>
@@ -307,13 +307,13 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 			<div id="js-wpv-insert-view-cache-attributes-container" class="wpv-insert-view-cache-attributes-container js-wpv-insert-view-cache-attributes-container" style="overflow:hidden">
 				<h2><?php _e( 'View caching settings', 'wpv-views' ); ?></h2>
 				<p>
-					<?php 
+					<?php
 						echo __( 'Views results can be cached if they meet some requirements, so they are displayed faster in the frontend.', 'wpv-views' )
 							//. WPV_MESSAGE_SPACE_CHAR
 							//. __( 'We try our best to only cache those Views that have a fixed output, and we clear the cache as soon as there is any change.', 'wpv-views' )
 							. WPV_MESSAGE_SPACE_CHAR
 							. __( 'However, you might want to disable this feature for the current View', 'wpv-views' )
-						; 
+						;
 					?>
 				</p>
 				<ul>
@@ -323,7 +323,7 @@ function wpv_ajax_wpv_insert_view_dialog_callback() {
 							<?php _e( 'Use the cached version if it is available', 'wpv-views' ); ?>
 						</label>
 						<span class="wpv-helper-text">
-							<?php 
+							<?php
 							echo __( 'This will return the cached output in case this View supports it.', 'wpv-views' );
 							?>
 						</span>
@@ -359,8 +359,8 @@ function wpv_shortcode_gui_dialog_render_field( $key, $data, $shortcode, $post_t
 		);
 	} else {
 		$id = sprintf(
-			'%s-%s', 
-			$shortcode, 
+			'%s-%s',
+			$shortcode,
 			$key
 		);
 		$content .= sprintf(
@@ -371,29 +371,29 @@ function wpv_shortcode_gui_dialog_render_field( $key, $data, $shortcode, $post_t
 			isset( $data['default'] ) ? esc_attr( $data['default'] ) : ''
 		);
 	}
-	
+
 	$attr_value = isset( $data['default'] ) ? $data['default'] : '';
 	$attr_value = isset( $data['default_force'] ) ? $data['default_force'] : $attr_value;
-	
+
 	$classes = array('js-shortcode-gui-field');
 	$required = '';
-	if ( 
-		isset( $data['required'] ) 
-		&& $data['required'] 
+	if (
+		isset( $data['required'] )
+		&& $data['required']
 	) {
 		$classes[] = 'js-wpv-shortcode-gui-required';
 		$required = ' <span>- ' . esc_html( __( 'required', 'wpv-views' ) ) . '</span>';
 	}
 	if ( isset( $data['label'] ) ) {
 		$content .= sprintf(
-			'<h3>%s%s</h3>', 
+			'<h3>%s%s</h3>',
 			esc_html( $data['label'] ),
 			$required
 		);
 	}
 	if ( isset( $data['pseudolabel'] ) ) {
 		$content .= sprintf(
-			'<span class="wpv-shortcode-gui-attribute-pseudolabel">%s%s</span>', 
+			'<span class="wpv-shortcode-gui-attribute-pseudolabel">%s%s</span>',
 			esc_html( $data['pseudolabel'] ),
 			$required
 		);
@@ -410,7 +410,7 @@ function wpv_shortcode_gui_dialog_render_field( $key, $data, $shortcode, $post_t
 	 * This filter allow to manipulate of radio/select field options.
 	 * Filter is 'wpv_filter_wpv_shortcodes_gui_api_{shortode}_options'
 	 *
-	 * @param array $options for description see param $options in 
+	 * @param array $options for description see param $options in
 	 * wpv_filter_wpv_shortcodes_gui_api filter.
 	 *
 	 * @param string $type field type
@@ -456,9 +456,9 @@ function wpv_shortcode_gui_dialog_render_field( $key, $data, $shortcode, $post_t
 */
 
 function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $classes = array(), $post_type = null ) {
-    if ( 
-		isset( $data['classes'] ) 
-		&& is_array( $data['classes'] ) 
+    if (
+		isset( $data['classes'] )
+		&& is_array( $data['classes'] )
 	) {
         $classes = array_merge( $classes, $data['classes'] );
     }
@@ -484,7 +484,8 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 				. '</div>';
 		}
 		break;
-    case 'number':
+	case 'number':
+		case 'integer':
     case 'text':
     case 'url':
         $classes[] = 'large-text';
@@ -516,7 +517,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 			isset( $data['hide'] ) && $data['hide'] ? ' style="display:none"' : '',
             esc_attr( $attr_value )
         );
-        break;    
+        break;
     case 'suggest':
         $classes[] = 'large-text';
         $classes[] = 'js-wpv-shortcode-gui-suggest';
@@ -549,7 +550,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
     case 'radio':
 		$list_class = isset( $data['class'] ) ? ( ' class="' . esc_attr( $data['class'] ) . '"' ) : '';
         $content .= sprintf(
-            '<ul id="%s"%s>', 
+            '<ul id="%s"%s>',
             esc_attr( $id ),
 			$list_class
         );
@@ -591,7 +592,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 	case 'radiohtml':
         $list_class = isset( $data['class'] ) ? ( ' class="' . esc_attr( $data['class'] ) . '"' ) : '';
         $content .= sprintf(
-            '<ul id="%s"%s>', 
+            '<ul id="%s"%s>',
             esc_attr( $id ),
 			$list_class
         );
@@ -660,17 +661,17 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 		break;
     case 'post':
 		$content .= sprintf(
-            '<ul id="%s">', 
+            '<ul id="%s">',
             esc_attr( $id )
         );
-		
+
         $content .= '<li class="wpv-shortcode-gui-item-selector-option">';
 		$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-current">';
         $content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-post-id-current" name="wpv_shortcode_gui_object_id" value="current" checked="checked" />';
         $content .=  __( 'The current post being displayed either directly or in a View loop', 'wpv-views' );
         $content .= '</label>';
         $content .= '</li>';
-		
+
 		/**
 		 * $current_page in Views
 		 */
@@ -686,11 +687,11 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 		/**
 		 * Hierarchical
 		 */
-        if ( 
-			is_null( $post_type ) 
+        if (
+			is_null( $post_type )
 			|| (
-				is_object( $post_type ) 
-				&& isset( $post_type->hierarchical ) 
+				is_object( $post_type )
+				&& isset( $post_type->hierarchical )
 				&& $post_type->hierarchical
 			)
 		) {
@@ -709,14 +710,14 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 			// Legacy relationships
 			$current_post_type_parents = array();
 			$custom_post_types_relations = get_option( 'wpcf-custom-types', array() );
-			
+
 			if ( is_null( $post_type ) ) {
 				foreach ( $custom_post_types_relations as $cptr_key => $cptr_data ) {
 					if ( isset( $cptr_data['post_relationship']['has'] ) ) {
 						$current_post_type_parents[] = $cptr_key;
 					}
-					if ( 
-						isset( $cptr_data['post_relationship']['belongs'] ) 
+					if (
+						isset( $cptr_data['post_relationship']['belongs'] )
 						&& is_array( $cptr_data['post_relationship']['belongs'] )
 					) {
 						$this_belongs = array_keys( $cptr_data['post_relationship']['belongs'] );
@@ -733,8 +734,8 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 			) {
 				// Fix legacy problem, when child CPT has no parents itself, but parent CPT has children
 				foreach ( $custom_post_types_relations as $cptr_key => $cptr_data ) {
-					if ( 
-						isset( $cptr_data['post_relationship']['has'] ) 
+					if (
+						isset( $cptr_data['post_relationship']['has'] )
 						&& in_array( $post_type->slug, array_keys( $cptr_data['post_relationship']['has'] ) )
 					) {
 						$current_post_type_parents[] = $cptr_key;
@@ -757,10 +758,10 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 					}
 				}
 			}
-			
+
 			$current_post_type_parents = array_values( $current_post_type_parents );
 			$current_post_type_parents = array_unique( $current_post_type_parents );
-			
+
 			if ( ! empty( $current_post_type_parents) ) {
 				$content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
 				$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-related">';
@@ -793,8 +794,8 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 			// Make sure m2m classes are registered in the autoloader
 			do_action( 'toolset_do_m2m_full_init' );
 			$query = new Toolset_Relationship_Query_V2();
-			
-			// Note that we can not use $query->do_if() because it actually runs both branches 
+
+			// Note that we can not use $query->do_if() because it actually runs both branches
 			// and one of them expects $current_post_type->name to exist
             if ( $post_type instanceof WP_Post_Type ) {
 	            $relationship_definitions = $query
@@ -821,25 +822,25 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 		            )
 		            ->get_results();
             }
-			
+
 			$relationship_definitions_per_origin = array(
 				Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD => array(),
 				Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD => array()
 			);
-			
+
 			$relationship_section_title_per_cardinality = array(
 				'one-to-one' => __( '%s (one-to-one relationship)', 'wpv-views' ),
 				'one-to-many' => __( '%s (one-to-many relationship)', 'wpv-views' ),
 				'many-to-many' => __( '%s (many-to-many relationship)', 'wpv-views' ),
 			);
-			
+
 			foreach( $relationship_definitions as $relationship_definition ) {
 				$relationship_cardinality = $relationship_definition->get_cardinality();
 				$origin = $relationship_definition->get_origin();
-				
+
 				$relationship_definitions_per_origin[ $origin->get_origin_keyword() ][] = $relationship_definition;
 			}
-			
+
 			if ( ! empty( $relationship_definitions_per_origin[ Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ] ) ) {
 				$content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
 				$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-related">';
@@ -849,7 +850,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 				$content .= '<div class="wpv-advanced-setting wpv-shortcode-gui-item-selector-is-related js-wpv-shortcode-gui-item-selector-is-related" style="display:none;margin-left:20px;">';
 				foreach ( $relationship_definitions_per_origin[ Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ] as $relationship_definition  ) {
 					$cardinality = $relationship_definition->get_cardinality()->get_type();
-					
+
 					$content .= '<div style="margin:5px 0 0;">';
 					$content .= '<h3>' . sprintf(
 						$relationship_section_title_per_cardinality[ $cardinality ],
@@ -868,7 +869,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 				$content .= '</div>';
 				$content .= '</li>';
 			}
-			
+
 			if ( ! empty( $relationship_definitions_per_origin[ Toolset_Relationship_Origin_Post_Reference_Field::ORIGIN_KEYWORD ] ) ) {
 				$content .= '<li class="wpv-shortcode-gui-item-selector-option wpv-shortcode-gui-item-selector-has-related js-wpv-shortcode-gui-item-selector-has-related">';
 				$content .= '<label for="wpv-shortcode-gui-item-selector-post-id-referenced">';
@@ -890,9 +891,9 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 				$content .= '</div>';
 				$content .= '</li>';
 			}
-			
+
 		}
-		
+
 		/**
 		 * Specific post selection
 		 */
@@ -940,21 +941,21 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
             '</a>'
         );
         $content .= '</p>';
-		
+
         break;
 	case 'user':
 		$content .= sprintf(
-            '<ul id="%s">', 
+            '<ul id="%s">',
             esc_attr( $id )
         );
-		
+
         $content .= '<li class="wpv-shortcode-gui-item-selector-option">';
 		$content .= '<label for="wpv-shortcode-gui-item-selector-user-id-current">';
         $content .= '<input type="radio" class="js-wpv-shortcode-gui-item-selector" id="wpv-shortcode-gui-item-selector-user-id-current" name="wpv_shortcode_gui_object_id" value="current" checked="checked" />';
         $content .=  __( 'The current user or the one being displayed in a View loop', 'wpv-views' );
         $content .= '</label>';
         $content .= '</li>';
-		
+
 		/**
 		 * Specific user selection
 		 */
@@ -988,7 +989,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
             '</a>'
         );
         $content .= '</p>';
-		
+
 		break;
     case 'callback':
         if ( isset($data['callback']) && is_callable($data['callback']) ) {
@@ -997,7 +998,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
         } else {
             $content .= sprintf(__('Wrong callback function: %s.', 'wpv-views'), $data['callback']);
         }
-        break;    
+        break;
     default:
         $content .= $data['type'];
         break;
@@ -1008,7 +1009,7 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
 /**
  * Sanitize additional forced data for a shortcode, used to render its attributes dialog GUI.
  *
- * Sanitize both inital parameters and override parameters passe to the AJAX method used to generate the dialog 
+ * Sanitize both inital parameters and override parameters passe to the AJAX method used to generate the dialog
  * when adding or editing a shortcode.
  *
  * @param $data array
@@ -1018,13 +1019,13 @@ function wpv_shortcode_gui_dialog_render_attribute( $id, $data = array(), $class
  * @since 2.3.0
  */
 function wpv_sanitize_shortcode_forced_data( $data ) {
-	
+
 	$data_sanitized = array();
-	
+
 	if ( isset( $data['content'] ) ) {
 		$data_sanitized['content'] = sanitize_text_field( $data['content'] );
 	}
-	
+
 	if ( isset( $data['attributes'] ) ) {
 		if ( is_array( $data['attributes'] ) ) {
 			$data_sanitized['attributes'] = array();
@@ -1036,7 +1037,7 @@ function wpv_sanitize_shortcode_forced_data( $data ) {
 			$data_sanitized['attributes'] = array();
 		}
 	}
-	
+
 	return $data_sanitized;
 
 }
@@ -1059,24 +1060,24 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 		wp_send_json_error( $data );
     }
     if (
-		! isset( $_GET['shortcode'] ) 
-		|| empty( $_GET['shortcode'] ) 
+		! isset( $_GET['shortcode'] )
+		|| empty( $_GET['shortcode'] )
 	) {
         $data = array(
 			'message' => __( 'Unknown shortcode', 'wpv-views' )
 		);
 		wp_send_json_error( $data );
     }
-	
+
 	$shortcode		= sanitize_text_field( $_GET['shortcode'] );
 	$parameters		= isset( $_GET['parameters'] ) ? $_GET['parameters'] : array();
 	$overrides		= isset( $_GET['overrides'] ) ? $_GET['overrides'] : array();
-	
+
 	$parameters		= wpv_sanitize_shortcode_forced_data( $parameters );
 	$overrides		= wpv_sanitize_shortcode_forced_data( $overrides );
-	
+
 	$gui_action		= isset( $_GET['gui_action'] ) ? sanitize_text_field( $_GET['gui_action'] ) : '';
-	
+
 	/**
 	 * Get list of shortcodes with GUI data.
 	 *
@@ -1085,16 +1086,16 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 	 * @since 1.9.0
 	 */
 	$views_shortcodes_gui_data	= apply_filters( 'wpv_filter_wpv_shortcodes_gui_data', array() );
-	
+
     if ( ! isset( $views_shortcodes_gui_data[ $shortcode ] ) ) {
         $data = array(
 			'message' => __( 'Unknown shortcode', 'wpv-views' )
 		);
 		wp_send_json_error( $data );
     }
-    
+
 	$shortcode_data = $views_shortcodes_gui_data[ $shortcode ];
-	if ( 
+	if (
 		isset( $shortcode_data['callback'] )
 		&& is_callable( $shortcode_data['callback'] )
 	) {
@@ -1109,9 +1110,9 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
     /**
 	* Post selection tab
 	*/
-    if ( 
-		isset( $options['post-selection'] ) 
-		&& $options['post-selection'] 
+    if (
+		isset( $options['post-selection'] )
+		&& $options['post-selection']
 	) {
         if ( ! isset($options['attributes'] ) ) {
             $options['attributes'] = array();
@@ -1140,13 +1141,13 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 			);
 		}
     }
-	
+
 	/**
 	* User selection tab
 	*/
-    if ( 
-		isset( $options['user-selection'] ) 
-		&& $options['user-selection'] 
+    if (
+		isset( $options['user-selection'] )
+		&& $options['user-selection']
 	) {
         if ( ! isset($options['attributes'] ) ) {
             $options['attributes'] = array();
@@ -1176,7 +1177,7 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 			$post_type = get_post_type_object( $post_type_slug );
 		}
     }
-	
+
 	ob_start();
 
     printf(
@@ -1185,7 +1186,7 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
     );
     echo '<input type="hidden" value="' . esc_attr( $shortcode ) . '" class="wpv-shortcode-gui-shortcode-name js-wpv-shortcode-gui-shortcode-name" />';
 	if (
-		isset( $options['additional_data'] ) 
+		isset( $options['additional_data'] )
 		&& is_array( $options['additional_data'] )
 	) {
 		foreach ( $options['additional_data'] as $add_data_key => $add_data_value ) {
@@ -1194,7 +1195,7 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 			echo '</span>';
 		}
 	}
-	
+
     echo '<div id="js-wpv-shortcode-gui-dialog-tabs" class="wpv-shortcode-gui-tabs js-wpv-shortcode-gui-tabs">';
     $tabs = '';
     $content = '';
@@ -1206,14 +1207,14 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
             esc_html( $group_data['label'] )
         );
         $content .= sprintf(
-			'<div id="%s-%s">', 
-			esc_attr( $shortcode ), 
+			'<div id="%s-%s">',
+			esc_attr( $shortcode ),
 			esc_attr( $group_id )
 		);
         if ( isset( $group_data['header'] ) ) {
             $content .= sprintf(
-				'<h2>%s</h2>', 
-				esc_html( $group_data['header'] ) 
+				'<h2>%s</h2>',
+				esc_html( $group_data['header'] )
 			);
         }
         /**
@@ -1233,7 +1234,7 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 			} else {
 				$content .= '<div class="wpv-shortcode-gui-content-wrapper js-wpv-shortcode-gui-content-wrapper">';
 				$content .= sprintf(
-					'<h3>%s</h3>', 
+					'<h3>%s</h3>',
 					esc_html( $group_data['content']['label'] )
 				);
 				$default = '';
@@ -1244,7 +1245,7 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
 					$default = esc_attr( $group_data['content']['default'] );
 				}
 				if (
-					isset( $group_data['content']['type'] ) 
+					isset( $group_data['content']['type'] )
 					&& $group_data['content']['type'] == 'textarea'
 				) {
 					$content .= sprintf(
@@ -1289,14 +1290,14 @@ function wp_ajax_wpv_shortcode_gui_dialog_create() {
         $content .= '</div>';
     }
     printf(
-		'<ul class="js-wpv-shortcode-gui-tabs-list">%s</ul>', 
+		'<ul class="js-wpv-shortcode-gui-tabs-list">%s</ul>',
 		$tabs
 	);
     echo $content;
 	echo '</div>';
 	echo '<div class="wpv-filter-toolset-messages js-wpv-filter-toolset-messages"></div>';
 	echo '</div>';
-    
+
 	$dialog_content = ob_get_clean();
 	$data = array(
 		'dialog'	=> $dialog_content,
@@ -1317,18 +1318,18 @@ function wpv_suggest_wpv_post_body_view_template() {
 	$values_to_prepare = array();
 	$wpml_join = $wpml_where = "";
 	if (
-		isset( $sitepress ) 
+		isset( $sitepress )
 		&& function_exists( 'icl_object_id' )
 	) {
 		$content_templates_translatable = $sitepress->is_translated_post_type( 'view-template' );
 		if ( $content_templates_translatable ) {
 			$wpml_current_language = $sitepress->get_current_language();
-			$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-			$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
+			$wpml_join = " JOIN {$wpdb->prefix}icl_translations icl_t ";
+			$wpml_where = " AND p.ID = icl_t.element_id AND icl_t.language_code = %s AND icl_t.element_type LIKE 'post_%' ";
 			$values_to_prepare[] = $wpml_current_language;
 		}
 	}
-	
+
 	$exclude_loop_templates = '';
 	$exclude_loop_templates_ids = wpv_get_loop_content_template_ids();
 	// Be sure not to include the current CT when editing one
@@ -1350,17 +1351,17 @@ function wpv_suggest_wpv_post_body_view_template() {
 	$values_to_prepare[] = '%' . wpv_esc_like( $_REQUEST['q'] ) . '%';
 	$view_tempates_available = $wpdb->get_results(
 		$wpdb->prepare(
-			"SELECT p.ID, p.post_name, p.post_title 
-			FROM {$wpdb->posts} p {$wpml_join} 
-			WHERE p.post_status = 'publish' 
-			{$wpml_where} 
-			AND p.post_type = %s 
+			"SELECT p.ID, p.post_name, p.post_title
+			FROM {$wpdb->posts} p {$wpml_join}
+			WHERE p.post_status = 'publish'
+			{$wpml_where}
+			AND p.post_type = %s
 			AND (
 				p.post_title LIKE %s
 				OR p.post_name LIKE %s
 			)
 			{$exclude_loop_templates}
-			ORDER BY p.post_title 
+			ORDER BY p.post_title
 			LIMIT 5",
 			$values_to_prepare
 		)
@@ -1380,15 +1381,15 @@ add_action('wp_ajax_nopriv_wpv_suggest_wpv_post_field_name', 'wpv_suggest_wpv_po
 function wpv_suggest_wpv_post_field_name() {
 	global $wpdb;
 	$meta_key_q = '%' . wpv_esc_like( $_REQUEST['q'] ) . '%';
-	$cf_keys = $wpdb->get_col( 
+	$cf_keys = $wpdb->get_col(
 		$wpdb->prepare(
 			"SELECT DISTINCT meta_key
 			FROM {$wpdb->postmeta}
 			WHERE meta_key LIKE %s
 			ORDER BY meta_key
 			LIMIT 5",
-			$meta_key_q 
-		) 
+			$meta_key_q
+		)
 	);
 	foreach ( $cf_keys as $key ) {
 		echo $key . "\n";
@@ -1409,15 +1410,15 @@ function wpv_suggest_wpv_taxonomy_field_name() {
 	}
 	global $wpdb;
 	$meta_key_q = '%' . wpv_esc_like( $_REQUEST['q'] ) . '%';
-	$cf_keys = $wpdb->get_col( 
+	$cf_keys = $wpdb->get_col(
 		$wpdb->prepare(
 			"SELECT DISTINCT meta_key
 			FROM {$wpdb->termmeta}
 			WHERE meta_key LIKE %s
 			ORDER BY meta_key
 			LIMIT 5",
-			$meta_key_q 
-		) 
+			$meta_key_q
+		)
 	);
 	foreach ( $cf_keys as $key ) {
 		echo $key . "\n";
@@ -1433,15 +1434,15 @@ add_action('wp_ajax_nopriv_wpv_suggest_wpv_user_field_name', 'wpv_suggest_wpv_us
 function wpv_suggest_wpv_user_field_name() {
 	global $wpdb;
 	$meta_key_q = '%' . wpv_esc_like( $_REQUEST['q'] ) . '%';
-	$cf_keys = $wpdb->get_col( 
+	$cf_keys = $wpdb->get_col(
 		$wpdb->prepare(
 			"SELECT DISTINCT meta_key
 			FROM {$wpdb->usermeta}
 			WHERE meta_key LIKE %s
 			ORDER BY meta_key
 			LIMIT 5",
-			$meta_key_q 
-		) 
+			$meta_key_q
+		)
 	);
 	foreach ( $cf_keys as $key ) {
 		echo $key . "\n";
@@ -1481,55 +1482,25 @@ function wpv_suggest_form_targets() {
 	}
 	if ( isset( $sitepress ) && function_exists( 'icl_object_id' ) ) {
 		$current_lang_code = $sitepress->get_current_language();
-		$trans_join = " JOIN {$wpdb->prefix}icl_translations t ";
-		$trans_where = " AND ID = t.element_id AND t.language_code = %s ";
+		$trans_join = " JOIN {$wpdb->prefix}icl_translations icl_t ";
+		$trans_where = " AND ID = icl_t.element_id AND icl_t.language_code = %s ";
 		$values_to_prepare[] = $current_lang_code;
 	}
-	$results = $wpdb->get_results( 
+	$results = $wpdb->get_results(
 		$wpdb->prepare( "
             SELECT ID, post_title
             FROM {$wpdb->posts} {$trans_join}
             WHERE post_title LIKE '%s'
 			{$included_post_type_slugs_where}
-			AND post_status='publish' 
+			AND post_status='publish'
 			{$trans_where}
             ORDER BY post_title ASC
 			LIMIT 5",
-			$values_to_prepare 
-		) 
+			$values_to_prepare
+		)
 	);
 	foreach ($results as $row) {
 		echo $row->post_title . " [#" . $row->ID . "]\n";
-	}
-	die();
-}
-
-add_action( 'wp_ajax_wpv_create_form_target_page', 'wpv_create_form_target_page' );
-
-function wpv_create_form_target_page() {
-	if ( 
-		current_user_can( 'publish_pages' )
-		&& wp_verify_nonce( $_GET['_wpnonce'], 'wpv_create_form_target_page_nonce' ) 
-	) {
-		$target_page = array(
-		  'post_title' => wp_strip_all_tags( $_GET['post_title'] ),
-		  'post_status' => 'publish',
-		  'post_type' => 'page'
-		);
-		$target_page_id = wp_insert_post( $target_page );
-		$target_page_title = get_the_title( $target_page_id );
-		$response = array(
-			'result' => 'success',
-			'page_title' => $target_page_title,
-			'page_id' => $target_page_id
-		);
-		echo json_encode( $response );
-	} else {
-		$response = array(
-			'result' => 'error',
-			'error' => __( 'Security error', 'wpv-views' )
-		);
-		echo json_encode( $response );
 	}
 	die();
 }

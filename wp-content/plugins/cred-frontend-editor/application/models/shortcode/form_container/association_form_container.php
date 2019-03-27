@@ -27,7 +27,7 @@ class CRED_Shortcode_Association_Form_Container extends CRED_Shortcode_Form_Cont
 	protected function get_relationship_service() {
 		return $this->relationship_service;
 	}
-	
+
 	/**
 	 * @var array
 	 */
@@ -45,17 +45,17 @@ class CRED_Shortcode_Association_Form_Container extends CRED_Shortcode_Form_Cont
 	 */
 	private function get_current_relationship() {
 		$current_form_id = $this->get_current_form_id();
-		
+
 		if ( ! $current_form_id ) {
 			return null;
 		}
-		
+
 		$relationship = get_post_meta( $current_form_id, 'relationship', true );
-		return empty( $relationship ) 
-			? null 
+		return empty( $relationship )
+			? null
 			: $relationship;
 	}
-	
+
 	/**
 	 * @return string
 	 *
@@ -63,12 +63,12 @@ class CRED_Shortcode_Association_Form_Container extends CRED_Shortcode_Form_Cont
 	 */
 	protected function get_hidden_fields() {
 		$hidden_fields = array();
-		
+
 		$relationship_slug = $this->helper->get_current_relationship();
 		$association = $this->helper->get_current_association();
 		$form_id = $this->get_current_form_id();
 		$form_count = $this->get_current_form_count();
-		
+
 		$hidden_fields[ 'form_id' ] = toolset_form_control( array(
 			'field' => array(
 				'#type' => 'hidden',
@@ -131,14 +131,14 @@ class CRED_Shortcode_Association_Form_Container extends CRED_Shortcode_Form_Cont
 		$hidden_fields[ 'redirect_url' ] = toolset_form_control( array(
 			'field' => array(
 				'#type' => 'hidden',
-				'#id' => 'cred_redirect_url',
-				'#name' => 'cred_redirect_url',
+				'#id' => self::REDIRECT_URL_KEY,
+				'#name' => self::REDIRECT_URL_KEY,
 				'#attributes' => array(),
 				'#inline' => true,
 				'#value' => $this->redirect_url,
 			)
 		) );
-		
+
 		$hidden_fields[ 'relationship' ] = toolset_form_control( array(
 			'field' => array(
 				'#type' => 'hidden',
@@ -149,7 +149,7 @@ class CRED_Shortcode_Association_Form_Container extends CRED_Shortcode_Form_Cont
 				'#value' => $relationship_slug,
 			)
 		) );
-		
+
 		if ( $association instanceof Toolset_Post ) {
 			$hidden_fields[ 'association' ] = toolset_form_control( array(
 				'field' => array(
@@ -164,8 +164,8 @@ class CRED_Shortcode_Association_Form_Container extends CRED_Shortcode_Form_Cont
 		}
 
 		$hidden_fields[ 'wpnonce' ] = wp_nonce_field( CRED_Association_Form_Main::CRED_ASSOCIATION_FORM_AJAX_NONCE, CRED_Association_Form_Main::CRED_ASSOCIATION_FORM_AJAX_NONCE, true, false );
-		
+
 		return implode( apply_filters( 'cred_form_shortcode_get_hidden_fields', $hidden_fields, $form_id, $relationship_slug, $association, $this ) );
 	}
-	
+
 }

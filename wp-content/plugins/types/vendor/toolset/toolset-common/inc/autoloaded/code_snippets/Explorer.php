@@ -88,7 +88,7 @@ class Explorer {
 			return array();
 		}
 
-		$php_files_iterator = $this->php_iterator_factory->create( $basedir );
+		$php_files_iterator = $this->php_iterator_factory->create( $basedir, true );
 
 		$results = array();
 		foreach( $php_files_iterator as $file_info ) {

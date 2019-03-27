@@ -17,6 +17,8 @@ abstract class Toolset_Field_Group {
 	 */
 	const POSTMETA_FIELD_SLUGS_LIST = '_wp_types_group_fields';
 
+	const POSTMETA_CONDITIONAL_DISPLAY = '_wpcf_conditional_display';
+
 
 	const FIELD_SLUG_DELIMITER = ',';
 
@@ -43,6 +45,10 @@ abstract class Toolset_Field_Group {
 
 	/** @var Toolset_Post_Type_Repository|null */
 	private $_post_type_repository;
+
+
+	/** @var null|array Cache for the result of get_conditional_display() since it's nontrivial to build it. */
+	private $conditional_display_cache = null;
 
 
 	/**
@@ -503,12 +509,13 @@ abstract class Toolset_Field_Group {
 	 * Takes into account special purpose groups.
 	 *
 	 * @param string|IToolset_Post_Type $type_input
+	 * @param bool $strict_assignment_only
 	 *
 	 * @return bool
-	 * @throws InvalidArgumentException
 	 * @since m2m
+	 * @throws InvalidArgumentException If the $type_input doesn't identify an existing post type.
 	 */
-	public function is_assigned_to_type( $type_input ) {
+	public function is_assigned_to_type( $type_input, $strict_assignment_only = false ) {
 
 		if ( $type_input instanceof IToolset_Post_Type ) {
 			$post_type_slug = $type_input->get_slug();
@@ -529,7 +536,7 @@ abstract class Toolset_Field_Group {
 
 		// Empty array means either "all post types" for generic-purpose field groups
 		// or "nothing" for special-purpose field group.
-		if( empty( $assigned_types ) ) {
+		if( empty( $assigned_types ) && ! $strict_assignment_only ) {
 			if( $this->has_special_purpose() ) {
 				return false;
 			} else {
@@ -769,11 +776,27 @@ abstract class Toolset_Field_Group {
 	 * @link https://git.onthegosystems.com/toolset/types/wikis/Fields-conditionals:-Toolset-forms-conditionals.js
 	 */
 	public function get_conditional_display() {
-		$result = array();
-		$conditional_display = get_post_meta( $this->get_id(), '_wpcf_conditional_display', true );
-		$result['fields'] = $this->get_conditional_display_fields( $conditional_display );
-		$result['triggers'] = $this->get_conditional_display_triggers( $result['fields'] );
-		return $result;
+		if ( null === $this->conditional_display_cache ) {
+			$raw_value = get_post_meta( $this->get_id(), self::POSTMETA_CONDITIONAL_DISPLAY, true );
+			$conditional_display_fields = $this->get_conditional_display_fields( $raw_value );
+
+			$this->conditional_display_cache = array(
+				'fields' => $conditional_display_fields,
+				'triggers' => $this->get_conditional_display_triggers( $conditional_display_fields ),
+			);
+		}
+		return $this->conditional_display_cache;
+	}
+
+
+	/**
+	 * Return true if the group has any conditional display (data-dependent conditions) configured.
+	 *
+	 * @return bool
+	 */
+	public function has_conditional_display_conditions() {
+		$conditional_display = $this->get_conditional_display();
+		return ( count( $conditional_display['fields'] ) !== 0 || count( $conditional_display['triggers'] ) !== 0 );
 	}
 
 	/**
@@ -789,7 +812,6 @@ abstract class Toolset_Field_Group {
 		     || ! isset( $conditional_data['conditions'] ) ) {
 			return array();
 		}
-		$fields = array();
 		$group_id = 'wpcf-group-' . $this->get_slug();
 
 		// TODO: needs @refactoring. @see WPToolset_Types::filterConditional()

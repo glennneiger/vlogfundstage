@@ -13,14 +13,14 @@ namespace OTGS\Toolset\CRED\Controller;
 class Cache {
 	
 	/**
-	 * @var \OTGS\Toolset\CRED\Cache\Model\Forms\Factory 
+	 * @var \OTGS\Toolset\CRED\Model\Cache\Forms\Factory 
 	 */
 	private $cache_factory;
 
 	/**
 	 * Cache constructor.
 	 *
-	 * @param \OTGS\Toolset\CRED\Cache\Model\Forms\Factory $cache_factory
+	 * @param \OTGS\Toolset\CRED\Model\Cache\Forms\Factory $cache_factory
 	 */
 	public function __construct( \OTGS\Toolset\CRED\Model\Cache\Forms\Factory $cache_factory ) {
 		$this->cache_factory = $cache_factory;

@@ -60,7 +60,7 @@ if ( ! class_exists( 'Toolset_Utils', false ) ) {
 		 * @since 2.5.0
 		 */
 		public static function get_ajax_actions_array_to_exclude_on_frontend() {
-			return array( 'wpv_get_view_query_results', 'wpv_get_archive_query_results', 'render_element_changed' );
+			return array( 'wpv_get_view_query_results', 'wpv_get_archive_query_results', 'render_element_changed', 'toolset_get_cred_form_block_preview' );
 		}
 
 		/**
@@ -368,7 +368,7 @@ if ( ! class_exists( 'Toolset_Utils', false ) ) {
 
 		    // Use the native solution if available (which will happen in the vast majority of most cases).
 		    if( function_exists( 'mb_convert_case' ) && defined( 'MB_CASE_TITLE' ) ) {
-		        return mb_convert_case( $callback, MB_CASE_TITLE );
+		        return mb_convert_case( $callback, MB_CASE_TITLE, 'UTF-8' );
             }
 
             // mb_convert_case() works this way - it also capitalizes first letters after numbers

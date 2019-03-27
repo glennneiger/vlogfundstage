@@ -34,9 +34,9 @@ class CRED_PostExpiration_Form
 
     /**
      * Counts element types.
-     * 
+     *
      * @param type $type
-     * @return type 
+     * @return type
      */
     private function _count( $type ) {
         if ( !isset( $this->_count[$type] ) ) {
@@ -60,9 +60,9 @@ class CRED_PostExpiration_Form
 
     /**
      * Renders elements.
-     * 
+     *
      * @param type $elements
-     * @return type 
+     * @return type
      */
     public function renderElements( $elements )
     {
@@ -85,7 +85,7 @@ class CRED_PostExpiration_Form
 		<script type="text/javascript">
 			//<![CDATA[
 			wptDateData = {
-				buttonImage: "' . CRED_PE_IMAGE_URL . 'calendar.gif",
+				buttonImage: "' . CRED_ASSETS_URL . '/images/calendar.gif",
 				buttonText: "' . __( 'Select date', 'wp-cred' ) . '",
 				dateFormat: "' . $date_format . '",
 				altFormat: "' . $date_format . '"
@@ -95,7 +95,7 @@ class CRED_PostExpiration_Form
 			';
 			$date_output = true;
 		}
-		
+
         return $output;
     }
 	private function _date_convert_wp_to_js( $date_format ) {
@@ -108,7 +108,7 @@ class CRED_PostExpiration_Form
 		$date_format = str_replace( 'Y', 'yy', $date_format );
 		$date_format = preg_replace( '/(\s)*[:@aAghGHisTcr]+(\s)*/', '', $date_format);
 		$date_format = preg_replace( '/[,-\/\s]+$/', '', $date_format);
-	
+
 		return $date_format;
 	}
 
@@ -326,7 +326,7 @@ class CRED_PostExpiration_Form
         $output = $this->_wrapElement( $element, $output );
         return $output . "\r\n";
     }
-	
+
 	/**
      * Returns HTML formatted output for hidden element.
      *

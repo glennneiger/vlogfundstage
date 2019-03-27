@@ -20,7 +20,8 @@ Toolset.CRED.AssociationFormCreateEdit = function ( action, args ) {
         wpnonce: null,
         form_type : Toolset.CRED.AssociationFormsEditor.form_type,
         post_status : 'draft',
-        redirect_custom_post: ''
+		redirect_custom_post: '',
+		editor_origin: 'scaffold'
     });
 
     self.init = function () {

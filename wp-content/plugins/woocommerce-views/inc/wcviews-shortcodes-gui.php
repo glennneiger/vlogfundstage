@@ -6,7 +6,7 @@ class WCViews_shortcodes_gui {
 	
 	public function initialize() {
 		
-		
+		/** {ENCRYPTION PATCH HERE} **/
 		
 		// Needs to run after after_setup_theme::999
 		add_action( 'after_setup_theme', array( $this, 'register_shortcodes_within_views' ), 9999 );
@@ -390,8 +390,8 @@ class WCViews_shortcodes_gui {
 							'label'			=> __( 'Product listing: show gallery', 'woocommerce_views'),
 							'type'			=> 'radio',
 							'options'		=> array(
-								'no'		=> __( 'Do not show thumbnails gallery in prodict listings', 'woocommerce_views' ),
-								'yes'		=> __( 'Show thumbnails gallery in prodict listings', 'woocommerce_views' ),
+								'no'		=> __( 'Do not show thumbnails gallery in product listings', 'woocommerce_views' ),
+								'yes'		=> __( 'Show thumbnails gallery in product listings', 'woocommerce_views' ),
 							),
 							'default'		=> 'no',
 							'description'	=> __( 'Only affects product listings and WooCommerce default output format', 'woocommerce_views' ),

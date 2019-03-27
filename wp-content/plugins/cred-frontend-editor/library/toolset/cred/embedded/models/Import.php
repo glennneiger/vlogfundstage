@@ -22,11 +22,10 @@ final class CRED_Import_Model extends CRED_Abstract_Model implements CRED_Single
 //                'private_key'=>''
 //            ),
 //            'dont_load_cred_css' => 0,
-//            'autogeneration_email' => array('subject' => 'Welcome new user', 
+//            'autogeneration_email' => array('subject' => 'Welcome new user',
 //            'body' => '[username]Your username is: %cuf_username%[/username]\\n[nickname]Your nickname is: %cuf_nickname%[/nickname]\\n[password]Your password is: %cuf_password%[/password]')
 //        );
 //
-//        // CRED_PostExpiration
 //        $defaults = apply_filters('cred_ext_general_settings_options', $defaults);
 //
 //        $settings = get_option($this->option_name);

@@ -104,6 +104,10 @@ Types.page.extension.relatedContent.viewmodels.AddNewDialogViewModel = function(
 
 		self.dialog_id = 'types-new-content-related-content-dialog-' + relatedContentModel.relationship_slug;
 
+        var maxDialogWidth = relatedContentModel.relatedContent.columns.relationship.length > 0
+            ? 1200 // with relationship fields
+            : 600; // without relationship fields
+
 		var dialog = Types.page.extension.relatedContent.main.createDialog(
 			self.dialog_id,
 			relatedContentModel.strings.misc['addNew'],
@@ -128,7 +132,8 @@ Types.page.extension.relatedContent.viewmodels.AddNewDialogViewModel = function(
 				}
 			],
 			{
-				dialogClass: 'toolset-dialog-new-related-content'
+				dialogClass: 'toolset-dialog-new-related-content',
+				width: jQuery( window ).width() < maxDialogWidth + 50 ? jQuery( window ).width() - 50 : maxDialogWidth
 			}
 		);
 

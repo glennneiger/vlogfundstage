@@ -58,7 +58,7 @@ $renderer = \Toolset_Renderer::get_instance();
 				<?php _e( 'Role of the user to create/edit:', 'wp-cred' ); ?>
 			</td>
 			<td>
-				<select class="roles_selectbox" id="cred_form_user_role" name="_cred[form][user_role][]" autocomplete="false">
+				<select class="roles_selectbox" id="cred_form_user_role" name="_cred[form][user_role][]" autocomplete="false" required >
 					<option value=""><?php echo __( '-- Select role --' ); ?></option><?php
 					foreach ( $user_roles as $k => $v ) {
 						?>
@@ -90,7 +90,7 @@ $renderer = \Toolset_Renderer::get_instance();
 				<?php _e( 'After visitors submit this form:', 'wp-cred' ); ?>
 			</td>
 			<td>
-				<select id="cred_form_success_action" name="_cred[form][action]">
+				<select id="cred_form_success_action" name="_cred[form][action]" required >
 					<?php
 					/*
 					// Toolset Forms 1.9: disable the option to redirect to the user because:

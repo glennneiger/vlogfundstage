@@ -49,7 +49,7 @@ ToolsetCommon.UserEditor.GutenbergEditorBackendLayoutTemplate = function( $ ) {
 		if ( attributes.builder == 'gutenberg' ) {
 			item.addClass( 'js-wpv-ct-listing-user-editor-inited' );
 			item.find( '.js-wpv-layout-template-overlay' ).remove();
-			item.find( '.js-wpv-ct-apply-user-editor:not(.js-wpv-ct-apply-user-editor-gutenberg)' ).prop( 'disabled', false );
+			item.find( '.js-wpv-ct-apply-user-editor:not(.js-wpv-ct-apply-user-editor-gutenberg)' ).prop( 'disabled', false ).attr( 'disabled', false );
 			item.prepend( self.overlayContainer( self.i18n_data ) );
 			item.find( '.CodeMirror' ).css( { 'height' : '0px'} );
 			self.updateGutenbergCTEditorLinkTarget( item );

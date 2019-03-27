@@ -39,6 +39,9 @@ class Mediator {
 
 		$toolset_page_builder_modules = new shared\PageBuilderModules();
 		$toolset_page_builder_modules->load_modules();
+		
+		$beaver_builder_integration = new \OTGS\Toolset\Common\Interop\Handler\BeaverBuilder\MainIntegration();
+		$beaver_builder_integration->initialize();
 
 		$this->initialize_code_snippet_support();
 

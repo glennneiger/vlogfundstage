@@ -116,7 +116,7 @@ abstract class WPV_Post_Object_Wrapper {
         $collision_exists = ( null != $existing_post );
         if( $collision_exists ) {
             $title_collides = ( strtolower( $name ) == strtolower( $existing_post->post_title ) );
-            $slug_collides = ( strtolower( $name ) == strtolower( $existing_post->post_name ) );
+            $slug_collides = ( sanitize_title( $name ) == strtolower( $existing_post->post_name ) );
             if( $title_collides && $slug_collides ) {
                 $colliding_field = 'both';
             } else if( $title_collides ) {
@@ -417,6 +417,13 @@ abstract class WPV_Post_Object_Wrapper {
      */
     public function update_postmeta( $key, $value ) {
         $ret = update_post_meta( $this->object_id, $key, $value );
+
+		/**
+		 * Action for when updating the post meta.
+		 *
+		 * @since 2.7.0
+		 */
+		do_action( "wpv_updated_{$key}_meta", $this->object_id, $key, $value );
 
         $this->maybe_after_update_action();
 

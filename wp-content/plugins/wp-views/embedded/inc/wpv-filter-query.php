@@ -9,11 +9,11 @@
 */
 
 class WPV_View_Post_Query {
-	
+
 	/**
 	* @var WPV_View_Post_Query Instance of WPV_View_Post_Query.
 	*/
-	
+
 	private static $instance = null;
 
 	/**
@@ -25,41 +25,41 @@ class WPV_View_Post_Query {
 		}
 		return WPV_View_Post_Query::$instance;
 	}
-	
+
 	public static function clear_instance() {
 		if ( WPV_View_Post_Query::$instance ) {
 			WPV_View_Post_Query::$instance = null;
 		}
 	}
-	
+
 	function __construct() {
-		
+
 		/**
 		* WordPress fixes
 		*/
-		
+
 		add_filter( 'wpv_filter_query',					array( $this, 'wpv_filter_query_post_in_and_not_in_fix' ), 999, 3 );
 
 		/**
 		* Extensibility
 		*/
-		
+
 		add_filter( 'wpv_filter_query_post_process',						array( $this, 'wpv_filter_extend_query_for_parametric_and_counters' ), 999, 3 );
 		add_action( 'wpv_action_extend_query_for_parametric_and_counters',	array( $this, 'wpv_filter_extend_query_for_parametric_and_counters' ), 10, 3 );
-		
+
 		add_filter( 'wpv_filter_wpv_get_dependant_extended_query_args',		array( $this, 'wpv_get_dependant_view_query_args' ), 10, 2 );
-		
+
 		/**
 		* AJAX pagination
 		*/
-		
+
 		add_action( 'wp_ajax_wpv_get_view_query_results',					array( $this, 'wpv_get_view_query_results' ) );
 		add_action( 'wp_ajax_nopriv_wpv_get_view_query_results',			array( $this, 'wpv_get_view_query_results' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_current_archive_loop',				array( $this, 'wpv_set_posted_archive_loop' ) );
-		
+
 	}
-	
+
 	/**
 	* wpv_filter_query_post_in_and_not_in_fix
 	*
@@ -71,9 +71,9 @@ class WPV_View_Post_Query {
 
 	function wpv_filter_query_post_in_and_not_in_fix( $query, $view_settings, $view_id ) {
 
-		if ( 
-			isset( $query['post__in'] ) 
-			&& isset( $query['post__not_in'] ) 
+		if (
+			isset( $query['post__in'] )
+			&& isset( $query['post__not_in'] )
 		) {
 			$query['post__in'] = array_diff( (array) $query['post__in'], (array) $query['post__not_in'] );
 			$query['post__in'] = array_values( $query['post__in'] );
@@ -85,7 +85,7 @@ class WPV_View_Post_Query {
 
 		return $query;
 	}
-	
+
 	/**
 	* wpv_filter_extend_query_for_parametric_and_counters
 	*
@@ -102,15 +102,15 @@ class WPV_View_Post_Query {
 	function wpv_filter_extend_query_for_parametric_and_counters( $post_query, $view_settings, $id ) {
 		$dps_enabled = false;
 		$counters_enabled = false;
-		if ( 
-			! isset( $view_settings['dps'] ) 
-			|| ! is_array( $view_settings['dps'] ) 
+		if (
+			! isset( $view_settings['dps'] )
+			|| ! is_array( $view_settings['dps'] )
 		) {
 			$view_settings['dps'] = array();
 		}
-		if ( 
-			isset( $view_settings['dps']['enable_dependency'] ) 
-			&& $view_settings['dps']['enable_dependency'] == 'enable' 
+		if (
+			isset( $view_settings['dps']['enable_dependency'] )
+			&& $view_settings['dps']['enable_dependency'] == 'enable'
 		) {
 			$dps_enabled = true;
 			$controls_per_kind = wpv_count_filter_controls( $view_settings );
@@ -118,21 +118,21 @@ class WPV_View_Post_Query {
 			$no_intersection = array();
 			if ( ! isset( $controls_per_kind['error'] ) ) {
 				$controls_count = $controls_per_kind['cf'] + $controls_per_kind['tax'] + $controls_per_kind['pr'] + $controls_per_kind['search'];
-				if ( 
-					$controls_per_kind['cf'] > 1 
+				if (
+					$controls_per_kind['cf'] > 1
 					&& (
-						! isset( $view_settings['custom_fields_relationship'] ) 
-						|| $view_settings['custom_fields_relationship'] != 'AND' 
-					) 
+						! isset( $view_settings['custom_fields_relationship'] )
+						|| $view_settings['custom_fields_relationship'] != 'AND'
+					)
 				) {
 					$no_intersection[] = __( 'custom field', 'wpv-views' );
 				}
-				if ( 
-					$controls_per_kind['tax'] > 1 
+				if (
+					$controls_per_kind['tax'] > 1
 					&& (
-						! isset( $view_settings['taxonomy_relationship'] ) 
-						|| $view_settings['taxonomy_relationship'] != 'AND' 
-					) 
+						! isset( $view_settings['taxonomy_relationship'] )
+						|| $view_settings['taxonomy_relationship'] != 'AND'
+					)
 				) {
 					$no_intersection[] = __( 'taxonomy', 'wpv-views' );
 				}
@@ -153,17 +153,17 @@ class WPV_View_Post_Query {
 		if ( strpos( $view_settings['filter_meta_html'], '%%COUNT%%' ) !== false ) {
 			$counters_enabled = true;
 		}
-		
+
 		global $WP_Views;
-		if ( 
-			! $dps_enabled 
-			&& ! $counters_enabled 
+		if (
+			! $dps_enabled
+			&& ! $counters_enabled
 		) {
 			// Set the force value
 			$WP_Views->set_force_disable_dependant_parametric_search( true );
 			return $post_query;
 		}
-		
+
 		// In any case, we need to mimic the process that we used to generate the $query
 		$view_settings_defaults = array(
 			'post_type'         => 'any',
@@ -172,10 +172,10 @@ class WPV_View_Post_Query {
 			'paged'             => '1',
 		);
 		extract( $view_settings_defaults );
-		
+
 		$view_settings['view_id'] = $id;
 		extract( $view_settings, EXTR_OVERWRITE );
-		
+
 		$query = array(
 			'paged'             	=> $paged,
 			'post_type'         	=> $post_type,
@@ -185,14 +185,14 @@ class WPV_View_Post_Query {
 		);
 		// Add special check for media (attachments) as their default status in not usually published
 		if (
-			sizeof( $post_type ) == 1 
+			sizeof( $post_type ) == 1
 			&& $post_type[0] == 'attachment'
 		) {
 			$query['post_status'] = 'any'; // Note this can be overriden by adding a status filter.
 		}
-			
+
 		$query = apply_filters( 'wpv_filter_query', $query, $view_settings, $id );
-		
+
 		// Now we have the $query as in the original one
 		// We now need to overwrite the limit, offset, paged and pagination options
 		// Also, we set it to just return the IDs
@@ -201,22 +201,22 @@ class WPV_View_Post_Query {
 		$query['paged'] 			= 1;
 		$query['offset'] 			= 0;
 		$query['fields'] 			= 'ids';
-		
+
 		$already = array();
-		if ( 
-			isset( $post_query->posts ) 
-			&& ! empty( $post_query->posts ) 
+		if (
+			isset( $post_query->posts )
+			&& ! empty( $post_query->posts )
 		) {
 			foreach ( (array) $post_query->posts as $post_object ) {
 				$already[] = $post_object->ID;
 			}
 		}
 		$WP_Views->returned_ids_for_parametric_search = $already;
-		
+
 		$parametric_search_data_to_cache = WPV_Cache::get_parametric_search_data_to_cache( $view_settings );
-		
+
 		WPV_Cache::generate_native_cache( $already, $parametric_search_data_to_cache );
-		
+
 		// Adjust $query to avoid already queried posts
 		if ( isset ( $query['pr_filter_post__in'] ) ) {
 			$query['post__in'] = $query['pr_filter_post__in'];
@@ -232,15 +232,15 @@ class WPV_View_Post_Query {
 				$query['post__in'] = array_diff( (array) $query['post__in'], (array) $query['post__not_in'] );
 			}
 		}
-		
+
 		// Perform the query
 		$aux_cache_query = new WP_Query( $query );
 
 		// Add the auxiliar query results to the list of returned IDs
 		// Generate the "extra" cache
-		if ( 
-			is_array( $aux_cache_query->posts ) 
-			&& ! empty( $aux_cache_query->posts ) 
+		if (
+			is_array( $aux_cache_query->posts )
+			&& ! empty( $aux_cache_query->posts )
 		) {
 			$WP_Views->returned_ids_for_parametric_search = array_merge( $WP_Views->returned_ids_for_parametric_search, $aux_cache_query->posts );
 			$WP_Views->returned_ids_for_parametric_search = array_unique( $WP_Views->returned_ids_for_parametric_search );
@@ -249,16 +249,16 @@ class WPV_View_Post_Query {
 
 		return $post_query;
 	}
-	
+
 	/**
 	* -------------------------
 	* AJAX pagination
 	* -------------------------
 	*/
-	
+
 	function wpv_get_view_query_results() {
 		global $post;
-		
+
 		$view_id		= ( $_POST['wpv_view_widget_id'] == 0 ) ? (int) $_POST['id'] : (int) $_POST['wpv_view_widget_id'];
 		$page			= (int) $_POST['page'];
 		$sort			= isset( $_POST['sort'] ) ? $_POST['sort'] : array();
@@ -267,19 +267,19 @@ class WPV_View_Post_Query {
 		$search_keys	= array();
 		$extra			= isset( $_POST['extra'] ) ? $_POST['extra'] : array();
 		$attributes		= isset( $_POST['attributes'] ) ? $_POST['attributes'] : array();
-		
+
 		$_GET['wpv_view_count']	= sanitize_text_field( $_POST['view_number'] );
 		$_GET['wpv_paged']		= $page;
-		
+
 		foreach ( $sort as $sort_key => $sort_value ) {
 			if ( in_array( $sort_key, array( 'wpv_sort_orderby', 'wpv_sort_order', 'wpv_sort_orderby_as', 'wpv_sort_orderby_second', 'wpv_sort_order_second' ) ) ) {
 				$_GET[ $sort_key ] = sanitize_text_field( $sort_value );
 			}
 		}
-		
+
 		foreach ( $environment as $environment_key => $environment_value ) {
-			if ( 
-				in_array( $environment_key, array( 'wpv_aux_current_post_id', 'wpv_aux_parent_post_id', 'wpv_aux_parent_term_id', 'wpv_aux_parent_user_id' ) ) 
+			if (
+				in_array( $environment_key, array( 'wpv_aux_current_post_id', 'wpv_aux_parent_post_id', 'wpv_aux_parent_term_id', 'wpv_aux_parent_user_id' ) )
 				&& (int) $environment_value > 0
 			) {
 				$search_keys[] = $environment_key;
@@ -307,14 +307,14 @@ class WPV_View_Post_Query {
 				}
 			}
 		}
-		
+
 		if ( isset( $search['dps_general'] ) ) {
 			$corrected_item = array();
 			foreach ( $search['dps_general'] as $dps_pr_item ) {
-				if ( 
-					is_array( $dps_pr_item ) 
-					&& isset( $dps_pr_item['name'] ) 
-					&& isset( $dps_pr_item['value'] ) 
+				if (
+					is_array( $dps_pr_item )
+					&& isset( $dps_pr_item['name'] )
+					&& isset( $dps_pr_item['value'] )
 				) {
 					if ( strlen( $dps_pr_item['name'] ) < 2 ) {
 						$search_keys[] = $dps_pr_item['name'];
@@ -342,13 +342,13 @@ class WPV_View_Post_Query {
 				}
 			}
 		}
-		
+
 		if ( isset( $search['dps_pr'] ) ) {
 			foreach ( $search['dps_pr'] as $dps_pr_item ) {
-				if ( 
-					is_array( $dps_pr_item ) 
-					&& isset( $dps_pr_item['name'] ) 
-					&& isset( $dps_pr_item['value'] ) 
+				if (
+					is_array( $dps_pr_item )
+					&& isset( $dps_pr_item['name'] )
+					&& isset( $dps_pr_item['value'] )
 				) {
 					if ( strlen( $dps_pr_item['name'] ) < 2 ) {
 						if ( ! isset( $_GET[ $dps_pr_item['name'] ] ) ) {
@@ -374,7 +374,7 @@ class WPV_View_Post_Query {
 				}
 			}
 		}
-		
+
 
 		foreach ( $extra as $extra_key => $extra_value ) {
 			if ( ! in_array( $extra_key, $search_keys ) ) {
@@ -389,13 +389,13 @@ class WPV_View_Post_Query {
 				}
 			}
 		}
-		
-		if ( isset( $_POST['lang'] ) ) {
-			do_action( 'wpml_switch_language', sanitize_text_field( $_POST['lang'] ) );
+
+		if ( toolset_getpost( 'lang', false ) ) {
+			do_action( 'wpml_switch_language', sanitize_text_field( toolset_getpost( 'lang', '' ) ) );
 		}
-		
+
 		$view_settings			= apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $view_id );
-		
+
 		// Sometimes, the global $post is not set. We need to fill it.
 		// Otherwise, Content Templates used on Views loops for taxonomies or users will not work.
 		if ( ! isset( $post ) ) {
@@ -406,47 +406,47 @@ class WPV_View_Post_Query {
 			if ( $top_current_post ) {
 				$post = $top_current_post;
 			} else {
-			
+
 				$registered_post_types = get_post_types( array(), 'names' );
 				$dummy_post_type_counter = 0;
 				$dummy_post_type_base = 'view-dummy';
 				$dummy_post_type = 'view-dummy';
-				
+
 				while ( in_array( $dummy_post_type, $registered_post_types ) ) {
 					$dummy_post_type_counter = $dummy_post_type_counter + 1;
 					$dummy_post_type = $dummy_post_type_base . '-' . $dummy_post_type_counter;
 				}
-				
+
 				$post = get_post( $view_id );
 				$post->post_type = $dummy_post_type;
-			
+
 			}
-			
+
 		}
-		
+
 		if ( sanitize_text_field( $_POST['wpv_view_widget_id'] ) == 0 ) {
 			// set the view count so we return the right view number after rendering.
 			/*
 			$WP_Views->set_view_count( intval( esc_attr( $post_data['view_number'] ) ), $view_id );
 			echo $WP_Views->short_tag_wpv_view( $view_data );
 			*/
-			
+
 			$args = array(
 				'id' => $view_id
 			);
-			
+
 			if ( isset( $_POST['target_id'] ) ) {
 				$args['target_id'] = $_POST['target_id'];
 			}
-			
+
 			$args = array_merge( $args, $attributes );
-			
+
 			$expect = isset( $_POST['expect'] ) ? $_POST['expect'] : 'full';
-			
+
 			$data = array(
 				'id'	=> $view_id
 			);
-			
+
 			if ( $expect == 'form' ) {
 				if ( isset( $args['target_id'] ) ) {
 					$data['form'] = render_view( $args );
@@ -472,13 +472,13 @@ class WPV_View_Post_Query {
 			// set the view count so we return the right view number after rendering.
 			//$WP_Views->set_view_count( (int) esc_attr( $post_data['view_number'] ), $view_id );
 			$expect		= isset( $_POST['expect'] ) ? $_POST['expect'] : 'full';
-			
+
 			$data		= array(
 				'id'	=> $view_id,
 				'form'	=> '',
 				'full'	=> ''
 			);
-			
+
 			$args		= array(
 				'id' => $view_id
 			);
@@ -486,20 +486,20 @@ class WPV_View_Post_Query {
 				$args['target_id'] = $_POST['target_id'];
 			}
 			$args		= array_merge( $args, $attributes );
-			
+
 			$widget_args = array(
 				'before_widget' => '',
 				'before_title' => '',
 				'after_title' => '',
 				'after_widget' => ''
 			);
-			
+
 			if ( $expect == 'form' ) {
 				if ( isset( $args['target_id'] ) ) {
 					$widget_form = new WPV_Widget_filter();
 					ob_start();
 					$widget_form->widget(
-						$widget_args, 
+						$widget_args,
 						array(
 							'title'		=> '',
 							'view'		=> $view_id,
@@ -512,7 +512,7 @@ class WPV_View_Post_Query {
 				$widget = new WPV_Widget();
 				ob_start();
 				$widget->widget(
-					$widget_args, 
+					$widget_args,
 					array(
 						'title' => '',
 						'view' => $view_id
@@ -524,7 +524,7 @@ class WPV_View_Post_Query {
 					$widget_form = new WPV_Widget_filter();
 					ob_start();
 					$widget_form->widget(
-						$widget_args, 
+						$widget_args,
 						array(
 							'title'		=> '',
 							'view'		=> $view_id,
@@ -536,7 +536,7 @@ class WPV_View_Post_Query {
 				$widget = new WPV_Widget();
 				ob_start();
 				$widget->widget(
-					$widget_args, 
+					$widget_args,
 					array(
 						'title' => '',
 						'view' => $view_id
@@ -548,14 +548,14 @@ class WPV_View_Post_Query {
 				$data['full'] = '';
 			}
 		}
-		
+
 		/**
 		* A little hacky
 		*
 		* To calculate the View hash we need to set the View shortcode attributes, but we remove them when closing render_view(),
 		* so we rstore them here
 		*/
-		
+
 		do_action( 'wpv_action_wpv_set_view_shortcodes_attributes', $attributes );
 
 		/**
@@ -567,19 +567,19 @@ class WPV_View_Post_Query {
 		 * terminated right after the AJAX call dies.
 		 */
 		do_action( 'wpv_action_wpv_set_current_view', $view_id );
-		
+
 		$pagination_permalinks	= apply_filters( 'wpv_filter_wpv_get_pagination_permalinks', array(), $view_settings, $view_id );
 		if ( $page == 1 ) {
 			$pagination_permalink = $pagination_permalinks['first'];
 		} else {
 			$pagination_permalink = str_replace( 'WPV_PAGE_NUM', $page, $pagination_permalinks['other'] );
 		}
-		
+
 		// For parametric search URL history management
 		$data['permalink']				= $pagination_permalink;
 		// In theory, this is only used by parametric search, so we should always use the 'first' one above.
 		$data['parametric_permalink']	= $pagination_permalink;
-		
+
 		if ( ! wpv_parametric_search_triggers_history( $view_id) ) {
 			// When parametric search does not manage history, we need to clean the URL.
 			$view_url_data					= get_view_allowed_url_parameters( $view_id );
@@ -587,7 +587,6 @@ class WPV_View_Post_Query {
 			foreach ( $query_args_remove as $query_args_remove_string ) {
 				$query_args_remove[] = $query_args_remove_string . '[]';
 			}
-			$query_args_remove[]			= 'lang';
 			$query_args_remove[]			= 'wpv_sort_orderby';
 			$query_args_remove[]			= 'wpv_sort_order';
 			$query_args_remove[]			= 'wpv_sort_orderby_as';
@@ -603,14 +602,14 @@ class WPV_View_Post_Query {
 				$pagination_permalink
 			);
 		}
-		
+
 		wp_send_json_success( $data );
-		
+
 	}
-	
+
 	function wpv_get_dependant_view_query_args( $args = array(), $view_settings = array() ) {
-		if ( 
-			isset( $view_settings['view-query-mode'] ) 
+		if (
+			isset( $view_settings['view-query-mode'] )
 			&& $view_settings['view-query-mode'] == 'normal'
 		) {
 			// In any case, we need to mimic the process that we used to generate the $args
@@ -621,13 +620,13 @@ class WPV_View_Post_Query {
 				'paged'             => '1',
 			);
 			extract( $view_settings_defaults );
-			
+
 			$id				= apply_filters( 'wpv_filter_wpv_get_current_view', null );
 			$view_settings	= apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
-			
+
 			$view_settings['view_id'] = $id;
 			extract( $view_settings, EXTR_OVERWRITE );
-			
+
 			$args = array(
 				'paged'           	 	=> $paged,
 				'post_type'     	    => $post_type,
@@ -637,18 +636,18 @@ class WPV_View_Post_Query {
 			);
 			// Add special check for media (attachments) as their default status in not usually published
 			if (
-				sizeof( $post_type ) == 1 
+				sizeof( $post_type ) == 1
 				&& $post_type[0] == 'attachment'
 			) {
 				$args['post_status'] = 'any'; // Note this can be overriden by adding a status filter.
 			}
-			
+
 			// !IMPORTANT override the sorting options (not important here), sorting by a custom field breaks everything, so revert to post_date
 			$view_settings['orderby']	= 'ID';
 			$view_settings['order']		= 'DESC';
-			
+
 			$args = apply_filters( 'wpv_filter_query', $args, $view_settings, $id );
-			
+
 			// Now we have the $args as in the original one
 			// We now need to overwrite the limit, offset, paged and pagination options
 			//Also,we set it to just return the IDs
@@ -660,7 +659,7 @@ class WPV_View_Post_Query {
 		}
 		return $args;
 	}
-	
+
 	/**
 	* wpv_set_posted_archive_loop
 	*
@@ -677,7 +676,7 @@ class WPV_View_Post_Query {
 	*
 	* since 2.2
 	*/
-	
+
 	function wpv_set_posted_archive_loop( $current_archive_loop = array() ) {
 		if (
 			defined( 'DOING_AJAX' )
@@ -715,27 +714,27 @@ $WPV_View_Post_Query = WPV_View_Post_Query::get_instance();
 
 function wpv_filter_get_posts( $id ) {
     global $post, $WPVDebug;
-	
+
 	$view_settings_defaults = array(
 		'post_type'         => 'any',
 		'paged'             => '1',
 	);
 	extract( $view_settings_defaults );
-	
+
 	$view_settings = apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $id );
 	$view_settings['view_id'] = $id;
-	
+
 	extract( $view_settings, EXTR_OVERWRITE );
 
 	// Let URL pagination parameters set the page
 	if (
-		isset( $_GET['wpv_paged'] ) 
-		&& isset( $_GET['wpv_view_count'] ) 
+		isset( $_GET['wpv_paged'] )
+		&& isset( $_GET['wpv_view_count'] )
 		&& esc_attr( $_GET['wpv_view_count'] ) == apply_filters( 'wpv_filter_wpv_get_view_unique_hash', '' )
 	) {
 		$paged = intval( esc_attr( $_GET['wpv_paged'] ) );
 	}
-	
+
     $query = array(
 		'post_type'				=> $post_type,
 		'paged'					=> $paged,
@@ -744,8 +743,8 @@ function wpv_filter_get_posts( $id ) {
     );
 
 	// Add special check for media (attachments) as their default status in not usually published
-	if ( 
-		sizeof( $post_type ) == 1 
+	if (
+		sizeof( $post_type ) == 1
 		&& $post_type[0] == 'attachment'
 	) {
 		$query['post_status'] = 'any'; // Note this can be overriden by adding a status filter.

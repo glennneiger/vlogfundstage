@@ -435,8 +435,10 @@ abstract class CRED_Notification_Manager_Base {
 			'%%USER_DISPLAY_NAME%%' => $user->display_name,
 			'%%POST_ID%%' => 'DUMMY_POST_ID',
 			'%%POST_TITLE%%' => 'DUMMY_POST_TITLE',
+			'%%POST_PARENT_TITLE%%' => 'DUMMY_PARENT_POST_TITLE',
 			'%%FORM_NAME%%' => $form_title,
 			'%%DATE_TIME%%' => $date,
+			'%%CRED_NL%%' => "\r\n",
 		), $form_id, $post_id );
 
 		/**
@@ -453,10 +455,14 @@ abstract class CRED_Notification_Manager_Base {
 			'%%USER_DISPLAY_NAME%%' => $user->display_name,
 			'%%POST_ID%%' => 'DUMMY_POST_ID',
 			'%%POST_TITLE%%' => 'DUMMY_POST_TITLE',
+			'%%POST_PARENT_TITLE%%' => 'DUMMY_PARENT_POST_TITLE',
 			'%%POST_LINK%%' => 'DUMMY_POST_LINK',
+			'%%POST_PARENT_LINK%%' => 'DUMMY_PARENT_POST_LINK',
 			'%%POST_ADMIN_LINK%%' => 'DUMMY_ADMIN_POST_LINK',
 			'%%FORM_NAME%%' => $form_title,
+			'%%FORM_DATA%%' => '',
 			'%%DATE_TIME%%' => $date,
+			'%%CRED_NL%%' => "\r\n",
 		), $form_id, $post_id );
 
 		// reset mail handler
@@ -700,12 +706,16 @@ abstract class CRED_Notification_Manager_Base {
 	 */
 	protected function get_placeholders_post_array( $post_id, $title, $form_title, $date, $link = '', $admin_edit_link = '' ) {
 		return array(
+			'%%FORM_DATA%%' => isset( CRED_StaticClass::$out['notification_data'] ) ? CRED_StaticClass::$out['notification_data'] : '',
 			'%%DATE_TIME%%' => $date,
 			'%%POST_ID%%' => $post_id,
 			'%%POST_TITLE%%' => $title,
+			'%%POST_PARENT_TITLE%%' => $this->cred_parent_info_by_post_id( $post_id, 'title' ),
 			'%%FORM_NAME%%' => $form_title,
 			'%%POST_LINK%%' => $link,
+			'%%POST_PARENT_LINK%%' => $this->cred_parent_info_by_post_id( $post_id, 'url' ),
 			'%%POST_ADMIN_LINK%%' => $admin_edit_link,
+			'%%CRED_NL%%' => "\r\n",
 		);
 	}
 
@@ -738,6 +748,7 @@ abstract class CRED_Notification_Manager_Base {
 		}
 
 		return array(
+			'%%FORM_DATA%%' => isset( CRED_StaticClass::$out['notification_data'] ) ? CRED_StaticClass::$out['notification_data'] : '',
 			'%%USER_USERID%%' => $user_id,
 			'%%USER_EMAIL%%' => $user_email,
 			'%%USER_USERNAME%%' => $user_name,
@@ -746,6 +757,7 @@ abstract class CRED_Notification_Manager_Base {
 			'%%USER_NICKNAME%%' => $nickname,
 			'%%USER_LOGIN_NAME%%' => $user_login,
 			'%%USER_DISPLAY_NAME%%' => $user_display_name,
+			'%%CRED_NL%%' => "\r\n",
 		);
 	}
 
@@ -773,6 +785,111 @@ abstract class CRED_Notification_Manager_Base {
 		$data_body = apply_filters( 'cred_body_notification_codes', $placeholders, $form_id, $post_id );
 
 		return $data_body;
+	}
+
+	/**
+	 * Get parent post data for placeholders.
+	 *
+	 * @param int $post_id
+	 * @param string $get {'url'|'title'|'id'}
+	 * @return string
+	 * @since 2.3
+	 * @todo This is broken since a form can have more than one legacy parent selector
+	 *       (the same post type can be the child of multiple parent post types)
+	 *       so keep it for legacy, and review with proper placeholders later.
+	 */
+	public function cred_parent_info_by_post_id( $post_id, $get ) {
+		if ( ! $post_id ) {
+			return '';
+		}
+		if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
+			return $this->get_migrated_parent_info_by_post_id( $post_id, $get );
+		} else {
+			return $this->get_legacy_parent_info_by_post_id( $post_id, $get );
+		}
+	}
+
+	/**
+	 * Get parent post data for placeholders, on sites using legacy relationships.
+	 *
+	 * @param int $post_id
+	 * @param string $get
+	 * @return string
+	 * @since 2.3
+	 */
+	public function get_legacy_parent_info_by_post_id( $post_id, $get ) {
+		$post_type = get_post_type( $post_id );
+		$cred_fields_types_utils = new CRED_Fields_Types_Utils();
+		$parents = $cred_fields_types_utils->get_parent_fields( $post_type );
+
+		if ( ! isset( $parents ) || empty( $parents ) ) {
+			return '';
+		}
+
+		$parent_id = null;
+		foreach ( $parents as $key => $parent ) {
+			$parent_id = get_post_meta( $post_id, $key, true );
+		}
+
+		if ( null !== $parent_id && ! empty( $parent_id ) ) {
+			switch ( $get ) {
+				case 'title':
+					return get_the_title( $parent_id );
+				case 'url':
+					return get_permalink( $parent_id );
+				case 'id':
+					return $parent_id;
+				default:
+					return '';
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get parent post data for placeholders, on sites using migrated relationships.
+	 *
+	 * @param int $post_id
+	 * @param string $get
+	 * @return string
+	 * @since 2.3
+	 */
+	public function get_migrated_parent_info_by_post_id( $post_id, $get ) {
+		do_action( 'toolset_do_m2m_full_init' );
+
+		$association_query = new Toolset_Association_Query_V2();
+		$associations = $association_query
+			->add( $association_query->do_and(
+				$association_query->has_legacy_relationship( true ),
+				$association_query->element_id_and_domain( $post_id, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() )
+			) )
+			->limit( 1 )
+			->get_results();
+
+		if ( empty( $associations ) ) {
+			return '';
+		}
+
+		$parent_id = null;
+		foreach ( $associations as $legacy_association ) {
+			$parent_id = $legacy_association->get_element_id( new Toolset_Relationship_Role_Parent() );
+		}
+
+		if ( null !== $parent_id ) {
+			switch ( $get ) {
+				case 'title':
+					return get_the_title( $parent_id );
+				case 'url':
+					return get_permalink( $parent_id );
+				case 'id':
+					return $parent_id;
+				default:
+					return '';
+			}
+		}
+
+		return '';
 	}
 
 	/**

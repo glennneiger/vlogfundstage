@@ -110,7 +110,16 @@
                             }
                         }, 500);
                     } else {
-                        self.completeCurrentStep();
+                        var completed = true;
+                        jQuery('select[name^=_cred]:visible').each( function() {
+                            completed &= !! this.value;
+                        } );
+                        if ( ! completed ) {
+                            self.steps[self.step - 1].completed = false;
+                            self.steps[self.step - 1].execute();
+                        } else {
+                            self.completeCurrentStep();
+                        }
                     }
                 }
             },
@@ -124,7 +133,7 @@
                     $('#credformcontentdiv').removeClass('closed').show();
                     wizardPrevB.show();
                     if (!self.steps[self.step - 1].completed) {
-                        wizardNextB.attr('disabled', 'disabled');
+                        wizardNextB.removeAttr('disabled');
                         self.checkClassButton(wizardNextB);
                         // keep checking
                         var _tim = setInterval(function () {
@@ -162,9 +171,22 @@
             self.removeActiveClass( self.step );
         },
         nextStep: function () {
-            if (newform && 2 === self.step && !self.steps[2].completed) {
+			if ( 4 === self.step ) {
+				// Stepping away from the editor step:
+				// close options so changes are 'saved'
+				jQuery( '.js-cred-editor-scaffold-item-options:visible .js-cred-editor-scaffold-options-close' ).click();
+			}
+            if (5 === self.step || newform && 2 === self.step && !self.steps[2].completed) {
                 var form_id = $('#post_ID').val();
                 if (cred.doCheck(self.step)) {
+                    jQuery( '.cred-wizard-buttons .spinner' ).show().css({visibility: 'visible'}); // WP 4.9 needs css(), WP 5.0 show()
+                    /**
+                     * Before sending the form to the server, it needs to save scaffold data into the form.
+                     * That actions are handled by this hook
+                     *
+                     * @since 2.2
+                     */
+                    Toolset.hooks.doAction( 'cred_editor_scaffold_pre_submit_form' );
                     $.ajax({
                         url: edit_url,
                         data: self.serialize('#post'),
@@ -175,9 +197,26 @@
                                 data: 'form_id=' + form_id + '&field=wizard' + '&value=' + self.completed_step + '&_wpnonce=' + _cred_wpnonce,
                                 type: 'post',
                                 success: function (result) {
-                                    // Make sure that redirecting to the form edit page is not blocked
-                                    $( window ).unbind( 'beforeunload' );
-                                    document.location = edit_url + '?action=edit&post=' + form_id;
+                                    if ( 5 === self.step ) {
+                                        // Submiting the form not using Ajax so saving notice will be displayed
+                                        // @todo rebuild the whole wizard process
+                                        var $form = jQuery( '#post' );
+                                        var extraParameters = JSON.parse(
+                                            '{"' + decodeURI(
+                                                ( '_cred[wizard]=' + wizard_step + dataString ) // extra data serialized
+                                                    .replace( /&/g, "\",\"" ) // group fields and values by quotes
+                                                    .replace( /=/g, "\":\"" ) ) + // replace = by :
+                                            '"}'
+                                        );
+                                        Object.keys( extraParameters ).forEach( function( key ) {
+                                            $form.append( '<input type="hidden" name="' + key + '" value="' + extraParameters[ key ] + '" />' );
+                                        } );
+                                        $form.submit();
+                                    } else {
+                                        // Make sure that redirecting to the form edit page is not blocked
+                                        $( window ).unbind( 'beforeunload' );
+                                        document.location = edit_url + '?action=edit&post=' + form_id;
+                                    }
                                 }
                             });
                         }
@@ -271,6 +310,13 @@
             self.checkClassButton(wizardNextB);
         },
         goToStep: function (step) {
+            // Close opened pointers
+            jQuery('.js-cred-tip-link i').each( function() {
+                if ( this._pointer ) {
+                    this._pointer.pointer( 'close' );
+                }
+            } );
+
             if (undefined === step) {
                 return;
             }
@@ -316,8 +362,15 @@
                 '<div class="cred-not-hide cred-wizard-buttons">' +
                     '<input type="button" id="cred-wizard-button-prev" class="button-wizard button button-secondary button-wizard-prev" value="' + cred.settings.locale.prev_text + '" /> ' +
                     '<input type="button" id="cred-wizard-button-next" class="button-wizard button button-primary-toolset button-wizard-next" value="' + cred.settings.locale.next_text + '" /> ' +
+                    '<span class="spinner"></span>' +
                 '</div>'
             );
+            // Wizard title must be wrapper in order to look like Relationship wizard
+            var wrapperLayout = wp.template( 'cred-wizard-title-wrapper' )({});
+            var $titleWrap = jQuery( '#titlewrap' );
+            var $titleElements = $titleWrap.children();
+            $titleWrap.append( wrapperLayout );
+            $titleWrap.find( '#js-cred-wizard-title-wrapper-input' ).append( $titleElements );
             // progress bar
             //$('#post-body-content').prepend('<div class="cred-not-hide cred-progress"><div id="cred-progress-bar"><div id="cred-progress-bar-inner"></div></div></div>');
             $('#post-body-content').prepend('<div id="cred-wizard-association-forms-wrap" class="cred-not-hide cred-progress"><ol id="cred-progress-bar" class="cred-wizard-steps"></ol></div>');
@@ -437,6 +490,7 @@
                 self.displaySuccessMessage();
             }
 
+            Toolset.hooks.doAction( 'cred_editor_wizard_finished' );
         },
         displaySuccessMessage: function () {
 
@@ -519,6 +573,13 @@
             if(step === 2 && new_form === false){
                 self.setActiveClass(1);
             }
+
+            jQuery('select[required]').change(function() {
+                if ( ! this.value ) {
+                    self.steps[self.step - 1].completed = false;
+                    self.steps[self.step - 1].execute();
+                }
+            } );
         }
     };
 

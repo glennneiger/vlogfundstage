@@ -1,8 +1,8 @@
 /**
  * Manage the user form edit page.
- * 
+ *
  * @see Toolset.CRED.EditorPagePrototype
- * 
+ *
  * @since 2.1
  * @package CRED
  */
@@ -14,6 +14,14 @@ Toolset.CRED.UserFormsEditor = function( $ ) {
 	Toolset.CRED.EditorPagePrototype.call( this );
 
 	var self = this;
+
+	self.getFormId = function() {
+		return $( '#post_ID' ).val();
+	};
+
+	self.getFormType = function() {
+		return $( '#post_type' ).val();
+	};
 
 	self.init();
 };

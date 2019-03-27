@@ -19,25 +19,30 @@ class CRED_Ajax extends Toolset_Ajax {
 
 	const CALLBACK_GET_ROLES_FIELDS = 'get_roles_fields';
 
-	
+
 	const CALLBACK_ASSOCIATION_FORM_AJAX_SUBMIT = 'association_form_ajax_submit';
 
 	const CALLBACK_ASSOCIATION_FORM_AJAX_FIND_ROLE = 'association_form_ajax_role_find';
 
 	const CALLBACK_GET_SHORTCODE_ATTRIBUTES = 'get_shortcode_attributes';
-	
+
 	const CALLBACK_DISMISS_ASSOCIATION_SHORTCODE_INSTRUCTIONS = 'dismiss_association_shortcode_instructions';
-	
+
 	const CALLBACK_GET_ASSOCIATION_FORM_DATA = 'get_association_form_data';
-	
+
 	const CALLBACK_CREATE_FORM_TEMPLATE = 'create_form_template';
-	
+
 	const CALLBACK_DELETE_ASSOCIATION = 'delete_association';
 
 	// Non-Toolset fields control
 	const CALLBACK_FIELDS_CONTROL_ADD = 'fields_control_add';
 	const CALLBACK_FIELDS_CONTROL_REMOVE = 'fields_control_remove';
-	
+
+	const CALLBACK_DELETE_FORM = 'delete_form';
+	const CALLBACK_GET_CRED_FORM_BLOCK_PREVIEW = 'get_cred_form_block_preview';
+
+	const CALLBACK_FORMAT_POST_EXPIRATION_DATE = 'format_post_expiration_date';
+
 	private static $callbacks = array(
 		self::CALLBACK_CREATE_ASSOCIATION_FORM,
 		self::CALLBACK_EDIT_ASSOCIATION_FORM,
@@ -47,9 +52,11 @@ class CRED_Ajax extends Toolset_Ajax {
 		self::CALLBACK_GET_POST_TYPE_FIELDS,
 		self::CALLBACK_GET_ROLES_FIELDS,
 		self::CALLBACK_FIELDS_CONTROL_ADD,
-		self::CALLBACK_FIELDS_CONTROL_REMOVE
+		self::CALLBACK_FIELDS_CONTROL_REMOVE,
+		self::CALLBACK_DELETE_FORM,
+		self::CALLBACK_GET_CRED_FORM_BLOCK_PREVIEW,
 	);
-	
+
 	private static $public_callbacks = array(
 		self::CALLBACK_ASSOCIATION_FORM_AJAX_SUBMIT,
 		self::CALLBACK_ASSOCIATION_FORM_AJAX_FIND_ROLE,
@@ -57,7 +64,8 @@ class CRED_Ajax extends Toolset_Ajax {
 		self::CALLBACK_DISMISS_ASSOCIATION_SHORTCODE_INSTRUCTIONS,
 		self::CALLBACK_GET_ASSOCIATION_FORM_DATA,
 		self::CALLBACK_CREATE_FORM_TEMPLATE,
-		self::CALLBACK_DELETE_ASSOCIATION
+		self::CALLBACK_DELETE_ASSOCIATION,
+		self::CALLBACK_FORMAT_POST_EXPIRATION_DATE,
 	);
 
 
@@ -93,7 +101,7 @@ class CRED_Ajax extends Toolset_Ajax {
 	protected function get_callback_names() {
 		return self::$callbacks;
 	}
-	
+
 	/**
 	 * @inheritdoc
 	 * @return array
@@ -107,7 +115,7 @@ class CRED_Ajax extends Toolset_Ajax {
 	/**
 	 * Handles all initialization that is needed when doing AJAX,
 	 * except the actual AJAX callbacks.
-	 * 
+	 *
 	 * Note that this gets fired when the class is intialized, not only during AJAX calls.
 	 *
 	 * @since m2m

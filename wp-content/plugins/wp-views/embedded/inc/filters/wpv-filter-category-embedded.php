@@ -19,7 +19,7 @@ WPV_Taxonomy_Frontend_Filter::on_load();
 */
 
 class WPV_Taxonomy_Frontend_Filter {
-	
+
 	static function on_load() {
 		// Apply frontend filter by post taxonomy
         add_filter( 'wpv_filter_query',										array( 'WPV_Taxonomy_Frontend_Filter', 'filter_post_taxonomy' ), 10, 3 );
@@ -30,11 +30,11 @@ class WPV_Taxonomy_Frontend_Filter {
 		add_filter( 'wpv_filter_requires_parent_term',						array( 'WPV_Taxonomy_Frontend_Filter', 'requires_parent_term' ), 10, 2 );
 		add_filter( 'wpv_filter_requires_current_archive',					array( 'WPV_Taxonomy_Frontend_Filter', 'requires_current_archive' ), 10, 2 );
 		add_filter( 'wpv_filter_requires_framework_values',					array( 'WPV_Taxonomy_Frontend_Filter', 'requires_framework_values' ), 10, 2 );
-		
+
 		add_shortcode( 'wpv-control-post-taxonomy',							array( 'WPV_Taxonomy_Frontend_Filter', 'wpv_shortcode_wpv_control_post_taxonomy' ) );
 		add_filter( 'wpv_filter_wpv_shortcodes_gui_data',					array( 'WPV_Taxonomy_Frontend_Filter', 'wpv_shortcodes_register_wpv_control_post_taxonomy_data' ) );
 	}
-	
+
 	/**
 	* filter_post_taxonomy
 	*
@@ -43,7 +43,7 @@ class WPV_Taxonomy_Frontend_Filter {
 	* @since unknown
 	* @since 2.1		Renamed from wpv_filter_post_category and moved to a static method
 	*/
-	
+
 	static function filter_post_taxonomy( $query, $view_settings, $view_id ) {
 		$taxonomy_query = WPV_Taxonomy_Frontend_Filter::get_settings( $query, $view_settings, $view_id );
 		if ( count( $taxonomy_query ) > 0 ) {
@@ -52,7 +52,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $query;
 	}
-	
+
 	/**
 	* archive_filter_post_taxonomy
 	*
@@ -60,7 +60,7 @@ class WPV_Taxonomy_Frontend_Filter {
 	*
 	* @since 2.1
 	*/
-	
+
 	static function archive_filter_post_taxonomy( $query, $archive_settings, $archive_id ) {
 		$tax_to_exclude = array();
 		if ( $query->get( 'wpv_dependency_query' ) ) {
@@ -69,55 +69,55 @@ class WPV_Taxonomy_Frontend_Filter {
 				$tax_to_exclude[] = $wpv_dependency_query['taxonomy'];
 			}
 		}
-		if ( 
-			$query->is_archive 
+		if (
+			$query->is_archive
 			&& (
-				$query->is_category  
-				|| $query->is_tag  
-				|| $query->is_tax 
+				$query->is_category
+				|| $query->is_tag
+				|| $query->is_tax
 			)
 		) {
 			$term = $query->get_queried_object();
-			if ( 
-				$term 
+			if (
+				$term
 				&& isset( $term->taxonomy )
 			) {
 				$tax_to_exclude[] = $term->taxonomy;
 			}
 		}
 		$taxonomy_query = WPV_Taxonomy_Frontend_Filter::get_settings( $query, $archive_settings, $archive_id, $tax_to_exclude );
-		
+
 		// Re-apply the taxonomy query caused by a taxonomy archive page
 		// Note that on Layout-based archives this duplicates the native archive tax query entry, but we can not avoid it
-		if ( 
-			isset( $query->tax_query ) 
+		if (
+			isset( $query->tax_query )
 			&& is_object( $query->tax_query )
 		) {
 			$tax_query_obj		= clone $query->tax_query;
 			$tax_query_queries	= $tax_query_obj->queries;
-			if ( 
-				count( $tax_query_queries ) > 0 
+			if (
+				count( $tax_query_queries ) > 0
 				&& count( $tax_to_exclude ) > 0
 			) {
 				foreach ( $tax_query_queries as $tax_query_queries_item ) {
-					if ( 
-						is_array( $tax_query_queries_item ) 
-						&& isset( $tax_query_queries_item['taxonomy'] ) 
-						&& in_array( $tax_query_queries_item['taxonomy'], $tax_to_exclude ) 
+					if (
+						is_array( $tax_query_queries_item )
+						&& isset( $tax_query_queries_item['taxonomy'] )
+						&& in_array( $tax_query_queries_item['taxonomy'], $tax_to_exclude )
 					) {
 						$taxonomy_query[] = $tax_query_queries_item;
 					}
 				}
 			}
 		}
-		
+
 		if ( count( $taxonomy_query ) > 0 ) {
 			$taxonomy_query['relation'] = isset( $archive_settings['taxonomy_relationship'] ) ? $archive_settings['taxonomy_relationship'] : 'AND';
 			$query->set( 'tax_query', $taxonomy_query );
 			$query->tax_query = new WP_Tax_Query( $taxonomy_query );
 		}
 	}
-	
+
 	/**
 	* get_settings
 	*
@@ -127,12 +127,12 @@ class WPV_Taxonomy_Frontend_Filter {
 	*
 	* @since 2.1
 	*/
-	
+
 	static function get_settings( $query, $view_settings, $view_id, $tax_to_exclude = array() ) {
 		$taxonomy_query			= array();
 		$taxonomies				= get_taxonomies( '', 'objects' );
 		$archive_environment	= apply_filters( 'wpv_filter_wpv_get_current_archive_loop', array() );
-		
+
 		foreach ( $taxonomies as $category_slug => $category ) {
 			if ( in_array( $category_slug, $tax_to_exclude ) ) {
 				continue;
@@ -141,32 +141,32 @@ class WPV_Taxonomy_Frontend_Filter {
 			if ( isset( $view_settings[ $relationship_name ] ) ) {
 				$save_name = ( $category->name == 'category' ) ? 'post_category' : 'tax_input_' . $category->name;
 				$attribute_operator = ( isset( $view_settings['taxonomy-' . $category->name . '-attribute-operator'] ) ) ? $view_settings['taxonomy-' . $category->name . '-attribute-operator'] : 'IN';
-				
+
 				if ( $attribute_operator == 'IN' ) {
-					$include_child = true;	
+					$include_child = true;
 				} else {
-					$include_child = false;	
+					$include_child = false;
 				}
-				
+
 				/*
 				 * Filter: wpv_filter_tax_filter_include_children
-				 * 
+				 *
 				 * @param: $include_child - current status
 				 * @paran: $category->name - Category nicename
 				 * @param: $view_id
-				 * 
+				 *
 				*/
 				//$include_child = apply_filters( 'wpv_filter_tax_filter_include_children', $include_child, $category->name, $view_id );
-				
+
 				switch ( $view_settings['tax_' . $category->name . '_relationship'] ) {
 					case 'top_current_post':
 						$current_page = apply_filters( 'wpv_filter_wpv_get_top_current_post', null );
 						if ( $current_page ) {
 							$terms = array();
 							$term_obj = get_the_terms( $current_page->ID, $category->name );
-							if ( 
-								$term_obj 
-								&& ! is_wp_error( $term_obj ) 
+							if (
+								$term_obj
+								&& ! is_wp_error( $term_obj )
 							) {
 								$terms = array_values( wp_list_pluck( $term_obj, 'term_id' ) );
 							}
@@ -196,9 +196,9 @@ class WPV_Taxonomy_Frontend_Filter {
 						if ( $current_page ) {
 							$terms = array();
 							$term_obj = get_the_terms( $current_page->ID, $category->name );
-							if ( 
-								$term_obj 
-								&& ! is_wp_error( $term_obj ) 
+							if (
+								$term_obj
+								&& ! is_wp_error( $term_obj )
 							) {
 								$terms = array_values( wp_list_pluck( $term_obj, 'term_id' ) );
 							}
@@ -223,11 +223,11 @@ class WPV_Taxonomy_Frontend_Filter {
 						break;
 					case 'FROM ARCHIVE':
 						if (
-							isset( $archive_environment['type'] ) 
-							&& $archive_environment['type'] == 'taxonomy' 
-							&& isset( $archive_environment['data']['taxonomy'] ) 
+							isset( $archive_environment['type'] )
+							&& $archive_environment['type'] == 'taxonomy'
+							&& isset( $archive_environment['data']['taxonomy'] )
 							&& $archive_environment['data']['taxonomy'] == $category->name
-							&& isset( $archive_environment['data']['term_id'] ) 
+							&& isset( $archive_environment['data']['term_id'] )
 						) {
 							$include_child = apply_filters( 'wpv_filter_tax_filter_include_children', $include_child, $category->name, $view_id );
 							$taxonomy_query[] = array(
@@ -237,15 +237,15 @@ class WPV_Taxonomy_Frontend_Filter {
 								'operator'			=> "IN",
 								"include_children"	=> $include_child
 							);
-						} else if (  
-							is_tax() 
-							|| is_category() 
-							|| is_tag() 
+						} else if (
+							is_tax()
+							|| is_category()
+							|| is_tag()
 						) {
 							global $wp_query;
 							$term = $wp_query->get_queried_object();
-							if ( 
-								$term 
+							if (
+								$term
 								&& isset( $term->taxonomy )
 								&& $term->taxonomy == $category->name
 							) {
@@ -275,8 +275,8 @@ class WPV_Taxonomy_Frontend_Filter {
 							$attribute_format = 'name';
 						}
 						$view_attrs = apply_filters( 'wpv_filter_wpv_get_view_shortcodes_attributes', false );
-						if ( 
-							isset( $view_attrs[$attribute] ) 
+						if (
+							isset( $view_attrs[$attribute] )
 							&& '' != $view_attrs[$attribute]
 						) {
 							$terms = explode(',', $view_attrs[$attribute]);
@@ -373,9 +373,9 @@ class WPV_Taxonomy_Frontend_Filter {
 					case 'NOT IN':
 					case 'AND':
 						if ( $view_settings['tax_' . $category->name . '_relationship'] == 'IN' ) {
-							$include_child = true;	
+							$include_child = true;
 						} else {
-							$include_child = false;	
+							$include_child = false;
 						}
 						$include_child = apply_filters( 'wpv_filter_tax_filter_include_children', $include_child, $category->name, $view_id );
 						if ( isset( $view_settings[$save_name] ) ) {
@@ -391,7 +391,7 @@ class WPV_Taxonomy_Frontend_Filter {
 						break;
 					case 'framework':
 						global $WP_Views_fapi;
-						if ( 
+						if (
 							$WP_Views_fapi->framework_valid
 							&& isset( $view_settings['taxonomy-' . $category->name . '-framework'] )
 							&& '' != $view_settings['taxonomy-' . $category->name . '-framework']
@@ -418,14 +418,14 @@ class WPV_Taxonomy_Frontend_Filter {
 							}
 						}
 						break;
-					
+
 				}
 			}
 		}
 		return $taxonomy_query;
 	}
-	
-	
+
+
 	/**
 	* requires_current_page
 	*
@@ -439,7 +439,7 @@ class WPV_Taxonomy_Frontend_Filter {
 	* @since unknown
 	* @since 2.1		Renamed from wpv_filter_cat_requires_current_page and moved to a static method
 	*/
-	
+
 	static function requires_current_page( $state, $view_settings ) {
 		if ( $state ) {
 			return $state; // Already set
@@ -456,7 +456,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $state;
 	}
-	
+
 	/**
 	* requires_parent_post
 	*
@@ -465,7 +465,7 @@ class WPV_Taxonomy_Frontend_Filter {
 	* @since unknown
 	* @since 2.1		Renamed from wpv_filter_cat_requires_parent_post and mved to a static method
 	*/
-	
+
 	static function requires_parent_post( $state, $view_settings ) {
 		if ( $state ) {
 			return $state; // Already set
@@ -482,7 +482,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $state;
 	}
-	
+
 	/**
 	* requires_parent_term
 	*
@@ -496,15 +496,15 @@ class WPV_Taxonomy_Frontend_Filter {
 	* @since 1.9
 	* @since 2.1	Renamed from wpv_filter_cat_requires_parent_term and moved to a static method
 	*/
-	
+
 	static function requires_parent_term( $state, $view_settings ) {
 		if ( $state ) {
 			return $state;
 		}
 		$taxonomies = get_taxonomies('', 'objects');
 		foreach ( $taxonomies as $category_slug => $category ) {
-			if ( 
-				isset( $view_settings['tax_' . $category->name . '_relationship'] ) 
+			if (
+				isset( $view_settings['tax_' . $category->name . '_relationship'] )
 				&& in_array( $view_settings['tax_' . $category->name . '_relationship'], array( 'FROM PARENT VIEW', 'current_taxonomy_view' ) )
 			) {
 				$state = true;
@@ -513,7 +513,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $state;
 	}
-	
+
 	/**
 	* requires_current_archive
 	*
@@ -527,15 +527,15 @@ class WPV_Taxonomy_Frontend_Filter {
 	* @since 1.10
 	* @since 2.1	Renamed from wpv_filter_cat_requires_current_archive and moved to a static method
 	*/
-	
+
 	static function requires_current_archive( $state, $view_settings ) {
 		if ( $state ) {
 			return $state;
 		}
 		$taxonomies = get_taxonomies('', 'objects');
 		foreach ( $taxonomies as $category_slug => $category ) {
-			if ( 
-				isset( $view_settings['tax_' . $category->name . '_relationship'] ) 
+			if (
+				isset( $view_settings['tax_' . $category->name . '_relationship'] )
 				&& $view_settings['tax_' . $category->name . '_relationship'] == 'FROM ARCHIVE'
 			) {
 				$state = true;
@@ -544,7 +544,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $state;
 	}
-	
+
 	/**
 	* requires_framework_values
 	*
@@ -558,15 +558,15 @@ class WPV_Taxonomy_Frontend_Filter {
 	* @since 1.10
 	* @since 2.1	Renamed from wpv_filter_cat_requires_framework_values and moved to a static method
 	*/
-	
+
 	static function requires_framework_values( $state, $view_settings ) {
 		if ( $state ) {
 			return $state;
 		}
 		$taxonomies = get_taxonomies('', 'objects');
 		foreach ( $taxonomies as $category_slug => $category ) {
-			if ( 
-				isset( $view_settings['tax_' . $category->name . '_relationship'] ) 
+			if (
+				isset( $view_settings['tax_' . $category->name . '_relationship'] )
 				&& $view_settings['tax_' . $category->name . '_relationship'] == 'framework'
 			) {
 				$state = true;
@@ -575,7 +575,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $state;
 	}
-	
+
 	/**
 	* get_adjusted_terms
 	*
@@ -584,7 +584,7 @@ class WPV_Taxonomy_Frontend_Filter {
 	*
 	* @since unknown
 	*/
-	
+
 	static function get_adjusted_terms( $term_ids, $category_name ) {
 		if ( ! empty( $term_ids ) ) {
 			$adjusted_term_ids = array();
@@ -600,9 +600,9 @@ class WPV_Taxonomy_Frontend_Filter {
 			}
 			$term_ids = $adjusted_term_ids;
 		}
-		return $term_ids;	
+		return $term_ids;
 	}
-	
+
 	/**
 	 * Callback to display the custom search filter by post taxonomy.
 	 *
@@ -623,7 +623,7 @@ class WPV_Taxonomy_Frontend_Filter {
 	 *
 	 * @since 2.4.0
 	 */
-	
+
 	public static function wpv_shortcode_wpv_control_post_taxonomy( $atts ) {
 		$atts = shortcode_atts(
 			array(
@@ -643,23 +643,25 @@ class WPV_Taxonomy_Frontend_Filter {
 			),
 			$atts
 		);
-		
+
 		if (
-			empty( $atts['url_param'] ) 
-			|| empty( $atts['taxonomy'] ) 
+			empty( $atts['url_param'] )
+			|| empty( $atts['taxonomy'] )
 			|| empty( $atts['type'] )
-			|| ! taxonomy_exists( $atts['taxonomy'] ) 
+			|| ! taxonomy_exists( $atts['taxonomy'] )
 		) {
 			return;
 		}
-		
+
 		// Backwards compatibility: before 2.4.0 those were the attribute names for sorting
 		$atts['taxonomy_orderby'] = $atts['orderby'];
 		$atts['taxonomy_order'] = $atts['order'];
-		
+
 		$aux_array = apply_filters( 'wpv_filter_wpv_get_rendered_views_ids', array() );
-		$view_name = get_post_field( 'post_name', end( $aux_array ) );
+		$current_view_id = end( $aux_array );
+		$view_name = get_post_field( 'post_name', $current_view_id );
 		$view_settings = apply_filters( 'wpv_filter_wpv_get_object_settings', array() );
+		$view_query_mode = toolset_getarr( $view_settings, 'view-query-mode', 'normal' );
 
 		// Translate the default label if any
 		if ( ! empty( $atts['default_label'] ) ) {
@@ -670,7 +672,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		if ( ! empty( $atts['format'] ) ) {
 			$atts['format'] = wpv_translate( $atts['url_param'] . '_format', $atts['format'], false, 'View ' . $view_name );
 		}
-		
+
 		$walker_args = array(
 			'name'				=> $atts['url_param'],
 			'selected'			=> array( '0' ),
@@ -686,56 +688,57 @@ class WPV_Taxonomy_Frontend_Filter {
 			'dependency'		=> 'disabled',
 			'empty_action'		=> 'hide',
 			'operator'			=> 'IN',
-			'query_cache'		=> array()
+			'query_cache'		=> array(),
+			'query_mode' => $view_query_mode,
 		);
-		
+
 		// Set selected values
 		$walker_args = WPV_Taxonomy_Frontend_Filter::set_selected_values( $walker_args, $atts, $view_settings );
-		
+
 		// Format and operator
 		$walker_args = WPV_Taxonomy_Frontend_Filter::set_format_and_operator( $walker_args, $atts, $view_settings );
-		
+
 		// Dependency, counters and empty action
 		$walker_args = WPV_Taxonomy_Frontend_Filter::set_dependency_counters_and_empty_action( $walker_args, $atts, $view_settings );
-		
+
 		// Query cache
 		$walker_args = WPV_Taxonomy_Frontend_Filter::set_query_cache( $walker_args, $atts, $view_settings );
-		
+
 		$taxonomy_filter_output = '';
-		
-		if ( 
-			$walker_args['type'] == 'select' 
-			|| $walker_args['type'] == 'multi-select' 
+
+		if (
+			$walker_args['type'] == 'select'
+			|| $walker_args['type'] == 'multi-select'
 		) {
 			$taxonomy_filter_output .= WPV_Taxonomy_Frontend_Filter::wpv_control_post_taxonomy_select( $atts, $walker_args );
-		} elseif ( 
-			$walker_args['type'] == 'radios' 
-			|| $walker_args['type'] == 'radio' 
+		} elseif (
+			$walker_args['type'] == 'radios'
+			|| $walker_args['type'] == 'radio'
 		) {
 			$taxonomy_filter_output .= WPV_Taxonomy_Frontend_Filter::wpv_control_post_taxonomy_radios( $atts, $walker_args );
 		} else {
 			$taxonomy_filter_output .= WPV_Taxonomy_Frontend_Filter::wpv_control_post_taxonomy_checkboxes( $atts, $walker_args );
 		}
-		
+
 		// This should not be needd anymore...
 		if ( $walker_args['taxonomy'] == 'category' ) {
 			$taxonomy_filter_output = str_replace(
-				'name="post_category', 
-				'name="' . $walker_args['name'], 
+				'name="post_category',
+				'name="' . $walker_args['name'],
 				$taxonomy_filter_output
 			);
 		} else {
 			$taxonomy_filter_output = str_replace(
-				'name="' . $walker_args['taxonomy'], 
-				'name="' . $walker_args['name'], 
+				'name="' . $walker_args['taxonomy'],
+				'name="' . $walker_args['name'],
 				$taxonomy_filter_output
 			);
 		}
-		
+
 		return $taxonomy_filter_output;
-		
+
 	}
-	
+
 	/**
 	 * Calculate the selected values for a taxonomy frontend filter.
 	 *
@@ -756,9 +759,18 @@ class WPV_Taxonomy_Frontend_Filter {
 				$walker_args['selected'] = explode( ',', $_GET[ $atts['url_param'] ] );
 			}
 		}
-		return $walker_args;
+
+		/**
+		 * Filters the selected values for a taxonomy frontend filter.
+		 *
+		 * @param array $walker_args The walker arguments being built.
+		 * @param array $atts        The shortcode attributes.
+		 *
+		 * @since 2.7.0
+		 */
+		return apply_filters( 'wpv_filter_selected_taxonomy_filter_values', $walker_args, $atts );
 	}
-	
+
 	/**
 	 * Calculate the type of values and the operator for a taxonomy frontend filter.
 	 *
@@ -772,8 +784,8 @@ class WPV_Taxonomy_Frontend_Filter {
 	 */
 	public static function set_format_and_operator( $walker_args, $atts, $view_settings ) {
 		if (
-			isset( $view_settings['taxonomy-' . $walker_args['taxonomy'] . '-attribute-url-format'] ) 
-			&& 'slug' == $view_settings['taxonomy-' . $walker_args['taxonomy'] . '-attribute-url-format'][0] 
+			isset( $view_settings['taxonomy-' . $walker_args['taxonomy'] . '-attribute-url-format'] )
+			&& 'slug' == $view_settings['taxonomy-' . $walker_args['taxonomy'] . '-attribute-url-format'][0]
 		) {
 			$walker_args['value_type'] = 'slug';
 		}
@@ -782,7 +794,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $walker_args;
 	}
-	
+
 	/**
 	 * Calculate whether to use dependency and counters, and the default empty action, for a taxonomy frontend filter.
 	 *
@@ -795,11 +807,11 @@ class WPV_Taxonomy_Frontend_Filter {
 	 * @since 2.4.0
 	 */
 	public static function set_dependency_counters_and_empty_action( $walker_args, $atts, $view_settings ) {
-		if ( 
-			isset( $view_settings['dps'] ) 
-			&& is_array( $view_settings['dps'] ) 
-			&& isset( $view_settings['dps']['enable_dependency'] ) 
-			&& $view_settings['dps']['enable_dependency'] == 'enable' 
+		if (
+			isset( $view_settings['dps'] )
+			&& is_array( $view_settings['dps'] )
+			&& isset( $view_settings['dps']['enable_dependency'] )
+			&& $view_settings['dps']['enable_dependency'] == 'enable'
 			&& ! apply_filters( 'wpv_filter_wpv_get_force_disable_dps', false )
 		) {
 			$walker_args['dependency'] = 'enabled';
@@ -807,7 +819,7 @@ class WPV_Taxonomy_Frontend_Filter {
 			switch ( $walker_args['type'] ) {
 				case 'select':
 					if (
-						isset( $view_settings['dps']['empty_select'] ) 
+						isset( $view_settings['dps']['empty_select'] )
 						&& $view_settings['dps']['empty_select'] == 'disable'
 					) {
 						$walker_args['empty_action'] = 'disable';
@@ -815,7 +827,7 @@ class WPV_Taxonomy_Frontend_Filter {
 					break;
 				case 'multi-select':
 					if (
-						isset( $view_settings['dps']['empty_multi_select'] ) 
+						isset( $view_settings['dps']['empty_multi_select'] )
 						&& $view_settings['dps']['empty_multi_select'] == 'disable'
 					) {
 						$walker_args['empty_action'] = 'disable';
@@ -824,7 +836,7 @@ class WPV_Taxonomy_Frontend_Filter {
 				case 'radios':
 				case 'radio':
 					if (
-						isset( $view_settings['dps']['empty_radios'] ) 
+						isset( $view_settings['dps']['empty_radios'] )
 						&& $view_settings['dps']['empty_radios'] == 'disable'
 					) {
 						$walker_args['empty_action'] = 'disable';
@@ -832,7 +844,7 @@ class WPV_Taxonomy_Frontend_Filter {
 					break;
 				case 'checkboxes':
 					if (
-						isset( $view_settings['dps']['empty_checkboxes'] ) 
+						isset( $view_settings['dps']['empty_checkboxes'] )
 						&& $view_settings['dps']['empty_checkboxes'] == 'disable'
 					) {
 						$walker_args['empty_action'] = 'disable';
@@ -844,7 +856,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		$walker_args['counters'] = $counters ? 'enabled' : 'disabled';
 		return $walker_args;
 	}
-	
+
 	/**
 	 * Calculate the query cache for a taxonomy frontend filter when using dependency or counters.
 	 *
@@ -857,33 +869,33 @@ class WPV_Taxonomy_Frontend_Filter {
 	 * @since 2.4.0
 	 */
 	public static function set_query_cache( $walker_args, $atts, $view_settings ) {
-		if ( 
-			$walker_args['dependency'] == 'enabled' 
-			|| $walker_args['counters'] == 'enabled' 
+		if (
+			$walker_args['dependency'] == 'enabled'
+			|| $walker_args['counters'] == 'enabled'
 		) {
-			if ( 
-				empty( $walker_args['selected'] ) 
+			if (
+				empty( $walker_args['selected'] )
 				|| (
-					is_array( $walker_args['selected'] ) 
-					&& in_array( (string) 0, $walker_args['selected'] ) 
+					is_array( $walker_args['selected'] )
+					&& in_array( (string) 0, $walker_args['selected'] )
 				) || (
 					(
 						$walker_args['type'] == 'multi-select'
 						|| $walker_args['type'] == 'checkboxes'
 					)
-					&& $walker_args['operator'] == 'AND' 
-				) 
+					&& $walker_args['operator'] == 'AND'
+				)
 			) {
 				// This is when there is no non-default selected
 				$wpv_data_cache = WPV_Cache::$stored_cache;
-				if ( 
-					isset( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] ) 
-					&& is_array( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] ) 
+				if (
+					isset( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] )
+					&& is_array( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] )
 				) {
 					foreach ( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] as $pid => $tax_array ) {
-						if ( 
-							is_array( $tax_array ) 
-							&& count( $tax_array ) > 0 
+						if (
+							is_array( $tax_array )
+							&& count( $tax_array ) > 0
 						) {
 							$this_post_taxes = wp_list_pluck( $tax_array, 'term_id', 'term_id' );
 							$walker_args['query_cache'][ $pid ] = $this_post_taxes;
@@ -894,35 +906,35 @@ class WPV_Taxonomy_Frontend_Filter {
 				// When there is a selected value, create a pseudo-cache based on all the other filters
 				$query = apply_filters( 'wpv_filter_wpv_get_dependant_extended_query_args', array(), $view_settings, array( 'taxonomy' => $walker_args['taxonomy'] ) );
 				$aux_cache_query = null;
-				if ( 
-					isset( $query['tax_query'] ) 
-					&& is_array( $query['tax_query'] ) 
+				if (
+					isset( $query['tax_query'] )
+					&& is_array( $query['tax_query'] )
 				) {
 					foreach ( $query['tax_query'] as $qt_index => $qt_val ) {
-						if ( 
-							is_array( $qt_val ) 
-							&& isset( $qt_val['taxonomy'] ) 
-							&& $qt_val['taxonomy'] == $walker_args['taxonomy'] 
+						if (
+							is_array( $qt_val )
+							&& isset( $qt_val['taxonomy'] )
+							&& $qt_val['taxonomy'] == $walker_args['taxonomy']
 						) {
 							unset( $query['tax_query'][ $qt_index ] );
 						}
 					}
 				}
 				$aux_cache_query = new WP_Query( $query );
-				if ( 
-					is_array( $aux_cache_query->posts ) 
-					&& ! empty( $aux_cache_query->posts ) 
+				if (
+					is_array( $aux_cache_query->posts )
+					&& ! empty( $aux_cache_query->posts )
 				) {
 					$f_taxes = array( $walker_args['taxonomy'] );
 					$wpv_data_cache = WPV_Cache::generate_cache( $aux_cache_query->posts, array( 'tax' => $f_taxes ) );
-					if ( 
-						isset( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] ) 
-						&& is_array( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] ) 
+					if (
+						isset( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] )
+						&& is_array( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] )
 					) {
 						foreach ( $wpv_data_cache[ $walker_args['taxonomy'] . '_relationships' ] as $pid => $tax_array ) {
-							if ( 
-								is_array( $tax_array ) 
-								&& count( $tax_array ) > 0 
+							if (
+								is_array( $tax_array )
+								&& count( $tax_array ) > 0
 							) {
 								//$this_post_taxes = array_combine( array_values( array_keys( $tax_array ) ) , array_keys( $tax_array ) );
 								$this_post_taxes = wp_list_pluck( $tax_array, 'term_id', 'term_id' );
@@ -935,7 +947,7 @@ class WPV_Taxonomy_Frontend_Filter {
 		}
 		return $walker_args;
 	}
-	
+
 	/**
 	 * Return the frontend filter by a taxonomy as a select dropdown.
 	 *
@@ -950,12 +962,12 @@ class WPV_Taxonomy_Frontend_Filter {
 		$taxonomy_filter_output = '';
 		$get_value = ( $atts['hide_empty'] == 'true' ) ? '' : 'all';
 		$default_selected = '';
-		
+
 		$select_args = array(
 			'name'	=> $walker_args['name'],
 			'class'	=> ( empty( $walker_args['class'] ) ) ? array() : explode( ' ', $walker_args['class'] )
 		);
-		
+
 		$select_args['class'][] = 'js-wpv-filter-trigger';
 		if ( 'bootstrap' == $walker_args['output'] ) {
 			$select_args['class'][] = 'form-control';
@@ -963,17 +975,17 @@ class WPV_Taxonomy_Frontend_Filter {
 		if ( ! empty( $walker_args['style'] ) ) {
 			$select_args['style'] = $walker_args['style'];
 		}
-		
+
 		if ( 'multi-select' == $walker_args['type'] ) {
 			$select_args['name'] = $walker_args['name'] . '[]';
 			$select_args['multiple'] = 'multiple';
 			$select_args['size'] = '10';
 		}
-		
+
 		$taxonomy_filter_output .= '<select';
 		foreach ( $select_args as $att_key => $att_value ) {
-			if ( 
-				in_array( $att_key, array( 'style', 'class' ) ) 
+			if (
+				in_array( $att_key, array( 'style', 'class' ) )
 				&& empty( $att_value )
 			) {
 				continue;
@@ -989,27 +1001,30 @@ class WPV_Taxonomy_Frontend_Filter {
 			$taxonomy_filter_output .= '"';
 		}
 		$taxonomy_filter_output .= '>';
-		
+
 		if ( $walker_args['type'] == 'select' ) {
-			if ( 
-				empty( $walker_args['selected'] ) 
-				|| in_array( (string) 0, $walker_args['selected'] ) 
+			if (
+				empty( $walker_args['selected'] )
+				|| in_array( (string) 0, $walker_args['selected'] )
 			) {
 				$default_selected = " selected='selected'";
 			}
 
-			// The select control shouldn't include an option with value="0" 
+			// The select control shouldn't include an option with value="0"
 			// when we are on a taxonomy archive page and the page includes a filter by that taxonomy.
 			$create_empty_value = true;
 			if (
-				is_tax()
-				|| is_category()
-				|| is_tag()
+				'normal' !== toolset_getarr( $walker_args, 'query_mode', 'normal' )
+				&& (
+					is_tax()
+					|| is_category()
+					|| is_tag()
+				)
 			) {
 				global $wp_query;
 				$term = $wp_query->get_queried_object();
 
-				if ( 
+				if (
 					$term
 					&& isset( $term->taxonomy )
 					&& $term->taxonomy == $walker_args['taxonomy']
@@ -1019,32 +1034,32 @@ class WPV_Taxonomy_Frontend_Filter {
 			}
 
 			if ( true == $create_empty_value ) {
-				// TODO we do not add counters nor any format here, as we do for custom fields. 
+				// TODO we do not add counters nor any format here, as we do for custom fields.
 				// WE might need to review this.
-				$taxonomy_filter_output .= '<option' 
-					. $default_selected 
-					. ' value="0">' 
-					. $atts['default_label'] 
+				$taxonomy_filter_output .= '<option'
+					. $default_selected
+					. ' value="0">'
+					. $atts['default_label']
 					. '</option>';
 			}
 		}
 		$taxonomy_filter_walker = new WPV_Walker_Taxonomy_Select( $walker_args );
 		$taxonomy_filter_output .= WPV_Taxonomy_Frontend_Filter::walker_walk(
 			array(
-				'taxonomy'			=> $walker_args['taxonomy'], 
-				'selected_cats'		=> $walker_args['selected'], 
-				'walker'			=> $taxonomy_filter_walker, 
-				'taxonomy_orderby'	=> $atts['taxonomy_orderby'], 
-				'taxonomy_order'	=> $atts['taxonomy_order'], 
+				'taxonomy'			=> $walker_args['taxonomy'],
+				'selected_cats'		=> $walker_args['selected'],
+				'walker'			=> $taxonomy_filter_walker,
+				'taxonomy_orderby'	=> $atts['taxonomy_orderby'],
+				'taxonomy_order'	=> $atts['taxonomy_order'],
 				'get_value'			=> $get_value,
 				'output'			=> $walker_args['output']
 			)
 		);
 		$taxonomy_filter_output .= '</select>';
-		
+
 		return $taxonomy_filter_output;
 	}
-	
+
 	/**
 	 * Return the frontend filter by a taxonomy as a set of radio inputs.
 	 *
@@ -1063,13 +1078,13 @@ class WPV_Taxonomy_Frontend_Filter {
 		if ( $name == 'category' ) {
 			$name = 'post_category';
 		}
-		
-		if ( 
-			isset( $atts['default_label'] ) 
+
+		if (
+			isset( $atts['default_label'] )
 			&& ! empty( $atts['default_label'] )
 		) {
-			if ( 
-				empty( $walker_args['selected'] ) 
+			if (
+				empty( $walker_args['selected'] )
 				|| in_array( (string) 0, $walker_args['selected'] )
 			) {
 				$default_selected = " checked='checked'";
@@ -1078,9 +1093,12 @@ class WPV_Taxonomy_Frontend_Filter {
 			// The radio control shouldn't include an option with value="0" when we are on a taxonomy archive page and the page includes a filter by that taxonomy.
 			$create_empty_value = true;
 			if (
-				is_tax()
-				|| is_category()
-				|| is_tag()
+				'normal' !== toolset_getarr( $walker_args, 'query_mode', 'normal' )
+				&& (
+					is_tax()
+					|| is_category()
+					|| is_tag()
+				)
 			) {
 				global $wp_query;
 				$term = $wp_query->get_queried_object();
@@ -1094,21 +1112,21 @@ class WPV_Taxonomy_Frontend_Filter {
 			}
 
 			if ( true == $create_empty_value ) {
-				
+
 				switch( $walker_args['output'] ) {
 					case 'bootstrap':
 						$taxonomy_filter_output .= '<div class="radio">';
-						$taxonomy_filter_output .= '<label for="' . $name . '-"' 
-							. ( ! empty( $walker_args['label_style'] ) ? ( ' style="' . $walker_args['label_style'] . '"' ) : '' ) 
+						$taxonomy_filter_output .= '<label for="' . $name . '-"'
+							. ( ! empty( $walker_args['label_style'] ) ? ( ' style="' . $walker_args['label_style'] . '"' ) : '' )
 							. ( ! empty( $walker_args['label_class'] ) ? ( ' class="'. $walker_args['label_class'] . '"' ) : '' )
 							. '>';
 						$taxonomy_filter_output .= '<input id="' . $name . '-"'
-							. ( ! empty( $walker_args['style'] ) ? ' style="' . $walker_args['style'] . '"' : '' ) 
+							. ( ! empty( $walker_args['style'] ) ? ' style="' . $walker_args['style'] . '"' : '' )
 							. ' class="js-wpv-filter-trigger'. ( ! empty( $walker_args['class'] ) ? ' '. $walker_args['class'] : '' ) .'"'
 							. ' name="' . $walker_args['name'] . '"'
 							. ' type="radio"'
-							. ' value="0"' 
-							. $default_selected 
+							. ' value="0"'
+							. $default_selected
 							. '/>';
 						$taxonomy_filter_output .= $atts['default_label'];
 						$taxonomy_filter_output .= '</label>';
@@ -1117,41 +1135,41 @@ class WPV_Taxonomy_Frontend_Filter {
 					case 'legacy':
 					default:
 						$taxonomy_filter_output .= '<input id="' . $name . '-"'
-							. ( ! empty( $walker_args['style'] ) ? ' style="' . $walker_args['style'] . '"' : '' ) 
+							. ( ! empty( $walker_args['style'] ) ? ' style="' . $walker_args['style'] . '"' : '' )
 							. ' class="js-wpv-filter-trigger'. ( ! empty( $walker_args['class'] ) ? ' '. $walker_args['class'] : '' ) .'"'
 							. ' name="' . $walker_args['name'] . '"'
 							. ' type="radio"'
-							. ' value="0"' 
-							. $default_selected 
+							. ' value="0"'
+							. $default_selected
 							. '/>'
 							. ' '
-							. '<label for="' . $name . '-"' 
-							. ( ! empty( $walker_args['label_style'] ) ? ' style="' . $walker_args['label_style'] . '"' : '' ) 
+							. '<label for="' . $name . '-"'
+							. ( ! empty( $walker_args['label_style'] ) ? ' style="' . $walker_args['label_style'] . '"' : '' )
 							. ' class="radios-taxonomies-title'. ( ! empty( $walker_args['label_class'] ) ? ' '. $walker_args['label_class'] : '' ) .'"'
-							. '>' 
-							. $atts['default_label'] 
+							. '>'
+							. $atts['default_label']
 							. '</label>';
 						break;
 				}
-				
+
 			}
 		}
 		$taxonomy_filter_walker = new WPV_Walker_Taxonomy_Radios( $walker_args );
 		$taxonomy_filter_output .= WPV_Taxonomy_Frontend_Filter::walker_walk(
 			array(
-				'taxonomy'			=> $walker_args['taxonomy'], 
-				'selected_cats'		=> $walker_args['selected'], 
-				'walker'			=> $taxonomy_filter_walker, 
-				'taxonomy_orderby'	=> $atts['taxonomy_orderby'], 
-				'taxonomy_order'	=> $atts['taxonomy_order'], 
+				'taxonomy'			=> $walker_args['taxonomy'],
+				'selected_cats'		=> $walker_args['selected'],
+				'walker'			=> $taxonomy_filter_walker,
+				'taxonomy_orderby'	=> $atts['taxonomy_orderby'],
+				'taxonomy_order'	=> $atts['taxonomy_order'],
 				'get_value'			=> $get_value,
 				'output'			=> $walker_args['output']
 			)
 		);
-		
+
 		return $taxonomy_filter_output;
 	}
-	
+
 	/**
 	 * Return the frontend filter by a taxonomy as a set of checkboxes.
 	 *
@@ -1170,29 +1188,29 @@ class WPV_Taxonomy_Frontend_Filter {
 		if ( $name == 'category' ) {
 			$name = 'post_category';
 		}
-		
+
 		$taxonomy_filter_walker = new WPV_Walker_Taxonomy_Checkboxes( $walker_args );
 		if ( $walker_args['output'] == 'legacy' ) {
 			$taxonomy_filter_output .= '<ul class="categorychecklist form-no-clear">';
 		}
 		$taxonomy_filter_output .= WPV_Taxonomy_Frontend_Filter::walker_walk(
 			array(
-				'taxonomy'			=> $walker_args['taxonomy'], 
-				'selected_cats'		=> $walker_args['selected'], 
-				'walker'			=> $taxonomy_filter_walker, 
-				'taxonomy_orderby'	=> $atts['taxonomy_orderby'], 
-				'taxonomy_order'	=> $atts['taxonomy_order'], 
-				'get_value'			=> $get_value, 
+				'taxonomy'			=> $walker_args['taxonomy'],
+				'selected_cats'		=> $walker_args['selected'],
+				'walker'			=> $taxonomy_filter_walker,
+				'taxonomy_orderby'	=> $atts['taxonomy_orderby'],
+				'taxonomy_order'	=> $atts['taxonomy_order'],
+				'get_value'			=> $get_value,
 				'output'			=> $walker_args['output']
 			)
 		);
 		if ( $walker_args['output'] == 'legacy' ) {
 			$taxonomy_filter_output .= '</ul>';
 		}
-		
+
 		return $taxonomy_filter_output;
 	}
-	
+
 	/**
 	 * Auxiliar method to walk the walker for displaying the output of the wpv-control-post-taxonomy shortcode.
 	 *
@@ -1217,61 +1235,61 @@ class WPV_Taxonomy_Frontend_Filter {
 			'output'			=> 'legacy'
 		);
 		$args = wp_parse_args( $args, $defaults );
-		
-		if ( 
-			empty( $args['taxonomy'] ) 
-			|| empty( $args['walker'] ) 
-			|| ! is_a( $args['walker'], 'Walker' ) 
+
+		if (
+			empty( $args['taxonomy'] )
+			|| empty( $args['walker'] )
+			|| ! is_a( $args['walker'], 'Walker' )
 		) {
 			return;
 		}
-		
+
 		$args['taxonomy_orderby'] = toolset_getarr( $args, 'taxonomy_orderby', 'name', array( 'id', 'count', 'name', 'slug', 'term_group', 'none' ) );
 		$args['taxonomy_order'] = toolset_getarr( $args, 'taxonomy_order', 'ASC', array( 'ASC', 'DESC' ) );
-		
-		$walker_walk_args = array( 
-			'taxonomy'		=> $args['taxonomy'], 
+
+		$walker_walk_args = array(
+			'taxonomy'		=> $args['taxonomy'],
 			'popular_cats'	=> array()
 		);
-		
+
 		if ( 'legacy' == $args['output'] ) {
-			$walker_walk_args['popular_cats'] = get_terms( 
-				$args['taxonomy'], 
-				array( 
-					'fields'		=> 'ids', 
-					'orderby'		=> 'count', 
-					'order'			=> 'DESC', 
-					'number'		=> 10, 
-					'hierarchical'	=> false 
-				) 
+			$walker_walk_args['popular_cats'] = get_terms(
+				$args['taxonomy'],
+				array(
+					'fields'		=> 'ids',
+					'orderby'		=> 'count',
+					'order'			=> 'DESC',
+					'number'		=> 10,
+					'hierarchical'	=> false
+				)
 			);
 		}
-		
-		$taxonomy_terms = (array) get_terms( 
-			$args['taxonomy'], 
+
+		$taxonomy_terms = (array) get_terms(
+			$args['taxonomy'],
 			array(
-				'get'		=> $args['get_value'], 
-				'orderby'	=> $args['taxonomy_orderby'], 
-				'order'		=> $args['taxonomy_order'] 
-			) 
+				'get'		=> $args['get_value'],
+				'orderby'	=> $args['taxonomy_orderby'],
+				'order'		=> $args['taxonomy_order']
+			)
 		);
-		
+
 		return call_user_func_array( array( &$args['walker'], 'walk' ), array( $taxonomy_terms, 0, $walker_walk_args ) );
 	}
-	
+
 	/**
 	 * Register the wpv-control-post-taxonomy shortcode attributes in the shortcodes GUI API.
 	 *
 	 * @since 2.4.0
 	 */
-	
+
 	public static function wpv_shortcodes_register_wpv_control_post_taxonomy_data( $views_shortcodes ) {
 		$views_shortcodes['wpv-control-post-taxonomy'] = array(
 			'callback' => array( 'WPV_Taxonomy_Frontend_Filter', 'wpv_shortcodes_get_wpv_control_post_taxonomy_data' )
 		);
 		return $views_shortcodes;
 	}
-	
+
 	public static function wpv_shortcodes_get_wpv_control_post_taxonomy_data( $parameters = array(), $overrides = array() ) {
 		$data = array(
 			'name' => __( 'Filter by post taxonomy', 'wpv-views' ),
@@ -1415,17 +1433,17 @@ class WPV_Taxonomy_Frontend_Filter {
 				),
 			),
 		);
-		
+
 		$dialog_label = __( 'Filter by post taxonomy', 'wpv-views' );
 		$dialog_target = false;
-		
+
 		if ( isset( $parameters['attributes']['taxonomy'] ) ) {
 			$dialog_target = $parameters['attributes']['taxonomy'];
 		}
 		if ( isset( $overrides['attributes']['taxonomy'] ) ) {
 			$dialog_target = $overrides['attributes']['taxonomy'];
 		}
-		
+
 		if ( $dialog_target ) {
 			$taxonomy_object = get_taxonomy( $dialog_target );
 			if ( $taxonomy_object ) {
@@ -1434,13 +1452,13 @@ class WPV_Taxonomy_Frontend_Filter {
 				$data['additional_data']['shortcode_label'] = $taxonomy_object->label;
 			}
 		}
-		
+
 		$data['name']	= $dialog_label;
 		$data['label']	= $dialog_label;
-		
+
 		return $data;
 	}
-	
+
 }
 
 /**
@@ -1449,22 +1467,22 @@ class WPV_Taxonomy_Frontend_Filter {
 */
 function wpv_get_taxonomy_view_params($view_settings) {
 	$results = array();
-	
+
 	$taxonomies = get_taxonomies('', 'objects');
 	foreach ($taxonomies as $category_slug => $category) {
 		$relationship_name = ( $category->name == 'category' ) ? 'tax_category_relationship' : 'tax_' . $category->name . '_relationship';
-		
+
 		if (isset($view_settings[$relationship_name])) {
-			
-			$save_name = ( $category->name == 'category' ) ? 'post_category' : 'tax_input_' . $category->name;			
-			
+
+			$save_name = ( $category->name == 'category' ) ? 'post_category' : 'tax_input_' . $category->name;
+
 			if ($view_settings['tax_' . $category->name . '_relationship'] == "FROM ATTRIBUTE") {
 				$attribute = $view_settings['taxonomy-' . $category->name . '-attribute-url'];
 				$results[] = $attribute;
 			}
 		}
     }
-    
+
 	return $results;
 }
 

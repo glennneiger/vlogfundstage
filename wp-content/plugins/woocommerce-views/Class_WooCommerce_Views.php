@@ -51,7 +51,7 @@ class Class_WooCommerce_Views {
 	
 	public function __construct() {
 		
-		
+		/** {ENCRYPTION PATCH HERE} **/
 			
 		add_action('plugins_loaded', array(&$this,'wcviews_init'),2);
 				
@@ -67,10 +67,22 @@ class Class_WooCommerce_Views {
 		add_action( 'admin_menu', array(&$this,'woocommerce_views_add_this_menupage'),50);
 		add_filter( 'toolset_filter_register_menu_pages', array(&$this,'wcviews_unified_menu'), 45 );
 		
-		//Cron and scripts
-		add_action('system_cron_execution_hook',array(&$this,'ajax_process_wc_views_batchprocessing'));		
-		add_action('wp_enqueue_scripts', array(&$this,'woocommerce_views_scripts_method'));		
+		// Scripts
+		add_action('wp_enqueue_scripts', array(&$this,'woocommerce_views_scripts_method'));
+
+		// Disabled in 2.7.8
+		//add_action('system_cron_execution_hook',array(&$this,'ajax_process_wc_views_batchprocessing'));
+
+		// Deprecated in 2.7.8
+		// Use wp_ajax_wc_views_process_products_fields instead
 		add_action('wp_ajax_wc_views_ajax_response_admin',array(&$this,'ajax_process_wc_views_batchprocessing'));		
+		
+		// Batch update fields in products
+		// Since 2.7.8
+		add_action( 'wp_ajax_wc_views_process_products_fields', array( $this, 'ajax_process_products_fields' ) );		
+		// Helper for background batch updating fields in products
+		// Since 2.7.8
+		add_action( 'init', array( $this, 'maybe_process_products_fields' ) );
 		
 		add_action('admin_enqueue_scripts', array(&$this,'woocommerce_views_scripts_method_backend'));
 		add_action('init',array(&$this,'prefix_setup_schedule'));			
@@ -455,6 +467,7 @@ class Class_WooCommerce_Views {
 		
 		//woocommerceviews-115: Hooked to 'woocommerce_register_post_type_shop_order' filter to make WooCommerce post type queryable by Views.
 		add_filter( 'woocommerce_register_post_type_shop_order', array( $this, 'wcviews_make_shop_order_views_queryable' ), 10, 1 );
+		add_filter( 'toolset_filter_edit_post_link_publish_statuses_allowed', array( $this, 'toolset_edit_post_link_publish_statuses_allowed' ), 10, 2 );
 		add_filter( 'post_password_required', array( $this, 'wcviews_allow_frontend_visibility_order_post_type' ), 10, 2 );
 		add_filter( 'woocommerce_register_shop_order_post_statuses', array( $this, 'wcviews_allow_frontend_visibility_order_post_type_statuses' ), 10, 1 );
 		add_filter( 'wpv_custom_inner_shortcodes', array( $this, 'wcviews_add_ordered_products_ids_shortcode'), 10, 1 );
@@ -1359,7 +1372,8 @@ class Class_WooCommerce_Views {
 		$show_path=__('Show template','woocommerce_views');
 		$hide_path=__('Hide template','woocommerce_views');
 		
-		//Used for wizard, check if custom fields updating are done
+		// Used for wizard, check if custom fields updating are done
+		// This seems deprecated and never used
 		$check_if_done_cf_updating_wcviews=get_option('woocommerce_last_run_update');
 		if ($check_if_done_cf_updating_wcviews) {
 	       $cf_field_status_wizard="true";       
@@ -1411,7 +1425,12 @@ class Class_WooCommerce_Views {
 				'wc_views_wizard_php_template_already_defined' => $localize_php_template_already_defined,
 				'wc_views_wizard_content_template_already_defined' => $localize_contenttemplate_already_defined,
 				'wc_views_wizard_wp_archive_already_defined' => $localize_wparchive_already_defined,
+				// This seems deprecated and never used
 				'wc_views_cf_fields_update_check_wizard' =>$cf_field_status_wizard,
+				'batchProductFields' => array(
+					'ongoing' => __( 'ongoing', 'woocommerce-views' ),
+					'error' => __( 'failed to complete, please reload and try again', 'woocommerce-views' ),
+				),
 				'wc_views_admin_screen_page_url' => $admin_url_wcviews,
 				'wc_views_next_button_text_translatable' =>__('Next','woocommerce_views'),
 				'wc_views_finish_wizard_text_translatable'=>__('Skip the setup wizard','woocommerce_views'),
@@ -1434,12 +1453,12 @@ class Class_WooCommerce_Views {
 				$notification_css_path=WPV_PATH_EMBEDDED_TOOLSET.DIRECTORY_SEPARATOR.'toolset-common'.DIRECTORY_SEPARATOR.'utility'.DIRECTORY_SEPARATOR.'css'.DIRECTORY_SEPARATOR.'notifications.css';
 				if (file_exists($notification_css_path)) {
 					$notification_css_url=$views_embedded_toolset_url.'/toolset-common/utility/css/notifications.css';
-					wp_register_style( 'wcviews-common-utility', $notification_css_url, array('wcviews-style'), WC_VIEWS_VERSION );
+					wp_register_style( 'wcviews-common-utility', $notification_css_url, array('wcviews-style', 'toolset-notifications-css'), WC_VIEWS_VERSION );
 					wp_enqueue_style('wcviews-common-utility');
 				} else {
 					//Backward compatibility in case that file is removed
 					$notification_css_url = plugins_url() . '/' . basename(dirname(__FILE__)) . '/res/css/notifications.css';
-					wp_register_style( 'wcviews-common-utility', $notification_css_url, array('wcviews-style'), WC_VIEWS_VERSION );
+					wp_register_style( 'wcviews-common-utility', $notification_css_url, array('wcviews-style', 'toolset-notifications-css'), WC_VIEWS_VERSION );
 					wp_enqueue_style('wcviews-common-utility');					
 				}
 			}
@@ -1460,8 +1479,8 @@ class Class_WooCommerce_Views {
 				if ( !wp_script_is( 'views-utils-script' ) ) {
 					wp_enqueue_script( 'views-utils-script');
 					$help_box_translations = array(
-					'wpv_dont_show_it_again' => __("Got it! Don't show this message again", 'wpv-views'),
-					'wpv_close' => __("Close", 'wpv-views')
+					'wpv_dont_show_it_again' => __("Got it! Don't show this message again", 'woocommerce_views'),
+					'wpv_close' => __("Close", 'woocommerce_views')
 					);
 					wp_localize_script( 'views-utils-script', 'wpv_help_box_texts', $help_box_translations );
 				}
@@ -1745,7 +1764,7 @@ class Class_WooCommerce_Views {
 			if (is_array($cron_hookname) && (!(empty($cron_hookname)))) {
 				foreach ($cron_hookname as $key_hookname=>$value_hookname) {
 					if ($intervals_set==$value_hookname) {
-						add_action($key_hookname, array(&$this,'ajax_process_wc_views_batchprocessing'));					
+						add_action( $key_hookname, array( $this,'start_processing_products_fields' ) );					
 					}	
 				}			
 			}
@@ -2311,7 +2330,7 @@ class Class_WooCommerce_Views {
 <div class="wpv-setting-container">
 	<div class="wpv-settings-header wcviews_header_views"> 
 	    <?php  }?>
-		  <h3><?php _e('Static Product Fields for Parametric Searches','woocommerce_views');?>
+		  <h3><?php _e( 'Products Fields for Parametric Searches', 'woocommerce_views' );?>
 		  <i class="icon-question-sign js-wcviews-display-tooltip"
 				data-header="<?php echo $wcviews_edit_help['batch_processing_options']['title']?>"
 				data-content="<?php echo $wcviews_edit_help['batch_processing_options']['content']?>"></i>
@@ -2319,20 +2338,34 @@ class Class_WooCommerce_Views {
 		<?php if ($wcview_cf_rendering_mode=='standard') {?>
 		   </div>
 	<div class="wpv-setting wc_view_batch_process_class">
-		<div id="ajax_result_batchprocessing"></div>
 		<div id="ajax_result_batchprocessing_logging">
-			<div id="ajax_result_batchprocessing_time">	
-		<?php
-		$updated_batch_processing_time=get_option('woocommerce_last_run_update');
-		if ((isset($updated_batch_processing_time)) && (!(empty($updated_batch_processing_time)))) {
-		$last_run_text=__('Calculated Product fields were last updated: ','woocommerce_views');
-		   echo $last_run_text.$updated_batch_processing_time;
-		} else {
-	       $default_run_text_without_set=__('Static product fields have never been calculated, so you cannot create parametric searches for WooCommerce products. Choose one of the automated schedules for calculating fields, or click on "Calculate Now", to calculate manually.','woocommerce_views');
-	       echo $default_run_text_without_set;
-	    }
-		?>		
-		</div>
+			<?php
+			$updated_batch_processing_time = get_option( 'woocommerce_last_run_update' );
+			$logging_text = '';
+			$logging_classname = 'toolset-alert';
+			if ( $updated_batch_processing_time ) {
+				if ( 'ongoing' === $updated_batch_processing_time ) {
+					$logging_classname .= ' toolset-alert-warning';
+					$updated_batch_processing_time = __( 'ongoing', 'woocommerce_views' );
+				} else {
+					$logging_classname .= ' toolset-alert-info';
+				}
+				$logging_text = sprintf(
+					__( 'Calculated Product fields were last updated: %s', 'woocommerce_views' ),
+					$updated_batch_processing_time
+				);
+			} else {
+				$updated_batch_processing_time = __( 'never', 'woocommerce_views' );
+				$logging_classname .= ' toolset-alert-error';
+			}
+			$logging_text = sprintf(
+				__( 'Calculated Product fields were last updated: %s', 'woocommerce_views' ),
+				'<span id="wcv-product-fields-updated-last-time">' . $updated_batch_processing_time . '</span>'
+			);
+			?>
+			<div id="ajax_result_batchprocessing_time" class="<?php echo esc_attr( $logging_classname ); ?>">	
+				<?php echo $logging_text; ?>
+			</div>
 		</div>
 		<?php }?>					
 		<div id="batchprocessing_woocommerce_views">
@@ -2835,133 +2868,331 @@ class Class_WooCommerce_Views {
 </form>
 <?php 
 	}
-	
-	public function ajax_process_wc_views_batchprocessing($wc_view_woocommerce_orderobject='') {
-	
-		global $wpdb,$woocommerce;
-	    $doing_ajax_batch_processing	=	false;
-	    $doing_fi_import				= 	false;
-		if (defined('DOING_AJAX') && DOING_AJAX ) {			
-			//Doing AJAX          
-			//Let's catch those sent for AJAX batch processing
-			if (isset($_POST['action'])) {
-				//action set
-				$the_action=$_POST['action'];
-				if ( 'wc_views_ajax_response_admin' == $the_action	) {
-					$doing_ajax_batch_processing= true;					
-				}
-				if ( 'wpvdemo_download'	== $the_action ) {
-					$doing_fi_import	= 	true;
-				}
-			}
+
+	/**
+	 * Count published products
+	 *
+	 * @return int
+	 * @since 2.7.8
+	 */
+	private function count_published_products() {
+		$count_posts = wp_count_posts( 'product' );
+		return $count_posts->publish;
+	}
+
+	/**
+	 * Get the number of items to process at once when manually updating products fields.
+	 *
+	 * @return int
+	 * @since 2.7.8
+	 */
+	private function get_products_fields_manual_batch_update_limit() {
+		/**
+		 * @param int
+		 * @return int
+		 * @since 2.7.8
+		 */
+		return apply_filters( 'woocommerce_views_products_fields_manual_batch_update_limit', 100 );
+	}
+
+	/**
+	 * Get the number of items to process at once when automatically updating products fields.
+	 *
+	 * @return int
+	 * @since 2.7.8
+	 */
+	private function get_products_fields_automatic_batch_update_limit() {
+		/**
+		 * @param int
+		 * @return int
+		 * @since 2.7.8
+		 */
+		return apply_filters( 'woocommerce_views_products_fields_automatic_batch_update_limit', 100 );
+	}
+
+	/**
+	 * Query the database to collect products thta need their fields updated.
+	 *
+	 * @param array $args {
+	 *     @type int $start The post ID to start with, or 0 to start anew
+	 *     @type int $limit The query limit, as number of items to process per batch
+	 * }
+	 * @return int[]
+	 * @since 2.7.8
+	 */
+	public function get_products_to_process_fields( $args ) {
+		$defaults = array(
+			'start' => 0,
+			'limit' => $this->get_products_fields_manual_batch_update_limit(),
+		);
+		$args = wp_parse_args( $args, $defaults );
+
+		global $wpdb;
 		
-			if ( true === $doing_fi_import ) {
-				//Don't process this on import
-				return;
-			}
-			//Catch wrong nonce
-           if ( ( isset( $_POST['wpv_wc_views_ajax_response_admin_nonce'] ) ) && ( $doing_ajax_batch_processing ) ) {
-           		//Verified WCV ajax batch processing, proceed..
-	           	if (!( wp_verify_nonce( $_POST['wpv_wc_views_ajax_response_admin_nonce'], 'wc_views_ajax_response_admin' )))  {
-	           			$response['status']='error';
-						$response['batch_processing_output'] = __('Batch processing output is not successful because nonce is invalid.','woocommerce_views');
-						echo json_encode($response);
-						die();
-	           	}
-           }
-		}
-		
-		//Define custom field names
+		$woocommerce_product_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT ID FROM $wpdb->posts
+				WHERE post_status = 'publish'
+				AND post_type = 'product'
+				AND ID > %d
+				LIMIT %d",
+				array(
+					$args['start' ],
+					$args['limit'] + 1,
+				)
+			)
+		);
+
+		return $woocommerce_product_ids;
+	}
+
+	/**
+	 * Process the fields for the provided products IDs.
+	 *
+	 * @param int[] $product_ids
+	 * @since 2.7.8
+	 */
+	private function process_product_fields( $product_ids ) {
 		$views_woo_price = 'views_woo_price';
 		$views_woo_on_sale = 'views_woo_on_sale';
 		$views_woo_in_stock = 'views_woo_in_stock';
-		
-		$response=array();
-		
-		//Get all product ids
-		$woocommerce_product_ids=$wpdb->get_results("SELECT ID FROM $wpdb->posts where post_status='publish' AND post_type='product'",ARRAY_N);
-		$woocommerce_clean_ids=array();	
-		if ((is_array($woocommerce_product_ids)) && (!(empty($woocommerce_product_ids)))) {
-			foreach ($woocommerce_product_ids as $key=>$value) {
-				$woocommerce_clean_ids[]=reset($value);
+
+		foreach ( $product_ids as $product_id ) {
+	        $product_post = get_post( $product_id );         
+	        $product = $this->wcviews_setup_product_data( $product_post );
+			if ( null !== $product ) {
+				// Product price
+				$product_price = $product->get_price();
+				update_post_meta( $product_id, $views_woo_price, $product_price );
+				
+				// Product is on sale
+				$product_on_sale_boolean = $this->for_views_null_equals_zero_adjustment( $product->is_on_sale() );
+				update_post_meta( $product_id, $views_woo_on_sale, $product_on_sale_boolean );
+				
+				// Product is in stock
+				$product_on_stock_boolean = $this->for_views_null_equals_zero_adjustment( $product->is_in_stock() );
+				update_post_meta( $product_id, $views_woo_in_stock, $product_on_stock_boolean );
+			}
+		}
+	}
+
+	/**
+	 * Batch round to process products to set their fields.
+	 *
+	 * @param array $args {
+	 *     @type int $start The ID to start with, or 0 to start anew
+	 *     @type int $limit The amount of posts to process at once
+	 *     @type string $status The batch process status
+	 * }
+	 * @return array {
+	 *     @type int $start The ID of the last processed product
+	 *     @type int $limit The amount of posts to process at once
+	 *     @type string $status The batch process status after this round
+	 * }
+	 * @since 2.7.8
+	 */
+	private function batch_process_products( $args ) {
+		$defaults = array(
+			'start' => 0,
+			'limit' => $this->get_products_fields_manual_batch_update_limit(),
+			'status' => 'ongoing',
+		);
+		$args = wp_parse_args( $args, $defaults );
+		$available_products = $this->count_published_products();
+
+		if ( 0 === (int) $available_products ) {
+			// There are no products to update
+			$args['status'] = 'completed';
+			return $args;
+		}
+
+		if ( $available_products < $args['limit'] ) {
+			$args['limit'] = $available_products;
+		}
+
+		$products_ids_to_update = $this->get_products_to_process_fields( $args );
+
+		if ( 0 === count( $products_ids_to_update ) ) {
+			// Last round processed all remaining products
+			$args['status'] = 'completed';
+			return $args;
+		}
+
+		$this->process_product_fields( $products_ids_to_update );
+
+		// Set the starting point for the next iteration, in case it is needed
+		$args['start'] = max( $products_ids_to_update );
+
+		// Set the batch status to completed if:
+		// - there are less products than the lower limit
+		// (so we will process them all at once)
+		// - the current iteration is processing less products than the lower limit
+		// (so it is the last iteration on the remainders)
+		if (
+			$available_products <= $args['limit']
+			|| count( $products_ids_to_update ) <= $args['limit']
+		) {
+			$args['status'] = 'completed';
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Callback to process products fields manually.
+	 *
+	 * @since 2.7.8
+	 */
+	public function ajax_process_products_fields() {
+		if (
+			! isset( $_POST['nonce'] )
+			|| ! wp_verify_nonce( $_POST['nonce'], 'wc_views_ajax_response_admin' )
+		) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Batch processing output is not successful because nonce is invalid.', 'woocommerce_views'),
+				)
+			);
+		}
+
+		$start = isset( $_POST['start'] ) ? (int) $_POST['start'] : null;
+
+		if ( null === $start ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Batch processing output is not successful.', 'woocommerce_views'),
+				)
+			);
+		}
+
+		$args = array(
+			'start' => $start,
+		);
+		$outcome = $this->batch_process_products( $args );
+
+		if ( 'completed' === $outcome['status'] ) {
+			$last_updated = date_i18n('Y-m-d G:i:s');
+
+			$wcv_options = get_option( 'woocommerce_views_options', array() );
+			if ( isset( $wcv_options['last_product_processed'] ) ) {
+				unset( $wcv_options['last_product_processed'] );
+				update_option( 'woocommerce_views_options', $wcv_options );
 			}
 		} else {
-	        $response['status']='error';
-			$response['batch_processing_output'] = __('Batch processing output is not successful because it looks like you do not have products yet.','woocommerce_views');
-	    }
-		
-		if ((is_array($woocommerce_clean_ids)) && (!(empty($woocommerce_clean_ids)))) {
-	        //Loop through individual products, get the updated product data needed and save to custom fields
-			foreach ($woocommerce_clean_ids as $k=>$v) {
-	        $post=get_post($v);         
-	        $product = $this->wcviews_setup_product_data($post);
-	        	if (isset($product)) {
-		           //Retrieve product price
-		           $product_price=$product->get_price();
-		           
-		           //Check if product is on sale
-		           $product_on_sale_boolean=$product->is_on_sale();
-		           
-		           //Check if product is in stock
-		           $product_on_stock_boolean=$product->is_in_stock();
-		           
-		           //"0" adjustment
-		           $product_on_stock_boolean=$this->for_views_null_equals_zero_adjustment($product_on_stock_boolean);
-		           $product_on_sale_boolean=$this->for_views_null_equals_zero_adjustment($product_on_sale_boolean);
-		           
-		           //Save to custom fields
-		           $success_price=update_post_meta($v,$views_woo_price,$product_price);
-		           $success_on_sale=update_post_meta($v,$views_woo_on_sale,$product_on_sale_boolean);
-		           $success_stock=update_post_meta($v,$views_woo_in_stock,$product_on_stock_boolean);
-	
-		           $response['status']='updated';
-		           $response['batch_processing_output'] = __('Batch processing output completed.','woocommerce_views');   
-	
-		        } else {
-	
-				   $response['status']='error';
-				   $response['batch_processing_output'] = __('Batch processing output is not successful because it looks like you do not have products yet.','woocommerce_views');
-	           }
-	        }    	
-	    } else {
-			$response['status']='error';
-			$response['batch_processing_output'] = __('Batch processing output is not successful because it looks like you do not have products yet.','woocommerce_views');
-	    }
-	
-		/*AJAX SECTION WORKING ON THE BACKEND ADMIN SCREEN*/    
-	   
-		if ($response['status']='updated') {
-		   $response['last_run'] = date_i18n('Y-m-d G:i:s');
-		   $success_last_run_update=update_option( 'woocommerce_last_run_update',$response['last_run']);
+			$last_updated = 'ongoing';
+		}
+
+		$outcome['lastUpdated'] = $last_updated;
+
+		update_option( 'woocommerce_last_run_update', $last_updated );
+
+		wp_send_json_success(
+			array(
+				'outcome' => $outcome,
+			)
+		);
+	}
+
+	/**
+	 * Helper to see if an automatic batch update of products fields is ongoing,
+	 * and push an extra step on it.
+	 *
+	 * Fired when the batch update was initialized by a WordPress or system cron.
+	 *
+	 * @since 2.7.8
+	 */
+	public function maybe_process_products_fields() {
+		$wcv_options = get_option( 'woocommerce_views_options', array() );
+		if ( isset( $wcv_options['last_product_processed'] ) ) {
+			$args = array(
+				'start' => (int) $wcv_options['last_product_processed'],
+				'limit' => $this->get_products_fields_automatic_batch_update_limit(),
+			);
+
+			$outcome = $this->batch_process_products( $args );
+
+			$this->adjust_options_after_batch_processing_product_fields( $wcv_options, $outcome );
+		}
+	}
+
+	/**
+	 * Start a batch update. Can be triggered by three callers:
+	 * - a WordPress cron job.
+	 * - a system cron job.
+	 * - an activation hook.
+	 *
+	 * Do nothing if a batch update is already ongoing.
+	 *
+	 * @since 2.7.8
+	 */
+	public function start_processing_products_fields() {
+		$wcv_options = get_option( 'woocommerce_views_options', array() );
+		if ( isset( $wcv_options['last_product_processed'] ) ) {
+			// There is already an ongoing update happening
+			return;
+		}
+
+		$args = array(
+			'start' => 0,
+			'limit' => $this->get_products_fields_automatic_batch_update_limit(),
+		);
+		$outcome = $this->batch_process_products( $args );
+
+		$this->adjust_options_after_batch_processing_product_fields( $wcv_options, $outcome );
+	}
+
+	/**
+	 * Adjust the options stored when a batch update round is completed:
+	 * - set the last processed product ID if the batch needs another round
+	 * - delete the flag if the batch is completed
+	 *
+	 * @param array $wcv_options
+	 * @param array $outcome
+	 * @since 2.7.8
+	 */
+	private function adjust_options_after_batch_processing_product_fields( $wcv_options, $outcome ) {
+		if ( 'completed' === $outcome['status'] ) {
+			unset( $wcv_options['last_product_processed'] );
+		} else {
+			$wcv_options['last_product_processed'] = $outcome['start'];
 		}
 		
-		//Run the ajax response only if object is not set
-		
-		if ($this->wc_views_two_point_two_above()) {
-	       //WC Views 2.2+      
+		update_option( 'woocommerce_views_options', $wcv_options );
+	}
+
+	/**
+	 * Maybe start processing products fields, on the activation hook.
+	 * Do not run the batch update if:
+	 * - the update was run in the past at least once
+	 * - AND the batch update is scheduled on a WordPress or system cron already
+	 * Otherwise, start a batch update unless there is one already ongoing.
+	 *
+	 * @since 2.7.8
+	 */
+	public function maybe_start_processing_products_fields() {
+		$last_updated = get_option( 'woocommerce_last_run_update' );
+		$fields_processing_settings = get_option( 'woocommerce_views_batch_processing_settings', array() );	                     
+		if (
+			$last_updated
+			&& isset( $fields_processing_settings['woocommerce_views_batchprocessing_settings'] )
+			&& 'manually' !== $fields_processing_settings['woocommerce_views_batchprocessing_settings']
+		) {
+			// There is already a cron update scheduled
+			return;
+		}
+
+		$this->start_processing_products_fields();
+	}
 	
-			if (!(isset($wc_view_woocommerce_orderobject->post_status))) {
-	             //Status NOT set, this is not "checking out". Output this AJAX response.
-				if (defined('DOING_AJAX') && DOING_AJAX ) {
-					echo json_encode($response);
-					die();
-				}
-			}
-	       
-	
-	    } else {
-	       //using before 2.2, working fine.
-	
-			if (!(isset($wc_view_woocommerce_orderobject->status))) {
-				if (defined('DOING_AJAX') && DOING_AJAX ) {
-				echo json_encode($response);
-				die();
-				}
-			}
-	    }
-		
-	
-		
+	/**
+	 * @depecated 2.7.8
+	 */
+	public function ajax_process_wc_views_batchprocessing( $wc_view_woocommerce_orderobject = '' ) {
+		$response = array();
+		$response['status'] ='error';
+		$response['batch_processing_output'] = __( 'This method is deprecated.', 'woocommerce_views' );
+		echo json_encode( $response );
+		die();
 	} 
 	
 	public function for_views_null_equals_zero_adjustment($boolean_test) {
@@ -4677,76 +4908,60 @@ class Class_WooCommerce_Views {
 	/**Emerson: NEW VERSION
 	[wpv-add-to-cart-message]
 	Description: Displays add to cart success message and link to cart for product variation
-	Or you can add the hook directly to the theme template
-	
-	do_action( 'woocommerce_before_single_product' );
-	
-	preferably after get_header();
 	**/
-	
 	public function wpv_show_add_cart_success_func($atts) {
-		global $post, $wpdb, $woocommerce;
+		global $woocommerce;
 		
 		$check_if_using_revised_wc=$this->wcviews_using_woocommerce_two_point_one_above();
 		
-		if (!($check_if_using_revised_wc)) {
-			if (( isset($woocommerce->messages) ) || (isset($woocommerce->errors))) {		   	
-	  
-	    		 $html_result=$this->wcviews_add_to_cart_success_html(); 
-	    		 
-	    		 /**Let's marked this shortcode execution */
-	    		 $this->wcviews_shortcode_executed();
-	    		 return $html_result;
+		if ( ! $check_if_using_revised_wc ) {
+			if (
+				isset( $woocommerce->messages )
+				|| isset( $woocommerce->errors )
+			) {		   	
+				$html_result=$this->wcviews_add_to_cart_success_html(); 
+				
+				/**Let's marked this shortcode execution */
+				$this->wcviews_shortcode_executed();
+				return $html_result;
 	    	}
 	    } else {
-	           //Using revised WC
+			$cart_contents = isset( $woocommerce->cart )
+				? $woocommerce->cart
+				: null;
+			
+			$cart_contents_array = isset( $cart_contents->cart_contents )
+				? $cart_contents->cart_contents
+				: array();           
 	           
-	           $cart_contents=$woocommerce->cart;
-	           $cart_contents_array=$cart_contents->cart_contents;           
-	           
-	           if (!(empty($cart_contents_array))) {
-	
-					$html_result=$this->wcviews_add_to_cart_success_html();
-					/**Let's marked this shortcode execution */
-					$this->wcviews_shortcode_executed();
-					
-	                return $html_result;
-	           }
-	   }  
-	
+			if ( ! empty( $cart_contents_array ) ) {
+				$html_result = $this->wcviews_add_to_cart_success_html();
+				/**Let's marked this shortcode execution */
+				$this->wcviews_shortcode_executed();
+				
+				return $html_result;
+			}
+	   }
+
+	   return '';
 	}
 	
 	public function wcviews_add_to_cart_success_html() {
-	
-		$check_if_using_revised_wc=$this->wcviews_using_woocommerce_two_point_one_above();
-		
-		//Has message defined
-		//Can be reordered anywhere
-		
-		ob_start();
+		$add_to_cart_success_content = '';
 	 
-		if (is_product()) {
-			add_action( 'woocommerce_before_single_product', 'wc_print_notices', 10 );
-			do_action( 'woocommerce_before_single_product' );
+		if (
+			$this->wcviews_using_woocommerce_two_point_one_above()
+		) {
+			$add_to_cart_success_content = wc_print_notices( true );
 		} else {
-			
-			//https://icanlocalize.basecamphq.com/projects/7393061-toolset/todo_items/193583262/comments#comment_303204369
-			if ($check_if_using_revised_wc) {
-
-				 //Using revised WC
-				 //Use wc_print_notices()
-				wc_print_notices();
-				
-			} else {
-				//Old WC, backward compatibility
-				woocommerce_show_messages();
-			}			
+			//Old WC, backward compatibility
+			ob_start();
+			woocommerce_show_messages();
+			$add_to_cart_success_content = ob_get_clean();
 		}
-		$add_to_cart_success_content = ob_get_contents();
-		ob_end_clean();
+
 	
 		return $add_to_cart_success_content;
-	
 	}
 	
 	/**Emerson: NEW VERSION
@@ -5906,6 +6121,8 @@ class Class_WooCommerce_Views {
 				return $product_information;
 			}
 		}
+
+		return null;
 	}
 	
 	//NEW: Compatibilty public function to check for WooCommerce versions
@@ -6259,7 +6476,7 @@ class Class_WooCommerce_Views {
 	 */	
 	public function wpv_woo_breadcrumb_func() {
 		
-				
+		/** {ENCRYPTION PATCH HERE} **/		
 		global $woocommerce;		
 		if ( is_object( $woocommerce ) ) {			
 			//WooCommerce plugin activated	
@@ -9075,17 +9292,19 @@ class Class_WooCommerce_Views {
   	 * Compatibility with WooCommerce Woothumbs plugin
   	 * http://codecanyon.net/item/woothumbs-awesome-product-imagery/2867927
   	 * @since version 2.6.5
+	 * @since 2.7.8 Remove also the hook callback for printing all notices, since WooCommerce 3.5
   	 * @return string
   	 */
   	protected function wcviews_execute_woocommerce_before_single_product() {
-  		
-  		ob_start();
-  		remove_action( 'woocommerce_before_single_product', 'wc_print_notices', 10 );
-  		do_action( 'woocommerce_before_single_product' );
-  		
-  		return ob_get_clean(); 		
-  				
-  	}
+		ob_start();
+	  remove_action( 'woocommerce_before_single_product', 'wc_print_notices', 10 );
+	  if ( function_exists( 'woocommerce_output_all_notices' ) ) {
+		  remove_action( 'woocommerce_before_single_product', 'woocommerce_output_all_notices' );
+	  }
+		do_action( 'woocommerce_before_single_product' );
+		
+		return ob_get_clean(); 			
+	}
   	
   	/**
   	 * Check if WooThumbs plugin is activated
@@ -9811,6 +10030,30 @@ class Class_WooCommerce_Views {
   	 	return $post_type_param;
   	 	
   	 }
+	 
+	/**
+	 * Include the WooCommerce orders valid post status values in the list of supported
+	 * post statuses that we can generate frontend edit links to, based on the permalink.
+	 *
+	 * @param array $statuses
+	 * @param int $form_id
+	 *
+	 * @return array
+	 *
+	 * @since 2.7.8
+	 */
+    public function toolset_edit_post_link_publish_statuses_allowed( $statuses, $form_id ) {
+
+		if ( ! $this->is_woocommerce_activated() ) {
+			return $statuses;
+		}
+		
+		$woocommerce_order_statuses = wc_get_order_statuses();
+		
+		$statuses = array_merge( array_keys( $woocommerce_order_statuses ), $statuses );
+		
+		return $statuses;
+	}	
   	 
   	 /**
   	  * make the order to visible on front end.

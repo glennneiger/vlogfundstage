@@ -1,7 +1,81 @@
 # Toolset Common Library
 
+## 3.3.7
+* [toolsetblocks-20] Extend the public API by toolset_get_field_groups() and toolset_get_field_group() and
+  interfaces for field groups and field definitions. Allow querying groups by assigned post type.
+* [types-1944] Fix the logic for determining which field groups should be displayed for a particular post.
+* [views-1791] Fix the saving on single inline Content Templates ahead of switching the editor it will use.
+
+## 3.3.6
+* [types-1938] Fix an "undefined index" warning when passing an associative array of taxonomies to wp_get_object_terms().
+
+## 3.3.5
+* [types-1794] Implement the logic of wpcf_admin_post_get_post_groups_fields() into Toolset_Field_Group_Post::get_groups_for_element().
+* Extend the shortcodes GUI API so it can manage attributes registering callbacks to render their settings and collect their values.
+* [types-544] Make the placeholder and default field value translatable via WPML ST.
+* [types-1883] Allow using a different HTML class than "wrap" in the Toolset GUI Base's basic template.
+* [types-1886] Add the wp_block post type (which stores reusable Gutenberg blocks) to the exclusion list.
+* [types-1876] Add the elementor_library post type ("My Templates" from Elementor) to the exclusion list.
+
+## 3.3.4
+* [views-1650] Repair the integration with the page builders as Content Template builders after the merging of Gutenberg into the core.
+
+## 3.3.3
+* Included a shared styling library for all OTGS assets.
+* [types-1859] Handle a missing element when transforming results from the association query.
+* [types-1856] Adjustments in IToolset_Post and IToolset_Post_Type and their implementations in order to support editor mode settings.
+* [layouts-1925] Added a Lock Overlay module to programmatically add a lock overlay to any HTML element given as a container.
+
+## 3.3.2
+* Included shared methods to check whether we are on a Gutenberg edit page.
+* Moved the Views blocks preview callbacks to the Views codebase.
+* [cred-1670] Fixed an issue with Forms editor blocks and non-admin users
+* Fixed the search functionality in the dialogs to generate shortcodes.
+
+## 3.3.1
+* Hotfix for frontend form submitting when using Types field with validation
+
+## 3.3
+* [cred-1404] Include a Gutenberg block for relationship forms.
+* [views-1712] Include the Toolset shortcodes generator button in the Gutenberg native paragraph block toolbar.
+* [layouts-1910] Include an overlay to block the Gutenberg editor on demand.
+* [cred-1639] Forze skip cache when querying for associations using the postmeta access compatibility layer.
+* [types-xxx] Include properties related to the editor choice on custom post types.
+
+## 3.2.6
+* [layouts-1910] Added utility package to programmatically add a lock overlay to a container element given a HTML/JS selector and a Toolset_Condition object.
+* [toolsetcommon-435] Provide a single point of checking whether the Gutenberg editor is being used on the current page.
+
+## 3.2.5
+* [types-1760] Improve the post status handling in the association query. Also include WooCommerce Order statuses to the list of the "available" ones (will be included in the association query by default).
+* [types-1784] Add a data-submitanyway attribute to toolset-forms elements which are disabled, as a workaround for an issue with saving Types conditional fields in secondary language posts in combination with WPML TM.
+* [types-1795] Clear the cache for the association query when creating or deleting associations.
+* [types-1812] Checkboxes with 0 save did not worked as expected in RFGs
+* [types-1802] In the potential association query, always include posts that exactly match the search string at the beginning of the results.
+* [types-1783] Add a link to Installer support in the Toolset Troubleshooting page.
+* [types-1804] Allow querying by meta_value = 0 in the public Toolset Relationship API.
+* [toolsetcommon-427] Prevent directory listing and direct access to code snippets.
+* [toolsetga-34] Include the shared OTGS icons and IU libraries as dependencies.
+* [toolsetcommon-327] Changing URL when switching active tab in the export-import page
+* [views-1693] Review and update the compatibility layer between Toolset and Gutenberg. This includes both Toolset Blocks and Gutenberg as a Content Template editor.
+* [types-1802] In the potential association query, always include posts that exactly match the search string at the beginning of the results.
+* [types-1816] Automatically delete intermediary posts together with associations only according to the relationship definition setting.
+* [types-1646] Minor adjustments in the potential association query.
+* [types-1831] Association query caching in memory only. Prevent all sorts of caching problems.
+* [types-100] Shared prototype and generic implementation for multiple selection of media files in repeting media fields.
+* [toolsetga-38] Shortodes generator method to check if we are in a blocks editor page.
+* [types-1841] Fix a preview of the Skype field in the Term listing page.
+* [types-1843] Fix a JS error preventing a code snippet from being created. Avoid similar errors in the future.
+
+## 3.2.4
+* [types-1789] Include the "future" post status when querying by available posts in the association query.
+* [cred-984] Pipeline the user form settings to WYSIWYG fields.
+* [cred-1293] Fix frontend validation when there are multiple forms rendered per page.
+* [cred-1337] Include validation of usernames in user forms.
+* Include a shared clean the_content-like filter.
+
 ## 3.2.3
-* [types-1799] Fixed fatal error on saving post field groups, which are assigned to multiple post types
+* [types-1799] Fixed fatal error on saving post field groups, which are assigned to multiple post types.
 
 ## 3.2.2
 * [types-1788] Make sure that JS assets loaded from JS also include the version number in their URL, in order to prevent browser cache issues.
@@ -32,7 +106,7 @@
 ## 3.0.7
 * [types-1600] Inconsistency between toolset_connect_posts and toolset_disconnect_posts functions
 * [types-1623] Secondary language child post is listed when secondary language parent post was connected previously to default language child post
-* [toolsetcommon-385] When saving a relationship, register strings for translation 
+* [toolsetcommon-385] When saving a relationship, register strings for translation
 
 ## 3.0.6
 * [toolsetcommon-421] No longer show registration notice for Types + Views Lite

@@ -16,17 +16,17 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	const ACTION_URL_NEW_PARENT = 'assign_new_parent';
 	const ACTION_URL_NEW_CHILD = 'assign_new_child';
 	const ACTION_URL_EDIT = 'edit_current';
-	
+
 	/**
 	 * @var CRED_Frontend_Form_Flow
 	 */
 	private $frontend_form_flow;
-	
+
 	/**
 	 * @var Toolset_Relationship_Service
 	 */
 	private $relationship_service;
-	
+
 	/**
 	 * @var Toolset_Shortcode_Attr_Interface
 	 */
@@ -36,14 +36,14 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	 * @var int
 	 */
 	private $form_id;
-	
+
 	/**
 	 * @param CRED_Frontend_Form_Flow $frontend_form_flow
 	 * @param Toolset_Relationship_Service $relationship_service
 	 */
-	public function __construct( 
-		CRED_Frontend_Form_Flow $frontend_form_flow, 
-		Toolset_Relationship_Service $relationship_service, 
+	public function __construct(
+		CRED_Frontend_Form_Flow $frontend_form_flow,
+		Toolset_Relationship_Service $relationship_service,
 		Toolset_Shortcode_Attr_Interface $attr_item_chain
 	) {
 		$this->frontend_form_flow = $frontend_form_flow;
@@ -53,9 +53,9 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	}
 
 	protected function add_hooks(){
-		
+
 	}
-	
+
 	/**
 	 * @return CRED_Frontend_Form_Flow
 	 *
@@ -64,7 +64,7 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	public function get_frontend_form_flow() {
 		return $this->frontend_form_flow;
 	}
-	
+
 	/**
 	 * @return Toolset_Relationship_Service
 	 *
@@ -73,7 +73,7 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	public function get_relationship_service() {
 		return $this->relationship_service;
 	}
-	
+
 	/**
 	 * Get the current parent ID.
 	 *
@@ -87,25 +87,25 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	 */
 	public function get_current_parent_id() {
 		$form_attributes = $this->get_frontend_form_flow()->get_current_form_attributes();
-		
-		if ( 
-			$form_attributes 
+
+		if (
+			$form_attributes
 			&& ! empty( $form_attributes[ self::PARENT_SHORTCODE_ATTRIBUTE ] )
 		) {
 			return $this->get_current_item_id( $form_attributes[ self::PARENT_SHORTCODE_ATTRIBUTE ] );
 		}
 
-		
-		if ( 
-			isset( $_GET[ self::ACTION_URL_PARAMETER ] ) 
+
+		if (
+			isset( $_GET[ self::ACTION_URL_PARAMETER ] )
 			&& self::ACTION_URL_NEW_CHILD == $_GET[ self::ACTION_URL_PARAMETER ]
 		) {
 			global $post;
 			return $post->ID;
 		}
-		
-		if ( 
-			isset( $_GET[ self::ACTION_URL_PARAMETER ] ) 
+
+		if (
+			isset( $_GET[ self::ACTION_URL_PARAMETER ] )
 			&& self::ACTION_URL_EDIT == $_GET[ self::ACTION_URL_PARAMETER ]
 		) {
 			$association = $this->get_current_association_object();
@@ -115,8 +115,8 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 			return null;
 		}
 
-		return isset( $_GET[ self::PARENT_URL_PARAMETER ] ) 
-			? (int) $_GET[ self::PARENT_URL_PARAMETER ] 
+		return isset( $_GET[ self::PARENT_URL_PARAMETER ] )
+			? (int) $_GET[ self::PARENT_URL_PARAMETER ]
 			: null;
 	}
 
@@ -127,7 +127,7 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	public function get_form_id(){
 		return $this->form_id;
 	}
-	
+
 	/**
 	 * Get the current child ID.
 	 *
@@ -141,25 +141,25 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	 */
 	public function get_current_child_id() {
 		$form_attributes = $this->get_frontend_form_flow()->get_current_form_attributes();
-		
-		if ( 
-			$form_attributes 
+
+		if (
+			$form_attributes
 			&& ! empty( $form_attributes[ self::CHILD_SHORTCODE_ATTRIBUTE ] )
 		) {
 			return $this->get_current_item_id( $form_attributes[ self::CHILD_SHORTCODE_ATTRIBUTE ] );
 		}
 
-		
-		if ( 
-			isset( $_GET[ self::ACTION_URL_PARAMETER ] ) 
+
+		if (
+			isset( $_GET[ self::ACTION_URL_PARAMETER ] )
 			&& self::ACTION_URL_NEW_PARENT == $_GET[ self::ACTION_URL_PARAMETER ]
 		) {
 			global $post;
 			return $post->ID;
 		}
-		
-		if ( 
-			isset( $_GET[ self::ACTION_URL_PARAMETER ] ) 
+
+		if (
+			isset( $_GET[ self::ACTION_URL_PARAMETER ] )
 			&& self::ACTION_URL_EDIT == $_GET[ self::ACTION_URL_PARAMETER ]
 		) {
 			$association = $this->get_current_association_object();
@@ -169,11 +169,11 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 			return null;
 		}
 
-		return isset( $_GET[ self::CHILD_URL_PARAMETER ] ) 
-			? (int) $_GET[ self::CHILD_URL_PARAMETER ] 
+		return isset( $_GET[ self::CHILD_URL_PARAMETER ] )
+			? (int) $_GET[ self::CHILD_URL_PARAMETER ]
 			: null;
 	}
-	
+
 	public function get_current_item_id( $attribute_value = '' ) {
 		$result_value = $attribute_value;
 		switch ( $attribute_value ) {
@@ -192,7 +192,7 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 				global $post;
 				$result_value = $this->attr_item_chain->get( array( 'item' => $attribute_value ) );
 				if (
-					$result_value != $attribute_value 
+					$result_value != $attribute_value
 					&& $result_value == $post->ID
 				) {
 					$result_value = '';
@@ -215,7 +215,7 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	public function is_child_fixed( $bool = false ){
 		return null !== $this->get_current_child_id();
 	}
-	
+
 	/**
 	 * Get the current relationship, as set in the current association form settings..
 	 *
@@ -231,17 +231,16 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 			$current_form_id = $this->get_frontend_form_flow()->get_current_form_id();
 		}
 
-
 		if ( ! $current_form_id ) {
 			return null;
 		}
-		
+
 		$relationship = get_post_meta( $current_form_id, 'relationship', true );
-		return empty( $relationship ) 
-			? null 
+		return empty( $relationship )
+			? null
 			: $relationship;
 	}
-	
+
 	/**
 	 * Get the current association post, as set in the URL parameter or as the current post.
 	 *
@@ -253,45 +252,45 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 		if ( ! $relationship_slug = $this->get_current_relationship() ) {
 			return null;
 		}
-		
+
 		$association = array();
-		
-		if ( 
-			isset( $_GET[ self::ACTION_URL_PARAMETER ] ) 
+
+		if (
+			isset( $_GET[ self::ACTION_URL_PARAMETER ] )
 			&& self::ACTION_URL_EDIT == $_GET[ self::ACTION_URL_PARAMETER ]
 		) {
-			
+
 			global $post;
 			$association_query = new Toolset_Association_Query_V2();
 			$association_query->add( $association_query->relationship_slug( $relationship_slug ) );
 			$association_query->add( $association_query->element_id_and_domain( $post->ID, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Intermediary() ) );
 			$association_query->limit( 1 );
 			$association = $association_query->get_results();
-			
+
 		} else if (
-			( $parent = $this->get_current_parent_id() ) 
+			( $parent = $this->get_current_parent_id() )
 			&& ( $child = $this->get_current_child_id() )
 		) {
-			
+
 			$association_query = new Toolset_Association_Query_V2();
 			$association_query->add( $association_query->relationship_slug( $relationship_slug ) );
 			$association_query->add( $association_query->element_id_and_domain( $parent, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Parent() ) );
 			$association_query->add( $association_query->element_id_and_domain( $child, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() ) );
 			$association_query->limit( 1 );
 			$association = $association_query->get_results();
-			
+
 
 		}
-		
+
 		if ( ! empty( $association ) ) {
 			return $association[0];
 		}
-		
+
 		return null;
-		
+
 	}
-	
-	
+
+
 	/**
 	 * Get the current association post, as set in the URL parameter or as the current post.
 	 *
@@ -301,13 +300,13 @@ class CRED_Shortcode_Association_Helper implements CRED_Shortcode_Helper_Interfa
 	 */
 	public function get_current_association() {
 		$association = $this->get_current_association_object();
-		
+
 		if ( $association instanceof Toolset_Association ) {
 			return $association->get_element( Toolset_Relationship_Role::INTERMEDIARY );
 		}
-		
+
 		return null;
-		
+
 	}
 
 	/**

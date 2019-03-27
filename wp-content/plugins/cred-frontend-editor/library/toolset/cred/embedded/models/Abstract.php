@@ -215,37 +215,37 @@ abstract class CRED_Abstract_Model
 		$query = "SELECT p.* FROM {$this->wpdb->posts} AS p ";
 		$where = " WHERE 1=1 ";
 		$values_to_prepare = array();
-        
+
         if ( isset( $params['meta'] ) ) {
 			$run_query = true;
             $count = 0;
             foreach ( $params['meta'] as $mkey => $mval ) {
                 $count++;
                 $query .= ", {$this->wpdb->postmeta} AS pm{$count}";
-                $where .= " AND ( p.ID = pm{$count}.post_id AND pm{$count}.meta_key = %s AND pm{$count}.meta_value = %s )"; 
+                $where .= " AND ( p.ID = pm{$count}.post_id AND pm{$count}.meta_key = %s AND pm{$count}.meta_value = %s )";
 				$values_to_prepare[] = $mkey;
 				$values_to_prepare[] = $mval;
             }
         }
-        
+
         if ( isset( $params['post'] ) ) {
 			$run_query = true;
             foreach ( $params['post'] as $pkey => $pval ) {
                 if ( in_array( $pkey, array( 'ID', 'post_title', 'post_status', 'post_type' ) ) ) {
-                    $where .= " AND ( p.$pkey = %s )"; 
+                    $where .= " AND ( p.$pkey = %s )";
 					$values_to_prepare[] = $pval;
                 }
             }
         }
-        
-        if ( 
-			$run_query 
+
+        if (
+			$run_query
 			&& ! empty( $values_to_prepare )
 		) {
             $sql = $query . $where;
             return $this->wpdb->get_results(
 				$this->wpdb->prepare(
-					$sql, 
+					$sql,
 					$values_to_prepare
 				)
 			);
@@ -340,7 +340,7 @@ abstract class CRED_Abstract_Model
 			$limit = 'LIMIT ' . ( $p - 1 ) * $pp . ',' . $pp;
 		}
 
-		if ( ! in_array( $order_by, array( 'post_title', 'post_date' ) ) ) {
+		if ( ! in_array( $order_by, array( 'post_title', 'post_date', 'post_modified' ) ) ) {
 			$order_by = 'post_title';
 		}
 
@@ -348,33 +348,33 @@ abstract class CRED_Abstract_Model
 		if ( ! in_array( $order, array( 'ASC', 'DESC' ) ) ) {
 			$order = 'ASC';
 		}
-		
+
 		$values_to_prepare = array();
 		$values_to_prepare[] = $this->prefix . "form_settings";
 		$values_to_prepare[] = $this->post_type_name;
 
 		$sql_src_add = '';
-		if ( 
-			isset( $src ) 
-			&& ! empty( $src ) 
+		if (
+			isset( $src )
+			&& ! empty( $src )
 		) {
 			$sql_src_add = " AND ( p.post_name LIKE %s || p.post_title LIKE %s ) ";
 			$values_to_prepare[] = '%' . $src . '%';
 			$values_to_prepare[] = '%' . $src . '%';
 		}
 
-		$sql = $this->wpdb->prepare( 
-			"SELECT p.ID, p.post_title, p.post_name, pm.meta_value as meta 
-			FROM {$this->wpdb->posts}  p, {$this->wpdb->postmeta} pm  
+		$sql = $this->wpdb->prepare(
+			"SELECT p.ID, p.post_title, p.post_name, pm.meta_value as meta
+			FROM {$this->wpdb->posts}  p, {$this->wpdb->postmeta} pm
 			WHERE p.ID=pm.post_id
             AND pm.meta_key = %s
-            AND p.post_type = %s 
-			{$sql_src_add} 
-            AND p.post_status='private' 
-			ORDER BY p.{$order_by} {$order} {$limit}", 
+            AND p.post_type = %s
+			{$sql_src_add}
+            AND p.post_status='private'
+			ORDER BY p.{$order_by} {$order} {$limit}",
 			$values_to_prepare
 		);
-		
+
 		$forms = $this->wpdb->get_results( $sql );
 		foreach ( $forms as $key => $form ) {
 			$fields = $this->changeFormat( array( 'form_settings' => maybe_unserialize( $forms[ $key ]->meta ) ) );
@@ -404,6 +404,7 @@ abstract class CRED_Abstract_Model
 	 */
 	public function getFormCustomFields( $id, $include = array() ) {
 		$fields_raw = get_post_custom( intval( $id ) );
+		$fields_raw = is_array( $fields_raw ) ? $fields_raw : array();
 		$fields = array();
 		$form_fields = array_merge( $include, $this->form_meta_fields );
 
@@ -499,30 +500,30 @@ abstract class CRED_Abstract_Model
 	 * @return int
 	 */
 	public function getFormsCount($src = '') {
-		
+
 		$values_to_prepare = array();
 		$values_to_prepare[] = $this->prefix . "form_settings";
 		$values_to_prepare[] = $this->post_type_name;
-		
+
 		$sql_src_add = '';
 		if (
-			isset( $src ) 
-			&& !empty( $src ) 
+			isset( $src )
+			&& !empty( $src )
 		) {
 			$sql_src_add = ' AND ( p.post_name like %s || p.post_title like %s ) ';
 			$values_to_prepare[] = '%' . $src . '%';
 			$values_to_prepare[] = '%' . $src . '%';
 		}
-		
-		$sql = $this->wpdb->prepare( 
-			'SELECT count(p.ID) 
-			FROM ' . $this->wpdb->posts . ' as p, ' . $this->wpdb->postmeta . ' as pm 
+
+		$sql = $this->wpdb->prepare(
+			'SELECT count(p.ID)
+			FROM ' . $this->wpdb->posts . ' as p, ' . $this->wpdb->postmeta . ' as pm
             WHERE p.ID = pm.post_id
             AND pm.meta_key = %s
-            AND p.post_type = %s 
-            AND p.post_status="private" 
+            AND p.post_type = %s
+            AND p.post_status="private"
 			' . $sql_src_add . '
-			ORDER BY p.post_date DESC', 
+			ORDER BY p.post_date DESC',
 			$values_to_prepare
 		);
 
@@ -543,50 +544,50 @@ abstract class CRED_Abstract_Model
 
 		// AND p.post_status="private"
 		if ( 'all' != $ids ) {
-			$form_query = $this->wpdb->prepare( 
-				'SELECT p.* FROM ' . $this->wpdb->posts . ' as p, ' . $this->wpdb->postmeta . ' as pm 
-				WHERE p.ID = pm.post_id 
-                AND pm.meta_key = %s 
-                AND p.post_type = %s 
-                AND p.post_status = "private" 
-                AND p.ID IN (' . $ids . ')
-				ORDER BY p.post_date DESC', 
-				array( $this->prefix . 'form_settings', $this->post_type_name )
-			);
-		} else {
-			$form_query = $this->wpdb->prepare( 
-				'SELECT p.* FROM ' . $this->wpdb->posts . ' as p, ' . $this->wpdb->postmeta . ' as pm 
+			$form_query = $this->wpdb->prepare(
+				'SELECT p.* FROM ' . $this->wpdb->posts . ' as p, ' . $this->wpdb->postmeta . ' as pm
 				WHERE p.ID = pm.post_id
                 AND pm.meta_key = %s
                 AND p.post_type = %s
-                AND p.post_status = "private" 
-				ORDER BY p.post_date DESC', 
-				array( $this->prefix . 'form_settings', $this->post_type_name ) 
+                AND p.post_status = "private"
+                AND p.ID IN (' . $ids . ')
+				ORDER BY p.post_date DESC',
+				array( $this->prefix . 'form_settings', $this->post_type_name )
+			);
+		} else {
+			$form_query = $this->wpdb->prepare(
+				'SELECT p.* FROM ' . $this->wpdb->posts . ' as p, ' . $this->wpdb->postmeta . ' as pm
+				WHERE p.ID = pm.post_id
+                AND pm.meta_key = %s
+                AND p.post_type = %s
+                AND p.post_status = "private"
+				ORDER BY p.post_date DESC',
+				array( $this->prefix . 'form_settings', $this->post_type_name )
 			);
 		}
 
 		if ( 'all' != $ids ) {
-			$form_postmeta_query = $this->wpdb->prepare( 
-				'SELECT p.ID, pm.meta_key, pm.meta_value 
-				FROM ' . $this->wpdb->posts . ' AS p 
-				INNER JOIN ' . $this->wpdb->postmeta . ' AS pm 
-				ON p.ID = pm.post_id 
-				WHERE p.post_type = %s 
-				AND p.post_status = "private" 
-				AND p.ID IN (' . $ids . ') 
-				AND pm.meta_key IN (' . $meta_keys . ')', 
-				$this->post_type_name 
+			$form_postmeta_query = $this->wpdb->prepare(
+				'SELECT p.ID, pm.meta_key, pm.meta_value
+				FROM ' . $this->wpdb->posts . ' AS p
+				INNER JOIN ' . $this->wpdb->postmeta . ' AS pm
+				ON p.ID = pm.post_id
+				WHERE p.post_type = %s
+				AND p.post_status = "private"
+				AND p.ID IN (' . $ids . ')
+				AND pm.meta_key IN (' . $meta_keys . ')',
+				$this->post_type_name
 			);
 		} else {
-			$form_postmeta_query = $this->wpdb->prepare( 
-				'SELECT p.ID, pm.meta_key, pm.meta_value 
-				FROM ' . $this->wpdb->posts . ' AS p 
-				INNER JOIN ' . $this->wpdb->postmeta . ' AS pm 
-				ON p.ID = pm.post_id 
-				WHERE p.post_type = %s 
-				AND p.post_status = "private" 
-				AND pm.meta_key IN (' . $meta_keys . ')', 
-				$this->post_type_name 
+			$form_postmeta_query = $this->wpdb->prepare(
+				'SELECT p.ID, pm.meta_key, pm.meta_value
+				FROM ' . $this->wpdb->posts . ' AS p
+				INNER JOIN ' . $this->wpdb->postmeta . ' AS pm
+				ON p.ID = pm.post_id
+				WHERE p.post_type = %s
+				AND p.post_status = "private"
+				AND pm.meta_key IN (' . $meta_keys . ')',
+				$this->post_type_name
 			);
 		}
 

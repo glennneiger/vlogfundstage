@@ -20,7 +20,9 @@ require_once WPCF_EMBEDDED_ABSPATH . '/includes/conditional-display.php';
  * Core function. Works and stable. Do not move or change.
  * If required, add hooks only.
  *
- * @param type $post
+ * @param WP_Post $post
+ *
+ * @return bool
  */
 function wpcf_admin_post_init( $post ) {
 	add_action( 'admin_footer', 'wpcf_admin_fields_postfields_styles' );
@@ -37,9 +39,7 @@ function wpcf_admin_post_init( $post ) {
 		return false;
 	}
 
-	/**
-	 * remove custom field WordPress metabox
-	 */
+	// Remove custom field WordPress metabox.
 	if ( 'hide' == wpcf_get_settings( 'hide_standard_custom_fields_metabox' ) ) {
 		foreach ( array( 'normal', 'advanced', 'side' ) as $context ) {
 			remove_meta_box( 'postcustom', $post_type, $context );
@@ -104,8 +104,8 @@ function wpcf_admin_post_init( $post ) {
 /**
  * Add meta boxes.
  *
- * @param type $post_type
- * @param type $post
+ * @param string $post_type
+ * @param WP_Post $post
  *
  * @return boolean
  */
@@ -657,7 +657,7 @@ function wpcf_admin_post_save_post_hook( $post_ID, $post ) {
 	// Note: The types_updating_child_post filter is needed for a situation when user clicks on the Update button
 	// for the parent post. In that case we don't get enough information to determine if a child post is being updated.
 	$is_child_post_update = (
-		( 'wpcf_ajax' == wpcf_getget( 'action' ) && 'pr_save_child_post' == wpcf_getget( 'wpcf_action' ) )
+		( 'wpcf_ajax' == toolset_getget( 'action' ) && 'pr_save_child_post' == toolset_getget( 'wpcf_action' ) )
 		|| apply_filters( 'types_updating_child_post', false )
 	);
 
@@ -678,7 +678,7 @@ function wpcf_admin_post_save_post_hook( $post_ID, $post ) {
 		return;
 	}
 
-	$wpcf_form_data = wpcf_ensarr( wpcf_getarr( $_POST, 'wpcf' ) );
+	$wpcf_form_data = toolset_ensarr( toolset_getarr( $_POST, 'wpcf' ) );
 
 	// For parent saving we need to add all checkbox/radio fields (even unchecked) to
     // make sure save 0 is applied. This is NOT needed for the child update at this point
@@ -688,12 +688,12 @@ function wpcf_admin_post_save_post_hook( $post_ID, $post ) {
 	    // Check wpcf_adjust_form_input_for_checkboxlike_fields() for information about side effects.
 	    $wpcf_form_data = wpcf_adjust_form_input_for_checkboxlike_fields(
 		    $wpcf_form_data,
-		    wpcf_ensarr( wpcf_getarr( $_POST, '_wptoolset_checkbox' ) )
+		    toolset_ensarr( toolset_getarr( $_POST, '_wptoolset_checkbox' ) )
 	    );
 
 	    $wpcf_form_data = wpcf_adjust_form_input_for_checkboxlike_fields(
 		    $wpcf_form_data,
-		    wpcf_ensarr( wpcf_getarr( $_POST, '_wptoolset_radios' ) )
+		    toolset_ensarr( toolset_getarr( $_POST, '_wptoolset_radios' ) )
 	    );
     }
 
@@ -713,6 +713,17 @@ function wpcf_admin_post_save_post_hook( $post_ID, $post ) {
 				$images_to_delete[ $image ] = 1;
 			}
 		}
+
+		$element_factory = new Toolset_Element_Factory();
+		try {
+			$post_model = $element_factory->get_post_untranslated( $post );
+		} catch ( Toolset_Element_Exception_Element_Doesnt_Exist $e ) {
+			// This really shouldn't happen since we the $post is already set, so it must exist.
+			return;
+		}
+
+		$post_type = Toolset_Post_Type_Repository::get_instance()->get( $post->post_type );
+
 		foreach ( $wpcf_form_data as $field_slug => $field_value ) {
 			// Get field by slug
 			$field = wpcf_fields_get_field_by_slug( $field_slug );
@@ -720,14 +731,13 @@ function wpcf_admin_post_save_post_hook( $post_ID, $post ) {
 				continue;
 			}
 			// Checking if the field belongs to post type.
-			$post_type = Toolset_Post_Type_Repository::get_instance()->get( $post->post_type );
             if( $post_type && ! $post_type->is_repeating_field_group() ) {
                 // only do the check for non-rfgs
-	            $groups = Toolset_Field_Group_Post_Factory::get_instance()->get_groups_by_post_type( $post->post_type );
+	            $groups = Toolset_Field_Group_Post_Factory::get_instance()->get_groups_for_element( $post_model );
 	            if ( empty( $groups ) ) {
 		            continue;
 	            }
-	            $field_definition = Toolset_Field_Definition_Factory_Post::get_instance()->load_field_definition( $field['slug'] );
+
 	            $valid = false;
 	            foreach ( $groups as $group ) {
 		            $valid = in_array( $field_slug, $group->get_field_slugs(), true );
@@ -1427,237 +1437,65 @@ function wpcf_admin_post_process_field( $field_object ) {
 /**
  * Gets all groups and fields for post.
  *
- * Core function. Works and stable. Do not move or change.
- * If required, add hooks only.
- *
- * @param type $post_ID
- *
- * @return type
- *
- * @deprecated Use Toolset_Field_Group_Post_Factory::get_groups_by_post_type() instead.
+ * @param bool $post
+ * @param string $context
+ * @return mixed
+ * @deprecated Use Toolset_Field_Group_Post_Factory::get_groups_for_element() instead.
+ * @since the dawn of time
  */
 function wpcf_admin_post_get_post_groups_fields( $post = false, $context = 'group' ) {
-	// Get post_type
-	/*
-	 *
-	 *
-	 * Since WP 3.5 | Types 1.2
-	 * Looks like $post is altered with get_post_type()
-	 * We do not want that if post is already set
+
+	$element_factory = new Toolset_Element_Factory();
+	try {
+		$element = $element_factory->get_post_untranslated( $post );
+	} catch( Toolset_Element_Exception_Element_Doesnt_Exist $e ) {
+		// Just prevent the legacy code from breaking miserably.
+		return array();
+	}
+	$group_factory = Toolset_Field_Group_Post_Factory::get_instance();
+	$selected_groups = $group_factory->get_groups_for_element( $element );
+
+	// Translate the results from $selected_groups into the legacy format and apply legacy filters.
+	$selected_group_ids = array_map( function( Toolset_Field_Group_Post $field_group ) {
+	    return $field_group->get_id();
+    }, $selected_groups );
+
+	/**
+	 * wpcf_post_groups_all
+     *
+     * This filter is deprecated since Types 3.3. Use toolset_show_field_group_for_post instead.
 	 */
-	if ( ! empty( $post->post_type ) ) {
-		$post_type = $post->post_type;
-	} else if ( ! empty( $post ) ) {
-		$post_type = get_post_type( $post );
-	} else {
-		if ( ! isset( $_GET['post_type'] ) ) {
-			$post_type = 'post';
-		} else if ( in_array( $_GET['post_type'], get_post_types( array( 'show_ui' => true ) ) ) ) {
-			$post_type = sanitize_text_field( $_GET['post_type'] );
-		} else {
-			$post_type = 'post';
-		}
-	}
+	$all_groups_legacy = apply_filters( 'wpcf_post_groups_all', wpcf_admin_fields_get_groups(), $post, $context );
+	$selected_legacy_groups = array_filter( $all_groups_legacy, function( $legacy_group ) use( $selected_group_ids ) {
+	    return in_array( (int) toolset_getarr( $legacy_group, 'id' ), $selected_group_ids );
+    } );
 
-	// Get post terms
-	$support_terms = false;
-	if ( ! empty( $post ) ) {
-		$post->_wpcf_post_terms = array();
-		$taxonomies             = get_taxonomies( '', 'objects' );
-		if ( ! empty( $taxonomies ) ) {
-			foreach ( $taxonomies as $tax_slug => $tax ) {
-				$temp_tax = get_taxonomy( $tax_slug );
-				if ( ! in_array( $post_type, $temp_tax->object_type ) ) {
-					continue;
-				}
-				$support_terms = true;
-				$terms         = wp_get_post_terms( $post->ID, $tax_slug,
-					array( 'fields' => 'all' ) );
-				foreach ( $terms as $term_id ) {
-					$post->_wpcf_post_terms[] = $term_id->term_taxonomy_id;
-				}
-			}
-		}
-	}
-
-	// Get post template
-	if ( empty( $post ) ) {
-		$post                            = new stdClass();
-		$post->_wpcf_post_template       = false;
-		$post->_wpcf_post_views_template = false;
-	} else {
-		$post->_wpcf_post_template       = get_post_meta( $post->ID, '_wp_page_template', true );
-		$post->_wpcf_post_views_template = get_post_meta( $post->ID, '_views_template', true );
-	}
-
-	if ( empty( $post->_wpcf_post_terms ) ) {
-		$post->_wpcf_post_terms = array();
-	}
-
-	// Filter groups
-	$groups     = array();
-	$groups_all = apply_filters( 'wpcf_post_groups_all', wpcf_admin_fields_get_groups(), $post, $context );
-	foreach ( $groups_all as $temp_key => $temp_group ) {
-		if ( empty( $temp_group['is_active'] ) ) {
-			unset( $groups_all[ $temp_key ] );
-			continue;
-		}
-		// Get filters
-		// Post Types
-		$groups_all[ $temp_key ]['_wp_types_group_post_types'] = explode( ',',
-			trim( get_post_meta( $temp_group['id'],
-				'_wp_types_group_post_types', true ), ',' ) );
-
-		// Taxonomies
-		$groups_all[ $temp_key ]['_wp_types_group_terms'] = explode( ',',
-			trim( get_post_meta( $temp_group['id'], '_wp_types_group_terms',
-				true ), ',' ) );
-
-		// Templates
-		$groups_all[ $temp_key ]['_wp_types_group_templates'] = explode( ',',
-			trim( get_post_meta( $temp_group['id'],
-				'_wp_types_group_templates', true ), ',' ) );
-
-		// Data-Dependant
-		$groups_all[ $temp_key ]['_wpcf_conditional_display'] =
-			get_post_meta( $temp_group['id'], '_wpcf_conditional_display' );
-
-		$post_type_filter = $groups_all[ $temp_key ]['_wp_types_group_post_types'][0] == 'all'
-		                    || empty( $groups_all[ $temp_key ]['_wp_types_group_post_types'][0] )
-			? - 1
-			: 0;
-		$taxonomy_filter  = $groups_all[ $temp_key ]['_wp_types_group_terms'][0] == 'all'
-		                    || empty( $groups_all[ $temp_key ]['_wp_types_group_terms'][0] )
-			? - 1
-			: 0;
-		$template_filter  = $groups_all[ $temp_key ]['_wp_types_group_templates'][0] == 'all'
-		                    || empty( $groups_all[ $temp_key ]['_wp_types_group_templates'][0] )
-			? - 1
-			: 0;
-
-		$groups_all[ $temp_key ] = apply_filters( 'wpcf_post_group_filter_settings', $groups_all[ $temp_key ], $post,
-			$context, $post->_wpcf_post_terms );
-
-		// See if post type matches
-		if ( $post_type_filter == 0 && in_array( $post_type,
-				$groups_all[ $temp_key ]['_wp_types_group_post_types'] )
-		) {
-			$post_type_filter = 1;
-		}
-
-		// See if terms match
-		if ( $taxonomy_filter == 0 ) {
-			foreach ( $post->_wpcf_post_terms as $temp_post_term ) {
-				if ( in_array( $temp_post_term,
-					$groups_all[ $temp_key ]['_wp_types_group_terms'] ) ) {
-					$taxonomy_filter = 1;
-				}
-			}
-		}
-
-		// See if template match
-		if ( $template_filter == 0 ) {
-			if ( ( ! empty( $post->_wpcf_post_template ) && in_array( $post->_wpcf_post_template,
-						$groups_all[ $temp_key ]['_wp_types_group_templates'] ) ) || ( ! empty( $post->_wpcf_post_views_template ) && in_array( $post->_wpcf_post_views_template,
-						$groups_all[ $temp_key ]['_wp_types_group_templates'] ) )
-			) {
-				$template_filter = 1;
-			}
-		}
-
+	$selected_legacy_groups_augmented = array_map( function( $legacy_group ) use( $post, $context ) {
 		/**
-		 * if ALL must met
+		 * wpcf_post_group_filter_settings
+		 *
+		 * This filter is deprecated since Types 3.3. Use toolset_show_field_group_for_post instead.
 		 */
-		if ( isset( $groups_all[ $temp_key ]['filters_association'] )
-		     && $groups_all[ $temp_key ]['filters_association'] == 'all'
-		) {
+		$legacy_group = apply_filters( 'wpcf_post_group_filter_settings', $legacy_group, $post, $context, array() );
 
-			// if no conditions are set, do not display the group
-			// - this is important because ounce filter association is set to "all"
-			//   it's not unset even if the user removes all conditions
-			if ( $post_type_filter == 0
-			     && $template_filter == 0
-			     && $taxonomy_filter == - 1
-			     && empty( $groups_all[ $temp_key ]['_wpcf_conditional_display'] )
-			) {
-				unset( $groups_all[ $temp_key ] );
+		$legacy_group['fields'] = wpcf_admin_fields_get_fields_by_group(
+			$legacy_group['id'],
+			'slug',
+            true,
+            false,
+            true
+        );
+		return $legacy_group;
+    }, $selected_legacy_groups );
 
-				// there are conditions set
-			} else {
-				// post types
-				// accepted if none isset || one has to match (proofed above)
-				if ( empty( $groups_all[ $temp_key ]['_wp_types_group_post_types'][0] ) ) {
-					$post_type_filter = 1;
-				}
+	/**
+	 * wpcf_post_groups
+	 *
+	 * This filter is deprecated since Types 3.3. Use toolset_show_field_group_for_post instead.
+	 */
+	$selected_legacy_groups_augmented = apply_filters( 'wpcf_post_groups', $selected_legacy_groups_augmented, $post, $context );
 
-				// taxonomies
-				// none isset || all have to match
-				if ( empty( $groups_all[ $temp_key ]['_wp_types_group_terms'][0] )
-				     || $groups_all[ $temp_key ]['_wp_types_group_terms'][0] == 'all'
-				) {
-					$taxonomy_filter = 1;
-				} else {
-					$taxonomy_filter = 1;
-					// check all terms which need to be active
-					foreach ( $groups_all[ $temp_key ]['_wp_types_group_terms'] as $term_has_to_match ) {
-						// break on first term not active
-						if ( ! in_array( $term_has_to_match, $post->_wpcf_post_terms ) ) {
-							$taxonomy_filter = 0;
-							break;
-						}
-					}
-				}
-
-				// templates
-				// one has to match  (proofed above) || none isset
-				if ( empty( $groups_all[ $temp_key ]['_wp_types_group_templates'][0] ) ) {
-					$template_filter = 1;
-				}
-			}
-		}
-
-		// Filter by association
-		if ( empty( $groups_all[ $temp_key ]['filters_association'] ) ) {
-			$groups_all[ $temp_key ]['filters_association'] = 'any';
-		}
-		// If context is post_relationship allow all groups that match post type
-		if ( $context == 'post_relationships_header' ) {
-			$groups_all[ $temp_key ]['filters_association'] = 'any';
-		}
-
-		if ( $post_type_filter == - 1 && $taxonomy_filter == - 1 && $template_filter == - 1 ) {
-			$passed = 1;
-		} else if ( $groups_all[ $temp_key ]['filters_association'] == 'any' ) {
-            $field_group_service = isset( $field_group_service )
-                ? $field_group_service
-                : new Types_Field_Group_Repeatable_Service();
-
-            if( $field_group_service->group_contains_rfg_or_prf( $temp_group['id'] ) ) {
-                // for rfg / prf the post_type_filter must be true
-                $passed = $post_type_filter == 1 &&
-                          (
-                            // AND
-                            // any other condition met (or a data dependant condition exists - that will be toggled by js afterwards)
-                            ( $taxonomy_filter == 1 || $template_filter == 1 || ! empty( $groups_all[ $temp_key ]['_wpcf_conditional_display'] ) )
-                            // OR no other condition isset at all, in this case we also need to show the group
-                            || ( $taxonomy_filter == -1 && $template_filter == -1 && empty( $groups_all[ $temp_key ]['_wpcf_conditional_display'] ) )
-                          );
-            } else {
-	            $passed = $post_type_filter == 1 || $taxonomy_filter == 1 || $template_filter == 1;
-            }
-		} else {
-			$passed = $post_type_filter != 0 && $taxonomy_filter != 0 && $template_filter != 0;
-		}
-		if ( ! $passed ) {
-			unset( $groups_all[ $temp_key ] );
-		} else {
-			$groups_all[ $temp_key ]['fields'] = wpcf_admin_fields_get_fields_by_group( $temp_group['id'],
-				'slug', true, false, true );
-		}
-	}
-	$groups = apply_filters( 'wpcf_post_groups', $groups_all, $post, $context );
-
-	return $groups;
+	return $selected_legacy_groups_augmented;
 }
 
 function wpcf_admin_post_marketing_displaying_custom_content() {

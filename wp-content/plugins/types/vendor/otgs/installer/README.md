@@ -7,7 +7,7 @@ OTGS WP Installer is a library that allows you to install and upgrade plugins an
 First, add OTGS WP Installer as a dependency with [Composer](http://getcomposer.org):
 
 ```bash
-composer require --dev otgs/installer:dev-master
+composer require otgs/installer
 ```
 
 Make sure that your bootstrap file is loading the composer autoloader:
@@ -21,8 +21,6 @@ Then, load the OTGS WP Installer bootstrap. Before the `plugins_loaded` action a
 ```php
 include 'vendor/otgs/installer/loader.php';
 ```
-
-If you're not using composer to install this library, just unpack the archive anywhere inside the plugin or theme folder and then include the bootstrap file and mentioned in the paragraph above.
 
 Optionally, you can specify parameters to configure showing a dedicated UI under `Plugins -> Install New` or to load specific repositories.
 By default, all repositories configrede in `repositories.xml` will be loaded:

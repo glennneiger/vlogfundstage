@@ -1,7 +1,7 @@
 <?php
 /*
  * This class will take care of loading bootstrap components buttons and custom buttons added by user
- * 
+ *
  * @since unknown Layouts 1.8
  * @since 2.3.3 Addd the Bootstrap Grid component.
  */
@@ -39,7 +39,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
             if( !self::$instance ) {
                 self::$instance = new Toolset_CssComponent();
             }
-            
+
             return self::$instance;
         }
 
@@ -86,7 +86,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
 
             return $buttons;
         }
-        
+
         /**
 		 * Register the Bootstrap component scripts.
 		 *
@@ -102,22 +102,21 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
         }
 
         public function add_register_styles($styles){
-            $styles['toolset-bs-component-style']	= new Toolset_Style( 'toolset-bs-component-style', TOOLSET_COMMON_URL . '/res/css/toolset-bs-component.css', array(), TOOLSET_VERSION );
+            $styles['toolset-bs-component-style']	= new Toolset_Style( 'toolset-bs-component-style', TOOLSET_COMMON_URL . '/res/css/toolset-bs-component.css', array( 'onthego-admin-styles' ), TOOLSET_VERSION );
             $styles['glyphicons']					= new Toolset_Style( 'glyphicons', TOOLSET_COMMON_URL. '/res/lib/glyphicons/css/glyphicons.css', array(), '3.3.5', 'screen' );
-            $styles['onthego-admin-styles']			= new Toolset_Style( 'onthego-admin-styles', ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthego-styles/onthego-styles.css', array(), TOOLSET_VERSION );
             return $styles;
         }
-        
+
         public function toolset_bs_update_option(){
             if($_POST['option'] && isset($_POST['option']) && $_POST['value'] && isset($_POST['value'])){
-                
+
                 $option_name = 'toolset_bs_component_'.sanitize_text_field( $_POST['option'] );
                 $value = ($_POST['value'] === "true") ? "yes" : "no";
-                
+
                 update_option( $option_name, $value);
             }
-            echo get_option( $option_name ); 
-            
+            echo get_option( $option_name );
+
             wp_die();
         }
 
@@ -135,7 +134,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
             if(!$this->is_allowed_page()){
                 return;
             }
-            
+
             do_action('toolset_enqueue_styles', array(
                 'toolset-bs-component-style',
                 'wp-jquery-ui-dialog',
@@ -148,7 +147,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
                 $get_screen = get_current_screen();
                 $current_screen = $get_screen->base;
             }
-            
+
             $get_components = $this->all_css_components();
 
             do_action('toolset_enqueue_scripts', array(
@@ -287,7 +286,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
 			return $content;
 		}
 
-        
+
         // check is allowed page currently loaded
         public function is_allowed_page(){
 
@@ -317,7 +316,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
             if(isset($bootstrap_version->toolset_bootstrap_version) && $bootstrap_version->toolset_bootstrap_version != "-1"){
                 $bootstrap_available = true;
             }
-            
+
             if(defined('LAYOUTS_PLUGIN_NAME')){
                 $bootstrap_available = true;
             }
@@ -355,7 +354,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
             return false;
 
         }
-        
+
 
         function load_dialog_boxes(){
 
@@ -375,7 +374,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
                     $post_types
                 )
             );
-            
+
             foreach( $dialogs as &$dialog ){
                 add_action('current_screen', array(&$dialog, 'init_screen_render') );
             }
@@ -384,13 +383,12 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
 
 
         function preload_styles(){
-            
-            do_action('toolset_enqueue_styles', array(
+
+            do_action( 'toolset_enqueue_styles', array(
                 'toolset-bs-component-style',
                 'wp-jquery-ui-dialog',
                 'ddl-dialogs-css',
                 'glyphicons',
-                'onthego-admin-styles'
             ));
         }
 
@@ -421,7 +419,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
 
         // list of all standard components
         public function all_css_components(){
-          
+
             return array(
                 "components"=>
                     array(
@@ -586,7 +584,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
                             'name' => __('Wells','wpv-views')
                         ),
                     ),
-                "css"=> 
+                "css"=>
                     array(
                         'grid_system' => array(
                             'url' => self::BOOTSTRAP_CSS_DOC_BASE.'#grid',
@@ -666,12 +664,12 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
             );
         }
 
-        
+
 
     }
 
     class WPDDL_CssComponentDialog extends Toolset_DialogBoxes{
-      
+
         function __construct( $screens ){
             parent::__construct( $screens );
 
@@ -681,7 +679,7 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
             }
         }
 
-        
+
         public function template(){
             ob_start();?>
 
@@ -697,11 +695,11 @@ if ( ! class_exists( 'Toolset_CssComponent' ) ) {
                                 <div class="toolset-bs-components-dialog-sides-right">
                                     <strong>{{{description}}}</strong><br>
                                     <p class="toolset-bs-button-p">
-                                        
+
                                         <a href="{{{url}}}" target="_blank" class="button toolset-bs-componenet-check-button" data-bs_category="{{{bs_component_category}}}" data-buttons_type="{{{buttons_type}}}" data-editor_instance="{{{editor_instance}}}" data-bs_key="{{{bs_component_key}}}" onclick="ToolsetCommon.BSComponentsEventsHandler.editor_notification(this);">
                                             <?php _e('Get Bootstrap element','wpv-views');?>
                                         </a>
-                                        
+
                                         <br>
                                         <small><?php _e('You will go to the official Bootstrap documentation, explaining all the options and CSS classes to create a {{title}}');?></small>
                                     </p>

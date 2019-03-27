@@ -53,11 +53,13 @@ abstract class Toolset_Element implements IToolset_Element {
 	 * Get an element instance based on it's domain.
 	 *
 	 * @param string $domain Valid element domain as defined in Toolset_Field_Utils.
-	 * @param mixed $object_source Source of the underlying object that will be recognized by the specific element class.
+	 * @param mixed $object_source Source of the underlying object that will be recognized by the specific element
+	 *     class.
 	 *
 	 * @return IToolset_Element
 	 * @since m2m
 	 * @deprecated Use Toolset_Element_Factory::get_element() instead.
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist If the $object_source doesn't lead to an existing post.
 	 */
 	public static function get_instance( $domain, $object_source ) {
 		$factory = new Toolset_Element_Factory();

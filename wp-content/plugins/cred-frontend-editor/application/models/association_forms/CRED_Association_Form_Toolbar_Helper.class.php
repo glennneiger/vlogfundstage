@@ -4,9 +4,9 @@ use OTGS\Toolset\CRED\Model\FormEditorToolbar\Helper;
 
 /**
  * Helper for the association forms content editor toolbar.
- * 
+ *
  * Provides convenient methods for gathering relevant data, like fields for a given relationship.
- * 
+ *
  * @since 2.1
  */
 class CRED_Association_Form_Toolbar_Helper extends Helper {
@@ -15,16 +15,16 @@ class CRED_Association_Form_Toolbar_Helper extends Helper {
 	 * Relationship to get field for.
 	 *
 	 * @var string
-	 * 
+	 *
 	 * @since 2.1
 	 */
     private $relationship = '';
-    
+
     /**
      * Relationship definition to get field for.
      *
      * @var null|Toolset_Relationship_Definition
-     * 
+     *
      * @since 2.1
      */
 	private $relationship_definition = null;
@@ -44,7 +44,7 @@ class CRED_Association_Form_Toolbar_Helper extends Helper {
      * Populate and return the list of items.
      *
      * @return array
-     * 
+     *
      * @since 2.1
      */
     public function populate_items() {
@@ -73,22 +73,26 @@ class CRED_Association_Form_Toolbar_Helper extends Helper {
 				'shortcode' => CRED_Shortcode_Association_Role::SHORTCODE_NAME,
 				'requiredItem' => true,
 				'attributes' => array(
-					'role' => Toolset_Relationship_Role::PARENT
+					'role' => Toolset_Relationship_Role::PARENT,
+					\CRED_Form_Builder::SCAFFOLD_FIELD_ID => Toolset_Relationship_Role::PARENT
 				),
-				'options' => $this->get_role_options()
+				'options' => $this->get_role_options(),
+				'fieldType' => 'relationship',
 			),
 			'child' => array(
 				'label' => $child_type_object->label,
 				'shortcode' => CRED_Shortcode_Association_Role::SHORTCODE_NAME,
 				'requiredItem' => true,
 				'attributes' => array(
-					'role' => Toolset_Relationship_Role::CHILD
+					'role' => Toolset_Relationship_Role::CHILD,
+					\CRED_Form_Builder::SCAFFOLD_FIELD_ID => Toolset_Relationship_Role::CHILD
 				),
-				'options' => $this->get_role_options()
+				'options' => $this->get_role_options(),
+				'fieldType' => 'relationship',
 			)
 		);
     }
-    
+
     /**
      * Populate the list of Types fields.
      *
@@ -102,17 +106,34 @@ class CRED_Association_Form_Toolbar_Helper extends Helper {
 		if ( $this->relationship_definition->has_association_field_definitions() ) {
 			$association_fields_definitions = $this->relationship_definition->get_association_field_definitions();
 			foreach ( $association_fields_definitions as $field_definition ) {
+				$definition_type = $field_definition->get_type();
 				$field = $field_definition->get_definition_array();
 				$this->items['meta'][ $field_definition->get_slug() ] = array(
 					'label' => $field_definition->get_name(),
 					'shortcode' => CRED_Shortcode_Association_Field::SHORTCODE_NAME,
 					'requiredItem' => ( isset( $field['data']['validate']['required']['active'] ) && $field['data']['validate']['required']['active'] ),
 					'attributes' => array(
-						'name' => $field_definition->get_slug()
-					)
+						'name' => $field_definition->get_slug(),
+						\CRED_Form_Builder::SCAFFOLD_FIELD_ID => $field_definition->get_slug()
+					),
+					'icon_class' => $definition_type ? $definition_type->get_icon_classes() : '',
+					'options' => array(
+						'value' => array(
+							'label' => __( 'Field default value', 'wp-cred' ),
+							'type'  => 'text',
+							'defaultValue' => '',
+							'description' => __( 'Set a default value for this field', 'wp-cred' )
+						),
+						'urlparam' => array(
+							'label' => __( 'Set default value from an URL parameter', 'wp-cred' ),
+							'type'  => 'text',
+							'defaultValue' => '',
+							'description' => __( 'Listen to this URL parameter to set the default value', 'wp-cred' )
+						)
+					),
 				);
 			}
-		}    
+		}
     }
 
 	/**
@@ -178,5 +199,5 @@ class CRED_Association_Form_Toolbar_Helper extends Helper {
 			)
 		);
 	}
-    
+
 }

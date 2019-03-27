@@ -648,7 +648,7 @@ add_filter('widget_text', 'wpv_resolve_wpv_if_shortcodes_for_widgets');
 add_filter( 'wpv-extra-condition-filters', 'wpv_add_wpv_if_functions_support', 11 );
 
 function wpv_add_wpv_if_functions_support($evaluate) {
-	$occurences = preg_match_all('/(\\w+:?:?\\w+?)\(([\\w",. \'-]*)\)/', $evaluate, $matches);
+	$occurences = preg_match_all('/(\\w+:?:?\\w+?)\(([\\w\\!",. \'-]*)\)/', $evaluate, $matches);
 	if ( $occurences > 0 ) {
 		global $WPV_settings;
 		$allowed_functions = array();

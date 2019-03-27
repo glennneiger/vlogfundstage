@@ -121,19 +121,22 @@ Toolset.Gui.Mixins.AdvancedItemViewModel = function () {
         // Actually create the subscribable (observable).
         var currentValue = modelSubObject.lastModelPart[modelSubObject.lastPropertyName];
 
-        // Beware: Sometimes, we may be passing arrays around. We need to make sure that
-        // the value in subscribable and subscribable._lastPersistedValue are actually
-        // two different objects. That's why JSON.parse(JSON.stringify(currentValue)).
-        //
-        // Details: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
-        var subscribable = subscribableConstructor(JSON.parse(JSON.stringify(currentValue)));
+		// Beware: Sometimes, we may be passing arrays around. We need to make sure that
+		// the value in subscribable and subscribable._lastPersistedValue are actually
+		// two different objects. That's why JSON.parse(JSON.stringify(currentValue)).
+		//
+		// Details: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
+		var getValueDeepCopy = function (originalValue) {
+			return ('undefined' === typeof(originalValue) ? undefined : JSON.parse(JSON.stringify(originalValue)));
+		};
+		var subscribable = subscribableConstructor(getValueDeepCopy(currentValue));
 
         // Make sure the subscribable will be synchronized with the model.
         Toolset.ko.synchronize(subscribable, modelSubObject.lastModelPart, modelSubObject.lastPropertyName);
 
-        // Attach another subscribable of the same type to it, which will hold the last
-        // value that was persisted to the databse.
-        subscribable._lastPersistedValue = subscribableConstructor(JSON.parse(JSON.stringify(currentValue)));
+		// Attach another subscribable of the same type to it, which will hold the last
+		// value that was persisted to the databse.
+		subscribable._lastPersistedValue = subscribableConstructor(getValueDeepCopy(currentValue));
 
         // When the subscribable changes (and only if it actually changes), update the array of changed properties
         // on this viewmodel. That will allow for sending only relevant changes to be persisted.

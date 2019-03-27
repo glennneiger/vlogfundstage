@@ -229,8 +229,10 @@ ul.types-delete-ipt-summary li{list-style-type: disc;}
 #types-wizard-step-5 .types-wizard-roles-container label {
 	padding: 0;
 }
-.types-wizard-roles-container h3 {
-	padding-left: 32%;
+@media(min-width: 479px) {
+    .types-wizard-roles-container h3 {
+        padding-left: 32%;
+    }
 }
 .types-wizard-roles-container > div {
 	padding-bottom: 15px;

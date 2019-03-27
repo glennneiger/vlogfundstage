@@ -95,9 +95,7 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 	 * @since m2m
 	 */
 	protected function get_save_field_group_label() {
-		$default = parent::get_save_field_group_label();
-
-		return $this->relationship_helper->maybe_adjust_save_button( $default );
+		return parent::get_save_field_group_label();
 	}
 
 
@@ -112,6 +110,15 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 		return $this->relationship_helper->is_field_group_deletion_forbidden();
 	}
 
+	/**
+	 * Returns the relationship url
+	 * @return false|string
+	 *
+	 * @since 3.2
+	 */
+	protected function get_relationship_edit_url() {
+		return $this->relationship_helper->get_relationship_edit_url();
+	}
 
 	public function form() {
 		$this->save();
@@ -181,9 +188,14 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 			'#value' => $this->update['id'],
 		);
 
-		$field_settings_collapsed_class = $this->update['id'] !== 0 // means not a new field group
+		$view_helper = new \OTGS\Toolset\Types\Field\Group\View\Group( $this->update, get_post( $this->update['id'] ) );
+		$field_settings_collapsed_class = $view_helper->are_settings_collapsed()
 			? ' toolset-collapsible-closed'
-			: '';
+		    : '';
+
+		$settings_title = isset( $this->ct ) && isset( $this->ct['name'] )
+			? sprintf( __( 'Settings for %s', 'wpcf' ), $this->ct['name'] )
+			: __( 'Settings for the fields group', 'wpcf' );
 
 		$form['field-group-settings-box-open'] = array(
 			'#type' => 'markup',
@@ -191,7 +203,7 @@ class Types_Admin_Edit_Custom_Fields_Group extends Types_Admin_Edit_Fields {
 				'<div class="toolset-field-group-settings toolset-postbox%s"><div data-toolset-collapsible=".toolset-postbox" class="toolset-collapsible-handle" title="%s"><br></div><h3 data-toolset-collapsible=".toolset-postbox" class="toolset-postbox-title">%s</h3><div class="toolset-collapsible-inside">',
 				$field_settings_collapsed_class,
 				esc_attr__('Click to toggle', 'wpcf'),
-				__( 'Settings for the fields group', 'wpcf' )
+				$settings_title
 			)
 		);
 
@@ -961,9 +973,10 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 				);
 				$currently_supported = wpcf_admin_get_post_types_by_group( sanitize_text_field( $_REQUEST['id'] ) );
 				$post_types = get_post_types( array('show_ui' => true), 'objects' );
+				$excluded_post_type_list = new Toolset_Post_Type_Exclude_List();
 				ksort( $post_types );
 				foreach( $post_types as $assigned_post_type => $post_type ) {
-					if( in_array( $assigned_post_type, $wpcf->excluded_post_types ) ) {
+					if( $excluded_post_type_list->is_excluded( $assigned_post_type ) ) {
 						continue;
 					}
 
@@ -1297,10 +1310,7 @@ var wpcfDefaultCss = ' . json_encode( base64_encode( $admin_styles_value ) ) . '
 		if( isset( $_GET['ref'] ) )
 			$args['ref'] = $_GET['ref'];
 
-		$default_redirect_url = add_query_arg( $args, admin_url( 'admin.php' ) );
-
-		// Maybe we'll redirect to a Edit Relationship page instead.
-		$redirect_url = $this->relationship_helper->maybe_adjust_redirection_after_save( $default_redirect_url );
+		$redirect_url = add_query_arg( $args, admin_url( 'admin.php' ) );
 
 		// Executed after hooks for setting the proper post type.
 		$this->relationship_helper->create_intermediary_group_if_needed( $group_id );

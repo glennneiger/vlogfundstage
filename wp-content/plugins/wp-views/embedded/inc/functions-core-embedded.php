@@ -723,7 +723,10 @@ function wpv_get_the_archive_title() {
  *
  * @return mixed See wpv_getarr().
  *
+ * @deprecated 2.7.0 Deprecating it in favor of "toolset_getpost".
+ *
  * @since 1.8
+ * @since 2.7.0 Deprecating it in favor of "toolset_getpost".
  */
 function wpv_getpost( $key, $default = '', $valid = null ) {
 	return wpv_getarr( $_POST, $key, $default, $valid );
@@ -741,7 +744,10 @@ function wpv_getpost( $key, $default = '', $valid = null ) {
  *
  * @return mixed See wpv_getarr().
  *
+ * @deprecated 2.7.0 Deprecating it in favor of "toolset_getget".
+ *
  * @since 1.8
+ * @since 2.7.0 Deprecating it in favor of "toolset_getget".
  */
 function wpv_getget( $key, $default = '', $valid = null ) {
 	return wpv_getarr( $_GET, $key, $default, $valid );
@@ -762,7 +768,10 @@ function wpv_getget( $key, $default = '', $valid = null ) {
  *
  * @return mixed The value of the given key or $default.
  *
+ * @deprecated 2.7.0 Deprecating it in favor of "toolset_getarr".
+ *
  * @since 1.8
+ * @since 2.7.0 Deprecating it in favor of "toolset_getarr".
  */
 function wpv_getarr( &$source, $key, $default = '', $valid = null ) {
 	if( isset( $source[ $key ] ) ) {

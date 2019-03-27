@@ -18,11 +18,26 @@
     <rule ref="Generic.NamingConventions.CamelCapsFunctionName.MethodDoubleUnderscore">
     </rule>
 
+	<rule ref="PHPCompatibility.PHP.NewIniDirectives.max_input_varsFound">
+		<exclude-pattern>./debug/functions_debug_information.php</exclude-pattern>
+	</rule>
+
+    <file>./classes</file>
+    <file>./debug</file>
+    <file>./expression-parser</file>
     <file>./inc</file>
     <file>./templates</file>
     <file>./toolset-blocks</file>
     <file>./toolset-forms</file>
     <file>./user-editors</file>
     <file>./utility</file>
+
+    <file>./api.php</file>
+    <file>./bootstrap.php</file>
+    <file>./deprecated.php</file>
+    <file>./loader.php</file>
+    <file>./toolset-common-loader.php</file>
+    <file>./wplogger.php</file>
+    <file>./wpv-filter-date-embedded.php</file>
 
 </ruleset>

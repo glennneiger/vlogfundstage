@@ -20,24 +20,23 @@ class WPV_template{
 	    
 
         wpv_register_type_view_template();
-        add_action( 'wp_ajax_set_view_template', array( $this, 'set_view_template_callback' ) );
         add_filter( 'the_content', array( $this, 'the_content' ), 1, 1 );
         add_filter( 'the_content', array( $this, 'restore_wpautop' ), 999, 1 );
-		
+
 		/**
 		 * Recreate the the_content filters, when doing a wpv-post-body shortcode with suppress_filters="true"
 		 *
 		 * @since 1.8.0
 		 */
-		
-		if ( 
-			function_exists( 'WPV_wpcf_record_post_relationship_belongs' ) 
+
+		if (
+			function_exists( 'WPV_wpcf_record_post_relationship_belongs' )
 			&& ! has_filter( 'wpv_filter_wpv_the_content_suppressed', 'WPV_wpcf_record_post_relationship_belongs' )
 		) {
 			// We moved this filter hook to common code, keep it just in case but check whether it has already been added
 			add_filter( 'wpv_filter_wpv_the_content_suppressed', 'WPV_wpcf_record_post_relationship_belongs', 0, 1 );
 		}
-		
+
 		add_filter( 'wpv_filter_wpv_the_content_suppressed', array( $this, 'the_content' ), 1, 1 );
 		if ( isset( $GLOBALS['wp_embed'] ) ) {
 			add_filter( 'wpv_filter_wpv_the_content_suppressed', array( $GLOBALS['wp_embed'], 'run_shortcode' ), 8 );
@@ -50,7 +49,7 @@ class WPV_template{
 		add_filter( 'wpv_filter_wpv_the_content_suppressed', array( $this, 'restore_wpautop' ), 999, 1 );
 
         add_filter('the_excerpt', array($this, 'the_excerpt_for_archives'), 1, 1);
-		
+
 		add_filter( 'the_content',								array( $this, 'prevent_double_wpautop' ), 99 );
 		add_filter( 'wpv_filter_wpv_the_content_suppressed',	array( $this, 'prevent_double_wpautop' ), 99 );
 		add_filter( 'the_excerpt',								array( $this, 'prevent_double_wpautop' ), 99 );
@@ -81,7 +80,7 @@ class WPV_template{
 		add_action('edit_attachment', array($this, 'set_template_for_attachments'), 10, 1);
 
 		add_action('save_post', array($this, 'set_default_template'), 10, 2);
-		
+
 		add_filter( 'wpv_filter_wpv_disable_post_content_template_metabox', array( $this, 'maybe_disable_post_content_template_metabox_for_layouts' ), 10, 2 );
 		add_filter( 'wpv_filter_wpv_disable_post_content_template_metabox', array( $this, 'maybe_disable_post_content_template_metabox_for_page_builders' ), 10, 2 );
 
@@ -115,36 +114,36 @@ class WPV_template{
 		global $post;
 		$post_object = get_post_type_object( $post->post_type );
 
-		if ( 
+		if (
 			! apply_filters( 'wpv_filter_wpv_disable_post_content_template_metabox', false, $post )
 			&& (
-				$post_object->publicly_queryable 
-				|| $post_object->public 
+				$post_object->publicly_queryable
+				|| $post_object->public
 			)
 		) {
 			// Add meta box so that a Content Template can be set for a post
 			add_meta_box( 'views_template', __( 'Content Template', 'wpv-views' ), array( $this, 'content_template_select_meta_box' ), $post->post_type, 'side', 'high' );
 		}
     }
-	
+
 	/**
 	 * Disable the Content Template metabox on post edit pages when Layouts is active and no CT is assigned.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	function maybe_disable_post_content_template_metabox_for_layouts( $status, $post ) {
-		if ( 
-			! $post instanceof WP_Post 
+		if (
+			! $post instanceof WP_Post
 			|| ! class_exists( 'WPDD_PostEditPageManager' )
 		) {
 			return $status;
 		}
-		
+
 		$template_selected					= 0;
-		
-		if ( 
-			isset( $_GET['post'] ) 
+
+		if (
+			isset( $_GET['post'] )
 			&& intval( $_GET['post'] ) > 0
 		) {
 			// Editing a post: check the stord value
@@ -158,8 +157,8 @@ class WPV_template{
             if ( $pagenow == 'post-new.php' ) {
 				// Creating a post
 				// If it is a translation, set the CT of the original post
-				if ( 
-					isset( $_GET['trid'] ) 
+				if (
+					isset( $_GET['trid'] )
 					&& isset( $_GET['source_lang'] )
 				) {
 					$sp_trid = sanitize_text_field( $_GET['trid'] );
@@ -176,12 +175,12 @@ class WPV_template{
 				if ( $template_selected == 0 ) {
 					$wpv_stored_settings = WPV_Settings::get_instance();
 					if ( isset( $wpv_stored_settings['views_template_for_' . $post_type] ) ) {
-						$template_selected = $wpv_stored_settings['views_template_for_' . $post_type];						
+						$template_selected = $wpv_stored_settings['views_template_for_' . $post_type];
 					}
 				}
             }
 		}
-		
+
 		if ( $template_selected == 0 ) {
 			return true;
 		}
@@ -220,7 +219,7 @@ class WPV_template{
 	 * @note 1.7 removed loop Templates from the dropdown
 	 */
     function content_template_select_meta_box( $post ) {
-		
+
 		$template_selected					= 0;
 		$wpml_current_language				= apply_filters( 'wpml_current_language', '' );
 		$wpml_default_language				= apply_filters( 'wpml_default_language', '' );
@@ -231,9 +230,9 @@ class WPV_template{
 			$is_in_wpml_original_language	= ( $wpml_current_language == $wpml_default_language );
 		}
 		$content_templates_translatable		= apply_filters( 'wpml_is_translated_post_type', false, 'view-template' );
-		
-        if ( 
-			isset( $_GET['post'] ) 
+
+        if (
+			isset( $_GET['post'] )
 			&& intval( $_GET['post'] ) > 0
 		) {
 			// Editing a post
@@ -246,8 +245,8 @@ class WPV_template{
             if ( $pagenow == 'post-new.php' ) {
 				// Creating a post
 				// If it is a translation, set the CT of the original post
-				if ( 
-					isset( $_GET['trid'] ) 
+				if (
+					isset( $_GET['trid'] )
 					&& isset( $_GET['source_lang'] )
 				) {
 					$sp_trid = sanitize_text_field( $_GET['trid'] );
@@ -264,20 +263,20 @@ class WPV_template{
 				if ( $template_selected == 0 ) {
 					$wpv_stored_settings = WPV_Settings::get_instance();
 					if ( isset( $wpv_stored_settings['views_template_for_' . $post_type] ) ) {
-						$template_selected = $wpv_stored_settings['views_template_for_' . $post_type];						
+						$template_selected = $wpv_stored_settings['views_template_for_' . $post_type];
 					}
 				}
             }
         }
-		
-		if ( 
-			$template_selected != 0 
+
+		if (
+			$template_selected != 0
 			&& $content_templates_translatable
 		) {
 			// Adjust for WPML support, in case CTs are translatable
 			$template_selected = apply_filters( 'translate_object_id', $template_selected, 'view-template', true, null );
 		}
-		
+
 		// Get available CTs
 		// Note that when the select dropdown is going to be disabled we just get the selected, if any, and skip the query entirely otherwise
 		$view_tempates_available = array();
@@ -289,22 +288,22 @@ class WPV_template{
 			// - we have a template selected and we need its title/name
 			// - or we do not have a template selected but we are in the WPML original language, so we need to offer options
 			global $wpdb;
-			
+
 			$values_to_prepare = array();
-		
+
 			$wpml_join = $wpml_where = "";
-			
+
 			if ( ! $is_in_wpml_original_language ) {
 				// Editing or creating a translation, so only get the selected CT
 				$wpml_where = " AND p.ID = %d ";
 				$values_to_prepare[] = $template_selected;
 			} else if ( $content_templates_translatable ) {
 				// Current language is the original language and CTs are translatable, so get only the ones in this original language
-				$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-				$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
+				$wpml_join = " JOIN {$wpdb->prefix}icl_translations icl_t ";
+				$wpml_where = " AND p.ID = icl_t.element_id AND icl_t.language_code = %s AND icl_t.element_type LIKE 'post_%' ";
 				$values_to_prepare[] = $wpml_current_language;
 			}
-			
+
 			$exclude_loop_templates = '';
 			$exclude_loop_templates_ids = wpv_get_loop_content_template_ids();
 			if ( count( $exclude_loop_templates_ids ) > 0 ) {
@@ -317,23 +316,23 @@ class WPV_template{
 					$exclude_loop_templates = " AND p.ID NOT IN ('" . implode( "','" , $exclude_loop_templates_ids_sanitized ) . "') ";
 				}
 			}
-			
+
 			$values_to_prepare[] = 'view-template';
 			$view_tempates_available = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT p.ID, p.post_name, p.post_title 
-					FROM {$wpdb->posts} p {$wpml_join} 
-					WHERE p.post_status = 'publish' 
-					{$wpml_where} 
-					AND p.post_type = %s 			
+					"SELECT p.ID, p.post_name, p.post_title
+					FROM {$wpdb->posts} p {$wpml_join}
+					WHERE p.post_status = 'publish'
+					{$wpml_where}
+					AND p.post_type = %s
 					{$exclude_loop_templates}
 					ORDER BY p.post_title",
 					$values_to_prepare
 				)
 			);
-			
+
 		}
-		
+
 		?>
 		<select name="views_template[<?php echo esc_attr( $post->ID ); ?>]" id="views_template" class="widefat js-wpv-edit-post-select-ct" <?php disabled( ! $is_in_wpml_original_language ); ?>>
 		<?php
@@ -342,7 +341,7 @@ class WPV_template{
         $none->ID = '0';
         $none->post_title = __( 'None', 'wpv-views' );
         array_unshift( $view_tempates_available, $none );
-		
+
         foreach( $view_tempates_available as $template ) {
 			if ( $template->post_title != '' ) {
 				?>
@@ -369,9 +368,9 @@ class WPV_template{
 		if ( ! apply_filters( 'toolset_is_views_embedded_available', false ) ) {
 			$edit_link = '';
 			$edit_link_visible = ' hidden';
-			if ( 
-				! empty( $template_selected ) 
-				&& $template_selected !== 0 
+			if (
+				! empty( $template_selected )
+				&& $template_selected !== 0
 				&& get_post_status( $template_selected ) == 'publish'
 			) {
 				$edit_link = wpv_ct_editor_url( $template_selected );
@@ -430,8 +429,8 @@ class WPV_template{
         if ( isset( $_POST['views_template'] ) ) {
 			// make sure we only update this for the current post.
 	        if (
-				isset( $_POST['post_ID'] ) 
-				&& $_POST['post_ID'] == $pidd 
+				isset( $_POST['post_ID'] )
+				&& $_POST['post_ID'] == $pidd
 				&& isset( $_POST['views_template'][$pidd] )
 			) {
 				$template_selected = $_POST['views_template'][$pidd];
@@ -444,10 +443,10 @@ class WPV_template{
 				$post_type = $_POST['wpcf_post_relationship'][$pidd]['post_type'];
 			} else {
 				// Saving a new child post
-				$post_type = $wpdb->get_var( 
+				$post_type = $wpdb->get_var(
 					$wpdb->prepare(
-						"SELECT post_type FROM {$wpdb->posts} 
-						WHERE ID = %d 
+						"SELECT post_type FROM {$wpdb->posts}
+						WHERE ID = %d
 						LIMIT 1",
 						$pidd
 					)
@@ -484,25 +483,25 @@ class WPV_template{
 		static $view_templates = array();
 		if ( ! isset( $view_templates[$template_id] ) ) {
             $status = get_post_status( $template_id );
-            
+
             // If the templated is not 'publish'ed
             if( $status != 'publish' ) {
                 return null;
             }
-            
+
             //FIXME: Check user has permission to see this content template
-            
+
 			$template_full = get_post( $template_id );
 			// If there is no post with that ID
-			if ( 
-				is_null( $template_full ) 
-				|| ! is_object( $template_full ) 
+			if (
+				is_null( $template_full )
+				|| ! is_object( $template_full )
 			) {
 				return null;
 			}
 			if (
-				isset( $template_full->post_type ) 
-				&& $template_full->post_type == 'view-template' 
+				isset( $template_full->post_type )
+				&& $template_full->post_type == 'view-template'
 			) {
 				$view_templates[$template_id] = $template_full->post_content;
 			} else {
@@ -529,40 +528,41 @@ class WPV_template{
 		if ( is_null( $post ) ) {
 			return $content;
 		}
-		
+
 		if ( post_password_required( $post ) ) {
 			return $content;
 		}
-		
+
 		$wpv_global_settings = WPV_Settings::get_instance();
 
 		// Core functions that we accept calls from.
 		// since 2.6.0 we render the wpv-post-body using the WPV_Shortcode_Post_Body::get_value method
-		$the_content_core = array( 
-				'the_content', 
-				'the_excerpt_for_archives', 'WPV_template::the_excerpt_for_archives', 
+		$the_content_core = array(
+				'the_content',
+				'the_excerpt_for_archives', 'WPV_template::the_excerpt_for_archives',
 				'wpv_shortcode_wpv_post_body', 'WPV_Shortcode_Post_Body::get_value'
 		);
 		// Known theme functions that we accept calls from.
-		$the_content_themes = array( 
+		$the_content_themes = array(
 			// WPTouch theme(s)
-			'wptouch_the_content' 
+			'wptouch_the_content'
 		);
 		// Known plugin functions that we accept calls from.
-		$the_content_plugins = array( 
+		$the_content_plugins = array(
 			// Elementor Pro content widget
-			'ElementorPro\Modules\ThemeBuilder\Widgets\Post_Content::render' 
+			'ElementorPro\Modules\ThemeBuilder\Widgets\Post_Content::render'
 		);
 
-		$the_content_blacklist = array( 
-				'require', 'require_once', 'include', 'include_once', 
-				'locate_template', 'load_template', 
-				'apply_filters', 'call_user_func_array', 
-				'wpcf_fields_wysiwyg_view' 
+		$the_content_blacklist = array(
+				'require', 'require_once', 'include', 'include_once',
+				'locate_template', 'load_template',
+				'apply_filters', 'call_user_func_array',
+				'wpcf_fields_wysiwyg_view'
 		);
 
         if ( version_compare( PHP_VERSION, '5.4.0' ) >= 0 ) {
-			$db = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 6 );
+	        // @codingStandardsIgnoreLine
+			$db = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 6 ); // phpcs:ignore PHPCompatibility.PHP.NewFunctionParameters.debug_backtrace_limitFound
 		} else {
 			$db = debug_backtrace();
 		}
@@ -573,7 +573,7 @@ class WPV_template{
 		// Also, from WP 4.7 the new way to manage hooks adds some intermediary items so let's cover our backs reaching to 5
 		// Also, the_excerpt_for_archives is supposed to be at index 1
 		// Note: we might want to add a pluk and filter here, maybe...
-		
+
 		if ( isset( $db[5]['function'] ) ) {
 			if ( isset( $db[5]['class'] ) ) {
 				$function_candidate[] = $db[5]['class'] . '::' . $db[5]['function'] ;
@@ -581,7 +581,7 @@ class WPV_template{
 				$function_candidate[] = $db[5]['function'];
 			}
 		}
-		
+
 		if ( isset( $db[4]['function'] ) ) {
 			if ( isset( $db[4]['class'] ) ) {
 				$function_candidate[] = $db[4]['class'] . '::' . $db[4]['function'] ;
@@ -589,7 +589,7 @@ class WPV_template{
 				$function_candidate[] = $db[4]['function'];
 			}
 		}
-		
+
 		if ( isset( $db[3]['function'] ) ) {
 			if ( isset( $db[3]['class'] ) ) {
 				$function_candidate[] = $db[3]['class'] . '::' . $db[3]['function'] ;
@@ -597,7 +597,7 @@ class WPV_template{
 				$function_candidate[] = $db[3]['function'];
 			}
 		}
-		
+
 		if ( isset( $db[2]['function'] ) ) {
 			if ( isset( $db[2]['class'] ) ) {
 				$function_candidate[] = $db[2]['class'] . '::' . $db[2]['function'] ;
@@ -605,7 +605,7 @@ class WPV_template{
 				$function_candidate[] = $db[2]['function'];
 			}
 		}
-		
+
 		if ( isset( $db[1]['function'] ) ) {
 			if ( isset( $db[1]['class'] ) ) {
 				$function_candidate[] = $db[1]['class'] . '::' . $db[1]['function'] ;
@@ -613,34 +613,34 @@ class WPV_template{
 				$function_candidate[] = $db[1]['function'];
 			}
 		}
-		
+
 		$function_candidate = array_diff( $function_candidate, $the_content_blacklist );
-		
+
 		if ( empty( $function_candidate ) ) {
-			
-			if ( 
-				current_user_can( 'manage_options' ) 
-				&& isset( $wpv_global_settings->wpv_theme_function_debug ) 
-				&& $wpv_global_settings->wpv_theme_function_debug 
+
+			if (
+				current_user_can( 'manage_options' )
+				&& isset( $wpv_global_settings->wpv_theme_function_debug )
+				&& $wpv_global_settings->wpv_theme_function_debug
 			) {
 				$debug_info = '<p style="font-weight:bold !important;color: red !important;">'
 					. __( '<strong>Content Template debug:</strong>', 'wpv-views' )
 					. WPV_MESSAGE_SPACE_CHAR
 					. __( 'your theme does not provide a valid, dedicated function to render the post content.', 'wpv-views' )
 					. '</p>';
-					
+
 				$content = $debug_info . $content;
 			}
-			
+
 			return $content;
-			
+
 		}
 
 		$function_ok = false;
 
 		foreach ( $function_candidate as $function_candidate_for_content ) {
-			if ( 
-				in_array( $function_candidate_for_content, $the_content_core ) 
+			if (
+				in_array( $function_candidate_for_content, $the_content_core )
 				|| in_array( $function_candidate_for_content, $the_content_themes )
 				|| in_array( $function_candidate_for_content, $the_content_plugins )
 			) {
@@ -650,14 +650,14 @@ class WPV_template{
 
 		$registered_function_candidate = array();
 		if ( ! $function_ok ) {
-			if ( 
-				isset( $wpv_global_settings->wpv_theme_function ) 
+			if (
+				isset( $wpv_global_settings->wpv_theme_function )
 				&& ! empty( $wpv_global_settings->wpv_theme_function )
 			) {
 				$registered_function_candidate = explode( ',', str_replace( ', ', ',', $wpv_global_settings->wpv_theme_function ) );
 				foreach ( $function_candidate as $function_candidate_for_content ) {
-					if ( 
-						in_array( $function_candidate_for_content, $registered_function_candidate ) 
+					if (
+						in_array( $function_candidate_for_content, $registered_function_candidate )
 						|| in_array( $function_candidate_for_content, $registered_function_candidate )
 					) {
 						$function_ok = true;
@@ -665,64 +665,64 @@ class WPV_template{
 				}
             }
         }
-		
+
 		if ( ! $function_ok ) {
 			// We don't accept calls from the calling function.
-			if ( 
-				current_user_can( 'manage_options' ) 
-				&& isset( $wpv_global_settings->wpv_theme_function_debug ) 
-				&& $wpv_global_settings->wpv_theme_function_debug 
+			if (
+				current_user_can( 'manage_options' )
+				&& isset( $wpv_global_settings->wpv_theme_function_debug )
+				&& $wpv_global_settings->wpv_theme_function_debug
 			) {
-				
+
 				$debug_info = '<p style="font-weight:bold !important;color: red !important;">'
 					. __( '<strong>Content Template debug:</strong>', 'wpv-views' )
 					. '<ul>';
-				
+
 				$function_candidate_string = implode( ', ', $function_candidate );
 				$debug_info .= '<li>'
-					. sprintf( 
-						__( 'Calling functions are <strong>%s</strong>', 'wpv-views' ), 
-						$function_candidate_string 
+					. sprintf(
+						__( 'Calling functions are <strong>%s</strong>', 'wpv-views' ),
+						$function_candidate_string
 					)
 					. '</li>';
-				
+
 				$registered_function_valid			= array_diff( $registered_function_candidate, $the_content_blacklist );
 				$registered_function_blacklisted	= array_intersect( $registered_function_candidate, $the_content_blacklist );
 				if ( count( $registered_function_valid ) > 0 ) {
 					$registered_function_valid_string = implode( ', ', $registered_function_valid );
-					$debug_info .= '<li>' 
-						. sprintf( 
-							__( 'Registered valid functions are <strong>%s</strong>', 'wpv-views' ), 
-							$registered_function_valid_string 
+					$debug_info .= '<li>'
+						. sprintf(
+							__( 'Registered valid functions are <strong>%s</strong>', 'wpv-views' ),
+							$registered_function_valid_string
 						)
 						. '</li>';
 				}
 				if ( count( $registered_function_blacklisted ) > 0 ) {
 					$registered_function_blacklisted_string = implode( ', ', $registered_function_blacklisted );
-					$debug_info .= '<li>' 
-						. sprintf( 
-							__( 'Registered invalid functions are <strong>%s</strong>', 'wpv-views' ), 
-							$registered_function_blacklisted_string 
+					$debug_info .= '<li>'
+						. sprintf(
+							__( 'Registered invalid functions are <strong>%s</strong>', 'wpv-views' ),
+							$registered_function_blacklisted_string
 						)
 						. '</li>';
 				}
-				
+
 				$debug_info .= '</ul></p>';
-				
+
 				$content = $debug_info . $content;
-				
+
 			}
 			return $content;
 		}
 
 		// Here we will store what kind of place this template is being used on: single-{post-type}, singular, archive-{post-type}, archive-{taxonomy}, archive, listing-{post-type}
 		$kind = '';
-		
+
 		if ( is_singular() ) {
 			$top_current_post = apply_filters( 'wpv_filter_wpv_get_top_current_post', null );
-			if ( 
-				is_null( $top_current_post ) 
-				|| !isset( $top_current_post->ID ) 
+			if (
+				is_null( $top_current_post )
+				|| !isset( $top_current_post->ID )
 			) {
 				$current_id = 0;
 			} else {
@@ -749,10 +749,10 @@ class WPV_template{
 
 				/* Taxonomy archives. */
 
-				if ( 
-					is_tax() 
-					|| is_category() 
-					|| is_tag() 
+				if (
+					is_tax()
+					|| is_category()
+					|| is_tag()
 				) {
 					$term = $wp_query->get_queried_object();
 					$archive_loop = 'views_template_loop_' . $term->taxonomy;
@@ -778,16 +778,16 @@ class WPV_template{
 			} else {
 				$template_selected = $this->get_template_id( $post->view_template_override );
 			}
-		} else if ( 
-			isset( $_GET['view-template'] ) 
+		} else if (
+			isset( $_GET['view-template'] )
 			&& $_GET['view-template'] != ''
 		) {
 			if ( ! isset( $post->view_template_override_get ) ) {
 				$template_selected = $this->get_template_id( $_GET['view-template'] );
 				$post->view_template_override_get = true;
 			}
-		} else if ( 
-			isset( $_GET['content-template-id'] ) 
+		} else if (
+			isset( $_GET['content-template-id'] )
 			&& $_GET['content-template-id'] != ''
 		) {
 			if ( ! isset( $post->view_template_override_get ) ) {
@@ -795,12 +795,12 @@ class WPV_template{
 				$post->view_template_override_get = true;
 			}
 		} else if (
-			isset( $_GET['cred-edit-form'] ) 
+			isset( $_GET['cred-edit-form'] )
 			&& $_GET['cred-edit-form'] != ''
 		) { // special case when displaying CRED forms
-			if ( 
-				isset( $post->view_template_override ) 
-				&& strtolower( $post->view_template_override ) != 'none' 
+			if (
+				isset( $post->view_template_override )
+				&& strtolower( $post->view_template_override ) != 'none'
 			) { // if displaying CRED form and this template is inside the form in a wpv-post-body shortcode, apply it
 				$template_selected = $this->get_template_id( $post->view_template_override );
 			} else { // if this template is being used for the post type being edited by a CRED form, do not apply it
@@ -810,7 +810,7 @@ class WPV_template{
 		} else {
 			if ( $archive_loop ) {
 				if (
-					isset( $wpv_global_settings[ $archive_loop ] ) 
+					isset( $wpv_global_settings[ $archive_loop ] )
 					&& $wpv_global_settings[ $archive_loop ] > 0
 				) {
 					if ( ! isset( $post->view_template_override_loop_setting ) ) {
@@ -850,7 +850,7 @@ class WPV_template{
 		    //$WPVDebug->add_log( 'info' , "wpv_filter_force_template\n" . __('ID: ', 'wpv-views') . $id . "\n" . __('Content Template: from ', 'wpv-views') . $old_template_selected . __(' to ', 'wpv-views') . $template_selected, 'filters', 'Filter: wpv_filter_force_template' );
 		    //The debug is not being added, I will need a better way to show this
 		}
-		
+
 		// If we already rendered this post with this CT on this same filter just return the un-filtered content
 		// to avoid recursion
 		static $in_progress = array();
@@ -869,7 +869,7 @@ class WPV_template{
 			toolset_wplog( 'Using Content Template: ' . $template_selected . ' on post: ' . $post->ID, null, __FILE__, 'WPV_template::the_content', 598 );
 
             $content_aux = $this->get_template_content( $template_selected );
-			
+
 			// If this function returns null, $template_selected does not exist or is not a Content Template
 			if ( is_null( $content_aux ) ) {
 				unset( $in_progress[ $id . '#' . $template_selected ] );
@@ -883,11 +883,11 @@ class WPV_template{
 
 				$this->remove_wpautop();
 			}
-			
+
         }
 
 		$WPVDebug->add_log_item( 'shortcodes', $content );
-		
+
 		/**
 		* Filter wpv_filter_content_template_output
 		*
@@ -902,7 +902,7 @@ class WPV_template{
 		*
 		*/
 		$content = apply_filters( 'wpv_filter_content_template_output', $content, $template_selected, $id, $kind );
-		
+
 		unset( $in_progress[ $id . '#' . $template_selected ] );
 
 		return $content;
@@ -954,7 +954,7 @@ class WPV_template{
 	 */
 	function the_excerpt_for_archives( $content ) {
 		global $post, $wp_query;
-		
+
 		$wpv_stored_settings = WPV_Settings::get_instance();
 
 		static $archive_type_has_been_checked = false;
@@ -980,7 +980,7 @@ class WPV_template{
 
         return $content;
 	}
-	
+
 	/**
 	* prevent_double_wpautop
 	*
@@ -988,29 +988,14 @@ class WPV_template{
 	*
 	* @since 2.2
 	*/
-	
+
 	function prevent_double_wpautop( $content ) {
 		$content = str_replace( '<p><p>', '<p>', $content );
 		$content = str_replace( '</p></p>', '</p>', $content );
 		$content = str_replace( "</p>\n</p>", '</p>', $content );
-		
+
 		return $content;
 	}
-
-
-	/**
-	 * Ajax function to set the current content template to posts of a type
-	 * set in $_POST['type']
-	 *
-     * @since unknown
-	 */
-    function set_view_template_callback() {
-		// do nothing in the theme version.
-
-        die(); // this is required to return a proper result
-    }
-	
-
 
 	/**
 	 * Get content templates in a select box
@@ -1021,10 +1006,10 @@ class WPV_template{
 	 */
 	function get_view_template_select_box( $row, $template_selected ) {
 		global $wpdb;
-        $view_tempates_available = $wpdb->get_results( 
-			"SELECT ID, post_title, post_name FROM {$wpdb->posts} 
-			WHERE post_type='view-template' 
-			AND post_status in ('publish')" 
+        $view_tempates_available = $wpdb->get_results(
+			"SELECT ID, post_title, post_name FROM {$wpdb->posts}
+			WHERE post_type='view-template'
+			AND post_status in ('publish')"
 		);
         $view_template_select_box = '';
 		if ( $row === '' ) {
@@ -1056,9 +1041,9 @@ class WPV_template{
 		if ($view_templates_available === null) {
 
 			$view_templates_available = array();
-			$view_templates = $wpdb->get_results( 
-				"SELECT ID, post_title FROM {$wpdb->posts} 
-				WHERE post_type = 'view-template'" 
+			$view_templates = $wpdb->get_results(
+				"SELECT ID, post_title FROM {$wpdb->posts}
+				WHERE post_type = 'view-template'"
 			);
 			foreach ( $view_templates as $view_template ) {
 				$view_templates_available[$view_template->ID] = $view_template->post_title;
@@ -1180,8 +1165,8 @@ class WPV_template{
 				$extra_js = $view_template->get_template_extra_js();
 			}
 
-			if ( 
-				isset( $extra_js ) 
+			if (
+				isset( $extra_js )
 				&& '' != $extra_js
 			) {
 				$jsout_item_title = get_the_title( $view_template_id );

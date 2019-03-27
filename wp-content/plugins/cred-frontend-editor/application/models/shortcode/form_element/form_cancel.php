@@ -134,6 +134,10 @@ class CRED_Shortcode_Form_Cancel extends CRED_Shortcode_Element_Base implements 
 
 		// set default
 		global $post;
+		// When displaying a Form as a preview layer in the Gutenberg editor, `$post` is not defined, so link doesn't really matter.
+		if ( ! $post && is_admin() ) {
+			return '';
+		}
 		$button_link = get_permalink( $post->ID );
 
 		if( isset( $this->user_atts['select_page'] ) && $this->user_atts['select_page'] !== '' ){

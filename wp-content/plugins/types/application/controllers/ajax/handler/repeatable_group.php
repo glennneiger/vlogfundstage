@@ -218,8 +218,18 @@ class Types_Ajax_Handler_Repeatable_Group extends Toolset_Ajax_Handler_Abstract 
 
 		wp_update_post( $new_post );
 
-		$relationship_definition->create_association( $parent_post, $new_post );
+		$association_result = $relationship_definition->create_association( $parent_post, $new_post );
 
+		if( $association_result instanceof \Toolset_Result && $association_result->is_error() ) {
+			// the association couldn't be build, delete rfg post and throw message to save the post first
+			// (currently this only happens when the post is translateable by WPML)
+			wp_delete_post( $new_post_id );
+			$this->get_ajax_manager()->ajax_finish( array(
+					'message' => __( 'Could not create item for this unsaved post. This can happen due to other plugins interacting with the Repeatable Field Group. Please save the post and try again.', 'wpcf' )
+				),
+				false
+			);
+		}
 		/*
 		 * Action 'toolset_post_update'
 		 *
@@ -250,7 +260,12 @@ class Types_Ajax_Handler_Repeatable_Group extends Toolset_Ajax_Handler_Abstract 
 	 *
 	 */
 	private function add_to_field_conditions_collection_by_items( &$items ){
-		$form_condition = new WPToolset_Forms_Conditional_RFG();
+		if( ! $parent_post = $this->get_parent_post_by_post_data() ) {
+			// technical issue
+			return;
+		}
+
+		$form_condition = new WPToolset_Forms_Conditional_RFG( '#post', $parent_post->post_type );
 
 		foreach( $items as &$item ) {
 			foreach( $item['fields'] as &$field ) {

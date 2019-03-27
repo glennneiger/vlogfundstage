@@ -1,5 +1,7 @@
 <?php
 
+use OTGS\Toolset\CRED\Controller\Forms\Post\Main as PostFormMain;
+
 class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 
 	const CREATE_EDIT_ASSOCIATION_NONCE = 'cred_associations_form_nonce';
@@ -95,25 +97,35 @@ class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 			'currentPageTitle' => $page_titles['currentPageTitle'],
 			'pageTitle'        => $page_titles['pageTitle'],
 			'pageEditTitle'    => $page_titles['pageEditTitle'],
-			'invalid_empty'    => __( 'This element cannot be empty, please specify a value then save again!', 'wp-cred')
+			'invalid_empty'    => __( 'This element cannot be empty, please specify a value then save again!', 'wp-cred'),
+			// translators: Text of a button for updating a form.
+			'updateForm'         => __( 'Update form', 'wp-cred' ),
+			// translators: Text of a button for saving a form.
+			'saveForm'        => __( 'Save form', 'wp-cred' ),
 		);
 	}
 
 	public function add_hooks() {
-        add_action( 'admin_enqueue_scripts', array( $this, 'editor_page_scripts') );
+		add_action( 'admin_enqueue_scripts', array( $this, 'editor_page_scripts' ) );
+		add_action( 'admin_footer', array( $this, 'print_templates' ) );
 	}
 
 	public function editor_page_scripts(){
 		wp_enqueue_media();
-    }
+	}
 
 	/**
 	 * Register all metaboxes to be rendered on the Edit Relationship page.
 	 *
+	 * Note that we render a dedicated metabox for the title just to be used
+	 * in wizards, while the title plus main form actions belong to the
+	 * top bar metabox when exiting, completing or ignoring the wizard.
+	 *
 	 * @since m2m
 	 */
 	public function add_meta_boxes() {
-		add_screen_option( 'layout_columns', array( 'max' => 2, 'default' => 2 ) );
+		add_screen_option( 'layout_columns', array( 'max' => 1, 'default' => 1 ) );
+
 		add_meta_box(
 			'association_form_name',
 			__( 'Form','wp-cred' ),
@@ -128,6 +140,20 @@ class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 		);
 
 		add_meta_box(
+			'topbardiv',
+			__( 'Top bar', 'wp-cred' ),
+			array( $this, 'render_metabox' ),
+			null,
+			'normal',
+			'default',
+			array(
+				'title' => __('Top bar', 'wp-cred'),
+				'template' => 'topbar',
+				'context' => $this->prepare_post_status(),
+			)
+		);
+
+		add_meta_box(
 			'association_form_settings',
 			__( 'Settings', 'wp-cred' ),
 			array( $this, 'render_metabox' ),
@@ -138,21 +164,21 @@ class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 				'title'    => __( 'Settings', 'wp-cred' ),
 				'template' => 'settings',
 				'context'  => array(
-					'relationships_set'          => $this->get_relatioship_set(),
-					'redirect_to'                => $this->prepare_redirect_options(),
+					'relationships_set' => $this->get_relatioship_set(),
+					'redirect_to' => $this->prepare_redirect_options(),
 				)
 			)
 		);
 
 		add_meta_box(
 			'association_form_content',
-			__( 'Content', 'wp-cred' ),
+			__( 'Form editor', 'wp-cred' ),
 			array( $this, 'render_metabox' ),
 			null,
 			'normal',
 			'default',
 			array(
-				'title' => __( 'Content', 'wp-cred' ),
+				'title' => __( 'Form editor', 'wp-cred' ),
 				'template' => 'content',
                 'context' => array( 'id' => $this->model->get_id() )
 			)
@@ -186,21 +212,6 @@ class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 				'template' => 'instructions',
 			)
 		);
-
-		add_meta_box(
-			'submitdiv',
-			__( 'Save', 'wp-cred' ),
-			array( $this, 'render_metabox' ),
-			null,
-			'side',
-			'high',
-			array(
-				'title' => __('Save', 'wp-cred'),
-				'template' => 'save',
-				'context' => $this->prepare_post_status(),
-			)
-		);
-
 
 	}
 
@@ -269,7 +280,9 @@ class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 			'form_type'           => CRED_Association_Form_Main::ASSOCIATION_FORMS_POST_TYPE,
 			'wpnonce'             => self::CREATE_EDIT_ASSOCIATION_NONCE,
 			'select2nonce'        => wp_create_nonce( Toolset_Ajax::CALLBACK_SELECT2_SUGGEST_POSTS_BY_TITLE ),
-			'strings'             => $this->build_strings_for_js()
+			'strings'             => $this->build_strings_for_js(),
+			'scaffold'            => $this->get_scaffold_default_data(),
+			'form_container'      => CRED_Shortcode_Association_Form_Container::SHORTCODE_NAME,
 		);
 
 		return $prepared_data;
@@ -381,5 +394,200 @@ class CRED_Association_Form_Editor_Page extends CRED_Page_Manager_Abstract{
 
 	private function prepare_messages() {
 		return $this->model->get_default_messages();
+	}
+
+
+	/**
+	 * Gets default scaffold data, these fields/options are included in the D&D editor by default
+	 *
+	 * @return array
+	 * @since 2.2
+	 */
+	private function get_scaffold_default_data() {
+		$settings = get_option( 'toolset_options' );
+		// If there is not settings, default value is true
+		$grid_enabled = ! $settings || ( isset( $settings['toolset_bootstrap_version'] ) && '-1' !== $settings['toolset_bootstrap_version'] );
+		$data = array(
+			'grid_enabled' => $grid_enabled,
+			'options' => array(
+				'wpml' => array(
+					// translators: data will be translated using WPML
+					'label' => __( 'Include WPML localization', 'wp-cred' ),
+				),
+			),
+			'scaffold_field_id' => \CRED_Form_Builder::SCAFFOLD_FIELD_ID,
+			'fields' => array(
+				'extra' => array(
+					'media' => array(
+						// translators: add new media files.
+						'label' => __( 'Add media', 'wp-cred' ),
+						'shortcode' => '',
+						'attributes' => array(
+							CRED_Form_Builder::SCAFFOLD_FIELD_ID => 'media',
+						),
+						'permanent' => true,
+						'options' => array(
+						'template' => 'cred-editor-scaffold-itemOptions-media',
+						),
+					),
+					'html' => array(
+						// translators: A box for adding HTML Content.
+						'label' => __( 'HTML content', 'wp-cred' ),
+						'shortcode' => '',
+						'attributes' => array(
+							CRED_Form_Builder::SCAFFOLD_FIELD_ID => 'html',
+						),
+						'permanent' => true,
+						'options' => array(
+							'template' => 'cred-editor-scaffold-itemOptions-html-content',
+						),
+					),
+				),
+				'formElements' => array(
+					'feedback' => array(
+						// translators: alerts, notices, warnings in the form.
+						'label' => __( 'Form messages', 'wp-cred' ),
+						'shortcode' => \CRED_Shortcode_Form_Feedback::SHORTCODE_NAME,
+						'requiredItem' => true,
+						'attributes' => array(),
+						'options' => array(
+							'type' => array(
+								'label'        => __( 'Use this HTML tag', 'wp-cred' ),
+								'type'         => 'select',
+								'options'      => array(
+									'div' => __( 'Div', 'wp-cred' ),
+									'span'  => __( 'Span', 'wp-cred' )
+								),
+								'defaultValue' => 'div'
+							),
+							'stylingCombo' => array(
+								'type'   => 'group',
+								'fields' => array(
+									'class' => array(
+										// translators: extra CSS classes.
+										'label' => __( 'Additional classnames', 'wp-cred' ),
+										'type'  => 'text'
+									),
+									'style' => array(
+										// translators: extra CSS styles
+										'label' => __( 'Additional inline styles', 'wp-cred' ),
+										'type'  => 'text'
+									)
+								),
+								// translators: CSS can be included using class names or inline styles.
+								'description' => __( 'Include specific classnames in the messages container, or add your own inline styles.', 'wp-cred' )
+							)
+						),
+						'location' => 'bottom'
+					),
+					'submit' => array(
+						'label' => __( 'Submit button', 'wp-cred' ),
+						'shortcode' => \CRED_Shortcode_Form_Submit::SHORTCODE_NAME,
+						'requiredItem' => true,
+						'attributes' => array(),
+						'options' => array(
+							'type' => array(
+								'label'        => __( 'Use this HTML tag', 'wp-cred' ),
+								'type'         => 'select',
+								'options'      => array(
+									'button' => __( 'Button', 'wp-cred' ),
+									'input'  => __( 'Input', 'wp-cred' )
+								),
+								'defaultValue' => 'button'
+							),
+							'stylingCombo' => array(
+								'type'   => 'group',
+								'fields' => array(
+									'class' => array(
+										'label' => __( 'Additional classnames', 'wp-cred' ),
+										'type'        => 'text'
+									),
+									'style' => array(
+										'label' => __( 'Additional inline styles', 'wp-cred' ),
+										'type'        => 'text'
+									)
+								),
+								'description' => __( 'Include specific classnames in the submit button, or add your own inline styles.', 'wp-cred' )
+							)
+						),
+						'location' => 'bottom'
+					),
+					'cancel' => array(
+						'label'             => __( 'Cancel link', 'wp-cred' ),
+						'shortcode'         => \CRED_Shortcode_Form_Cancel::SHORTCODE_NAME,
+						'requiredItem'      => false,
+						'attributes'        => array(),
+						'searchPlaceholder' => __( 'Search', 'wp-cred' ),
+						'options'           => array(
+							'action'       => array(
+								'label'        => __( 'This link will redirect to', 'wp-cred' ),
+								'type'         => 'select',
+								'options'      => array(
+									// translators: CT = Content Template.
+									'same_page'         => __( 'Same page, without any forced CT', 'wp-cred' ),
+									// translators: CT = Content Template.
+									'same_page_ct'      => __( 'Same page, forcing a different CT', 'wp-cred' ),
+									// translators: CT = Content Template.
+									'different_page_ct' => __( 'Different page, forcing a given CT', 'wp-cred' )
+								),
+								'defaultValue' => 'same_page'
+							),
+							'select_page'  => array(
+								'label' => __( 'User will be redirected to', 'wp-cred' ),
+								'type'  => 'select'
+							),
+							'select_ct'    => array(
+								'label'   => __( 'Force following Content template', 'wp-cred' ),
+								'type'    => 'select',
+								'options' => array(),
+							),
+							'message'      => array(
+								'label'       => __( 'Redirect confirmation message', 'wp-cred' ),
+								'type'        => 'text',
+								'placeholder' => __( 'You will be redirected, do you want to proceed?', 'wp-cred' ),
+							),
+							'stylingCombo' => array(
+								'type'        => 'group',
+								'fields'      => array(
+									'class' => array(
+										'label' => __( 'Additional classnames', 'wp-cred' ),
+										'type'  => 'text'
+									),
+									'style' => array(
+										'label' => __( 'Additional inline styles', 'wp-cred' ),
+										'type'  => 'text'
+									)
+								),
+								'description' => __( 'Include specific classnames in the cancel button, or add your own inline styles.', 'wp-cred' )
+							)
+						),
+						'location' => 'bottom'
+					)
+				)
+			)
+		);
+
+		return $data;
+	}
+
+
+	/**
+	 * Print the toolbar templates:
+	 * - Scaffold item options media.
+	 *
+	 * @since 2.2
+	 */
+	public function print_templates() {
+		$template_repository = \CRED_Output_Template_Repository::get_instance();
+		$renderer = \Toolset_Renderer::get_instance();
+
+		$renderer->render(
+			$template_repository->get( \CRED_Output_Template_Repository::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_MEDIA ),
+			null
+		);
+		$renderer->render(
+			$template_repository->get( \CRED_Output_Template_Repository::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_HTML_CONTENT ),
+			null
+		);
 	}
 }

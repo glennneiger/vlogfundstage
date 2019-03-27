@@ -76,14 +76,14 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	/** @var string[] */
 	private $role_labels_plural;
 
-	/** @var string[] */
-	private $role_aliases;
-
 	/** @var bool */
 	private $is_legacy_support_needed;
 
 	/** @var bool */
 	private $is_active;
+
+	/** @var bool */
+	private $autodelete_intermediary;
 
 	/**
 	 * @var string|null Determines whether this relationship is an ownership and its direction.
@@ -116,6 +116,7 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 	const DA_ROLE_LABELS_PLURAL = 'role_labels_plural';
 	const DA_NEEDS_LEGACY_SUPPORT = 'needs_legacy_support';
 	const DA_IS_ACTIVE = 'is_active';
+	const DA_AUTODELETE_INTERMEDIARY = 'autodelete_intermediary';
 	const DA_ORIGIN = 'origin';
 	const DA_ROW_ID = 'row_id';
 
@@ -286,6 +287,8 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 		$this->is_legacy_support_needed = (bool) toolset_getarr( $definition_array, self::DA_NEEDS_LEGACY_SUPPORT, false );
 
 		$this->is_active( toolset_getarr( $definition_array, self::DA_IS_ACTIVE, true ) );
+
+		$this->is_autodeleting_intermediary_posts( toolset_getarr( $definition_array, self::DA_AUTODELETE_INTERMEDIARY, true ) );
 
 		$this->set_origin( toolset_getarr( $definition_array, self::DA_ORIGIN, Toolset_Relationship_Origin_Wizard::ORIGIN_KEYWORD ) );
 
@@ -1104,6 +1107,24 @@ class Toolset_Relationship_Definition implements IToolset_Relationship_Definitio
 		}
 
 		return $this->is_active;
+	}
+
+
+	/**
+	 * Defines whether intermediary posts of this relationship should be automatically deleted
+	 * together with an association.
+	 *
+	 * @param null|bool $value If a boolean value is provided, it will be set.
+	 *
+	 * @return bool
+	 * @since Types 3.2
+	 */
+	public function is_autodeleting_intermediary_posts( $value = null ) {
+		if ( null !== $value && is_bool( $value ) ) {
+			$this->autodelete_intermediary = (bool) $value;
+		}
+
+		return $this->autodelete_intermediary;
 	}
 
 

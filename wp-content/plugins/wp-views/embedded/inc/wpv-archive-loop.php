@@ -53,7 +53,7 @@ function wpv_force_wordpress_archive( $wpa_to_apply, $wpa_slug ) {
 */
 
 class WPV_WordPress_Archive_Frontend {
-	
+
 	/**
 	 * @var WPV_WordPress_Archive_Frontend Instance of WPV_WordPress_Archive_Frontend.
 	 */
@@ -69,7 +69,7 @@ class WPV_WordPress_Archive_Frontend {
 		}
 		return WPV_WordPress_Archive_Frontend::$instance;
 	}
-	
+
 	public static function clear_instance() {
 		if ( WPV_WordPress_Archive_Frontend::$instance ) {
 			WPV_WordPress_Archive_Frontend::$instance = null;
@@ -77,49 +77,49 @@ class WPV_WordPress_Archive_Frontend {
 	}
 
 	function __construct() {
-		
+
 		add_action( 'init',					array( $this, 'init' ) );
-		
-		// We set the current WPA to use at pre_get_posts with priority 11, 
+
+		// We set the current WPA to use at pre_get_posts with priority 11,
 		// since WooCommerce transforms its shop page into the products archive at pre_get_posts:10
 		add_action( 'pre_get_posts',		array( $this, 'archive_set' ), 11 );
 		add_action( 'pre_get_posts',		array( $this, 'archive_apply_settings' ), 99 );
 		add_action( 'template_redirect',	array( $this, 'initialize_archive_loop' ) );
 		add_action( 'wp',					array( $this, 'force_disable_404' ), -1 );
-		
+
 		// Fake archive query for AJAX
 		add_action( 'pre_get_posts',										array( $this, 'fake_archive_before_set' ), 0 );
 		add_action( 'wp_ajax_wpv_get_archive_query_results',				array( $this, 'wpv_get_archive_query_results' ) );
 		add_action( 'wp_ajax_nopriv_wpv_get_archive_query_results',			array( $this, 'wpv_get_archive_query_results' ) );
-		
+
 		// Set archive defaults for existing objects
 		add_filter( 'wpv_view_settings',									array( $this, 'wpv_view_settings_archive_set_fallbacks' ), 6, 2 );
-		
+
 		add_action( 'wpv_action_apply_archive_query_settings',				array( $this, 'archive_apply_post_type_settings' ), 10, 3 );
 		add_action( 'wpv_action_apply_archive_query_settings',				array( $this, 'archive_apply_order_settings' ), 20, 3 );
 		add_action( 'wpv_action_apply_archive_query_settings',				array( $this, 'archive_apply_pagination_settings' ), 30, 3 );
-		
+
 		add_action( 'wpv_action_extend_archive_query_for_parametric_and_counters',	array( $this, 'extend_archive_query_for_parametric_and_counters' ), 10, 3 );
-		
+
 		add_filter( 'wpv_filter_wpv_get_dependant_extended_query_args',		array( $this, 'wpv_get_dependant_archive_query_args' ), 10, 3 );
-		
+
 		add_filter( 'wpv_filter_wpv_get_current_archive',					array( $this, 'wpv_get_current_archive' ) );
 		add_filter( 'wpv_filter_wpv_get_current_archive_loop',				array( $this, 'wpv_get_current_archive_loop' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_archive_unique_hash',				array( $this, 'wpv_get_archive_unique_hash' ) );
-		
+
 		// Extend pagination settings
-		
+
 		add_filter( 'wpv_filter_wpv_get_pagination_settings',				array( $this, 'extend_pagination_settings' ), 20, 2 );
 		add_filter( 'wpv_filter_wpv_get_parametric_settings',				array( $this, 'extend_parametric_settings' ), 20, 2 );
-		
+
 		$this->wpa_id				= null;
 		$this->wpa_slug				= '';
 		$this->wpa_type				= '';
 		$this->wpa_name				= '';
 		$this->wpa_data				= array();
 		$this->wpa_settings			= array();
-		
+
 		$this->query				= null;
 
 		$this->header_started		= false;
@@ -129,29 +129,29 @@ class WPV_WordPress_Archive_Frontend {
 		$this->loop_found			= false;
 
 		$this->loop_has_no_posts	= false;
-		
+
 		$this->wpv_settings			= WPV_Settings::get_instance();
-		
+
 		// Layouts compatibility
 		add_action( 'wpv_action_wpv_initialize_wordpress_archive_for_archive_loop',		array( $this, 'wpv_initialize_wordpress_archive_for_archive_loop' ) );
 	}
-	
+
 	function __destruct(){
 
 	}
-	
+
 	function init() {
 		/*
 		DEPRECATED, need some work to delete
 		_get_post_type_loops
 		*/
 
-		/* 
+		/*
 		* ---------------------------------
 		* Compatibility
 		* ---------------------------------
 		*/
-		
+
 		/*
 		* WooCommerce
 		*
@@ -160,20 +160,20 @@ class WPV_WordPress_Archive_Frontend {
 		*
 		* @since unknown
 		*/
-		
+
 		add_action( 'wpv_action_before_initialize_archive_loop', array( $this, 'wpv_wpa_fix_woocommerce_archives' ), 10, 2 );
 
 	}
-	
+
 	function archive_set( $query ) {
-		if ( 
-			! $this->is_frontend() 
-			|| ! $query->is_main_query() 
+		if (
+			! $this->is_frontend()
+			|| ! $query->is_main_query()
 			|| $query->is_singular
 		) {
 			return;
 		}
-		
+
 		$stored_settings	= $this->wpv_settings;
 		$wpa_to_apply		= 0;
 		$wpa_slug			= '';
@@ -185,8 +185,8 @@ class WPV_WordPress_Archive_Frontend {
 			$this->wpa_name = 'home';
 			$this->wpa_data = array();
 			if (
-				isset( $stored_settings['view_home-blog-page'] ) 
-				&& $stored_settings['view_home-blog-page'] > 0 
+				isset( $stored_settings['view_home-blog-page'] )
+				&& $stored_settings['view_home-blog-page'] > 0
 			) {
 				$wpa_to_apply = $stored_settings['view_home-blog-page'];
 			}
@@ -206,23 +206,23 @@ class WPV_WordPress_Archive_Frontend {
 			$this->wpa_type = 'post_type';
 			$this->wpa_name = $post_type;
 			$this->wpa_data = array();
-			if ( 
-				isset( $stored_settings['view_cpt_' . $post_type] ) 
-				&& $stored_settings['view_cpt_' . $post_type] > 0 
+			if (
+				isset( $stored_settings['view_cpt_' . $post_type] )
+				&& $stored_settings['view_cpt_' . $post_type] > 0
 			) {
 				$wpa_to_apply = $stored_settings['view_cpt_' . $post_type];
 			}
 		}
 		// Check taxonomy loops
 		if ( is_archive() ) {
-			if ( 
-				is_tax() 
-				|| is_category() 
-				|| is_tag() 
+			if (
+				is_tax()
+				|| is_category()
+				|| is_tag()
 			) {// Check this condition, maybe against $query->property directly
 				$term = $query->get_queried_object();
-				if ( 
-					$term 
+				if (
+					$term
 					&& isset( $term->taxonomy )
 				) {
 					$wpa_slug = 'view_taxonomy_loop_' . $term->taxonomy;
@@ -234,8 +234,8 @@ class WPV_WordPress_Archive_Frontend {
 						'term_id'		=> $term->term_id
 					);
 					if (
-						isset( $stored_settings['view_taxonomy_loop_' . $term->taxonomy] ) 
-						&& $stored_settings['view_taxonomy_loop_' . $term->taxonomy] > 0 
+						isset( $stored_settings['view_taxonomy_loop_' . $term->taxonomy] )
+						&& $stored_settings['view_taxonomy_loop_' . $term->taxonomy] > 0
 					) {
 						$wpa_to_apply = $stored_settings['view_taxonomy_loop_' . $term->taxonomy];
 					}
@@ -251,8 +251,8 @@ class WPV_WordPress_Archive_Frontend {
 				's'	=> get_query_var( 's' )
 			);
 			if (
-				isset( $stored_settings['view_search-page'] ) 
-				&& (int) $stored_settings['view_search-page'] > 0 
+				isset( $stored_settings['view_search-page'] )
+				&& (int) $stored_settings['view_search-page'] > 0
 			) {
 				$wpa_to_apply = $stored_settings['view_search-page'];
 			}
@@ -265,8 +265,8 @@ class WPV_WordPress_Archive_Frontend {
 				'author_name' => get_query_var( 'author_name' )
 			);
 			if (
-				isset( $stored_settings['view_author-page'] ) 
-				&& $stored_settings['view_author-page'] > 0 
+				isset( $stored_settings['view_author-page'] )
+				&& $stored_settings['view_author-page'] > 0
 			) {
 				$wpa_to_apply = $stored_settings['view_author-page'];
 			}
@@ -279,8 +279,8 @@ class WPV_WordPress_Archive_Frontend {
 				'year' => get_query_var( 'year' )
 			);
 			if (
-				isset( $stored_settings['view_year-page'] ) 
-				&& $stored_settings['view_year-page'] > 0 
+				isset( $stored_settings['view_year-page'] )
+				&& $stored_settings['view_year-page'] > 0
 			) {
 				$wpa_to_apply = $stored_settings['view_year-page'];
 			}
@@ -294,8 +294,8 @@ class WPV_WordPress_Archive_Frontend {
 				'monthnum'	=> get_query_var( 'monthnum' )
 			);
 			if (
-				isset( $stored_settings['view_month-page'] ) 
-				&& $stored_settings['view_month-page'] > 0 
+				isset( $stored_settings['view_month-page'] )
+				&& $stored_settings['view_month-page'] > 0
 			) {
 				$wpa_to_apply = $stored_settings['view_month-page'];
 			}
@@ -310,16 +310,16 @@ class WPV_WordPress_Archive_Frontend {
 				'day'		=> get_query_var( 'day' )
 			);
 			if (
-				isset( $stored_settings['view_day-page'] ) 
-				&& $stored_settings['view_day-page'] > 0 
+				isset( $stored_settings['view_day-page'] )
+				&& $stored_settings['view_day-page'] > 0
 			) {
 				$wpa_to_apply = $stored_settings['view_day-page'];
 			}
 		}
-		
+
 		$this->wpa_slug	= $wpa_slug;
 		$wpa_to_apply	= wpv_force_wordpress_archive( $wpa_to_apply, $wpa_slug );
-		
+
 		if ( ! is_null( $this->wpa_id ) ) {
 			// We have a forced WPA to apply, so we used this method to check which archive page we are in
 			// This only hapens on Layouts archive cells as we need to initialize a WPA not assigned to a given loop, overriding the Views stored settings
@@ -340,15 +340,15 @@ class WPV_WordPress_Archive_Frontend {
 
 		/**
 		 * Fire an action after checkign whether the current archive loop has a WPA assigned.
-		 * 
+		 *
 		 * @param int|null The assigned WPA ID, null otherwise
-		 * 
+		 *
 		 * @since 2.6.0
 		 */
 		do_action( 'wpv_action_after_archive_set', $this->wpa_id );
-		
+
 	}
-	
+
 	/**
 	* wpv_view_settings_archive_set_fallbacks
 	*
@@ -356,10 +356,10 @@ class WPV_WordPress_Archive_Frontend {
 	*
 	* @since 2.1
 	*/
-	
+
 	function wpv_view_settings_archive_set_fallbacks( $view_settings, $view_id ) {
-		if ( 
-			isset( $view_settings['view-query-mode'] ) 
+		if (
+			isset( $view_settings['view-query-mode'] )
 			&& $view_settings['view-query-mode'] != 'normal'
 		) {
 			$defaults = array(
@@ -393,7 +393,7 @@ class WPV_WordPress_Archive_Frontend {
 													'html'				=> 'on',
 													'css'				=> 'off',
 													'js'				=> 'off',
-													'img'				=> 'off' 
+													'img'				=> 'off'
 												),
 				'filter_meta_html'			=> "[wpv-filter-start hide=\"false\"]\n[wpv-filter-controls][/wpv-filter-controls]\n[wpv-filter-end]",
 				'filter_meta_html_css'		=> '',
@@ -415,21 +415,21 @@ class WPV_WordPress_Archive_Frontend {
 		}
 		return $view_settings;
 	}
-	
+
 	function archive_apply_settings( $query ) {
-		
-		if ( 
-			! $this->is_frontend() 
-			|| ! $query->is_main_query() 
+
+		if (
+			! $this->is_frontend()
+			|| ! $query->is_main_query()
 			|| ! $this->wpa_id
 		) {
 			return;
 		}
-		
+
 		do_action( 'wpv_action_apply_archive_query_settings', $query, $this->wpa_settings, $this->wpa_id );
-		
+
 	}
-	
+
 	/**
 	* archive_apply_post_type_settings
 	*
@@ -441,7 +441,7 @@ class WPV_WordPress_Archive_Frontend {
 	*
 	* @since 2.1
 	*/
-	
+
 	function archive_apply_post_type_settings( $query, $archive_settings, $archive_id ) {
 		/*
 		if ( $query->get( 'wpv_archive_loop_cell' ) ) {
@@ -453,7 +453,7 @@ class WPV_WordPress_Archive_Frontend {
 		$wpv_post_types_for_archive_loop = $stored_settings->wpv_post_types_for_archive_loop;
 		$stored_settings_per_type = isset( $wpv_post_types_for_archive_loop[ $this->wpa_type ] ) ? $wpv_post_types_for_archive_loop[ $this->wpa_type ] : array();
 		$stored_settings_per_loop = isset( $stored_settings_per_type[ $this->wpa_name ] ) ? $stored_settings_per_type[ $this->wpa_name ] : array();
-		
+
 		if (
 			empty( $stored_settings_per_loop )
 			&& 'taxonomy' === $this->wpa_type
@@ -461,7 +461,7 @@ class WPV_WordPress_Archive_Frontend {
 		) {
 			$stored_settings_per_loop = $this->get_default_post_types_for_native_taxonomy( $this->wpa_name );
 		}
-		
+
 		if ( ! empty( $stored_settings_per_loop ) ) {
 			$query->set('post_type', $stored_settings_per_loop );
 		}
@@ -504,10 +504,10 @@ class WPV_WordPress_Archive_Frontend {
 				}
 			}
 		}
-		
+
 		return $post_types_for_native;
 	}
-	
+
 	/**
 	* archive_apply_order_settings
 	*
@@ -516,7 +516,7 @@ class WPV_WordPress_Archive_Frontend {
 	*
 	* $archive_settings = array(
 	*	'orderby'	=> 'post_date'|...,
-	*	'order'		=> 'ASC'|'DESC'	
+	*	'order'		=> 'ASC'|'DESC'
 	* 	'orderby_as'	=> ''|'STRING'|'NUMERIC'
 	* );
 	*
@@ -524,13 +524,13 @@ class WPV_WordPress_Archive_Frontend {
 	*
 	* @todo The posted sorting options demand the wpv_view_count URL parameter, which we are not posting now
 	*/
-	
+
 	function archive_apply_order_settings( $query, $archive_settings, $archive_id ) {
-		
+
 		if ( $query->get( 'wpv_dependency_query' ) ) {
 			return;
 		}
-		
+
 		$is_view_posted = false;
 		if ( isset( $_GET['wpv_view_count'] ) ) {
 			$view_unique_hash = apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $archive_settings );
@@ -540,65 +540,65 @@ class WPV_WordPress_Archive_Frontend {
 				do_action( 'wpv_action_wpv_pagination_map_legacy_order' );
 			}
 		}
-		
+
 		$order		= $archive_settings['order'];
 		$orderby	= $archive_settings['orderby'];
 		$orderby_as	= $archive_settings['orderby_as'];
-		
+
 		$order_second	= $archive_settings['order_second'];
 		$orderby_second	= $archive_settings['orderby_second'];
-		
+
 		$valid_orderby_second	= array(
-			'date', 'post_date', 'post-date', 
-			'title', 'post_title', 'post-title', 
-			'id', 'post_id', 'post-id', 'ID', 
-			'author', 'post_author', 'post-author', 
-			'type', 'post_type', 'post-type', 
+			'date', 'post_date', 'post-date',
+			'title', 'post_title', 'post-title',
+			'id', 'post_id', 'post-id', 'ID',
+			'author', 'post_author', 'post-author',
+			'type', 'post_type', 'post-type',
 			'modified', 'menu_order', 'rand'
 		);
-		
+
 		// Modern order URL override
 		if ( $is_view_posted ) {
 			if (
-				isset( $_GET['wpv_sort_order'] ) 
+				isset( $_GET['wpv_sort_order'] )
 				&& in_array( strtoupper( esc_attr( $_GET['wpv_sort_order'] ) ), array( 'ASC', 'DESC' ) )
 			) {
 				$order = strtoupper( esc_attr( $_GET['wpv_sort_order'] ) );
 			}
-			
+
 			if (
-				isset( $_GET['wpv_sort_orderby'] ) 
-				&& esc_attr( $_GET['wpv_sort_orderby'] ) != 'undefined' 
-				&& esc_attr( $_GET['wpv_sort_orderby'] ) != '' 
+				isset( $_GET['wpv_sort_orderby'] )
+				&& esc_attr( $_GET['wpv_sort_orderby'] ) != 'undefined'
+				&& esc_attr( $_GET['wpv_sort_orderby'] ) != ''
 			) {
 				$orderby = esc_attr( $_GET['wpv_sort_orderby'] );
 			}
-			
+
 			if (
 				isset( $_GET['wpv_sort_orderby_as'] )
 				&& in_array( strtoupper( esc_attr( $_GET['wpv_sort_orderby_as'] ) ), array( 'STRING', 'NUMERIC' ) )
 			) {
 				$orderby_as = strtoupper( esc_attr( $_GET['wpv_sort_orderby_as'] ) );
 			}
-			
+
 			// Secondary sorting
 			if (
-				isset( $_GET['wpv_sort_order_second'] ) 
+				isset( $_GET['wpv_sort_order_second'] )
 				&& in_array( strtoupper( esc_attr( $_GET['wpv_sort_order_second'] ) ), array( 'ASC', 'DESC' ) )
 			) {
 				$order_second = strtoupper( esc_attr( $_GET['wpv_sort_order_second'] ) );
 			}
-			
+
 			if (
-				isset( $_GET['wpv_sort_orderby_second'] ) 
-				&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != 'undefined' 
-				&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != '' 
+				isset( $_GET['wpv_sort_orderby_second'] )
+				&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != 'undefined'
+				&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != ''
 				&& in_array( $_GET['wpv_sort_orderby_second'], $valid_orderby_second )
 			) {
 				$orderby_second = esc_attr( $_GET['wpv_sort_orderby_second'] );
 			}
 		}
-		
+
 		if ( strpos( $orderby, 'field-' ) === 0 ) {
 			$meta_key = substr( $orderby, 6 );
 			$type = $orderby_as;
@@ -632,19 +632,19 @@ class WPV_WordPress_Archive_Frontend {
 			}
 
 			$query->set( 'meta_key', $meta_key );
-			
+
 		}
-		
+
 		// Normalize orderby and orderby_second options
 		$orderby		= WPV_Sorting_Embedded::normalize_post_orderby_value( $orderby );
 		$orderby_second	= WPV_Sorting_Embedded::normalize_post_orderby_value( $orderby_second );
-		
+
 		global $wp_version;
-		if ( 
-			! version_compare( $wp_version, '4.0', '<' ) 
-			&& $orderby != 'rand' 
-			&& $orderby_second != '' 
-			&& $orderby != $orderby_second 
+		if (
+			! version_compare( $wp_version, '4.0', '<' )
+			&& $orderby != 'rand'
+			&& $orderby_second != ''
+			&& $orderby != $orderby_second
 		) {
 			$orderby_array = array(
 				$orderby		=> $order,
@@ -655,9 +655,9 @@ class WPV_WordPress_Archive_Frontend {
 			$query->set( 'orderby',	$orderby );
 			$query->set( 'order', $order );
 		}
-		
+
 	}
-	
+
 	/**
 	* archive_apply_pagination_settings
 	*
@@ -666,50 +666,50 @@ class WPV_WordPress_Archive_Frontend {
 	*
 	* $archive_settings['pagination'] = array(
 	*	'mode'				=> 'disabled'|'paged'(|'ajaxed'|'rollover'?),
-	*	'posts_per_page'	=> 'default'|(int)	
+	*	'posts_per_page'	=> 'default'|(int)
 	* );
 	*
 	* @since 2.1
 	*/
-	
+
 	function archive_apply_pagination_settings( $query, $archive_settings, $archive_id ) {
-		
+
 		if ( $query->get( 'wpv_dependency_query' ) ) {
 			return;
 		}
-		
+
 		// Validate stored settings
-		$archive_settings['pagination']['type']				= 
-			( isset( $archive_settings['pagination']['type'] ) && in_array( $archive_settings['pagination']['type'], array( 'disabled', 'paged', 'ajaxed', 'rollover' ) ) ) ? 
-				$archive_settings['pagination']['type'] : 
+		$archive_settings['pagination']['type']				=
+			( isset( $archive_settings['pagination']['type'] ) && in_array( $archive_settings['pagination']['type'], array( 'disabled', 'paged', 'ajaxed', 'rollover' ) ) ) ?
+				$archive_settings['pagination']['type'] :
 				'paged';
-		$archive_settings['pagination']['posts_per_page']	= 
-			( isset( $archive_settings['pagination']['posts_per_page'] ) ) ? 
-				$archive_settings['pagination']['posts_per_page'] : 
+		$archive_settings['pagination']['posts_per_page']	=
+			( isset( $archive_settings['pagination']['posts_per_page'] ) ) ?
+				$archive_settings['pagination']['posts_per_page'] :
 				'default';
-		
+
 		// Apply settings
 		if ( $archive_settings['pagination']['type'] == 'disabled' ) {
 			$query->set( 'posts_per_page', -1 );
 		} else if ( $archive_settings['pagination']['posts_per_page'] != 'default' ) {
 			$query->set( 'posts_per_page', (int) $archive_settings['pagination']['posts_per_page'] );
 		}
-		
+
 	}
-	
+
 	static function extend_archive_query_for_parametric_and_counters( $post_query, $archive_settings, $archive_id ) {
 		$dps_enabled		= false;
 		$counters_enabled	= false;
-		
-		if ( 
-			! isset( $archive_settings['dps'] ) 
-			|| ! is_array( $archive_settings['dps'] ) 
+
+		if (
+			! isset( $archive_settings['dps'] )
+			|| ! is_array( $archive_settings['dps'] )
 		) {
 			$archive_settings['dps'] = array();
 		}
-		if ( 
-			isset( $archive_settings['dps']['enable_dependency'] ) 
-			&& $archive_settings['dps']['enable_dependency'] == 'enable' 
+		if (
+			isset( $archive_settings['dps']['enable_dependency'] )
+			&& $archive_settings['dps']['enable_dependency'] == 'enable'
 		) {
 			$dps_enabled = true;
 			$controls_per_kind = wpv_count_filter_controls( $archive_settings );
@@ -717,21 +717,21 @@ class WPV_WordPress_Archive_Frontend {
 			$no_intersection = array();
 			if ( ! isset( $controls_per_kind['error'] ) ) {
 				$controls_count = $controls_per_kind['cf'] + $controls_per_kind['tax'] + $controls_per_kind['pr'] + $controls_per_kind['search'];
-				if ( 
-					$controls_per_kind['cf'] > 1 
+				if (
+					$controls_per_kind['cf'] > 1
 					&& (
-						! isset( $archive_settings['custom_fields_relationship'] ) 
-						|| $archive_settings['custom_fields_relationship'] != 'AND' 
-					) 
+						! isset( $archive_settings['custom_fields_relationship'] )
+						|| $archive_settings['custom_fields_relationship'] != 'AND'
+					)
 				) {
 					$no_intersection[] = __( 'custom field', 'wpv-views' );
 				}
-				if ( 
-					$controls_per_kind['tax'] > 1 
+				if (
+					$controls_per_kind['tax'] > 1
 					&& (
-						! isset( $archive_settings['taxonomy_relationship'] ) 
-						|| $archive_settings['taxonomy_relationship'] != 'AND' 
-					) 
+						! isset( $archive_settings['taxonomy_relationship'] )
+						|| $archive_settings['taxonomy_relationship'] != 'AND'
+					)
 				) {
 					$no_intersection[] = __( 'taxonomy', 'wpv-views' );
 				}
@@ -752,10 +752,10 @@ class WPV_WordPress_Archive_Frontend {
 		if ( strpos( $archive_settings['filter_meta_html'], '%%COUNT%%' ) !== false ) {
 			$counters_enabled = true;
 		}
-		
-		if ( 
-			! $dps_enabled 
-			&& ! $counters_enabled 
+
+		if (
+			! $dps_enabled
+			&& ! $counters_enabled
 		) {
 			// Set the force value
 			do_action( 'wpv_action_wpv_force_disable_dps', true );
@@ -763,28 +763,28 @@ class WPV_WordPress_Archive_Frontend {
 		} else {
 			do_action( 'wpv_action_wpv_force_disable_dps', false );
 		}
-		
+
 		$already = array();
-		if ( 
-			isset( $post_query->posts ) 
-			&& ! empty( $post_query->posts ) 
+		if (
+			isset( $post_query->posts )
+			&& ! empty( $post_query->posts )
 		) {
 			foreach ( (array) $post_query->posts as $post_object ) {
 				$already[] = $post_object->ID;
 			}
 		}
-		
+
 		$query_args = $post_query->query_vars;
-		
+
 		$override_settings = array();
 		if ( isset( $query_args['post_type'] ) ) {
 			$override_settings['post_type'] = is_array( $query_args['post_type'] ) ? $query_args['post_type'] : array( $query_args['post_type'] );
 		}
-		
+
 		$parametric_search_data_to_cache = WPV_Cache::get_parametric_search_data_to_cache( $archive_settings, $override_settings );
-		
+
 		WPV_Cache::generate_native_cache( $already, $parametric_search_data_to_cache );
-		
+
 		if ( isset ( $query_args['pr_filter_post__in'] ) ) {
 			$query_args['post__in'] = $query_args['pr_filter_post__in'];
 		} else {
@@ -799,74 +799,74 @@ class WPV_WordPress_Archive_Frontend {
 				$query_args['post__in'] = array_diff( (array) $query_args['post__in'], (array) $query_args['post__not_in'] );
 			}
 		}
-		
+
 		$keys = array(
-			'error', 
-			//'m', 
-			//'p', 
-			//'post_parent', 
-			'subpost', 
-			'subpost_id', 
-			'attachment', 
-			'attachment_id', 
-			'name', 
-			'static', 
-			'pagename', 
-			'page_id', 
-			//'second', 
-			//'minute', 
-			//'hour', 
-			//'day', 
-			//'monthnum', 
-			//'year', 
-			//'w', 
-			//'category_name', 
-			//'tag', 
-			//'cat', 
-			//'tag_id', 
-			//'author', 
-			//'author_name', 
-			'feed', 
-			'tb', 
-			'paged', 
-			//'meta_key', 
-			//'meta_value', 
-			'preview', 
-			//'s', 
-			'sentence', 
-			'title', 
-			//'fields', 
-			'menu_order', 
-			'embed', 
+			'error',
+			//'m',
+			//'p',
+			//'post_parent',
+			'subpost',
+			'subpost_id',
+			'attachment',
+			'attachment_id',
+			'name',
+			'static',
+			'pagename',
+			'page_id',
+			//'second',
+			//'minute',
+			//'hour',
+			//'day',
+			//'monthnum',
+			//'year',
+			//'w',
+			//'category_name',
+			//'tag',
+			//'cat',
+			//'tag_id',
+			//'author',
+			//'author_name',
+			'feed',
+			'tb',
+			'paged',
+			//'meta_key',
+			//'meta_value',
+			'preview',
+			//'s',
+			'sentence',
+			'title',
+			//'fields',
+			'menu_order',
+			'embed',
 			'wpv_fake_archive_loop'
 		);
-		
+
 		foreach ( $keys as $k ) {
 			if ( isset( $query_args[$k] ) ) {
 				unset( $query_args[$k] );
 			}
 		}
-		
+
 		$query_args['nopaging'] 		= true;
 		$query_args['fields'] 			= 'ids';
 		$query_args['posts_per_page']	= -1;
-		
-		
+
+
 		$aux_cache_query = new WP_Query( $query_args );
 
 		// Add the auxiliar query results to the list of returned IDs
 		// Generate the "extra" cache
-		if ( 
-			is_array( $aux_cache_query->posts ) 
-			&& ! empty( $aux_cache_query->posts ) 
+		if (
+			is_array( $aux_cache_query->posts )
+			&& ! empty( $aux_cache_query->posts )
 		) {
 			WPV_Cache::generate_cache( $aux_cache_query->posts, $parametric_search_data_to_cache );
 		}
 	}
-	
+
 	function wpv_get_dependant_archive_query_args( $args = array(), $archive_settings = array(), $affected_data = array() ) {
-		if ( 
-			isset( $archive_settings['view-query-mode'] ) 
+		if (
+			isset( $archive_settings['view-query-mode'] )
 			&& $archive_settings['view-query-mode'] != 'normal'
 		) {
 			$wpa_loop = array(
@@ -894,20 +894,20 @@ class WPV_WordPress_Archive_Frontend {
 	*
 	* @since unknown
 	*/
-	
+
 	function initialize_archive_loop() {
-		
+
 		$wpa_id		= $this->wpa_id;
 		$wpa_slug	= $this->wpa_slug;
-		
+
 		if ( ! $wpa_id ) {
 			return;
 		}
-		
+
 		global $wp_query;
-		
+
 		do_action( 'wpv_action_before_initialize_archive_loop', $wpa_id, $wpa_slug );
-		
+
 		if ( ! have_posts() ) {
 			// We need to handle empty loops and force the loop processing
 			// Create a dummy WP_Post and set the post count to 1
@@ -958,11 +958,11 @@ class WPV_WordPress_Archive_Frontend {
 				add_action( 'wp_head',		array( $this, 'html_head_end' ), 999 ); // try to load last
 			}
 		}
-		
+
 		do_action( 'wpv_action_extend_archive_query_for_parametric_and_counters', $wp_query, $this->wpa_settings, $wpa_id );
-		
+
 	}
-	
+
 	function force_disable_404() {
 		if ( ! is_null( $this->wpa_id ) ) {
 			global $wp_query;
@@ -997,11 +997,11 @@ class WPV_WordPress_Archive_Frontend {
 
 	function loop_start( $query ) {
 		if (
-			! $this->in_head 
-			&& $this->header_started 
+			! $this->in_head
+			&& $this->header_started
 			&& $query->is_main_query()
 			&& (
-				$query->query_vars_hash == $this->query->query_vars_hash 
+				$query->query_vars_hash == $this->query->query_vars_hash
 				|| $query->request == $this->query->request
 			)
 		) {
@@ -1014,8 +1014,8 @@ class WPV_WordPress_Archive_Frontend {
 
 
 	function loop_end( $query ) {
-		if ( 
-			$this->loop_found 
+		if (
+			$this->loop_found
 			&& $query->is_main_query()
 		) {
 			ob_end_clean();
@@ -1103,51 +1103,51 @@ class WPV_WordPress_Archive_Frontend {
 	 * @since 1.7
 	 *
      * @todo consider implementing caching mechanism
-	 */  
+	 */
 	function get_archive_loops( $loop_type = 'all', $include_wpa = false, $include_ct = false, $noexclude = false ) {
-		
+
 		$stored_settings = $this->wpv_settings;
-		
+
 		switch( $loop_type ) {
-		
+
 			case 'native':
 				$loops = array(
 					array(
 						'slug'			=> 'home-blog-page',
 						'option'		=> 'view_home-blog-page',
 						'loop_type'		=> 'native',
-						'display_name'	=> __( 'Home/Blog', 'wpv-views' ) 
+						'display_name'	=> __( 'Home/Blog', 'wpv-views' )
 					),
 					array(
 						'slug'			=> 'search-page',
 						'option'		=> 'view_search-page',
 						'loop_type'		=> 'native',
-						'display_name'	=> __( 'Search results', 'wpv-views' ) 
+						'display_name'	=> __( 'Search results', 'wpv-views' )
 					),
 					array(
 						'slug'			=> 'author-page',
 						'option'		=> 'view_author-page',
 						'loop_type'		=> 'native',
-						'display_name'	=> __( 'Author archives', 'wpv-views' ) 
+						'display_name'	=> __( 'Author archives', 'wpv-views' )
 					),
 					array(
 						'slug'			=> 'year-page',
 						'option'		=> 'view_year-page',
 						'loop_type'		=> 'native',
-						'display_name'	=> __( 'Year archives', 'wpv-views' ) 
+						'display_name'	=> __( 'Year archives', 'wpv-views' )
 					),
 					array(
 						'slug'			=> 'month-page',
 						'option'		=> 'view_month-page',
 						'loop_type'		=> 'native',
-						'display_name'	=> __( 'Month archives', 'wpv-views' ) 
+						'display_name'	=> __( 'Month archives', 'wpv-views' )
 					),
 					array(
 						'slug'			=> 'day-page',
 						'option'		=> 'view_day-page',
 						'loop_type'		=> 'native',
-						'display_name'	=> __( 'Day archives', 'wpv-views' ) 
-					) 
+						'display_name'	=> __( 'Day archives', 'wpv-views' )
+					)
 				);
 
 				if ( $include_wpa ) {
@@ -1160,7 +1160,7 @@ class WPV_WordPress_Archive_Frontend {
 				return $loops;
 
 			case 'post_type':
-			
+
 				$pt_loops = array();
 				// Only offer loops for post types that already have an archive, unless $noexclude is given
                 $pt_query_args = array( 'public' => true );
@@ -1170,18 +1170,18 @@ class WPV_WordPress_Archive_Frontend {
 				$post_types = get_post_types( $pt_query_args, 'objects' );
 
 				foreach ( $post_types as $post_type ) {
-					if ( 
-						$noexclude 
-						|| ! in_array( $post_type->name, array( 'post', 'page', 'attachment' ) ) 
+					if (
+						$noexclude
+						|| ! in_array( $post_type->name, array( 'post', 'page', 'attachment' ) )
 					) {
-					
+
 						$loop = array(
 							'slug'				=> 'cpt_' . $post_type->name,
 							'post_type_name'	=> $post_type->name,
 							'option'			=> 'view_cpt_' . $post_type->name,
 							'display_name'		=> $post_type->labels->name,
 							'singular_name'		=> $post_type->labels->singular_name,
-							'loop_type'			=> 'post_type' 
+							'loop_type'			=> 'post_type'
 						);
 
 						if( $include_wpa ) {
@@ -1215,14 +1215,14 @@ class WPV_WordPress_Archive_Frontend {
 					if ( ! $taxonomy->show_ui ) {
 						continue;
 					}
-					
+
 					$loop = array(
 						'slug'			=> $taxonomy->name,
 						'option'		=> 'view_taxonomy_loop_' . $taxonomy->name,
 						'display_name'	=> $taxonomy->labels->name,
-						'loop_type'		=> 'taxonomy' 
+						'loop_type'		=> 'taxonomy'
 					);
-							
+
 					if ( $include_wpa ) {
 						$loop['wpa'] = isset( $stored_settings[ $loop['option'] ] ) ? $stored_settings[ $loop['option'] ] : 0;
 					}
@@ -1230,10 +1230,10 @@ class WPV_WordPress_Archive_Frontend {
                     if ( $include_ct ) {
                         $loop['ct'] = wpv_getarr( $stored_settings, "views_template_loop_{$taxonomy->name}", 0 );
                     }
-					
+
 					$tx_loops[] = $loop;
 				}
-					
+
 				return $tx_loops;
 
 			case 'all':
@@ -1241,11 +1241,11 @@ class WPV_WordPress_Archive_Frontend {
 				return array_merge(
 					$this->get_archive_loops( 'native', $include_wpa ),
 					$this->get_archive_loops( 'post_type', $include_wpa ),
-					$this->get_archive_loops( 'taxonomy', $include_wpa ) 
+					$this->get_archive_loops( 'taxonomy', $include_wpa )
 				);
 		}
 	}
-	
+
 	function _view_edit_options( $view_id, $options ) { // MAYBE DEPRECATED
 		static $js_added = false;
 
@@ -1333,25 +1333,25 @@ class WPV_WordPress_Archive_Frontend {
 						<?php foreach ( $native_loops as $l_name => $l_data ) { ?>
 							<?php
 							$show_asterisk = false;
-							if ( 
-								isset( $stored_settings[ 'view_' . $l_data['loop'] ] ) 
-								&& $stored_settings[ 'view_' . $l_data['loop'] ] != $view_id 
-								&& $stored_settings[ 'view_' . $l_data['loop'] ] != 0 
+							if (
+								isset( $stored_settings[ 'view_' . $l_data['loop'] ] )
+								&& $stored_settings[ 'view_' . $l_data['loop'] ] != $view_id
+								&& $stored_settings[ 'view_' . $l_data['loop'] ] != 0
 							) {
 								$show_asterisk = true;
 								$show_asterisk_explanation = true;
 							}
 							?>
 							<li>
-								<input 
-									type="checkbox" 
-									<?php checked( $view_id > 0 && isset( $stored_settings[ 'view_' . $l_data['loop'] ] ) && $stored_settings[ 'view_' . $l_data['loop'] ] == $view_id ); ?> 
-									id="wpv-view-loop-<?php echo esc_attr( $l_data['loop'] ); ?>" 
-									name="wpv-view-loop-<?php echo esc_attr( $l_data['loop'] ); ?>" 
-									class="js-wpv-create-wpa-usage-checkbox" 
-									data-loop-name="<?php echo esc_attr( $l_data['label'] ); ?>" 
-									data-type="native" 
-									data-name="<?php echo esc_attr( $l_name ); ?>" 
+								<input
+									type="checkbox"
+									<?php checked( $view_id > 0 && isset( $stored_settings[ 'view_' . $l_data['loop'] ] ) && $stored_settings[ 'view_' . $l_data['loop'] ] == $view_id ); ?>
+									id="wpv-view-loop-<?php echo esc_attr( $l_data['loop'] ); ?>"
+									name="wpv-view-loop-<?php echo esc_attr( $l_data['loop'] ); ?>"
+									class="js-wpv-create-wpa-usage-checkbox"
+									data-loop-name="<?php echo esc_attr( $l_data['label'] ); ?>"
+									data-type="native"
+									data-name="<?php echo esc_attr( $l_name ); ?>"
 								/>
 								<label for="wpv-view-loop-<?php echo esc_attr( $l_data['loop'] ); ?>"><?php echo esc_html( $l_data['label'] ); echo $show_asterisk ? $asterisk : '';  ?></label>
 							</li>
@@ -1376,25 +1376,25 @@ class WPV_WordPress_Archive_Frontend {
 						<?php foreach ( $pt_loops as $loop => $loop_name ) { ?>
 							<?php
 							$show_asterisk = false;
-							if ( 
-								isset( $stored_settings['view_' . $loop] ) 
-								&& $stored_settings['view_' . $loop] != $view_id 
-								&& $stored_settings['view_' . $loop] != 0 
+							if (
+								isset( $stored_settings['view_' . $loop] )
+								&& $stored_settings['view_' . $loop] != $view_id
+								&& $stored_settings['view_' . $loop] != 0
 							) {
 								$show_asterisk = true;
 								$show_asterisk_explanation = true;
 							}
 							?>
 							<li>
-								<input 
-                                    type="checkbox" 
+								<input
+                                    type="checkbox"
 									<?php checked( $view_id > 0 && isset( $stored_settings['view_' . $loop] ) && $stored_settings['view_' . $loop] == $view_id ); ?>
-                                    id="wpv-view-loop-<?php echo esc_attr( $loop ); ?>" 
-                                    name="wpv-view-loop-<?php echo esc_attr( $loop ); ?>" 
-                                    class="js-wpv-create-wpa-usage-checkbox" 
-                                    data-loop-name="<?php echo esc_attr( $loop_name ); ?>" 
-									data-type="post_type" 
-									data-name="" 
+                                    id="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"
+                                    name="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"
+                                    class="js-wpv-create-wpa-usage-checkbox"
+                                    data-loop-name="<?php echo esc_attr( $loop_name ); ?>"
+									data-type="post_type"
+									data-name=""
                                  />
 								<label for="wpv-view-loop-<?php echo esc_attr( $loop ); ?>"><?php echo esc_html( $loop_name ); echo $show_asterisk ? $asterisk : ''; ?></label>
 							</li>
@@ -1408,8 +1408,8 @@ class WPV_WordPress_Archive_Frontend {
 				$exclude_tax_slugs = array();
 				$exclude_tax_slugs = apply_filters( 'wpv_admin_exclude_tax_slugs', $exclude_tax_slugs );
 				foreach ( $taxonomies as $category_slug => $category ) {
-					if ( 
-						in_array($category_slug, $exclude_tax_slugs ) 
+					if (
+						in_array($category_slug, $exclude_tax_slugs )
 						|| ! $category->show_ui
 					) {
 						unset($taxonomies[$category_slug]);
@@ -1424,25 +1424,25 @@ class WPV_WordPress_Archive_Frontend {
 							<?php
 								$name = $category->name;
 								$show_asterisk = false;
-								if ( 
-									isset( $stored_settings['view_taxonomy_loop_' . $name ] ) 
-									&& $stored_settings['view_taxonomy_loop_' . $name ] != $view_id 
-									&& $stored_settings['view_taxonomy_loop_' . $name ] != 0 
+								if (
+									isset( $stored_settings['view_taxonomy_loop_' . $name ] )
+									&& $stored_settings['view_taxonomy_loop_' . $name ] != $view_id
+									&& $stored_settings['view_taxonomy_loop_' . $name ] != 0
 								) {
 									$show_asterisk = true;
 									$show_asterisk_explanation = true;
 								}
 							?>
 							<li>
-								<input 
-                                    type="checkbox" 
-									<?php checked( $view_id > 0 && isset( $stored_settings['view_taxonomy_loop_' . $name ] ) && $stored_settings['view_taxonomy_loop_' . $name ] == $view_id ); ?> 
-                                    id="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>" 
-                                    name="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>" 
-                                    class="js-wpv-create-wpa-usage-checkbox" 
-                                    data-loop-name="<?php echo esc_attr( $category->labels->name ); ?>" 
-									data-type="taxonomy" 
-									data-name="<?php echo esc_attr( $name ); ?>" 
+								<input
+                                    type="checkbox"
+									<?php checked( $view_id > 0 && isset( $stored_settings['view_taxonomy_loop_' . $name ] ) && $stored_settings['view_taxonomy_loop_' . $name ] == $view_id ); ?>
+                                    id="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>"
+                                    name="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>"
+                                    class="js-wpv-create-wpa-usage-checkbox"
+                                    data-loop-name="<?php echo esc_attr( $category->labels->name ); ?>"
+									data-type="taxonomy"
+									data-name="<?php echo esc_attr( $name ); ?>"
                                 />
 								<label for="wpv-view-taxonomy-loop-<?php echo esc_attr( $name ); ?>"><?php echo esc_html( $category->labels->name ); echo $show_asterisk ? $asterisk : ''; ?></label>
 							</li>
@@ -1456,8 +1456,8 @@ class WPV_WordPress_Archive_Frontend {
 				<?php echo $asterisk_explanation; ?>
 			</span>
 			<?php } ?>
-			<?php 
-			if ( $view_id == 0 ) { 
+			<?php
+			if ( $view_id == 0 ) {
 				?>
 				<h3><?php _e( 'What kind of Archive do you want to create?', 'wpv-views' ); ?></h3>
 				<ul>
@@ -1479,8 +1479,8 @@ class WPV_WordPress_Archive_Frontend {
 				</ul>
 				<h3><?php _e( 'Name this WordPress Archive', 'wpv-views' ); ?></h3>
 				<input type="text" value="" class="js-wpv-new-archive-name wpv-new-archive-name" placeholder="<?php echo esc_attr( __( 'WordPress Archive name', 'wpv-views' ) ); ?>" name="wpv-new-archive-name">
-				<?php 
-			} 
+				<?php
+			}
 			?>
 		</div>
 		<?php
@@ -1495,14 +1495,14 @@ class WPV_WordPress_Archive_Frontend {
 		$settings_array = $stored_settings->get();// @todo this might not be needed as it implements ArrayAccess anyway
 
 		foreach ( $loops as $loop => $loop_name ) {
-			
-			if ( 
+
+			if (
 				isset( $settings_array[ 'view_' . $loop ] )
 				&& $settings_array[ 'view_' . $loop ] !== 0
 			) {
 				unset( $loops[ $loop ] );
 			}
-			
+
 		}
 
 		$taxonomies = get_taxonomies( '', 'objects' );
@@ -1519,14 +1519,14 @@ class WPV_WordPress_Archive_Frontend {
 				unset( $taxonomies[ $category_slug ] );
 				continue; // Only show taxonomies with show_ui set to TRUE
 			}
-			
-			if ( 
+
+			if (
 				isset( $settings_array[ 'view_taxonomy_loop_' . $category_slug ] )
 				&& $settings_array[ 'view_taxonomy_loop_' . $category_slug ] !== 0
 			) {
 				unset( $taxonomies[ $category_slug ] );
 			}
-			
+
 		}
 
 
@@ -1543,7 +1543,7 @@ class WPV_WordPress_Archive_Frontend {
 		$loops = $this->_get_post_type_loops();
 		foreach ( $loops as $type => $name ) {
 			if (
-				isset( $stored_settings['view_' . $type] ) 
+				isset( $stored_settings['view_' . $type] )
 				&& $stored_settings['view_' . $type] == $post_id
 			) {
 				unset( $stored_settings['view_' . $type] );
@@ -1553,7 +1553,7 @@ class WPV_WordPress_Archive_Frontend {
 		$taxonomies = get_taxonomies( '', 'objects' );
 		foreach ( $taxonomies as $category_slug => $category ) {
 			if (
-				isset( $stored_settings['view_taxonomy_loop_' . $category_slug] ) 
+				isset( $stored_settings['view_taxonomy_loop_' . $category_slug] )
 				&& $stored_settings['view_taxonomy_loop_' . $category_slug] == $post_id
 			) {
 				unset( $stored_settings['view_taxonomy_loop_' . $category_slug] );
@@ -1573,9 +1573,9 @@ class WPV_WordPress_Archive_Frontend {
 				$found = true;
 			}
 		}
-        
+
         $stored_settings->refresh_view_settings_data();
-        
+
 		if ( $found ) {
             $stored_settings->save();
 		}
@@ -1587,11 +1587,11 @@ class WPV_WordPress_Archive_Frontend {
 			add_filter( 'woocommerce_redirect_single_search_result', '__return_false' );
 		}
 	}
-	
+
 	function wpv_get_current_archive( $current_archive = null ) {
 		return $this->wpa_id;
 	}
-	
+
 	function wpv_get_current_archive_loop( $current_archive_loop = array() ) {
 		return array(
 			'type'	=> $this->wpa_type,
@@ -1599,19 +1599,19 @@ class WPV_WordPress_Archive_Frontend {
 			'data'	=> $this->wpa_data
 		);
 	}
-	
+
 	function wpv_get_archive_unique_hash( $unique_hash = '' ) {
 		$unique_hash = $this->get_archive_unique_hash();
 		return $unique_hash;
 	}
-	
+
 	function get_archive_unique_hash() {
 		if ( ! $this->wpa_id ) {
 			return '';
 		}
 		return (string) $this->wpa_id;
 	}
-	
+
 	function extend_pagination_settings( $pagination_data, $view_settings ) {
 		switch ( $pagination_data['query'] ) {
 			case 'archive':
@@ -1633,7 +1633,7 @@ class WPV_WordPress_Archive_Frontend {
 		}
 		return $pagination_data;
 	}
-	
+
 	function extend_parametric_settings( $parametric_data, $view_settings ) {
 		switch ( $parametric_data['query'] ) {
 			case 'archive':
@@ -1655,7 +1655,7 @@ class WPV_WordPress_Archive_Frontend {
 		}
 		return $parametric_data;
 	}
-	
+
 	function fake_archive_query( $loop ) {
 		$this->wpa_id		= $loop['id'];
 		$this->wpa_settings	= apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $loop['id'] );
@@ -1676,12 +1676,12 @@ class WPV_WordPress_Archive_Frontend {
 		}
 		return $query_args;
 	}
-	
+
 	function fake_archive_query_native( $query_args, $loop ) {
 		// 'home'|'search'|'author'|'year'|'month'|'day'
 		switch ( $loop['name'] ) {
 			case 'home':
-				
+
 				break;
 			case 'search':
 				$query_args['s']			= $loop['data']['s'];
@@ -1704,12 +1704,12 @@ class WPV_WordPress_Archive_Frontend {
 		}
 		return $query_args;
 	}
-	
+
 	function fake_archive_query_post_type( $query_args, $loop ) {
 		$query_args['post_type'] = $loop['name'];
 		return $query_args;
 	}
-	
+
 	function fake_archive_query_taxonomy( $query_args, $loop ) {
 		$query_args['tax_query'] = array(
 			'relation' => 'AND',
@@ -1723,7 +1723,7 @@ class WPV_WordPress_Archive_Frontend {
 		);
 		return $query_args;
 	}
-	
+
 	function fake_archive_before_set( $query ) {
 		if ( $query->get( 'wpv_fake_archive_loop' ) ) {
 			// Set the right query properties
@@ -1799,9 +1799,9 @@ class WPV_WordPress_Archive_Frontend {
 			$wp_query = $query;
 		}
 	}
-	
+
 	function wpv_get_archive_query_results() {
-		
+
 		$loop			= $_POST['loop'];// @todo sanitize $loop
 		$page			= $_POST['page'];
 		$sort			= isset( $_POST['sort'] ) ? $_POST['sort'] : array();
@@ -1809,21 +1809,21 @@ class WPV_WordPress_Archive_Frontend {
 		$search			= isset( $_POST['search'] ) ? $_POST['search'] : array();
 		$search_keys	= array();
 		$extra			= isset( $_POST['extra'] ) ? $_POST['extra'] : array();
-		
+
 		$_GET['wpv_view_count']	= sanitize_text_field( $_POST['view_number'] );
-		
+
 		$query_args	= $this->fake_archive_query( $loop );
 		$query_args['paged'] = (int) $page;
-		
+
 		foreach ( $sort as $sort_key => $sort_value ) {
 			if ( in_array( $sort_key, array( 'wpv_sort_orderby', 'wpv_sort_order', 'wpv_sort_orderby_as', 'wpv_sort_orderby_second', 'wpv_sort_order_second' ) ) ) {
 				$_GET[ $sort_key ] = sanitize_text_field( $sort_value );
 			}
 		}
-		
+
 		foreach ( $environment as $environment_key => $environment_value ) {
-			if ( 
-				in_array( $environment_key, array( 'wpv_aux_current_post_id', 'wpv_aux_parent_post_id', 'wpv_aux_parent_term_id', 'wpv_aux_parent_user_id' ) ) 
+			if (
+				in_array( $environment_key, array( 'wpv_aux_current_post_id', 'wpv_aux_parent_post_id', 'wpv_aux_parent_term_id', 'wpv_aux_parent_user_id' ) )
 				&& (int) $environment_value > 0
 			) {
 				$search_keys[] = $environment_key;
@@ -1852,14 +1852,14 @@ class WPV_WordPress_Archive_Frontend {
 				}
 			}
 		}
-		
+
 		if ( isset( $search['dps_general'] ) ) {
 			$corrected_item = array();
 			foreach ( $search['dps_general'] as $dps_pr_item ) {
-				if ( 
-					is_array( $dps_pr_item ) 
-					&& isset( $dps_pr_item['name'] ) 
-					&& isset( $dps_pr_item['value'] ) 
+				if (
+					is_array( $dps_pr_item )
+					&& isset( $dps_pr_item['name'] )
+					&& isset( $dps_pr_item['value'] )
 				) {
 					if ( strlen( $dps_pr_item['name'] ) < 2 ) {
 						$search_keys[] = $dps_pr_item['name'];
@@ -1887,13 +1887,13 @@ class WPV_WordPress_Archive_Frontend {
 				}
 			}
 		}
-		
+
 		if ( isset( $search['dps_pr'] ) ) {
 			foreach ( $search['dps_pr'] as $dps_pr_item ) {
-				if ( 
-					is_array( $dps_pr_item ) 
-					&& isset( $dps_pr_item['name'] ) 
-					&& isset( $dps_pr_item['value'] ) 
+				if (
+					is_array( $dps_pr_item )
+					&& isset( $dps_pr_item['name'] )
+					&& isset( $dps_pr_item['value'] )
 				) {
 					if ( strlen( $dps_pr_item['name'] ) < 2 ) {
 						if ( ! isset( $_GET[ $dps_pr_item['name'] ] ) ) {
@@ -1919,7 +1919,7 @@ class WPV_WordPress_Archive_Frontend {
 				}
 			}
 		}
-		
+
 		foreach ( $extra as $extra_key => $extra_value ) {
 			if ( ! in_array( $extra_key, $search_keys ) ) {
 				if ( ! isset( $_GET[ $extra_key ] ) ) { // Might be redundant with the check on $search_keys
@@ -1933,17 +1933,17 @@ class WPV_WordPress_Archive_Frontend {
 				}
 			}
 		}
-		
-		if ( isset( $_POST['lang'] ) ) {
-			do_action( 'wpml_switch_language', sanitize_text_field( $_POST['lang'] ) );
+
+		if ( toolset_getpost( 'lang', false ) ) {
+			do_action( 'wpml_switch_language', sanitize_text_field( toolset_getpost( 'lang', '' ) ) );
 		}
-		
+
 		global $wp_the_query, $wp_query, $paged;
 		$archive_query		= new WP_Query( $query_args );
 		$wp_the_query		= $archive_query;
 		$wp_query			= $archive_query;
 		$paged				= $query_args['paged'];
-		
+
 		$this->initialize_archive_loop();
 		if ( $this->loop_has_no_posts ) {
 			// Reset everything if the loop has no posts.
@@ -1956,7 +1956,7 @@ class WPV_WordPress_Archive_Frontend {
 			$this->query->posts = array();
 			$post = null;
 		}
-		
+
 		if ( $this->loop_has_no_posts ) {
 			// Reset everything if the loop has no posts.
 			// Then the WPA will render with no posts.
@@ -1966,30 +1966,30 @@ class WPV_WordPress_Archive_Frontend {
 			$wp_query->posts = array();
 			$this->query->posts = array();
 		}
-		
+
 		$this->in_the_loop = true;
 		$data = array(
 			'id'	=> $loop['id'],
 			'full'	=> render_view( array( 'id' => $loop['id'] ) )
 		);
 		$this->in_the_loop = false;
-		
+
 		$data['form'] = $data['full'];
-		
+
 		$archive_settings			= apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $loop['id'] );
 		$pagination_permalinks		= apply_filters( 'wpv_filter_wpv_get_pagination_permalinks', array(), $archive_settings, $loop['id'] );
-		
+
 		if ( $paged == 1 ) {
 			$pagination_permalink = $pagination_permalinks['first'];
 		} else {
 			$pagination_permalink = str_replace( 'WPV_PAGE_NUM', $paged, $pagination_permalinks['other'] );
 		}
-		
+
 		// For parametric search URL history management
 		$data['permalink']				= $pagination_permalink;
 		// In theory, this is only used by parametric search, so we should always use the 'first' one above.
 		$data['parametric_permalink']	= $pagination_permalink;
-		
+
 		if ( ! wpv_parametric_search_triggers_history( $loop['id'] ) ) {
 			// When parametric search does not manage history, we need to clean the URL.
 			$view_url_data					= get_view_allowed_url_parameters( $loop['id'] );
@@ -1997,7 +1997,6 @@ class WPV_WordPress_Archive_Frontend {
 			foreach ( $query_args_remove as $query_args_remove_string ) {
 				$query_args_remove[] = $query_args_remove_string . '[]';
 			}
-			$query_args_remove[]			= 'lang';
 			$query_args_remove[]			= 'wpv_sort_orderby';
 			$query_args_remove[]			= 'wpv_sort_order';
 			$query_args_remove[]			= 'wpv_sort_orderby_as';
@@ -2013,12 +2012,12 @@ class WPV_WordPress_Archive_Frontend {
 				$pagination_permalink
 			);
 		}
-		
+
 		wp_send_json_success( $data );
 	}
-	
+
 	// Auxiliar methods
-	
+
 	function is_frontend() {
 		if ( ! is_admin() ) {
 			return true;
@@ -2033,7 +2032,7 @@ class WPV_WordPress_Archive_Frontend {
 			return false;
 		}
 	}
-	
+
 	/**
 	* wpv_initialize_wordpress_archive_for_archive_loop
 	*
@@ -2050,7 +2049,7 @@ class WPV_WordPress_Archive_Frontend {
 	*
 	* @since 2.1
 	*/
-	
+
 	function wpv_initialize_wordpress_archive_for_archive_loop( $wpa_id ) {
 		WPV_Cache::restart_cache();
 		global $wp_the_query, $wp_query, $paged;

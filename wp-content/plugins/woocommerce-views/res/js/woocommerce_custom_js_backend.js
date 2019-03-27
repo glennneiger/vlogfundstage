@@ -15,50 +15,81 @@ jQuery( document ).ready( function( $ ) {
 	});
 	$('#system_cron_id_wc_views').click(function(){
 		$('#woocommerce_batchprocessing_submit').hide();		
-	});	
+	});
+
+	/**
+	 * Process the AJAX call to batch update products fields.
+	 * Note that this function is recursive until it fails or completes.
+	 *
+	 * @param int start
+	 * @return object
+	 * @since 2.7.8
+	 */
+	var processProductsFieldsBatch = function( start ) {
+		var $outcome = {
+			start: start,
+			limit: 100,
+			status: 'ongoing'
+		};
+
+		var data = {
+			action: 'wc_views_process_products_fields',
+			nonce: the_ajax_script_wc_views.wc_views_ajax_response_admin_nonce,
+			start: start
+		};
+
+		$.ajax({
+			url: the_ajax_script_wc_views.ajaxurl,
+			data: data,
+			dataType: 'json',
+			async: false,
+			type: "POST",
+			success:  function( response ) {
+				if ( response.success ) {
+					$outcome = response.data.outcome;
+				} else {
+					$outcome.status = 'error';
+				}
+			},
+			error: function ( ajaxContext ) {
+				$outcome.status = 'error';
+			}
+		});
+
+		if ( 'ongoing' == $outcome.status ) {
+			$outcome = processProductsFieldsBatch( $outcome.start );
+		}
+
+		return $outcome;
+	};
 	
 	$("#requestformanualbatchprocessing").submit(function (e) {
-	    e.preventDefault();    
-        //AJAX request for batch processing
+		e.preventDefault();
+		
+		var $updateButton = $( '#woocommerce_batchprocessing_submit' ),
+			$spinnerContainer = $('<span class="spinner ajax-loader">').insertAfter( $updateButton ).css( { 'visibility': 'visible' } ),
+			$toolsetAlert = $( '#ajax_result_batchprocessing_time' ),
+			$lastTime = $( '#wcv-product-fields-updated-last-time' );
 	    
-	    //Retrieve the manual parameter
-	    var manual_parameter=$('#woocommerce_batchprocessing_submit').val();
-	    
-	    $('#ajax_result_batchprocessing').removeClass('updated');
-	    $('#ajax_result_batchprocessing').removeClass('error');
-	    $('#ajax_result_batchprocessing').css('display','block');
-		var html_ajax_loader='<img src="'+the_ajax_script_wc_views.wc_views_ajax_ajax_loader_gif+'" />';
-		$('#ajax_result_batchprocessing').html(html_ajax_loader);	  
-			
-	    var data = {
-	      			action: 'wc_views_ajax_response_admin',
-	   				dataType: 'json',	   				
-	 	    		wpv_wc_views_ajax_response_admin_nonce: the_ajax_script_wc_views.wc_views_ajax_response_admin_nonce,
-	 		    	wpv_manual_parameter:manual_parameter	 			    					
-	    			};	
+		$updateButton.prop( 'disabled', true );
+		$toolsetAlert.removeClass( 'toolset-alert-info' )
+			.addClass( 'toolset-alert-warning' );
+		$lastTime.text( the_ajax_script_wc_views.batchProductFields.ongoing );
 
-	        //Do an ajax request 			
+		$outcome = processProductsFieldsBatch( 0 );
 
-	 	     $.post(the_ajax_script_wc_views.ajaxurl,data, function(response) {
-	 		 var myObj_wc_views_status = $.parseJSON(response);
-	         
-	 		 if (myObj_wc_views_status.status=='updated'){
-	 			$('#ajax_result_batchprocessing').show();
-	 			$('#ajax_result_batchprocessing').addClass(myObj_wc_views_status.status);
-	 			$('#ajax_result_batchprocessing').text(myObj_wc_views_status.batch_processing_output);
-	 			$('#ajax_result_batchprocessing').fadeOut(5000);
-	 			//Remove first update if it exist
-	 			$('#update_needed_wcviews').remove();
-	 			//Display last run date and time
-	 			$('#ajax_result_batchprocessing_time').text(the_ajax_script_wc_views.wc_views_last_run_translatable_text +myObj_wc_views_status.last_run);
-	 			
-	 		 }
-	 		 if (myObj_wc_views_status.status=='error') {
-		 			$('#ajax_result_batchprocessing').addClass(myObj_wc_views_status.status);
-		 			$('#ajax_result_batchprocessing').text(myObj_wc_views_status.batch_processing_output);		 			
-		 		 }	 		 
-	 	     });	     
-	    
+		$spinnerContainer.remove();
+
+		if ( 'completed' == $outcome.status ) {
+			$updateButton.prop( 'disabled', false );
+			$toolsetAlert.removeClass( 'toolset-alert-warning' )
+				.addClass( 'toolset-alert-info' );
+			$lastTime.text( $outcome.lastUpdated );
+		} else {
+			$toolsetAlert.removeClass( 'toolset-alert-warning' )
+				.addClass( 'toolset-alert-error' );
+			$lastTime.text( the_ajax_script_wc_views.batchProductFields.error );
+		}
 	});	
 	
 	/*WooCommerce Views 2.4*/

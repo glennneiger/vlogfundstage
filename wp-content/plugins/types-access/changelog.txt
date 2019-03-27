@@ -1,3 +1,11 @@
+2.6.2
+* Fixed an issue with 404 custom error that was not applied to post group pages.
+* Fixed "Types fields permissions" table when a fields group name has non-latin letters
+
+2.6
+* Included the Access button in the native GUtenberg paragraph block toolbar.
+* Improved he shortcodes API with hooks.
+
 2.5.2
 * Better API to include or exclude the Access button on editors.
 * Improved compatibility with the Forms setting to include or exclude Toolset buttons on WYSIWYG fields.
@@ -201,7 +209,7 @@
 1.2.3
 * Fixed a problem where the assignment of specific userвЂ™s permissions wasnвЂ™t working for custom groups.
 * Fixed a problem of PHP notice being thrown because the $raw attribute was missing for the Access shortcode.
-* Fixed a problem where headings for Post and User Meta Fields groups were being shown in Access admin page even when no actual groups existed. 
+* Fixed a problem where headings for Post and User Meta Fields groups were being shown in Access admin page even when no actual groups existed.
 * Fixed a problem where WYSIWYG field created with Advanced Custom Fields plugin wasnвЂ™t working correctly when Access plugin was activate: http://toolset.com/forums/topic/advanced-custom-fiels-access-plugin-bug-with-wysiwyg-editor/
 
 1.2.2
@@ -237,7 +245,7 @@
 
 1.1.7
 * delete role button not working, fixed
-* Fix compatibility with iThemes Builder 
+* Fix compatibility with iThemes Builder
 
 1.1.6
 * added changelog.txt

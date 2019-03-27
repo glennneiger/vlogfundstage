@@ -9,31 +9,6 @@
 class Toolset_User_Editors_Editor_Screen_Avada_Backend
 	extends Toolset_User_Editors_Editor_Screen_Abstract {
 
-	const AVADA_SCREEN_ID = 'avada';
-
-	/**
-	 * Returns the editor's name.
-	 *
-	 * @param string $default
-	 *
-	 * @return string The editor's name.
-	 */
-	public function get_editor_name( $default = '' ) {
-		/* translators: The human readable name of Fusion Builder (Avada). */
-		return __( 'Fusion Builder', 'wpv-views' );
-	}
-
-	/**
-	 * Returns the editor's screen ID.
-	 *
-	 * @param string $default
-	 *
-	 * @return string The editor's screen ID.
-	 */
-	public function get_editor_screen_id( $default = '' ) {
-		return self::AVADA_SCREEN_ID;
-	}
-
 	public function initialize() {
 		parent::initialize();
 
@@ -41,7 +16,7 @@ class Toolset_User_Editors_Editor_Screen_Avada_Backend
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_assets' ), 50 );
 
 		add_filter( 'toolset_filter_toolset_registered_user_editors', array( $this, 'register_user_editor' ) );
-		add_filter( 'wpv_filter_wpv_layout_template_extra_attributes', array( $this, 'layout_template_attribute' ), 10, 3 );
+		add_filter( 'wpv_filter_wpv_layout_template_extra_attributes', array( $this, 'layout_template_attribute' ), 10, 2 );
 
 		add_action( 'wpv_action_wpv_ct_inline_user_editor_buttons', array( $this, 'register_inline_editor_action_buttons' ) );
 
@@ -182,7 +157,7 @@ class Toolset_User_Editors_Editor_Screen_Avada_Backend
 	}
 
 	public function register_inline_editor_action_buttons( $content_template ) {
-		$content_template_has_avada = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === self::AVADA_SCREEN_ID );
+		$content_template_has_avada = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === Toolset_User_Editors_Editor_Avada::AVADA_SCREEN_ID );
 		?>
 		<button
 			class="button button-secondary toolset-ct-button-logo js-wpv-ct-apply-user-editor js-wpv-ct-apply-user-editor-<?php echo esc_attr( $this->editor->get_id() ); ?> <?php echo $this->editor->get_logo_class(); ?>"
@@ -209,7 +184,7 @@ class Toolset_User_Editors_Editor_Screen_Avada_Backend
 	 * @since 2.5.0
 	 */
 	public function layout_template_attribute( $attributes, $content_template ) {
-		$content_template_has_avada = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === self::AVADA_SCREEN_ID );
+		$content_template_has_avada = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === Toolset_User_Editors_Editor_Avada::AVADA_SCREEN_ID );
 		if ( $content_template_has_avada ) {
 			$attributes['builder'] = $this->editor->get_id();
 		}

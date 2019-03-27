@@ -7,17 +7,31 @@
  *
  * @since 2.5.0
  */
-
 class Toolset_User_Editors_Editor_Avada
 	extends Toolset_User_Editors_Editor_Abstract {
 
+	const AVADA_SCREEN_ID = 'avada';
 	const FUSION_BUILDER_OPTION_NAME = 'fusion_builder_status';
 	const FUSION_BUILDER_OPTION_VALUE = 'active';
 
-	protected $id = 'avada';
+	/**
+	 * @var string
+	 */
+	protected $id = self::AVADA_SCREEN_ID;
+
+	/**
+	 * @var string
+	 */
 	protected $name = 'Fusion Builder';
+
+	/**
+	 * @var string
+	 */
 	protected $option_name = '_toolset_user_editors_avada_template';
 
+	/**
+	 * @var string
+	 */
 	protected $logo_class = 'dashicons-fusiona-logo';
 
 	public function initialize() {

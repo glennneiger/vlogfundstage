@@ -18,6 +18,11 @@ class WPV_WPML_Integration_Embedded {
 	protected static $instance = null;
 
 	/**
+	 * @var null|Toolset_Condition_Plugin_Wpml_Is_Active_And_Configured
+	 */
+	private $wpml_is_active_and_configured;
+
+	/**
 	 * Get the instance of the singleton (and create it if it doesn't exist yet).
 	 *
 	 * @return WPV_WPML_Integration_Embedded
@@ -54,12 +59,17 @@ class WPV_WPML_Integration_Embedded {
 	 *
 	 * Should happen before plugins_loaded action. Register further action hooks.
 	 *
+	 * @param Toolset_Condition_Plugin_Wpml_Is_Active_And_Configured|null $wpml_is_active_and_configured
+	 *
 	 * @note ATTENTION!!! Always use as a singleton in production code.
 	 * @note We do not add the [wpml-breadcrumbs] shortcode as it needs to be executed outside the post loop, hence it is useless for Views.
 	 *
 	 * @since 1.10
 	 */
-	public function __construct() {
+	public function __construct( \Toolset_Condition_Plugin_Wpml_Is_Active_And_Configured $wpml_is_active_and_configured = null ) {
+		$this->wpml_is_active_and_configured = $wpml_is_active_and_configured
+			?: new \Toolset_Condition_Plugin_Wpml_Is_Active_And_Configured();
+
 		$this->init_hooks();
 
 		new WPV_WPML_Shortcodes_Dialog();
@@ -86,6 +96,14 @@ class WPV_WPML_Integration_Embedded {
 
 		add_action( 'wp_ajax_wpv_suggest_wpml_contexts', array( $this, 'suggest_wpml_contexts' ) );
 		add_action( 'wp_ajax_nopriv_wpv_suggest_wpml_contexts', array( $this, 'suggest_wpml_contexts' ) );
+
+		add_action( 'wpv_updated__wpv_view_template_extra_css_meta', array( $this, 'maybe_sync_custom_field' ), 10, 2 );
+		add_action( 'wpv_updated__wpv_view_template_extra_js_meta', array( $this, 'maybe_sync_custom_field' ), 10, 2 );
+
+		add_filter( 'wpv_filter_selected_taxonomy_filter_values', array( $this, 'adjust_selected_taxonomy_term_value' ), 10, 2 );
+
+		add_filter( 'wpml_ls_language_url', array( $this, 'maybe_clean_wpml_lang_switcher_link' ) );
+
 	}
 
 	/**
@@ -180,8 +198,8 @@ class WPV_WPML_Integration_Embedded {
 	 *
 	 * Content Templates have no clear "View" option, so we're disabling the link for them.
 	 *
-	 * @param string $post_view_link Current view link
-	 * @param string $label Link label to be displayed
+	 * @param string $post_view_link Current view link.
+	 * @param string $label Link label to be displayed.
 	 * @param object $current_document
 	 * @param string $element_type 'post' for posts.
 	 * @param string $content_type If $element_type is 'post', this will contain a post type.
@@ -209,7 +227,7 @@ class WPV_WPML_Integration_Embedded {
 	 *
 	 * @param string $edit_url Current edit URL
 	 * @param string $content_type For posts, this will be post_{$post_type}.
-	 * @param int $element_id Post ID if the element is a post.
+	 * @param int    $element_id Post ID if the element is a post.
 	 *
 	 * @return string Edit URL.
 	 *
@@ -290,7 +308,7 @@ class WPV_WPML_Integration_Embedded {
 	 *
 	 * Check if the string_translation section has already been registered. If not, add it to the hooked formatting instructions boxes
 	 *
-	 * @param array  $sections   Registered sections for the formatting instructions
+	 * @param array $sections   Registered sections for the formatting instructions.
 	 *
 	 * @return array $sections
 	 *
@@ -370,5 +388,89 @@ class WPV_WPML_Integration_Embedded {
 		}
 
 		wp_send_json( $suggestions_string );
+	}
+
+	/**
+	 * Determines if the Content Template post meta for the extra CSS or JS should also be updated for the translations.
+	 * of the Content Template.
+	 *
+	 * WPML synchronises custom field values between translations upon "save_post". When saving a Content Template section,
+	 * other than the Content Template content, title or slug, we are doing it with "update_post_meta", so the "save_post"
+	 * action is not triggered, thus the custom field values are not synced. We need to sync them manually.
+	 *
+	 * @param int    $post_id
+	 * @param string $meta_key
+	 */
+	public function maybe_sync_custom_field( $post_id, $meta_key ) {
+		if (
+			in_array(
+				$meta_key,
+				array(
+					WPV_Content_Template_Embedded::POSTMETA_TEMPLATE_EXTRA_CSS,
+					WPV_Content_Template_Embedded::POSTMETA_TEMPLATE_EXTRA_JS,
+				),
+				true
+			) &&
+			$this->wpml_is_active_and_configured->is_met()
+		) {
+			do_action( 'wpml_sync_custom_field', $post_id, $meta_key );
+		}
+	}
+
+	/**
+	 * Adjust the selected value for a taxonomy frontend filter when WPML is enabled.
+	 *
+	 * @param array $walker_args The walker arguments being built.
+	 * @param array $atts        The shortcode attributes.
+	 *
+	 * @return array The (filtered) The walker arguments.
+	 *
+	 * @since 2.7.0
+	 */
+	public function adjust_selected_taxonomy_term_value( $walker_args, $atts ) {
+		if (
+			! isset( $walker_args['selected'] ) ||
+			! is_array( $walker_args['selected'] ) ||
+			! isset( $atts['taxonomy'] )
+		) {
+			return $walker_args;
+		}
+
+		global $sitepress;
+
+		// To get the translated taxonomy slugs, we need to remove this WPML filter.
+		$filter_exists = remove_filter( 'terms_clauses', array( $sitepress, 'terms_clauses' ), 10 );
+
+		foreach ( $walker_args['selected'] as $key => $walker_arg ) {
+			$term = get_term_by( 'slug', $walker_arg, $atts['taxonomy'] );
+
+			if ( false === $term ) {
+				continue;
+			}
+
+			$walker_args['selected'][ $key ] = urldecode_deep( $term->slug );
+		}
+
+		if ( $filter_exists ) {
+			add_filter( 'terms_clauses', array( $sitepress, 'terms_clauses' ), 10, 4 );
+		}
+
+		return $walker_args;
+	}
+
+	/**
+	 * Cleans the URL of the WPML language switcher by removing the numeric indexes from array-ed posted data.
+	 *
+	 * @see $this->clean_permalink_url
+	 *
+	 * @param string $language_url
+	 *
+	 * @return string
+	 */
+	public function maybe_clean_wpml_lang_switcher_link( $language_url ) {
+		global $WPV_Pagination_Embedded;
+		return '' !== toolset_getget( 'wpv_view_count', '' ) ?
+			$WPV_Pagination_Embedded->clean_permalink_url( $language_url ) :
+			$language_url;
 	}
 }

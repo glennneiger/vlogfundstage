@@ -84,6 +84,9 @@ namespace OTGS\Toolset\Common\DicSetup {
 		'\Toolset_Renderer' => function() {
 			return \Toolset_Renderer::get_instance();
 		},
+		'\Toolset_Constants' => function() {
+			return new \Toolset_Constants();
+		},
 		'\Toolset_WPML_Compatibility' => function() {
 			return \Toolset_WPML_Compatibility::get_instance();
 		},
@@ -93,7 +96,36 @@ namespace OTGS\Toolset\Common\DicSetup {
 		'\OTGS\Toolset\Common\GuiBase\DialogBoxFactory' => function() {
 			\Toolset_Common_Bootstrap::get_instance()->register_gui_base();
 			return new DialogBoxFactory( \Toolset_Gui_Base::get_instance() );
-		}
+		},
+		'\wpdb' => function() {
+			global $wpdb;
+			return $wpdb;
+		},
+		'\Toolset_Field_Definition_Factory_Post' => function() {
+			return \Toolset_Field_Definition_Factory_Post::get_instance();
+		},
+		'\Toolset_Field_Definition_Factory_User' => function() {
+			return \Toolset_Field_Definition_Factory_User::get_instance();
+		},
+		'\Toolset_Field_Definition_Factory_Term' => function() {
+			return \Toolset_Field_Definition_Factory_Term::get_instance();
+		},
+		'\Toolset_Condition_Plugin_Views_Active' => function() {
+			return new \Toolset_Condition_Plugin_Views_Active();
+		},
+		'\Toolset_Condition_Plugin_Layouts_Active' => function() {
+			return new \Toolset_Condition_Plugin_Layouts_Active();
+		},
+		'\Toolset_Common_Bootstrap' => function() {
+			return \Toolset_Common_Bootstrap::get_instance();
+		},
+		'\WPCF_Roles' => function() {
+			return \WPCF_Roles::getInstance();
+		},
+		'\WP_Views_plugin' => function() {
+			global $WP_Views;
+			return $WP_Views;
+		},
 	);
 
 	foreach( $singleton_delegates as $class_name => $callback ) {

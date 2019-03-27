@@ -27,13 +27,22 @@ class Toolset_Output_Template_Repository extends Toolset_Output_Template_Reposit
 	const SHORTCODE_GUI_ATTRIBUTE_WRAPPER = 'shortcodes_gui/wrapper_attribute.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_INFORMATION = 'shortcodes_gui/attribute_information.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_TEXT = 'shortcodes_gui/attribute_text.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_NUMBER = 'shortcodes_gui/attribute_number.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_TEXTAREA = 'shortcodes_gui/attribute_textarea.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_RADIO = 'shortcodes_gui/attribute_radio.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_SELECT = 'shortcodes_gui/attribute_select.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_SELECT2 = 'shortcodes_gui/attribute_select2.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_AJAXSELECT2 = 'shortcodes_gui/attribute_ajaxselect2.phtml';
 	const SHORTCODE_GUI_ATTRIBUTE_SKYPE = 'shortcodes_gui/attribute_skype.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_CALLBACK = 'shortcodes_gui/attribute_callback.phtml';
 	const SHORTCODE_GUI_CONTENT = 'shortcodes_gui/content.phtml';
+
+	// Toolset User Editors
+	const USER_EDITORS_INLINE_EDITOR_OVERLAY = '/admin/user-editors/inline-editor-overlay.phtml';
+	const USER_EDITORS_INLINE_EDITOR_SAVING_OVERLAY = '/admin/user-editors/inline-editor-saving-overlay.phtml';
+	const USER_EDITORS_INLINE_EDITOR_ACTION_BUTTON = '/admin/user-editors/inline-editor-action-button.phtml';
+	const USER_EDITORS_CONTENT_TEMPLATE_EDITOR_OVERLAY = '/admin/user-editors/content-template-editor-overlay.phtml';
+	const USER_EDITORS_MY_DIALOG = '/admin/user-editors/unsaved-content-template-dialog.phtml';
 
 	//Toolset Page Builder Modules Templates.
 	const PAGE_BUILDER_MODULES_OVERLAY = '/admin/page-builder-modules/module-overlay.phtml';
@@ -95,6 +104,9 @@ class Toolset_Output_Template_Repository extends Toolset_Output_Template_Reposit
 			self::SHORTCODE_GUI_ATTRIBUTE_TEXT => array(
 				'base_path' => $this->get_templates_dir_base_path()
 			),
+			self::SHORTCODE_GUI_ATTRIBUTE_NUMBER => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
 			self::SHORTCODE_GUI_ATTRIBUTE_TEXTAREA => array(
 				'base_path' => $this->get_templates_dir_base_path()
 			),
@@ -113,9 +125,34 @@ class Toolset_Output_Template_Repository extends Toolset_Output_Template_Reposit
 			self::SHORTCODE_GUI_ATTRIBUTE_SKYPE => array(
 				'base_path' => $this->get_templates_dir_base_path()
 			),
+			self::SHORTCODE_GUI_ATTRIBUTE_CALLBACK => array(
+				'base_path' => $this->get_templates_dir_base_path()
+			),
 			self::SHORTCODE_GUI_CONTENT => array(
 				'base_path' => $this->get_templates_dir_base_path()
 			),
+			// User Editors
+			self::USER_EDITORS_INLINE_EDITOR_OVERLAY => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			self::USER_EDITORS_INLINE_EDITOR_SAVING_OVERLAY => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			self::USER_EDITORS_INLINE_EDITOR_ACTION_BUTTON => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			self::USER_EDITORS_CONTENT_TEMPLATE_EDITOR_OVERLAY => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			self::USER_EDITORS_MY_DIALOG => array(
+				'base_path' => $this->get_templates_dir_base_path(),
+				'namespaces' => array(),
+			),
+			// Toolset Page Builder Modules
 			self::PAGE_BUILDER_MODULES_ELEMENTOR_NOTHING_SELECTED => array(
 				'base_path' => $this->get_templates_dir_base_path(),
 				'namespaces' => array(),
@@ -128,12 +165,12 @@ class Toolset_Output_Template_Repository extends Toolset_Output_Template_Reposit
 				'base_path' => $this->get_templates_dir_base_path(),
 				'namespaces' => array(),
 			),
-			
+
 			self::PAGE_BUILDER_MODULES_ELEMENTOR_USE_VIEW_ELEMENTOR_WIDGET_INSTEAD => array(
 				'base_path' => $this->get_templates_dir_base_path(),
 				'namespaces' => array(),
 			),
-			
+
 			self::SETTINGS_SECTION_CODE_SNIPPETS => array( 'base_path' => $templates_base_path ),
 			self::SETTINGS_SECTION_CODE_SNIPPETS_LEFT => array( 'base_path' => $templates_base_path ),
 			self::SETTINGS_SECTION_CODE_SNIPPETS_ADD_NEW_DIALOG => array( 'base_path' => $templates_base_path ),

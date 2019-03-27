@@ -3,6 +3,13 @@ var WPViews = WPViews || {};
 WPViews.CTListingScreen = function( $ ) {
 	
 	var self = this;
+
+	self.i18n_data = {
+		create_content_template_action: ct_listing_texts.ajax.action.create_content_template,
+		create_content_template_nonce: ct_listing_texts.ajax.nonce.create_content_template,
+		duplicate_content_template_action: ct_listing_texts.ajax.action.duplicate_content_template,
+		duplicate_content_template_nonce: ct_listing_texts.ajax.nonce.duplicate_content_template,
+	};
 	
 	self.shortcodeDialogSpinnerContent = $(
         '<div style="min-height: 150px;">' +
@@ -215,12 +222,9 @@ WPViews.CTListingScreen = function( $ ) {
 			}
 		});
 		
-		title = title.replace( /\'/gi, '' );
-		title = WPV_Toolset.Utils._strip_tags_and_preserve_text( _.unescape( title ) );
-		
 		var data = {
-			action:		'wpv_ct_create_new_save',
-			wpnonce:	$( '#work_view_template' ).attr( 'value' ),
+			action:		self.i18n_data.create_content_template_action,
+			wpnonce:	self.i18n_data.create_content_template_nonce,
 			type:		type,
 			title:		title,
 			apply:		apply
@@ -312,18 +316,15 @@ WPViews.CTListingScreen = function( $ ) {
 		var thiz = $( this ),
 		newName = $( '.js-wpv-duplicated-title' ).val();
 		
-		newName = newName.replace( /\'/gi, '' );
-		newName = WPV_Toolset.Utils._strip_tags_and_preserve_text( _.unescape( newName ) );
-		
 		showSpinnerAfter( thiz );
 		disablePrimaryButton( thiz );
 		
 		if ( newName.length !== 0 ) {
 
 			var data = {
-				action: 'wpv_duplicate_ct',
+				action: self.i18n_data.duplicate_content_template_action,
 				id: self.duplicating_id,
-				wpnonce : $( '#work_view_template' ).val(),
+				wpnonce : self.i18n_data.duplicate_content_template_nonce,
 				title: newName
 			};
 			

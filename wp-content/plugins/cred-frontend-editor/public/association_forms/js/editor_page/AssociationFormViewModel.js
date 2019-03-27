@@ -1,4 +1,14 @@
-Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = function( model, fieldActions ) {
+/**
+ * Association Form View Model
+ *
+ * @param {Object} model
+ * @param {Object} fieldActions "List" of fields
+ * @param {Object} formModelData Form data
+ * @param {Object} scaffoldDefaultData Fields and data
+ * @param {String} shortcodeFormContainer Shorcode container
+ */
+Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = function( model, fieldActions, formModelData, scaffoldDefaultData, shortcodeFormContainer ) {
+
     // private properties
     var self = this, modelPropertyToSubscribableMap = [];
     // Apply the ItemViewModel constructor on this object.
@@ -38,6 +48,9 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
         // two different objects. That's why JSON.parse(JSON.stringify(currentValue)).
         //
         // Details: https://stackoverflow.com/questions/597588/how-do-you-clone-an-array-of-objects-in-javascript
+        if ( ! currentValue ) {
+            currentValue = null; // Avoids JSON parse of undefined
+        }
         var subscribable = subscribableConstructor(JSON.parse(JSON.stringify(currentValue)));
 
         // Make sure the subscribable will be synchronized with the model.
@@ -204,30 +217,55 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
         });
     };
 
+    /**
+     * Fields came from several sources and they need to hava a common identifier attribute.
+     * In case of generic fields, the field id is stored in the `field` attribute..
+     *
+     * @since 2.2
+     */
+    var normalizeScaffoldDataAttributes = function ( data ) {
+        if ( !data ) {
+            return false;
+        }
+        data.fields.forEach( function( field ) {
+            if ( !field[ scaffoldDefaultData.scaffold_field_id ] && !!field.field ) {
+                field[ scaffoldDefaultData.scaffold_field_id ] = field.field;
+            }
+        } );
+        return data;
+    }
+
+    // i18n
+    self.i18n = cred_post_form_content_editor_i18n;
+
     // Data properties
-    self.form_name = createModelProperty(ko.observable, model.toJSON(), 'form_name').extend({required : ""});
-    self.relationship = createModelProperty(ko.observable, model.toJSON(), 'relationship').extend({required : ""});
-    self.form_type = createModelProperty(ko.observable, model.toJSON(), 'form_type');
-    self.id = createModelProperty(ko.observable, model.toJSON(), 'id');
-    self.redirect_to = createModelProperty(ko.observable, model.toJSON(), 'redirect_to').extend({required : ""});
-    self.ajax_submission = createModelProperty(ko.observable, model.toJSON(), 'ajax_submission');
-    self.disable_comments = createModelProperty(ko.observable, model.toJSON(), 'disable_comments');
-    self.slug = createModelProperty(ko.observable, model.toJSON(), 'slug');
-    self.form_content = createModelProperty(ko.observable, model.toJSON(), 'form_content');
-    self.post_status = createModelProperty(ko.observable, model.toJSON(), 'post_status');
-    self.form_style = createModelProperty(ko.observable, model.toJSON(), 'form_style');
-    self.form_script = createModelProperty(ko.observable, model.toJSON(), 'form_script');
-    self.isActive = createModelProperty(ko.observable, model.toJSON(), 'isActive');
+    var modelData = model.toJSON();
+    // @refactoring it has to use AdvancedItemViewModel.createModelProperty
+    self.form_name = createModelProperty(ko.observable, modelData, 'form_name').extend({required : ""});
+    self.relationship = createModelProperty(ko.observable, modelData, 'relationship').extend({required : ""});
+    self.form_type = createModelProperty(ko.observable, modelData, 'form_type');
+    self.id = createModelProperty(ko.observable, modelData, 'id');
+    self.redirect_to = createModelProperty(ko.observable, modelData, 'redirect_to').extend({required : ""});
+    self.ajax_submission = createModelProperty(ko.observable, modelData, 'ajax_submission');
+    self.disable_comments = createModelProperty(ko.observable, modelData, 'disable_comments');
+    self.slug = createModelProperty(ko.observable, modelData, 'slug');
+    self.form_content = createModelProperty(ko.observable, modelData, 'form_content');
+    self.post_status = createModelProperty(ko.observable, modelData, 'post_status');
+    self.form_style = createModelProperty(ko.observable, modelData, 'form_style');
+    self.form_script = createModelProperty(ko.observable, modelData, 'form_script');
+    self.isActive = createModelProperty(ko.observable, modelData, 'isActive');
+    self.scaffold_data = createModelProperty(ko.observable, modelData, 'scaffold_data');
+    self.scaffoldObject = normalizeScaffoldDataAttributes( JSON.parse( self.scaffold_data() ) );
+    self.editor_origin = createModelProperty(ko.observable, modelData, 'editor_origin');
     self.changedProperties = ko.observableArray();
     self.mockOnOffSave = ko.observable(true);
-    self.messages = createModelProperty(ko.observable, model.toJSON(), 'messages');
+    self.messages = createModelProperty(ko.observable, modelData, 'messages');
     self.currentStep = ko.observable("stepFormInstructions");
 
     self.handleMessagesSet( self.messages() );
 
-    self.redirect_custom_post = createModelProperty(ko.observable, model.toJSON(), 'redirect_custom_post').extend({required : ""});
+    self.redirect_custom_post = createModelProperty(ko.observable, modelData, 'redirect_custom_post').extend({required : ""});
     self.redirect_posts_options = ko.observableArray();
-
 
     self.can_submit = ko.computed(function() {
 
@@ -252,7 +290,6 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
     } );
 
     // Hidden rows
-    self.slugRowVisiblity = ko.observable( false );
     self.postSelectorRowVisiblity = ko.observable( false );
 
     // title
@@ -301,7 +338,7 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
 
             $me.data( 'open', false );
 
-            $caret.removeClass('fa-caret-up').addClass('fa-caret-down');
+            $caret.removeClass('fa-angle-up').addClass('fa-angle-down');
 
             $open.slideUp(400, function(event){
 
@@ -313,7 +350,7 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
 
             $me.data( 'open', true );
 
-            $caret.removeClass('fa-caret-down').addClass('fa-caret-up');
+            $caret.removeClass('fa-angle-down').addClass('fa-angle-up');
 
             $open.slideDown(400, function(event){
                 self.extraEditors.getEditor(data.id, data.type).refreshEditor();
@@ -358,6 +395,9 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
             self.fullFormActivate( true );
             self.fullFormVisibility( true );
             self.wizardFormVisibility( false );
+            _.defer( function() {
+                Toolset.hooks.doAction( 'cred_editor_init_top_bar' );
+            });
         }
     });
 
@@ -448,9 +488,12 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
         self.fullFormActivate( true );
         self.fullFormVisibility( true );
         self.wizardFormVisibility( false );
-        self.updateExtraEditorsValues();
-        self.updateContentFromCodeMirror('cred_association_form_content');
-        Toolset.hooks.doAction( 'cred_editor_exit_wizard_mode' );
+		self.updateExtraEditorsValues();
+		self.updateContentFromCodeMirror('cred_association_form_content');
+		self.scaffoldObject = self.scaffold.scaffoldToJSON( jQuery( '#association_form_wizard') );
+		jQuery( '#association_form_wizard' ).remove();
+		Toolset.hooks.doAction( 'cred_editor_exit_wizard_mode' );
+		scaffoldIsLoaded = false;
         self.select2Init();
     };
 
@@ -489,20 +532,35 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
 
         if( !valid ) return;
 
+        // Close options to 'save' changes
+        jQuery( '.js-cred-editor-scaffold-item-options:visible .js-cred-editor-scaffold-options-close' ).click();
         // update form_content manually since we are using codeMirror
         self.messages( self.handleMessagesGet() );
         self.updateContentFromCodeMirror('cred_association_form_content');
-        self.updateExtraEditorsValues();
+		self.updateExtraEditorsValues();
+		self.scaffold_data( JSON.stringify( self.scaffold.scaffoldToJSON() ) );
+		if ( ! self.expertModeActive() ) {
+			self.insertScaffold();
+		}
+        var editor = icl_editor.codemirrorGet( 'cred_association_form_content' );
+        self.form_content( editor.getValue() );
         model.updateAllProperties( JSON.parse( ko.toJSON( self ) ) );
         model.saveForm( function( updated_model, response, object, args ){
 
                 if( updated_model.get('id') ){
                     self.id( updated_model.get('id') );
                     self.updateBrowserLocation( updated_model.get('id') );
+                    self.showDeleteButton();
                 }
 
                 if( updated_model.get('slug') ){
-                    self.slug( updated_model.get('slug') );
+                    var slug_for_model = (
+                        _.has( response, 'data' )
+                        && _.has( response.data, 'results' )
+                        && _.has( response.data.results, 'slug' )
+                    ) ? response.data.results.slug : updated_model.get('slug');
+                    self.slug( slug_for_model );
+                    self.handleMessagesSet( { slug: slug_for_model } );
                 }
 
             self.display.isSaving(false);
@@ -533,6 +591,440 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
         }
     };
 
+    self.saveButtonLabel = ko.computed( function() {
+        return self.id() ? Toolset.CRED.AssociationFormsEditor.strings.updateForm : Toolset.CRED.AssociationFormsEditor.strings.saveForm;
+    } );
+
+
+    Toolset.hooks.addFilter( 'cred_editor_scaffold_scaffold_field_id_attribute_name', function() {
+        return scaffoldDefaultData.scaffold_field_id;
+    }, this, 10 );
+    /**
+     * Scaffold functions
+     */
+    self.scaffold = new Toolset.CRED.ScaffoldEditor( shortcodeFormContainer );
+
+    self.expertModeActive = ko.observable( false );
+    /**
+     * Toggle switcher actions
+     *
+     * @param {Object} koObject ko Object (ignored)
+     * @param {Event} event DOM Event
+     */
+    self.toggleEditorMode = function( koObject, event ) {
+        var $target = jQuery( event.target );
+        self.expertModeActive( $target.is( ':checked' ) );
+        if ( self.expertModeActive() ) {
+            self.insertScaffold();
+        } else {
+            if ( !scaffoldIsLoaded ) {
+                jQuery('#relationship').change();
+                self.scaffoldObject = self.scaffold.scaffoldToJSON();
+                self.scaffoldObject.fields = self.scaffold.parseHTMLtoScaffold( icl_editor.codemirrorGet( 'cred_association_form_content' ).getValue() );
+                self.loadRelationshipData( Toolset.CRED.ScaffoldEditor.setInitialScaffoldItems );
+            }
+        }
+        self.editor_origin( self.expertModeActive() ? 'html' : 'scaffold' );
+        if ( self.editor_origin() === 'html' ) {
+            var codeMirrorInstance = icl_editor.codemirrorGet( 'cred_association_form_content' );
+            self.initEditorContent = codeMirrorInstance.getValue();
+        }
+    };
+
+    /**
+     * Returns if it has relationship selected
+     */
+    self.hasRelationship = ko.computed( function() {
+        return self.relationship() !== '';
+    });
+
+    /**
+     * Returns if the D&D editor is visible
+     */
+    self.isScaffoldVisible = ko.computed( function() {
+        return self.hasRelationship() && ! self.expertModeActive();
+    });
+
+    /**
+     * Options is an object and it has to be transformed to an array.
+     * Each scaffold options needs a extra info for using in knockout
+     *
+     * @since 2.2
+     */
+    var formatScaffoldOptions = function( dataOptions ) {
+        var options = [];
+        Object.keys( dataOptions ).forEach( function( key ) {
+            var itemOption = {
+                label: dataOptions[ key ].label,
+            }
+            itemOption.className = 'cred-editor-scaffold-options-' + key + ' js-cred-editor-scaffold-options-' + key;
+            itemOption.checked = !!self.scaffoldObject && self.scaffoldObject.options.includes( key );
+            options.push( itemOption );
+        })
+        return options;
+    }
+    scaffoldDefaultData.options = formatScaffoldOptions( scaffoldDefaultData.options );
+    self.formOptions = ko.observableArray( scaffoldDefaultData.options );
+    self.extraFields = ko.observableArray([]);
+    self.metaFields = ko.observableArray([]);
+    self.mainFields = ko.observableArray([]);
+
+    // Form has options
+    self.hasOptions = ko.observable( self.formOptions().length > 0 )
+
+    // WP templates
+    self.templates = Toolset.hooks.applyFilters( 'toolset-filter-get-shortcode-gui-templates', {} );
+    self.templates.itemOptionsMedia = wp.template( 'cred-editor-scaffold-itemOptions-media' );
+    self.templates.itemOptionsHTMLContent = wp.template( 'cred-editor-scaffold-itemOptions-html-content' );
+    self.templates.scaffold = {};
+    self.templates.scaffold.switchToDD = wp.template( 'cred-editor-scaffold-dialog-switch-to-dd' );
+
+
+    /**
+     * Format fields to be displayed
+     *
+     * @param {Array} fields
+     */
+    var formatFields = function( fields, fieldType ) {
+        var fieldsArray = []
+        Object.keys( fields ).forEach( function( key ) {
+            fields[key].fieldType = !! fieldType ? fieldType : fields[key].fieldType;
+            if ( ! Object.keys( fields[key].attributes ).length ) {
+                fields[key].attributes = { field: key, name: key };
+            }
+            if ( !fields[key].attributes[ scaffoldDefaultData.scaffold_field_id ] && !! fields[key].attributes.field ) {
+                fields[key].attributes[ scaffoldDefaultData.scaffold_field_id ] = fields[key].attributes.field;
+            }
+            fields[key].formattedAttributes = JSON.stringify( fields[key].attributes );
+            fields[key].formattedOptions = JSON.stringify( fields[key].options );
+            fields[key].containerInclude = !fields[key].blockedItem && !fields[key].autogeneratedItem;
+            fields[key].blockedItem = !!fields[key].blockedItem;
+            fields[key].autogeneratedItem = !!fields[key].autogeneratedItem;
+            fields[key].requiredItem = !!fields[key].requiredItem;
+            fields[key].permanent = !!fields[key].permanent;
+            fields[key].removable = !fields[key].requiredItem && fields[key].containerInclude;
+            if ( !fields[key].blockedReason ) {
+                fields[key].blockedReason = false;
+            }
+            if ( !fields[key].blockedLink ) {
+                fields[key].blockedLink = false;
+            }
+            fields[key].hasOptions = !! fields[key].options && Object.keys( fields[key].options ).length;
+            fields[key].fieldTypeIcon = !! fields[key].icon_class ? 'cred-editor-scaffold-field-type-icon ' + fields[key].icon_class : false;
+            fields[key].scaffoldFieldId = fields[key].attributes[ scaffoldDefaultData.scaffold_field_id ]
+
+            fields[key].optionHTML = '';
+            _.each( fields[key].options, function( attributeOptions, attributeKey ) {
+                attributeOptions = _.defaults( attributeOptions, {
+                    shortcode: fields[key].shortcode,
+                    attribute: attributeKey,
+                    templates: self.templates,
+                    defaultValue: '',
+                    required: false,
+                    hidden: false,
+                    placeholder: ''
+                } );
+                attributeOptions = _.defaults( attributeOptions, { defaultForceValue: attributeOptions.defaultValue } );
+
+                if ( 'media' === fields[key].attributes[ scaffoldDefaultData.scaffold_field_id ] ) {
+                    fields[key].optionHTML += self.templates.itemOptionsMedia( {} );
+                } else if ( 'html' === fields[key].attributes[ scaffoldDefaultData.scaffold_field_id ] ) {
+                    fields[key].optionHTML += self.templates.itemOptionsHTMLContent( {} );
+                } else if ( 'group' == attributeOptions.type ) {
+                    fields[key].optionHTML += self.templates.attributeGroupWrapper( attributeOptions );
+                } else {
+                    fields[key].optionHTML += self.templates.attributeWrapper( attributeOptions );
+                }
+            });
+
+            fieldsArray.push( fields[key] );
+        });
+        return fieldsArray;
+    }
+
+
+    /**
+     * Inserts scaffold content in the HTML editor
+     */
+    self.insertScaffold = function() {
+        var scaffold = self.scaffold.craftScaffoldOutput();
+        // Empty previous content
+        var editor = icl_editor.codemirrorGet( 'cred_association_form_content' );
+        editor.setValue( scaffold )
+    }
+
+    var scaffoldIsLoaded = false;
+    /**
+     * Loads fields data of the selected relationship
+     */
+    self.loadRelationshipData = function() {
+        var callback = arguments.length ? arguments[0] : false;
+        /**
+         * Format and group fields from data get from Ajax call
+         */
+        Toolset.hooks.doAction( 'cred-action-maybe-request-and-operate-on-object-fields', function( _objectFields, objectKey ) {
+            var objectFields = JSON.parse( JSON.stringify( _objectFields ) );
+			var mainFields = objectFields.roles;
+
+			// Include all fields by default on newly created forms
+			// but extra fields, like HTML or Media
+            var metaFields = Object.assign( {}, objectFields.meta );
+            Object.keys( metaFields ).forEach( function( key ) {
+                if ( _.has( scaffoldDefaultData.fields.extra, key ) && scaffoldDefaultData.fields.extra[ key ] ) {
+                    delete metaFields[ key ];
+                }
+            });
+
+
+            // I am not sure why it has to be done, but I suppose it is caused due to modifying node elements directly
+            // What happen: if I modify the elements of the scaffold and add wrappers, it seems that knockout stop controlling them
+            // and when I update or empty the list using `mainFields()`, fields moved to columns remain in the list
+            // If I empty the list using knockout `mainFields([])`, the fields remain there
+            // If I remove the children using jQuery, when updating the list using knockout `mainFields( list )` some fields are missing
+            // It works only using both actions
+            jQuery( '.js-cred-editor-scaffold-item-list:visible' ).children().remove();
+            self.mainFields([]);
+
+            self.mainFields(
+                formatFields( mainFields )
+                    .concat( formatFields( metaFields, 'meta' ), formatFields( scaffoldDefaultData.fields.formElements, 'form-elements' ) )
+            );
+
+			// Keep track of the existence of optional fields
+			// so the sidebar group can be created
+			var metaOptionalFields = Object.assign( {}, objectFields.meta );
+
+            Object.keys( metaOptionalFields ).forEach( function( key ) {
+                if ( ! ! metaOptionalFields[ key ].requiredItem ) {
+                    delete metaOptionalFields[ key ];
+                }
+			});
+
+
+            self.metaFields( formatFields( metaOptionalFields, 'meta' ) );
+
+            self.extraFields( formatFields( scaffoldDefaultData.fields.extra, 'extra' ) );
+
+            if ( typeof callback === 'function' ) {
+                callback( self.scaffoldObject );
+            }
+
+            if ( ! jQuery( '.cred-editor-scaffold-item-wrapper-row' ).length ) {
+                self.scaffold.addFieldItemsWrapperAndRow();
+            }
+
+            // jQuery.draggable#refreshPositions is a costly process, because it recalculates droppable zones sizes in every `mouseover` events
+            // To avoid it, $.ui.intersect must be adapted to our needs.
+            // @link https://github.com/jquery/jquery-ui/blob/master/ui/widgets/droppable.js#L261
+            var intersectOriginal = jQuery.ui.intersect;
+            jQuery.ui.intersect = function( draggable, droppable, toleranceMode, event ) {
+                // I don't know why drop event is fired twice, so I use this flag
+                if ( !! jQuery.ui.credStopsDragging ) {
+                    return false;
+                }
+                return document.elementsFromPoint( event.clientX, event.clientY )
+                    .filter( function( element ) {
+                        var maybeAllowConditional = draggable.element.data( scaffoldDefaultData.scaffold_field_id ) !== 'conditionals'
+                            || ( draggable.element.data( scaffoldDefaultData.scaffold_field_id ) === 'conditionals' && !element.classList.contains('cred-editor-scaffold-dropping-zones-conditional') );
+
+                        return maybeAllowConditional && element === droppable.element[0];
+                    } )
+                    .length;
+            }
+
+            self.scaffold.addDraggableItems();
+            tippy( '.js-cred-editor-tippy', {
+                onShow: function( tip ) {
+                    Toolset.CRED.ScaffoldEditor.maybeShowTooltip( tip );
+                }
+			} );
+
+			scaffoldIsLoaded = true;
+        });
+    }
+
+
+    /**
+     * Remove a item form the main list and move it to its block
+     *
+     * @param {Object} object KO Object
+     * @param {Event} event DOM Event
+     */
+    self.removeField = function( object, event ) {
+        event.preventDefault();
+        var $control = jQuery( event.target ),
+            $container = $control.closest( '.js-cred-editor-scaffold-item-container' ),
+            $droppableRow = $container.closest( '.cred-editor-scaffold-item-wrapper-row' );
+        $container.find('.cred-editor-scaffold-item-options-toggle.fa-angle-up').click();
+        $container.slideUp( 'fast', function() {
+            $container.closest( '.cred-editor-scaffold-item-wrapper-item' ).find( '.cred-editor-scaffold-item-wrapper-resizer' ).remove();
+            var fieldType = $container.data('fieldtype');
+            if ( [ 'basic', 'legacyParent', 'hierarchicalParent' ].includes( fieldType ) ) {
+                fieldType = 'post-elements';
+            }
+            if ( fieldType === 'formElement' ) {
+                fieldType = 'form-elements';
+            }
+            $target = jQuery( '.cred-editor-scaffold-' + fieldType + '-list' );
+            if ( ! $container.data( 'permanent' ) ) {
+                $target.prepend( $container );
+                if ( $target.children().length ) {
+                    $target.closest( 'cred-editor-scaffold-' + fieldType + '-container' ).removeClass('hidden');
+                }
+                $container.slideDown();
+            } else {
+                $container.remove();
+            }
+			// Refresh draggable instance
+			if ( $container.draggable( 'instance' ) ) {
+                $container.draggable( 'destroy' );
+            }
+            $container.draggable( self.scaffold.draggingOptions );
+
+            self.scaffold.removeEmptyWrappers();
+            self.scaffold.rearrangeColumns( $droppableRow );
+
+        });
+    }
+
+
+    /**
+     * Switching back to D&D editor may loose changes
+     *
+     * @param {Object} koObject ko Object (ignored)
+     * @param {Event} event DOM Event
+     */
+    self.maybeCancelSwitchingEditors = function( object, event ) {
+        // Close options to 'save' changes
+        jQuery( '.js-cred-editor-scaffold-item-options:visible .js-cred-editor-scaffold-options-close' ).click();
+        var codeMirrorInstance = icl_editor.codemirrorGet( 'cred_association_form_content' );
+
+        if ( self.expertModeActive() ) {
+            event.preventDefault();
+            event.stopPropagation();
+            if ( self.initEditorContent !== codeMirrorInstance.getValue() ) {
+                var dialog = jQuery( self.templates.scaffold.switchToDD() ).dialog( {
+                    modal: true,
+                    classes: { 'ui-dialog': 'toolset-ui-dialog' },
+                    buttons: [
+                        {
+                            text: self.i18n.no,
+                            class: 'button-secondary',
+                            click: function() {
+                                dialog.dialog('close');
+                            }
+                        },
+                        {
+                            text: self.i18n.yes,
+                            class: 'button-primary',
+                            click: function() {
+                                jQuery('[id=cred-editor-expert-mode-switcher]:visible').removeProp( 'checked' ).change();
+                                dialog.dialog('close');
+                            }
+                        }
+                    ]
+                } );
+            } else {
+                jQuery('[id=cred-editor-expert-mode-switcher]:visible').removeProp( 'checked' ).change();
+            }
+        } else {
+            jQuery('[id=cred-editor-expert-mode-switcher]:visible').prop( 'checked', true ).change();
+        }
+    }
+
+    /**
+     * Actions before template is rendered
+     */
+    self.afterRenderCallback = function() {
+        var currentInstance = self;
+        if ( self.editor_origin() === 'html' /*|| ( ! self.scaffoldObject && self.form_content() )*/ ) {
+            self.expertModeActive( true );
+            jQuery( '#cred-editor-expert-mode-switcher' ).prop( 'checked', true );
+        } else if ( self.hasRelationship() ) {
+            _.defer( function() {
+				self.expertModeActive( false );
+				// Defer loading the d&d editor until the content template has been rendered
+				// Otherwise, it will not be properly initialized
+				self.loadRelationshipData( Toolset.CRED.ScaffoldEditor.setInitialScaffoldItems );
+			});
+        }
+
+        /**
+         * Toggle JS and CSS editors below the main content editor.
+         * Content is rendered using wp templates so ko is not available
+         *
+         * @since 2.1
+         */
+        $( document ).on( 'click', '.js-cred-editor-toggler', function() {
+            var $toggler = $( this ),
+                target = $( this ).data( 'target' );
+
+            $toggler
+                .find( '.fa.fa-angle-down, .fa.fa-angle-up' )
+                    .toggleClass( 'fa-angle-down fa-angle-up' );
+
+            $( '.js-cred-editor-wrap-' + target ).slideToggle( 'fast', function() {
+                var codeMirrorInstance = icl_editor.isCodeMirror( jQuery( '#' + target ) );
+                if ( codeMirrorInstance ) {
+                    codeMirrorInstance.refresh();
+                    codeMirrorInstance.focus();
+                }
+            });
+        });
+
+        /**
+         * Media button handler
+         */
+        jQuery( document )
+            .off( '.scaffold', '.js-shortcode-gui-field-input-media-button' ) // There are 2 forms and it avoids duplicated binding
+            .on( 'click.scaffold', '.js-shortcode-gui-field-input-media-button', function() {
+                var $button = jQuery(this);
+                var $input = $button.prev();
+                var $thumbnail = $button.parent().next().find( 'img' );
+                var $thumbnailInput = $thumbnail.next();
+                var custom_media = true;
+                window.cred_send_to_editor = function( tag ) {};
+                wp.media.editor.send.attachment = function( props, imageObject ) {
+                    switch ( imageObject.type ) {
+                        case 'image':
+                            $input.val( wp.media.string.image(imageObject) );
+                            break;
+                        case 'video':
+                            $input.val( wp.media.string.video(props, imageObject) );
+                            break;
+                        case 'audio':
+                            $input.val( wp.media.string.audio(props, imageObject) );
+                            break;
+                        default:
+                            $input.val( wp.media.string.link(props, imageObject) );
+                    }
+                    $thumbnail.attr( 'src', !!imageObject.sizes ? imageObject.sizes.thumbnail.url : imageObject.icon ).removeClass( 'hidden' );
+                    $thumbnailInput.val( $thumbnail.attr( 'src' ) );
+                }
+
+                wp.media.editor.open(1);
+                return false;
+            });
+
+        /**
+         * tippy.js init
+         */
+        tippy( '.js-cred-editor-tippy', {
+            onShow: function( tip ) {
+                Toolset.CRED.ScaffoldEditor.maybeShowTooltip( tip );
+            }
+        } );
+    }
+
+    /**
+     * Make the button to delete the form visible.
+     *
+     * Note that we use the visibility property because the top bar uses show/hide on scroll
+     */
+    self.showDeleteButton = function() {
+        jQuery( '.js-cred-delete-form' ).css( { 'visibility': 'visible' } );
+    };
+
     /**
      * Delete
      */
@@ -556,6 +1048,33 @@ Toolset.CRED.AssociationFormsEditor.viewmodels.AssociationFormViewModel = functi
         },
         isSaving: ko.observable(false)
     };
+
+    /**
+     * After adding elements dynamically, it needs to be bound to knockout
+     *
+     * @since 2.2
+     */
+    self.applyBindingsToNode = function( htmlNode ) {
+        var attributes = JSON.parse( htmlNode.dataset.attributes || {} );
+        // A pseudomodel is needed because the new element that needs ko binding  is a child element and the model has to be adapted to it.
+        var pseudoModel = Object.assign( { '$parent' : { removeField: self.removeField } }, scaffoldDefaultData.fields[ htmlNode.dataset.fieldtype ][ attributes[ scaffoldDefaultData.scaffold_field_id ] ] )
+        ko.applyBindings( pseudoModel, htmlNode );
+        tippy( htmlNode.querySelector( '.js-cred-editor-tippy' ), {
+            onShow: function( tip ) {
+                Toolset.CRED.ScaffoldEditor.maybeShowTooltip( tip );
+            }
+        } );
+    }
+    Toolset.hooks.addAction( 'cred_editor_scaffold_do_knockout_binding', self.applyBindingsToNode, 10, self );
+
+
+    /**
+     * Returns the warning notice HTML
+     *
+     * @since 2.2
+     */
+    self.warningNotice = self.i18n.notice;
+
 };
 
 Toolset.ko = Toolset.ko || {
@@ -569,5 +1088,21 @@ Toolset.ko = Toolset.ko || {
                 model[propertyName] = newValue;
             });
         }
+    }
+};
+
+
+/**
+ * Run code after the fields elements are rendered, needed for setting external libraries to elements inside
+ *
+ * @since 2.2
+ */
+ko.bindingHandlers.afterFieldRendered = {
+    update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+        tippy( element.querySelector( '.js-cred-editor-tippy' ), {
+            onShow: function( tip ) {
+                Toolset.CRED.ScaffoldEditor.maybeShowTooltip( tip );
+            }
+        } );
     }
 };

@@ -1,8 +1,8 @@
 <?php
 
-define('ON_THE_GO_SYSTEMS_BRANDING_STYLES_CLASS_PATH', dirname(__FILE__) );
-
 class OnTheGoSystemsStyles_Class{
+
+    const VERSION_NUMBER = '4.0';
 
     private static $instance;
 
@@ -22,14 +22,36 @@ class OnTheGoSystemsStyles_Class{
     }
 	
 	public function register_styles() {
-		wp_register_style('onthego-admin-styles', ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthego-styles/onthego-styles.css');
+		wp_register_style( 'onthego-admin-styles-icons', ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthegosystems-icons/css/onthegosystems-icons.css', array(), self::VERSION_NUMBER );
+		wp_register_style( 'onthego-admin-styles-colors', ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthego-styles/onthego-colors.css', array(), self::VERSION_NUMBER );
+		wp_register_style( 'onthego-admin-styles-helper', ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthego-styles/onthego-styles-helper.css', array(), self::VERSION_NUMBER );
+		wp_register_style( 'onthego-admin-styles-core', ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthego-styles/onthego-admin-styles.css', array(), self::VERSION_NUMBER );
+		wp_register_style( 'onthego-admin-styles-buttons', ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthego-styles/onthego-buttons.css', array(), self::VERSION_NUMBER );
+        
+        wp_register_style(
+            'onthego-admin-styles',
+            ON_THE_GO_SYSTEMS_BRANDING_REL_PATH .'onthego-styles/onthego-styles.css',
+            array(
+                'onthego-admin-styles-icons',
+                'onthego-admin-styles-colors',
+                'onthego-admin-styles-helper',
+                'onthego-admin-styles-core',
+                'onthego-admin-styles-buttons',
+            ),
+            self::VERSION_NUMBER
+        );
 	}
 
     public function enqueue_styles()
     {
         if ( 
 			is_admin() 
-			|| defined('WPDDL_VERSION') 
+			|| (
+                // Load on frontend for Layouts related needs, only if the current usre is logged in.
+                // Otherwise, the current user will never reach the Layouts frontend editor.
+                defined('WPDDL_VERSION')
+                && is_user_logged_in()
+            )
 		) {
             wp_enqueue_style( 'onthego-admin-styles' );
         }

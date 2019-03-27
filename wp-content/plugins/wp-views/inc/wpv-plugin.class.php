@@ -5,23 +5,22 @@ class WP_Views_plugin extends WP_Views {
     function __construct() {
 		parent::__construct();
     }
-	
+
 	// This happens on after_setup_theme:999
 	function before_init() {
 		parent::before_init();
 	}
 
     function init() {
-		
+
         add_filter( 'custom_menu_order', array( $this, 'enable_custom_menu_order' ) );
         add_filter( 'menu_order', array( $this, 'custom_menu_order' ) ); // @todo I really feel this is not used anymore
 
         parent::init();
-		
+
 		// Check whether we can require this only on editor pages
-		// Note that this requires Editor_addon_generic which is loaded by the Toolset Common Bootstrap
 		require_once( WPV_PATH . '/inc/filters/editor-addon-parametric.class.php');
-		
+
 		// Actions to display buttons in edit screen textareas
 		add_action( 'wpv_views_fields_button', array( $this, 'add_views_fields_button' ), 10 );
 		add_action( 'wpv_cred_forms_button', array( $this, 'add_cred_forms_button' ) );
@@ -31,7 +30,7 @@ class WP_Views_plugin extends WP_Views {
 			// and can not declare dependency of the main View or WPA edit script.
 			add_action( 'admin_enqueue_scripts', array( $this,'wpv_admin_enqueue_scripts' ), 1 );
 		}
-        
+
         /**
         * Add hooks for backend Module Manager Integration
         */
@@ -55,7 +54,7 @@ class WP_Views_plugin extends WP_Views {
         add_filter( 'icl_get_extra_debug_info', array( $this, 'add_config_to_toolset_extra_debug' ) );
 
 		add_filter( 'toolset_filter_toolset_admin_bar_menu_insert', array( $this, 'extend_toolset_admin_bar_menu' ), 10, 3 );
-		
+
     }
 
 
@@ -189,7 +188,7 @@ class WP_Views_plugin extends WP_Views {
 	function register_views_pages_in_menu( $pages ) {
 		global $pagenow;
         $page = wpv_getget( 'page' );
-		
+
 		$pages[] = array(
 			'slug'			=> 'views',
 			'menu_title'	=> __( 'Views', 'wpv-views' ),
@@ -211,9 +210,9 @@ class WP_Views_plugin extends WP_Views {
 			'page_title'	=> __( 'Content Templates', 'wpv-views' ),
 			'callback'		=> 'wpv_admin_menu_content_templates_listing_page'
 		);
-        if ( 
-			( 'admin.php' == $pagenow ) 
-			&& ( WPV_CT_EDITOR_PAGE_NAME == $page ) 
+        if (
+			( 'admin.php' == $pagenow )
+			&& ( WPV_CT_EDITOR_PAGE_NAME == $page )
 		) {
 			add_filter( 'screen_options_show_screen', '__return_false', 99 );
 			$pages[] = array(
@@ -224,9 +223,9 @@ class WP_Views_plugin extends WP_Views {
 			);
 		}
 		// Since 2.6 we need to fake registration of a CT create admin page to avoid issues with wpv_ct_editor_create_and_redirect
-		if ( 
-			( 'admin.php' == $pagenow ) 
-			&& ( WPV_CT_CREATOR_PAGE_NAME == $page ) 
+		if (
+			( 'admin.php' == $pagenow )
+			&& ( WPV_CT_CREATOR_PAGE_NAME == $page )
 		) {
 			add_filter( 'screen_options_show_screen', '__return_false', 99 );
 			$pages[] = array(
@@ -265,7 +264,7 @@ class WP_Views_plugin extends WP_Views {
         $this->add_views_admin_create_ct_or_wpa_auto();
 		return $pages;
 	}
-	
+
 	function register_export_import_section( $sections ) {
 		// @todo check assets...
 		// @todo move this to a template, but we might need a complete templating system instead of patching
@@ -301,7 +300,7 @@ class WP_Views_plugin extends WP_Views {
 															. WPV_MESSAGE_SPACE_CHAR
 															. sprintf(
 																__( 'Log into <a href="%s">your account</a> and go to <a href="%s">affiliate settings</a> for details.', 'wpv-views' ),
-																WPV_Admin_Messages::get_documentation_promotional_link( 
+																WPV_Admin_Messages::get_documentation_promotional_link(
 																	array(
 																		'query' => array(
 																			'utm_source'	=> 'viewsplugin',
@@ -309,10 +308,10 @@ class WP_Views_plugin extends WP_Views {
 																			'utm_medium'	=> 'import-export-login-to-wp-types-com',
 																			'utm_term'		=> 'your account'
 																		)
-																	), 
-																	'https://toolset.com' 
+																	),
+																	'https://toolset.com'
 																),
-																WPV_Admin_Messages::get_documentation_promotional_link( 
+																WPV_Admin_Messages::get_documentation_promotional_link(
 																	array(
 																		'query' => array(
 																			'utm_source'	=> 'viewsplugin',
@@ -320,8 +319,8 @@ class WP_Views_plugin extends WP_Views {
 																			'utm_medium'	=> 'import-export-get-affiliate-link',
 																			'utm_term'		=> 'affiliate settings'
 																		)
-																	), 
-																	'https://toolset.com/account/affiliate/' 
+																	),
+																	'https://toolset.com/account/affiliate/'
 																)
 															)
 														. '</p>'
@@ -336,8 +335,8 @@ class WP_Views_plugin extends WP_Views {
 				'import'	=> array(
 								'title'		=> __( 'Import Views, WordPress Archives and Content Templates', 'wpv-views' ),
 								'content'	=> '<form name="View_import" enctype="multipart/form-data" action="' . admin_url('admin.php') . '?page=toolset-export-import&tab=wpv-views" method="post">'
-													. '<p>' 
-														. __( 'You can upload a .zip or .xml file from your computer:', 'wpv-views' ) 
+													. '<p>'
+														. __( 'You can upload a .zip or .xml file from your computer:', 'wpv-views' )
 													. '</p>'
 													. '<p>'
 														. '<input type="file" id="upload-views-file" name="import-file" />'
@@ -376,7 +375,7 @@ class WP_Views_plugin extends WP_Views {
 		);
 		return $sections;
 	}
-    
+
     public function add_views_admin_create_ct_or_wpa_auto() {
         $parent_slug = 'options.php'; // Invisible. See WordPress documentation. todo add link
         $page_title = __( 'Create a new Template', 'wpv-views' );
@@ -386,30 +385,30 @@ class WP_Views_plugin extends WP_Views {
         $function = array( $this, 'create_ct_or_wpa_auto' );
         add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $function );
     }
-    
+
     /**
-     * Creates a Content Template for WordPress Archive for a Post Type, 
+     * Creates a Content Template for WordPress Archive for a Post Type,
      * Taxonomy or WordPress Page with default settings and assigns it to the
      * right item.
-     * 
+     *
      * Used by Toolset_Admin_Bar_Menu.
-     * 
+     *
      * Expected $_GET parameters
      * type: post type, taxonomy or special wordpress archive
      * class: is it an archive page or a content template page
      * post: post_id or empty
-     * 
+     *
      */
     public function create_ct_or_wpa_auto() {
-        
+
         // verify permissions
         if( ! current_user_can( 'manage_options' ) ) {
             die( __( 'Untrusted user', 'wpv-views' ) );
         }
-        
+
         // verify nonce
         check_admin_referer( 'create_auto' );
-        
+
         // validate parameters
         $b_type = isset( $_GET['type'] ) && preg_match( '/^([-a-z0-9_]+)$/', $_GET['type'] );
         $b_class = isset( $_GET['class'] ) && preg_match( '/^(archive|page)$/', $_GET['class'] );
@@ -419,51 +418,51 @@ class WP_Views_plugin extends WP_Views {
         if( ! ( $b_type && $b_class && $b_post_id ) ) {
             die( __( 'Invalid parameters', 'wpv-views' ) );
         }
-        
+
         // get parameters
         $type = $_GET['type'];
         $class = $_GET['class'];
         $post_id = (int) $_GET['post'];
-        
+
         // enforce rules
         $b_page_archive = 'page' === $type && 'archive' === $class;
         $b_404 = '404' === $type;
         if( $b_page_archive || $b_404 ) {
             die( __( 'Not allowed', 'wpv-views' ) );
         }
-        
+
         // prepare processing
         if( $post_id === 0 ) {
             $post_id = null;
         }
-        
+
         $wpa_id = 0;
         $ct_id = 0;
-        
+
         global $WPV_settings;
         global $toolset_admin_bar_menu;
         $post_title = $toolset_admin_bar_menu->get_name_auto( 'views', $type, $class, $post_id );
         $title = sanitize_text_field( $post_title );
 		$name = sanitize_text_field( sanitize_title( $post_title ) );
-        
+
         $taxonomy = get_taxonomy( $type );
         $is_tax = $taxonomy !== false;
 
         $post_type_object = get_post_type_object( $type );
         $is_cpt = $post_type_object != null;
-        
+
         // route request
         if( 'archive' === $class ) {
-            
+
             // Create a new WordPress Archive
             global $wpdb, $WPV_view_archive_loop;
-            
+
             // Is there another WordPress Archive with the same name?
             $already_exists = $wpdb->get_var(
                 $wpdb->prepare(
-                    "SELECT ID FROM {$wpdb->posts} 
-                    WHERE ( post_title = %s OR post_name = %s ) 
-                    AND post_type = 'view' 
+                    "SELECT ID FROM {$wpdb->posts}
+                    WHERE ( post_title = %s OR post_name = %s )
+                    AND post_type = 'view'
                     LIMIT 1",
                     $title,
                     $title
@@ -472,11 +471,11 @@ class WP_Views_plugin extends WP_Views {
             if( $already_exists ) {
                 die( __( 'Another item already uses this name. Please use another name.', 'wpv-views' ) );
             }
-			
+
 			if ( empty( $name ) ) {
 				$name = 'view-rand-' . uniqid();
 			}
-            
+
             $args = array(
                 'post_title'    => $title,
 				'post_name'    => $name,
@@ -488,86 +487,86 @@ class WP_Views_plugin extends WP_Views {
             );
             $wpa_id = wp_insert_post( $args );
             $wpa_type = '';
-            
+
             if( in_array( $type, Toolset_Admin_Bar_Menu::$default_wordpress_archives )  ) {
-                
+
                 // Create a new WordPress Archive for X archives
-                
+
                 /* assign WordPress Archive to X archives */
                 $wpa_type = sprintf( 'wpv-view-loop-%s-page', $type );
-                
+
             } else if( $is_tax ) {
-                
+
                 // Create a new WordPress Archive for Ys
-                
+
                 /* assign WordPress Archive to Y */
                 $wpa_type = sprintf( 'wpv-view-taxonomy-loop-%s', $type );
-                
+
             } else if( $is_cpt ) {
-                
+
                 // Create a new WordPress Archive for Zs
-                
+
                 /* assign WordPress Archive to Z */
                 $wpa_type = sprintf( 'wpv-view-loop-cpt_%s', $type );
-                
+
             } else {
                 die( __( 'An unexpected error happened.', 'wpv-views' ) );
             }
-            
+
             $archive_defaults = wpv_wordpress_archives_defaults( 'view_settings' );
             $archive_layout_defaults = wpv_wordpress_archives_defaults( 'view_layout_settings' );
             update_post_meta( $wpa_id, '_wpv_settings', $archive_defaults );
             update_post_meta( $wpa_id, '_wpv_layout_settings', $archive_layout_defaults );
-            
+
             $data = array( $wpa_type => 'on' );
             $WPV_view_archive_loop->update_view_archive_settings( $wpa_id, $data );
-            
+
         } else if( 'page' === $class ) {
-            
+
             // Create a new Content Template
             $create_template = wpv_create_content_template( $title, '', true, '' );
             if ( isset( $create_template['error'] ) ) {
                 die( __( 'A Content Template with that name already exists. Please use another name.', 'wpv-views' ) );
             }
-            
+
             if( ! isset( $create_template['success'] ) || (int) $create_template['success'] == 0 ) {
                 die( __( 'An unexpected error happened.', 'wpv-views' ) );
             }
-            
+
             $ct_id = $create_template['success'];
             $ct_type = '';
-            
+
             if( 'page' === $type ) {
-                
+
                 // Create a new Content Template for 'Page Title'
-                
+
                 /* assign Content Template to Page */
 	            WPV_Content_Template_Embedded::assign_ct_to_post_object( $post_id, $ct_id );
-                
+
             } else if( $is_cpt ) {
-                
+
                 // Create a new Content Template for Ys
-                
+
                 /* assign Content Template to Y */
                 $ct_type = sanitize_text_field( sprintf( 'views_template_for_%s', $type ) );
                 $WPV_settings[$ct_type] = $ct_id;
-                
+
             } else {
                 die( __( 'An unexpected error happened.', 'wpv-views' ) );
             }
-            
+
         }
-        
+
         // update changes
         $WPV_settings->save();
-        
+
         // redirect to editor or die
         $template_id = max( array( $wpa_id, $ct_id ) );
-        
+
         if( $template_id === 0 ) {
             die( __( 'Unexpected error. Nothing was changed.', 'wpv-views' ) );
         }
-        
+
         // redirect to editor (headers already sent)
         $edit_link = $toolset_admin_bar_menu->get_edit_link( 'views', false, $type, $class, $template_id );
         $exit_string = '<script type="text/javascript">'.'window.location = "' . $edit_link . '";'.'</script>';
@@ -624,7 +623,7 @@ class WP_Views_plugin extends WP_Views {
 
     function settings_box_load(){
     // DEPRECATED, check Module Manager
-        
+
 		global $pagenow;
         if ($pagenow == 'options-general.php' && isset($_GET['page']) && $_GET['page'] == WPV_FOLDER . '/menu/main.php') {
             $this->include_admin_css();
@@ -632,7 +631,7 @@ class WP_Views_plugin extends WP_Views {
         if ($pagenow == 'options-general.php' && isset($_GET['page']) && $_GET['page'] == 'wpv-import-theme') {
             $this->include_admin_css();
         }
-	
+
     }
 
 
@@ -686,7 +685,7 @@ class WP_Views_plugin extends WP_Views {
         }
     }
 
-	
+
 	/**
 	* after_save_item
 	*
@@ -696,7 +695,7 @@ class WP_Views_plugin extends WP_Views {
 	*
 	* @since 1.8.0
 	*/
-	
+
 	function after_save_item( $item_id ) {
 		if (
 			! is_numeric( $item_id )
@@ -709,37 +708,22 @@ class WP_Views_plugin extends WP_Views {
 		if ( $last >= $now ) {
             return;
         }
-        update_post_meta( $item_id, '_toolset_edit_last', $now, $last );
-	}
+		update_post_meta( $item_id, '_toolset_edit_last', $now, $last );
 
-	/**
-	 * If the post has a view
-	 * add an view edit link to post.
-	 */
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				"UPDATE $wpdb->posts
+				SET post_modified = %s, post_modified_gmt = %s
+				WHERE ID = %d",
+				array(
+					current_time( 'mysql' ),
+					current_time( 'mysql', 1 ),
+					$item_id
+				)
+			)
+		);
 
-	function edit_post_link( $link, $post_id ) {
-		
-		if ( !current_user_can( 'manage_options' ) )
-			return $link;
-		
-        global $WPV_settings;
-		if ( $WPV_settings->wpv_show_edit_view_link == 1 ){
-			if ($this->current_view) {
-                $view_post = get_post( $this->current_view );
-                if (
-                    $view_post
-                    && 'publish' == $view_post->post_status
-                    && 'view' == $view_post->post_type
-                ) {
-                    $view_link = '<a href="' . admin_url() . 'admin.php?page=views-editor&view_id=' . $this->current_view . '" title="' . __('Edit view', 'wpv-views') . '">' . __('Edit view', 'wpv-views') . ' "' . get_the_title($this->current_view) . '"</a>';
-                    $view_link = apply_filters('wpv_edit_view_link', $view_link);
-                    if (isset($view_link) && !empty($view_link)) {
-                        $link = $link . ' ' . $view_link;
-                    }
-                }
-			}
-		}
-		return $link;
 	}
 
     /**
@@ -754,8 +738,8 @@ class WP_Views_plugin extends WP_Views {
 
 		if (!$views_available) {
 			$views_available = $wpdb->get_results(
-				"SELECT ID, post_title, post_name FROM {$wpdb->posts} 
-				WHERE post_type = 'view' 
+				"SELECT ID, post_title, post_name FROM {$wpdb->posts}
+				WHERE post_type = 'view'
 				AND post_status = 'publish'"
 			);
 
@@ -827,12 +811,12 @@ class WP_Views_plugin extends WP_Views {
 
 	function wpv_register_assets() {
 		parent::wpv_register_assets();
-		
+
 		/*
 		* Backend scripts
 		* @note all scripts for the edit pages need to be registered for the header. Loading them in the footer breaks the Layouts cells in Firefox just because :-O
 		*/
-		
+
 		// Views, WPA and CT edit screens JS
 		// @todo on a future revision, once common is spread, make **_editor.js depend on icl_editor-script and remove fallbacks
 
@@ -931,7 +915,7 @@ class WP_Views_plugin extends WP_Views {
 			'frontend_events_dialog_title'             => __( 'Insert Views frontend event handler', 'wpv-views' ),
 			'add_event_trigger_callback_dialog_insert' => __( 'Insert event trigger callback', 'wpv-views' ),
 			'codemirror_autoresize'                    => apply_filters( 'wpv_filter_wpv_codemirror_autoresize', false ),
-			'sections_saved'                           => __( 'All sections have been saved', 'wpv-views' ),
+			'sections_saved' => __( 'View saved', 'wpv-views' ),
 			'some_section_unsaved'                     => __( 'One or more sections haven\'t been saved.', 'wpv-views' ),
 			'editor_nonce'                             => wp_create_nonce( 'wpv_nonce_editor_nonce' ),
 			//@todo maybe add a $current_user->ID here for unique nonces
@@ -943,41 +927,45 @@ class WP_Views_plugin extends WP_Views {
 		$editor_ajax_info = array(
 			'ajax' => array(
 				'action' => array(
-					'view_wrapper_section_update_action' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_UPDATE_VIEW_WRAPPER_SECTION ),
+					'update_view_title' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_UPDATE_VIEW_TITLE ),
+					'update_description' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_UPDATE_DESCRIPTION ),
+					'view_wrapper_section_update' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_UPDATE_VIEW_WRAPPER_SECTION ),
 					'scan_view_usage' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_SCAN_VIEW_USAGE ),
 
 				),
 				'nonce' => array(
+					'update_view_title' => wp_create_nonce( WPV_Ajax::CALLBACK_UPDATE_VIEW_TITLE ),
+					'update_description' => wp_create_nonce( WPV_Ajax::CALLBACK_UPDATE_DESCRIPTION ),
+					'view_wrapper_section_update' => wp_create_nonce( WPV_Ajax::CALLBACK_UPDATE_VIEW_WRAPPER_SECTION ),
 					'scan_view_usage_nonce' => wp_create_nonce( WPV_Ajax::CALLBACK_SCAN_VIEW_USAGE ),
 				)
 			),
-		);
-
-		$wpv_ajax = WPV_Ajax::get_instance();
-
-		$editor_section_update_callbacks = array(
-			'ajaxaction' => array(
-					'view_wrapper_section_update_action' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_UPDATE_VIEW_WRAPPER_SECTION ),
+			'ajaxCallbacks' => array(
+				'createPageForView' => array(
+					'action' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_CREATE_PAGE_FOR_VIEW ),
+					'nonce' => wp_create_nonce( WPV_Ajax::CALLBACK_CREATE_PAGE_FOR_VIEW ),
+				),
 			),
 		);
 
-		wp_register_script( 
-			'views-editor-js', 
+		wp_register_script(
+			'views-editor-js',
 			WPV_URL . "/res/js/redesign/views_editor.js",
-			array( 'jquery', 'suggest', 'wp-pointer', 'jquery-ui-dialog', 'jquery-ui-sortable', 'jquery-ui-draggable', 'jquery-ui-tooltip', 'views-codemirror-conf-script', 'views-utils-script', 'toolset-utils', 'toolset-event-manager', 'underscore', 'quicktags', 'wplink'), 
-			WPV_VERSION, 
-			false 
+			array( 'jquery', 'suggest', 'wp-pointer', 'jquery-ui-dialog', 'jquery-ui-sortable', 'jquery-ui-draggable', 'jquery-ui-tooltip', 'views-codemirror-conf-script', 'views-utils-script', 'toolset-utils', 'toolset-event-manager', 'underscore', 'quicktags', 'wplink'),
+			WPV_VERSION,
+			false
 		);
 		wp_localize_script( 'views-editor-js', 'wpv_editor_strings', array_merge( $editor_translations, $editor_ajax_info ) );
-		
-		wp_register_script( 
-			'views-archive-editor-js', 
-			WPV_URL . "/res/js/redesign/views_archive_editor.js", 
-			array( 'jquery', 'suggest', 'wp-pointer', 'jquery-ui-dialog', 'jquery-ui-sortable', 'jquery-ui-draggable', 'jquery-ui-tooltip', 'views-codemirror-conf-script', 'views-utils-script', 'toolset-utils', 'toolset-event-manager', 'underscore', 'quicktags', 'wplink'), 
-			WPV_VERSION, 
-			false 
+
+		$editor_translations['sections_saved'] = __( 'WordPress Archive saved', 'wpv-views' );
+		wp_register_script(
+			'views-archive-editor-js',
+			WPV_URL . "/res/js/redesign/views_archive_editor.js",
+			array( 'jquery', 'suggest', 'wp-pointer', 'jquery-ui-dialog', 'jquery-ui-sortable', 'jquery-ui-draggable', 'jquery-ui-tooltip', 'views-codemirror-conf-script', 'views-utils-script', 'toolset-utils', 'toolset-event-manager', 'underscore', 'quicktags', 'wplink'),
+			WPV_VERSION,
+			false
 		);
-		wp_localize_script( 'views-archive-editor-js', 'wpv_editor_strings', $editor_translations );
+		wp_localize_script( 'views-archive-editor-js', 'wpv_editor_strings', array_merge( $editor_translations, $editor_ajax_info ) );
 
 		$filters_strings = array(
 			'add_filter_dialog'				=> array(
@@ -1007,11 +995,11 @@ class WP_Views_plugin extends WP_Views {
 					'dayofyear'			=> __( 'Days of the year can only be numbers between 1 and 366', 'wpv-views' ),
 					'dayofweek'			=> __( 'Days of the week can only be numbers between 1 and 7', 'wpv-views' ),
 					'numeric_natural'	=> __( 'This needs to be a non-negative number', 'wpv-views' ),
-				
+
 				),
 			),
 			'warning'						=> array(
-												
+
 											),
 			'parent_type_not_hierarchical'	=> __("The posts you want to display are not hierarchical, so this filter will not work", 'wpv-views'),
 			'taxonomy_parent_changed'		=> __("The taxonomy you want to display has changed, so this filter needs some action", 'wpv-views'),
@@ -1019,24 +1007,24 @@ class WP_Views_plugin extends WP_Views {
 			'add_filter_nonce'				=> wp_create_nonce( 'wpv_view_filters_add_filter_nonce' ),
 			'nonce'							=> wp_create_nonce( 'wpv_view_filters_nonce' ),
 		);
-		wp_register_script( 
-			'views-filters-js', 
-			WPV_URL . "/res/js/redesign/views_section_filters.js", 
-			array( 'jquery', 'jquery-ui-dialog', 'views-utils-script', 'toolset-event-manager', 'underscore' ), 
-			WPV_VERSION, 
-			false 
+		wp_register_script(
+			'views-filters-js',
+			WPV_URL . "/res/js/redesign/views_section_filters.js",
+			array( 'jquery', 'jquery-ui-dialog', 'views-utils-script', 'toolset-event-manager', 'underscore' ),
+			WPV_VERSION,
+			false
 		);
 		wp_localize_script( 'views-filters-js', 'wpv_filters_strings', $filters_strings );
-		
-		wp_register_script( 
+
+		wp_register_script(
 			'wpv-parametric-admin-script' ,
 			WPV_URL . '/res/js/redesign/views_parametric.js',
 			array( 'jquery', 'jquery-ui-dialog', 'toolset-utils', 'toolset-event-manager', 'underscore', 'icl_editor-script', 'views-codemirror-conf-script', 'views-shortcodes-gui-script' ),
-			WPV_VERSION 
+			WPV_VERSION
 		);
 		$form_filters_shortcodes_data = apply_filters( 'wpv_filter_wpv_get_form_filters_shortcodes', array() );
 		$form_filters_shortcodes = array_keys( $form_filters_shortcodes_data );
-		
+
 		wp_localize_script(
 			'wpv-parametric-admin-script',
 			'wpv_parametric_i18n',
@@ -1110,7 +1098,7 @@ class WP_Views_plugin extends WP_Views {
 				)
 			)
 		);
-		
+
 		$inline_content_templates_translations = array(
 			'pointer'		=> array(
 								'close'					=> __( 'Close', 'wpv-views' ),
@@ -1139,27 +1127,47 @@ class WP_Views_plugin extends WP_Views {
 								'codemirror_autoresize'	=> apply_filters( 'wpv_filter_wpv_codemirror_autoresize', false ),
 							)
 		);
-		wp_register_script( 
-			'views-layout-template-js', 
-			WPV_URL . "/res/js/redesign/views_section_layout_template.js", 
-			array( 'jquery', 'underscore', 'views-codemirror-conf-script', 'toolset-event-manager' ), 
-			WPV_VERSION, 
-			false 
+
+		$inline_content_templates_ajax_info = array(
+			'ajax' => array(
+				'action' => array(
+					'add_inline_content_template' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_ADD_INLINE_CONTENT_TEMPLATE ),
+				),
+				'nonce' => array(
+					'add_inline_content_template' => wp_create_nonce( WPV_Ajax::CALLBACK_ADD_INLINE_CONTENT_TEMPLATE ),
+				),
+			),
 		);
-		wp_localize_script( 'views-layout-template-js', 'wpv_inline_templates_i18n', $inline_content_templates_translations );
-		
+
+		wp_register_script(
+			'views-layout-template-js',
+			WPV_URL . "/res/js/redesign/views_section_layout_template.js",
+			array( 'jquery', 'underscore', 'views-codemirror-conf-script', 'toolset-event-manager' ),
+			WPV_VERSION,
+			false
+		);
+
+		wp_localize_script(
+				'views-layout-template-js',
+				'wpv_inline_templates_i18n',
+				array_merge(
+						$inline_content_templates_translations,
+						$inline_content_templates_ajax_info
+				)
+		);
+
 		$media_manager_translations = array(
 			'only_img_allowed_here' => __( "You can only use an image file here", 'wpv-views' )
 		);
-		wp_register_script( 
-			'views-redesign-media-manager-js', 
-			WPV_URL . "/res/js/redesign/views_media_manager.js", 
-			array( 'jquery'), 
-			WPV_VERSION, 
-			false 
+		wp_register_script(
+			'views-redesign-media-manager-js',
+			WPV_URL . "/res/js/redesign/views_media_manager.js",
+			array( 'jquery'),
+			WPV_VERSION,
+			false
 		);
 		wp_localize_script( 'views-redesign-media-manager-js', 'wpv_media_manager', $media_manager_translations );
-		
+
 		$layout_wizard_translations = array(
 			'button_next'			=> __( 'Next', 'wpv-views' ),
 			'button_insert'			=> __( 'Finish', 'wpv-views' ),
@@ -1175,20 +1183,27 @@ class WP_Views_plugin extends WP_Views {
 			'wpnonce'				=> wp_create_nonce( 'wpv_loop_wizard_nonce' )
 		);
 
-		$layout_wizard_callbacks = array(
-			'ajaxaction' => array(
-				'generateViewLoopOutput' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_GENERATE_VIEW_LOOP_OUTPUT ),
+		$layout_wizard_ajax_info = array(
+			'ajax' => array(
+				'action' => array(
+					'generate_view_loop_output' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_GENERATE_VIEW_LOOP_OUTPUT ),
+					'create_layout_content_template' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_CREATE_LAYOUT_CONTENT_TEMPLATE ),
+				),
+				'nonce' => array(
+					'generate_view_loop_output' => wp_create_nonce( WPV_Ajax::CALLBACK_GENERATE_VIEW_LOOP_OUTPUT ),
+					'create_layout_content_template' => wp_create_nonce( WPV_Ajax::CALLBACK_CREATE_LAYOUT_CONTENT_TEMPLATE ),
+				),
 			),
 		);
 
-		wp_register_script( 
-			'views-layout-wizard-script' , 
-			WPV_URL . '/res/js/redesign/views_layout_edit_wizard.js', 
-			array('jquery', 'views-layout-template-js', 'views-shortcodes-gui-script', 'toolset-colorbox'), 
-			WPV_VERSION, 
+		wp_register_script(
+			'views-layout-wizard-script' ,
+			WPV_URL . '/res/js/redesign/views_layout_edit_wizard.js',
+			array('jquery', 'views-layout-template-js', 'views-shortcodes-gui-script', 'toolset-colorbox'),
+			WPV_VERSION,
 			false
 		);
-		wp_localize_script( 'views-layout-wizard-script', 'wpv_layout_wizard_strings', array_merge( $layout_wizard_translations, $layout_wizard_callbacks ) );
+		wp_localize_script( 'views-layout-wizard-script', 'wpv_layout_wizard_strings', array_merge( $layout_wizard_translations, $layout_wizard_ajax_info ) );
 
         // Reusable Content Template dialogs
 		$views_ct_dialogs_texts = array(
@@ -1197,32 +1212,32 @@ class WP_Views_plugin extends WP_Views {
             'dialog_trash_warning_action'		=> __( 'Trash', 'wpv-views' ),
             'view_listing_actions_nonce'		=> wp_create_nonce( 'wpv_view_listing_actions_nonce' )
         );
-        wp_register_script( 
-			'views-ct-dialogs-js', 
-			WPV_URL . '/res/js/ct-dialogs.js', 
-			array( 'jquery', 'underscore', 'jquery-ui-dialog', 'views-utils-script', 'toolset-utils' ) 
+        wp_register_script(
+			'views-ct-dialogs-js',
+			WPV_URL . '/res/js/ct-dialogs.js',
+			array( 'jquery', 'underscore', 'jquery-ui-dialog', 'views-utils-script', 'toolset-utils' )
 		);
         wp_localize_script( 'views-ct-dialogs-js', 'wpv_ct_dialogs_l10n', $views_ct_dialogs_texts );
 
         // Suggestion Script for Views edit screen
 		// @todo deprecate this, FGS
-		wp_register_script( 
-			'views-suggestion_script', 
-			WPV_URL . "/res/js/redesign/suggestion_script.js", 
-			array(), 
-			WPV_VERSION, 
-			false 
+		wp_register_script(
+			'views-suggestion_script',
+			WPV_URL . "/res/js/redesign/suggestion_script.js",
+			array(),
+			WPV_VERSION,
+			false
 		);
 		wp_register_style( 'views_suggestion_style', WPV_URL . '/res/css/token-input.css', array(), WPV_VERSION );
 		wp_register_style( 'views_suggestion_style2', WPV_URL . '/res/css/token-input-wpv-theme.css', array(), WPV_VERSION );
 
 		// Listing JS
 
-		wp_register_script( 
-			'views-listing-common-script' , 
-			WPV_URL . '/res/js/redesign/wpv_listing_common.js', 
-			array( 'jquery', 'jquery-ui-dialog', 'views-utils-script' ), 
-			WPV_VERSION, 
+		wp_register_script(
+			'views-listing-common-script' ,
+			WPV_URL . '/res/js/redesign/wpv_listing_common.js',
+			array( 'jquery', 'jquery-ui-dialog', 'views-utils-script' ),
+			WPV_VERSION,
 			true
 		);
 
@@ -1235,7 +1250,6 @@ class WP_Views_plugin extends WP_Views {
 			'dialog_create_action'           => __( 'Create View', 'wpv-views' ),
 			'dialog_duplicate_dialog_title'  => __( 'Duplicate a View', 'wpv-views' ),
 			'dialog_duplicate_action'        => __( 'Duplicate', 'wpv-views' ),
-			'dialog_duplicate_nonce'         => wp_create_nonce( 'wpv_duplicate_view_nonce' ),
 			'dialog_bulktrash_dialog_title'  => __( 'Trash Views', 'wpv-views' ),
 			'dialog_bulktrash_action'        => __( 'Trash', 'wpv-views' ),
 			'dialog_bulktrash_nonce'         => wp_create_nonce( 'wpv_view_listing_actions_nonce' ),
@@ -1260,13 +1274,23 @@ class WP_Views_plugin extends WP_Views {
 					'scan_view_usage_nonce' => wp_create_nonce( WPV_Ajax::CALLBACK_SCAN_VIEW_USAGE ),
 				),
 			),
+			'ajaxCallbacks' => array(
+				'createView' => array(
+					'action' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_CREATE_VIEW ),
+					'nonce' => wp_create_nonce( WPV_Ajax::CALLBACK_CREATE_VIEW ),
+				),
+				'duplicateView' => array(
+					'action' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_DUPLICATE_VIEW ),
+					'nonce' => wp_create_nonce( WPV_Ajax::CALLBACK_DUPLICATE_VIEW ),
+				),
+			),
 		);
 
-		wp_register_script( 
-			'views-listing-script' , 
-			WPV_URL . '/res/js/redesign/views_listing_page.js', 
-			array( 'jquery', 'views-listing-common-script' ), 
-			WPV_VERSION, 
+		wp_register_script(
+			'views-listing-script' ,
+			WPV_URL . '/res/js/redesign/views_listing_page.js',
+			array( 'jquery', 'views-listing-common-script' ),
+			WPV_VERSION,
 			true
 		);
 		wp_localize_script( 'views-listing-script', 'views_listing_texts', array_merge( $views_listing_texts, $views_listing_callbacks ) );
@@ -1296,15 +1320,28 @@ class WP_Views_plugin extends WP_Views {
 			'tooltipPriceLinkTitle'                           => __( 'Compare versions and buy', 'wpv-views' ),
 			'tooltipPriceLinkURL'                             => __( WPV_LITE_UPGRADE_LINK, 'wpv-views' ) // TODO: add correct link here
 		);
-		wp_register_script( 
-			'views-archive-listing-script' , 
-			WPV_URL . '/res/js/redesign/views_wordpress_archive_listing_page.js', 
-			array( 'jquery', 'views-listing-common-script' ), 
-			WPV_VERSION, 
+
+		$wpa_listing_ajax_info = array(
+			'ajax' => array(
+				'action' => array(
+					'create_wordpress_archive' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_CREATE_WORDPRESS_ARCHIVE ),
+				),
+				'nonce' => array(
+					'create_wordpress_archive' => wp_create_nonce( WPV_Ajax::CALLBACK_CREATE_WORDPRESS_ARCHIVE ),
+				)
+			),
+		);
+
+		wp_register_script(
+			'views-archive-listing-script' ,
+			WPV_URL . '/res/js/redesign/views_wordpress_archive_listing_page.js',
+			array( 'jquery', 'views-listing-common-script' ),
+			WPV_VERSION,
 			true
 		);
-		wp_localize_script( 'views-archive-listing-script', 'wpa_listing_texts', $wpa_listing_texts );
-		
+
+		wp_localize_script( 'views-archive-listing-script', 'wpa_listing_texts', array_merge( $wpa_listing_texts, $wpa_listing_ajax_info ) );
+
 		$ct_listing_texts = array(
 			'dialog_cancel'										=> __( 'Cancel', 'wpv-views' ),
 			'dialog_update'										=> __( 'Update', 'wpv-views' ),
@@ -1333,28 +1370,42 @@ class WP_Views_plugin extends WP_Views {
 			'dialog_unlink_nonce'								=> wp_create_nonce( 'wpv_clear_cpt_from_ct_nonce' ),
 			'dialog_change_ct_assigned_to_sth_dialog_title'		=> __( 'Change the Content Template assigned to this', 'wpv-views' ),
 		);
-		wp_register_script( 
-			'views-content-template-listing-script' , 
-			WPV_URL . '/res/js/redesign/wpv_content_template_listing.js', 
-			array('jquery', 'views-listing-common-script', 'views-ct-dialogs-js' ), 
-			WPV_VERSION, 
+
+		$ct_listing_ajax_info = array(
+			'ajax' => array(
+				'action' => array(
+					'create_content_template' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_CREATE_CONTENT_TEMPLATE ),
+					'duplicate_content_template' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_DUPLICATE_CONTENT_TEMPLATE ),
+				),
+				'nonce' => array(
+					'create_content_template' => wp_create_nonce( WPV_Ajax::CALLBACK_CREATE_CONTENT_TEMPLATE ),
+					'duplicate_content_template' => wp_create_nonce( WPV_Ajax::CALLBACK_DUPLICATE_CONTENT_TEMPLATE ),
+				)
+			),
+		);
+
+		wp_register_script(
+			'views-content-template-listing-script' ,
+			WPV_URL . '/res/js/redesign/wpv_content_template_listing.js',
+			array('jquery', 'views-listing-common-script', 'views-ct-dialogs-js' ),
+			WPV_VERSION,
 			true
 		);
-		wp_localize_script( 'views-content-template-listing-script', 'ct_listing_texts', $ct_listing_texts );
-		
+		wp_localize_script( 'views-content-template-listing-script', 'ct_listing_texts', array_merge( $ct_listing_texts , $ct_listing_ajax_info ) );
+
 		// Update help
-		
-		wp_register_script( 
-			'views-update-help-js', WPV_URL . '/res/js/views_admin_update_help.js', 
-			array( 'jquery' ), 
-			WPV_VERSION, 
-			false 
+
+		wp_register_script(
+			'views-update-help-js', WPV_URL . '/res/js/views_admin_update_help.js',
+			array( 'jquery' ),
+			WPV_VERSION,
+			false
 		);
-		
+
 	}
-	
+
 	function wpv_admin_enqueue_scripts( $hook ) {// echo $hook; TODO this function needs a lot of love
-		
+
 		parent::wpv_admin_enqueue_scripts( $hook );
 
         $page = wpv_getget( 'page' );
@@ -1373,12 +1424,12 @@ class WP_Views_plugin extends WP_Views {
 		if ( ! wp_style_is( 'thickbox' ) ) {
 			wp_enqueue_style('thickbox'); // TODO maybe DEPRECATED
 		}
-		
-		$wpv_custom_admin_pages = array( 
-			'views', 'view-archives', 'view-templates', 
+
+		$wpv_custom_admin_pages = array(
+			'views', 'view-archives', 'view-templates',
 			'views-editor', 'view-archives-editor', WPV_CT_EDITOR_PAGE_NAME,
 			// DEPRECATED:
-			'views-settings', 'views-import-export', 'views-update-help' 
+			'views-settings', 'views-import-export', 'views-update-help'
 		);
 		$wpv_custom_admin_pages = apply_filters( 'wpv_filter_wpv_custom_admin_pages', $wpv_custom_admin_pages );
 
@@ -1387,7 +1438,7 @@ class WP_Views_plugin extends WP_Views {
 
 		if (
 			in_array( $page, $wpv_custom_admin_pages )
-			|| strpos( $_SERVER['QUERY_STRING'], 'help.php') !== false 
+			|| strpos( $_SERVER['QUERY_STRING'], 'help.php') !== false
 		) {
 			if ( ! wp_script_is( 'views-utils-script' ) ) {
 				wp_enqueue_script( 'views-utils-script');
@@ -1396,19 +1447,19 @@ class WP_Views_plugin extends WP_Views {
 				wp_enqueue_style( 'views-admin-css' );
 			}
 		}
-		if ( 
-			$page == 'views' 
+		if (
+			$page == 'views'
 			&& ! wp_script_is( 'views-listing-script' )
 		) {
 			wp_enqueue_script( 'views-listing-script' );
 		}
-		if ( 
+		if (
 			$page == 'view-archives'
 			&& ! wp_script_is( 'views-archive-listing-script' )
 		) {
 			wp_enqueue_script( 'views-archive-listing-script' );
 		}
-		if ( 
+		if (
 			$page == 'view-templates'
 			&& ! wp_script_is( 'views-content-template-listing-script' )
 		) {
@@ -1453,7 +1504,7 @@ class WP_Views_plugin extends WP_Views {
 					. ( isset( $style_option_data['background-color-current'] ) ? ( 'background-color: ' . $style_option_data['background-color-current']  . ';' ) : '' )
 					. '}'
 					. '';
-					
+
 			}
 			wp_add_inline_style( 'views-admin-css', $css_options_for_list_controls_preview );
 			// Quicktags styles
@@ -1461,7 +1512,7 @@ class WP_Views_plugin extends WP_Views {
 				wp_enqueue_style( 'editor-buttons' );
 			}
 		}
-     
+
 		// Views help screen
 		// @todo transform this into a real page
 
@@ -1475,9 +1526,9 @@ class WP_Views_plugin extends WP_Views {
 			wp_enqueue_script( 'wpv-parametric-admin-script' );
 			wp_enqueue_script( 'views-layout-template-js' );
 			wp_enqueue_script( 'views-layout-wizard-script' );
-			if ( 
-				function_exists( 'wp_enqueue_media' ) 
-				&& ! wp_script_is( 'icl_media-manager-js' ) 
+			if (
+				function_exists( 'wp_enqueue_media' )
+				&& ! wp_script_is( 'icl_media-manager-js' )
 			) {
 				wp_enqueue_media();
 				if ( ! wp_script_is( 'views-redesign-media-manager-js' ) ) {
@@ -1489,9 +1540,9 @@ class WP_Views_plugin extends WP_Views {
 			wp_enqueue_script( 'views-suggestion_script' );
 			wp_enqueue_style ('views_suggestion_style');
 			wp_enqueue_style ('views_suggestion_style2');
-			
+
 			wp_enqueue_style( Toolset_Assets_Manager::STYLE_NOTIFICATIONS );
-            
+
         }
 
 		if ( 'view-archives-editor' == $page ) {
@@ -1500,25 +1551,25 @@ class WP_Views_plugin extends WP_Views {
 			wp_enqueue_script( 'wpv-parametric-admin-script' );
 			wp_enqueue_script( 'views-layout-template-js' );
 			wp_enqueue_script( 'views-layout-wizard-script' );
-			if ( 
-				function_exists( 'wp_enqueue_media' ) 
-				&& ! wp_script_is( 'icl_media-manager-js' ) 
+			if (
+				function_exists( 'wp_enqueue_media' )
+				&& ! wp_script_is( 'icl_media-manager-js' )
 			) {
 				wp_enqueue_media();
 				if ( ! wp_script_is( 'views-redesign-media-manager-js' ) ) {
 					wp_enqueue_script( 'views-redesign-media-manager-js' );
 				}
 			}
-			
+
 			//Enqueue suggestion script
 			wp_enqueue_script( 'views-suggestion_script' );
 			wp_enqueue_style ('views_suggestion_style');
 			wp_enqueue_style ('views_suggestion_style2');
-			
+
 			wp_enqueue_style( Toolset_Assets_Manager::STYLE_NOTIFICATIONS );
-			
+
 		}
-		
+
 		if ( $page == 'views-update-help' ) {
 			wp_enqueue_script( 'views-update-help-js' );
 		}

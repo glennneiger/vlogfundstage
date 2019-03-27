@@ -14,28 +14,28 @@
 */
 
 class WPV_Pagination_Embedded {
-	
+
 	public function __construct() {
-		add_action( 'init',														array( $this, 'init' ) );	
+		add_action( 'init',														array( $this, 'init' ) );
 	}
-	
+
 	function init() {
 		$this->register_shortcodes();
-		
+
 		add_filter( 'wpv_view_settings',										array( $this, 'get_pagination_defaults' ) );
-		
+
 		add_filter( 'wpv_filter_query',											array( $this, 'set_pagination_in_query' ), 1, 3 );
-		
+
 		add_filter( 'wpv_filter_wpv_get_pagination_settings',					array( $this, 'get_pagination_settings' ), 10, 2 );
 		add_filter( 'wpv_filter_wpv_get_pagination_permalinks',					array( $this, 'get_pagination_permalink_data' ), 10, 3 );
 		add_filter( 'wpv_filter_wpv_global_pagination_manage_history_status',	array( $this, 'wpv_global_pagination_manage_history_status' ), 1 );
-		
+
 		// Compatibility
 		add_filter( 'icl_current_language',										array( $this, 'wpv_ajax_pagination_lang' ) );
 		add_filter( 'wpv_filter_pager_nav_links_url',							array( $this, 'fix_indexed_arrays_in_nav_link_url' ) );
-		
+
 	}
-	
+
 	/**
 	* register_shortcodes
 	*
@@ -43,7 +43,7 @@ class WPV_Pagination_Embedded {
 	*
 	* @since unknown
 	*/
-	
+
 	function register_shortcodes() {
 		/**
 		* ---------------------------
@@ -51,44 +51,44 @@ class WPV_Pagination_Embedded {
 		* ---------------------------
 		*/
 		add_shortcode( 'wpv-pagination',								array( $this, 'wpv_pagination_shortcode_callback' ) );
-		
+
 		add_shortcode( 'wpv-pager-current-page',						array( $this, 'wpv_pager_current_page_shortcode' ) );
 		add_shortcode( 'wpv-pager-num-page',							array( $this, 'wpv_pager_total_pages_shortcode' ) );
 		add_shortcode( 'wpv-pager-total-pages',							array( $this, 'wpv_pager_total_pages_shortcode' ) );
-		
+
 		add_shortcode( 'wpv-pager-prev-page',							array( $this, 'wpv_pager_prev_page_callback' ) );
 		add_shortcode( 'wpv-pager-next-page',							array( $this, 'wpv_pager_next_page_callback' ) );
-		
+
 		add_shortcode( 'wpv-pager-nav-dropdown',						array( $this, 'wpv_pager_nav_dropdown_callback' ) );
 		add_shortcode( 'wpv-pager-nav-links',							array( $this, 'wpv_pager_nav_links_callback' ) );
-		
+
 		/**
 		* ---------------------------
 		* WPAs pagination
 		* ---------------------------
 		*/
-		
+
 		add_shortcode( 'wpv-pager-archive-current-page',				array( $this, 'wpv_pager_current_page_shortcode' ) );
 		add_shortcode( 'wpv-pager-archive-total-pages',					array( $this, 'wpv_pager_total_pages_shortcode' ) );
-		
+
 		add_shortcode( 'wpv-pager-archive-prev-page',					array( $this, 'wpv_pager_archive_prev_page_shortcode' ) );
 		add_shortcode( 'wpv-pager-archive-next-page',					array( $this, 'wpv_pager_archive_next_page_shortcode' ) );
-		
+
 		add_shortcode( 'wpv-pager-archive-nav-links',					array( $this, 'wpv_pager_archive_nav_links_callback' ) );
-		
+
 		/**
 		* ---------------------------
 		* Deprecated
 		* ---------------------------
 		*/
-		
+
 		add_shortcode( 'wpv-archive-pager-prev-page',					array( $this, 'wpv_archive_pager_prev_page_shortcode' ) );
 		add_shortcode( 'wpv-archive-pager-next-page',					array( $this, 'wpv_archive_pager_next_page_shortcode' ) );
-		
+
 		//add_shortcode( 'wpv-pager-pause-rollover', array( $this, 'wpv_pager_pause_rollover_callback' ) );
 		//add_shortcode( 'wpv-pager-resume-rollover', array( $this, 'wpv_pager_resume_rollover_callback' ) );
 	}
-	
+
 	/**
 	* get_pagination_defaults
 	*
@@ -98,7 +98,7 @@ class WPV_Pagination_Embedded {
 	*
 	* @since unknown
 	*/
-	
+
 	function get_pagination_defaults( $view_settings ) {
 		$defaults = array(
 			'pagination'		=> array(
@@ -118,37 +118,37 @@ class WPV_Pagination_Embedded {
 			),
 		);
 		$view_settings = wpv_parse_args_recursive( $view_settings, $defaults );
-		
+
 		$view_settings = $this->upgrade_pagination_schema( $view_settings );
 
 		return $view_settings;
 	}
-	
+
 	function upgrade_pagination_schema( $view_settings ) {
-		
-		if ( 
+
+		if (
 			! isset( $view_settings['view-query-mode'] )
-			|| ( 'normal' == $view_settings['view-query-mode'] ) 
+			|| ( 'normal' == $view_settings['view-query-mode'] )
 		) {
 			$query_mode = 'normal';
 		} else {
 			// we assume 'archive' or 'layouts-loop'
 			$query_mode = 'archive';
 		}
-		
-		if ( 
-			$query_mode == 'normal' 
-			&& isset( $view_settings['posts_per_page'] ) 
+
+		if (
+			$query_mode == 'normal'
+			&& isset( $view_settings['posts_per_page'] )
 			&& isset( $view_settings['pagination']['mode'] )
 		) {
-			
+
 			$pagination_settings = $view_settings['pagination'];
-			
+
 			$pagination_settings['posts_per_page'] = $view_settings['posts_per_page'];
-			
+
 			$type = 'disabled';
 			$mode = 'disabled';
-			
+
 			if ( isset( $pagination_settings['mode'] ) ) {
 				$mode = $pagination_settings['mode'];
 				unset( $pagination_settings['mode'] );
@@ -159,14 +159,14 @@ class WPV_Pagination_Embedded {
 				}
 				unset( $pagination_settings[0] );
 			}
-			
+
 			switch ( $mode ) {
 				case 'rollover':
 					$type = 'rollover';
 					break;
 				case 'paged':
-					if ( 
-						isset( $view_settings['ajax_pagination'][0] ) 
+					if (
+						isset( $view_settings['ajax_pagination'][0] )
 						&& $view_settings['ajax_pagination'][0] == 'enable'
 					) {
 						$type = 'ajaxed';
@@ -184,7 +184,7 @@ class WPV_Pagination_Embedded {
 					break;
 			}
 			$pagination_settings['type'] = $type;
-			
+
 			/**
 			* AJAX effect and duration
 			*/
@@ -192,8 +192,8 @@ class WPV_Pagination_Embedded {
 			$pagination_settings['duration'] = isset( $view_settings['ajax_pagination']['duration'] ) ? $view_settings['ajax_pagination']['duration'] : '500';
 			$preload_images = isset( $pagination_settings['preload_images'] ) ? $pagination_settings['preload_images'] : true;
 			// Adjust for rollover
-			if ( 
-				$pagination_settings['type'] == 'rollover' 
+			if (
+				$pagination_settings['type'] == 'rollover'
 			) {
 				$pagination_settings['posts_per_page'] = isset( $view_settings['rollover']['posts_per_page'] ) ? $view_settings['rollover']['posts_per_page'] : $pagination_settings['posts_per_page'];
 				$pagination_settings['effect'] = isset( $view_settings['rollover']['effect'] ) ? $view_settings['rollover']['effect'] : $pagination_settings['effect'];
@@ -201,9 +201,9 @@ class WPV_Pagination_Embedded {
 				$pagination_settings['speed'] = isset( $view_settings['rollover']['speed'] ) ? $view_settings['rollover']['speed'] : 5;
 				$preload_images = isset( $view_settings['rollover']['preload_images'] ) ? $view_settings['rollover']['preload_images'] : true;
 			}
-			
+
 			$pagination_settings['preload_images'] = $preload_images;
-			
+
 			if ( $pagination_settings['effect'] == 'fadeslow' ) {
 				$pagination_settings['effect']		= 'fade';
 				$pagination_settings['duration']	= '1500';
@@ -211,34 +211,34 @@ class WPV_Pagination_Embedded {
 				$pagination_settings['effect']		= 'fade';
 				$pagination_settings['duration']	= '1';
 			}
-			
+
 			$pagination_settings['pre_reach'] = isset( $pagination_settings['pre_reach'] ) ? $pagination_settings['pre_reach'] : 1;
-			
+
 			$view_settings['pagination'] = $pagination_settings;
-			
+
 			unset( $view_settings['posts_per_page'] );
 			unset( $view_settings['ajax_pagination'] );
 			unset( $view_settings['rollover'] );
-			
+
 		}
-		
+
 		return $view_settings;
 	}
-	
+
 	function set_pagination_in_query( $query, $view_settings, $id  ) {
-		
+
 		$view_settings = $this->upgrade_pagination_schema( $view_settings );
-		
+
 		if ( $view_settings['pagination']['type'] == 'disabled' ) {
 			$query['posts_per_page'] = -1;
 		} else {
 			$view_settings['pagination']['posts_per_page'] = ( $view_settings['pagination']['posts_per_page'] == 'default' ) ? 10 : $view_settings['pagination']['posts_per_page'];
 			$query['posts_per_page'] = $view_settings['pagination']['posts_per_page'];
 		}
-		
+
 		return $query;
 	}
-	
+
 	/**
 	* get_pagination_settings
 	*
@@ -273,26 +273,26 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function get_pagination_settings( $pagination_data, $view_settings ) {
-		
+
 		$view_settings = $this->upgrade_pagination_schema( $view_settings );
-		
+
 		$pagination_data['id']				= apply_filters( 'wpv_filter_wpv_get_current_view', null );
 		// This might not be needed but if we can avoid POSTing the form when doing non-AJAXed pagination...
 		$permalinks_data					= $this->pagination_permalink_data( $view_settings, $pagination_data['id'] );
 		$pagination_data['base_permalink']	= $permalinks_data['other'];
-		
-		if ( 
+
+		if (
 			! isset( $view_settings['view-query-mode'] )
-			|| ( 'normal' == $view_settings['view-query-mode'] ) 
+			|| ( 'normal' == $view_settings['view-query-mode'] )
 		) {
 			$query_mode = 'normal';
 		} else {
 			// we assume 'archive' or 'layouts-loop'
 			$query_mode = 'archive';
 		}
-		
+
 		$pagination_data['query']		= $query_mode;
 		$pagination_data['type']		= isset( $view_settings['pagination']['type'] ) ? $view_settings['pagination']['type'] : 'paged';
 		$pagination_data['effect']		= isset( $view_settings['pagination']['effect'] ) ? $view_settings['pagination']['effect'] : 'fade';
@@ -301,29 +301,29 @@ class WPV_Pagination_Embedded {
 
 		$pause_on_hover = isset( $view_settings['pagination']['pause_on_hover'] ) ? $view_settings['pagination']['pause_on_hover'] : false;
 		$pagination_data['pause_on_hover'] = $pause_on_hover ? 'enabled' : 'disabled';
-		
+
 		$pagination_data['stop_rollover'] = 'false';
-		if ( 
-			$pagination_data['type'] == 'rollover' 
+		if (
+			$pagination_data['type'] == 'rollover'
 		) {
 			$pagination_data['stop_rollover'] = 'true';
 		}
-		
+
 		$cache_pages = isset( $view_settings['pagination']['cache_pages'] ) ? $view_settings['pagination']['cache_pages'] : true;
 		$pagination_data['cache_pages'] = $cache_pages ? 'enabled' : 'disabled';
-		
+
 		$preload_images = isset( $view_settings['pagination']['preload_images'] ) ? $view_settings['pagination']['preload_images'] : true;
 		$pagination_data['preload_images'] = $preload_images ? 'enabled' : 'disabled';
-		
+
 		$preload_pages = isset( $view_settings['pagination']['preload_pages'] ) ? $view_settings['pagination']['preload_pages'] : true;
 		$pagination_data['preload_pages'] = $preload_pages ? 'enabled' : 'disabled';
-		
+
 		$pagination_data['preload_reach'] = ( isset( $view_settings['pagination']['pre_reach'] ) ) ? $view_settings['pagination']['pre_reach'] : '1';
-		
+
 		/**
 		* Spinner & spinner image
 		*
-		* By default, we pass the spinner_image setting, unless using an uploaded one, 
+		* By default, we pass the spinner_image setting, unless using an uploaded one,
 		* in which case we go with the spinner_image_uploaded setting.
 		*/
 		$spinner = ( isset( $view_settings['pagination']['spinner'] ) ) ? $view_settings['pagination']['spinner'] : 'disabled';
@@ -343,18 +343,20 @@ class WPV_Pagination_Embedded {
 				$pagination_data['spinner'] = 'disabled';
 				break;
 		}
-		
+
 		$pagination_data['spinner_image'] = ( isset( $view_settings['pagination'][ $spinner_image_key ] ) ) ? $view_settings['pagination'][ $spinner_image_key ] : '';
-		// $spinner_image might contain SSL traces, adjust if needed
-		if ( ! is_ssl() ) {
+		// $spinner_image might need to get SSL adjusted
+		if ( is_ssl() ) {
+			$pagination_data['spinner_image'] = str_replace( 'http://', 'https://', $pagination_data['spinner_image'] );
+		} else {
 			$pagination_data['spinner_image'] = str_replace( 'https://', 'http://', $pagination_data['spinner_image'] );
 		}
-		
+
 		/**
 		* Callback next
 		*/
 		$pagination_data['callback_next'] = ( isset( $view_settings['pagination']['callback_next'] ) ) ? $view_settings['pagination']['callback_next'] : '';
-		
+
 		/**
 		* History management
 		*/
@@ -374,29 +376,29 @@ class WPV_Pagination_Embedded {
 				$pagination_data['manage_history'] = 'enabled';
 				break;
 		}
-		
+
 		/**
 		* Whether the View has pagination controls in the Form editor
 		*/
 		$pagination_data['has_controls_in_form'] = 'disabled';
-		if ( 
-			isset( $view_settings['filter_meta_html'] ) 
-			&& strpos( $view_settings['filter_meta_html'], '[wpv-pager-' ) !== false 
+		if (
+			isset( $view_settings['filter_meta_html'] )
+			&& strpos( $view_settings['filter_meta_html'], '[wpv-pager-' ) !== false
 		) {
 			$pagination_data['has_controls_in_form'] = 'enabled';
 		}
-		
+
 		/**
 		* Infinite scrolling tolerance
 		*/
 		$pagination_data['infinite_tolerance'] = ( isset( $view_settings['pagination']['tolerance'] ) ) ? $view_settings['pagination']['tolerance'] : '0';
-		
+
 		$pagination_data['max_pages']	= (int) apply_filters( 'wpv_filter_wpv_get_max_pages', 1 );
 		$pagination_data['page']		= apply_filters( 'wpv_filter_wpv_get_current_page_number', 1 );
-		
+
 		return $pagination_data;
 	}
-	
+
 	/**
 	* wpv_pagination_shortcode_callback
 	*
@@ -415,7 +417,7 @@ class WPV_Pagination_Embedded {
 
 		extract(
 			shortcode_atts(
-				array(), 
+				array(),
 				$atts
 			)
 		);
@@ -425,7 +427,7 @@ class WPV_Pagination_Embedded {
 			return '';
 		}
 	}
-	
+
 	/**
 	* wpv_pager_current_page_shortcode
 	*
@@ -436,7 +438,7 @@ class WPV_Pagination_Embedded {
 	* @since unknown
 	* @since 2.6.4 Prevent the shortcode transformation when the View wrapper DIV option is selected.
 	*/
-	
+
 	function wpv_pager_current_page_shortcode( $atts ) {
 		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
 		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
@@ -448,7 +450,7 @@ class WPV_Pagination_Embedded {
 			shortcode_atts(
 				array(
 					'force' => 'false'
-				), 
+				),
 				$atts
 			)
 		);
@@ -457,7 +459,7 @@ class WPV_Pagination_Embedded {
 		$view_settings		= apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
 		$view_max_pages		= (int) apply_filters( 'wpv_filter_wpv_get_max_pages', 1 );
 		$view_hash			= apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
-		
+
 		if ( $view_max_pages <= 1.0 ) {
 			return ( $force == 'true' ) ? '1' : '';
 		}
@@ -465,25 +467,25 @@ class WPV_Pagination_Embedded {
 		$page = apply_filters( 'wpv_filter_wpv_get_current_page_number', 1 );
 
 		if ( isset( $atts['style'] ) ) {
-			
+
 			/**
 			* Deprecated on Views 1.11, keep for backwards compatibility
 			*/
-			
+
 			switch( $atts['style'] ) {
 				case 'drop_down':
 					$out = '';
 					$out .= '<select class="wpv-page-selector-' . $view_hash . ' js-wpv-page-selector" data-viewnumber="' . $view_hash . '">' . "\n";
-			
+
 					for ($i = 1; $i < $view_max_pages + 1; $i++) {
 						$is_selected = $i == $page ? ' selected="selected"' : '';
 						$page_number = apply_filters( 'wpv_pagination_page_number', $i, $atts['style'], $view_id ) ;
 						$out .= '<option value="' . $i . '" ' . $is_selected . '>' . $page_number . "</option>\n";
 					}
 					$out .= "</select>\n";
-			
+
 					return $out;
-						
+
 				case 'link':
 					// output a series of dots linking to each page.
 					$classname = '';
@@ -491,7 +493,7 @@ class WPV_Pagination_Embedded {
 					$classname = 'wpv_pagination_dots';
 					$classname = apply_filters( 'wpv_pagination_container_classname', $classname, $atts['style'], $view_id );
 					$out .= '<ul class="' . $classname . '">';
-					
+
 					for ( $i = 1; $i < $view_max_pages + 1; $i++ ) {
 						$page_title = sprintf( __( 'Page %s', 'wpv-views' ), $i );
 						$page_title = esc_attr( apply_filters( 'wpv_pagination_page_title', $page_title, $i, $atts['style'], $view_id ) );
@@ -518,7 +520,7 @@ class WPV_Pagination_Embedded {
 			return sprintf( '%d', $page );
 		}
 	}
-	
+
 	/**
 	* wpv_pager_total_pages_shortcode
 	*
@@ -542,7 +544,7 @@ class WPV_Pagination_Embedded {
 			shortcode_atts(
 				array(
 					'force'	=> 'false'
-				), 
+				),
 				$atts
 			)
 		);
@@ -553,7 +555,7 @@ class WPV_Pagination_Embedded {
 			return ( $force == 'true' ) ? '1' : '';
 		}
 	}
-	
+
 	/**
 	* wpv_pager_prev_page_callback
 	*
@@ -580,22 +582,22 @@ class WPV_Pagination_Embedded {
 				$atts
 			)
 		);
-		
+
 		$view_settings	= apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
 		$page			= apply_filters( 'wpv_filter_wpv_get_current_page_number', 1 );
 		$max_page		= (int) apply_filters( 'wpv_filter_wpv_get_max_pages', 1 );
-		
+
 		$display = false;
-		if ( 
-			$max_page > 1.0 
+		if (
+			$max_page > 1.0
 			&& (
-				$view_settings['pagination']['type'] == 'rollover' 
+				$view_settings['pagination']['type'] == 'rollover'
 				|| $page > 1
 			)
 		) {
 			$display = true;
 		}
-		
+
 		if ( ! empty( $class) ) {
 			$class = ' ' . esc_attr( $class );
 		}
@@ -606,24 +608,24 @@ class WPV_Pagination_Embedded {
 		if ( $display ) {
 			$page--;
 			$value = wpv_do_shortcode( $value );
-			
+
 			$view_count = apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
-			
+
 			if ( $page <= 0 ) {
 				$page = $max_page;
 			} else if ( $page > $max_page ) {
 				$page = 1;
 			}
-			
+
 			$return = '<a'
-				. ' class="wpv-filter-previous-link js-wpv-pagination-previous-link'. $class .'"' . $style 
+				. ' class="wpv-filter-previous-link js-wpv-pagination-previous-link'. $class .'"' . $style
 				. ' href="'					. esc_url( $this->get_pager_permalink( $page, $view_count ) ) . '"'
 				. ' data-viewnumber="' 		. esc_attr( $view_count ) . '"'
 				. ' data-page="' 			. esc_attr( $page ) . '"'
-				. '>' 
-				. $value 
+				. '>'
+				. $value
 				. '</a>';
-				
+
 			return $return;
 		} else {
 			if ( $force == 'true' ) {
@@ -634,7 +636,7 @@ class WPV_Pagination_Embedded {
 			}
 		}
 	}
-	
+
 	/**
 	* wpv_pager_next_page_callback
 	*
@@ -657,7 +659,7 @@ class WPV_Pagination_Embedded {
 					'style' => '',
 					'class' => '',
 					'force'	=> 'false'
-				), 
+				),
 				$atts
 			)
 		);
@@ -665,10 +667,10 @@ class WPV_Pagination_Embedded {
 		$view_settings	= apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
 		$page			= apply_filters( 'wpv_filter_wpv_get_current_page_number', 1 );
 		$max_page		= (int) apply_filters( 'wpv_filter_wpv_get_max_pages', 1 );
-		
+
 		$display = false;
-		if ( 
-			$max_page > 1.0 
+		if (
+			$max_page > 1.0
 			&& (
 				$view_settings['pagination']['type'] == 'rollover'
 				|| $page < $max_page
@@ -676,35 +678,35 @@ class WPV_Pagination_Embedded {
 		) {
 			$display = true;
 		}
-		
+
 		if ( ! empty( $style ) ) {
 			$style = ' style="'. esc_attr( $style ) .'"';
 		}
 		if ( ! empty( $class ) ) {
 			$class = ' ' . esc_attr( $class );
-		} 
+		}
 
 		if ( $display ) {
 			$page++;
 			$value = wpv_do_shortcode( $value );
-			
+
 			$view_count = apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
-			
+
 			if ( $page <= 0 ) {
 				$page = $max_page;
 			} else if ( $page > $max_page ) {
 				$page = 1;
 			}
-			
+
 			$return = '<a'
-				. ' class="wpv-filter-next-link js-wpv-pagination-next-link'. $class . '"' . $style 
+				. ' class="wpv-filter-next-link js-wpv-pagination-next-link'. $class . '"' . $style
 				. ' href="'					. esc_url( $this->get_pager_permalink( $page, $view_count ) ) . '"'
 				. ' data-viewnumber="' 		. esc_attr( $view_count ) . '"'
 				. ' data-page="' 			. esc_attr( $page ) . '"'
-				.'>' 
-				. $value 
+				.'>'
+				. $value
 				. '</a>';
-				
+
 			return $return;
 		} else {
 			if ( $force == 'true' ) {
@@ -812,7 +814,7 @@ class WPV_Pagination_Embedded {
 
 		return $return;
 	}
-	
+
 	/**
 	 * Callback for the [wpv-pager-nav-dropdown] shortcode, displays a select dropdown for Views pagination.
 	 *
@@ -824,7 +826,7 @@ class WPV_Pagination_Embedded {
 	 *
 	 * @todo remember that the classname js-wpv-page-selector does nothing as of now...
 	 */
-	
+
 	function wpv_pager_nav_dropdown_callback( $atts ) {
 		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
 		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
@@ -837,18 +839,18 @@ class WPV_Pagination_Embedded {
 				array(
 					'class'	=> '',
 					'output' => '',
-				), 
+				),
 				$atts
 			)
 		);
-		
+
 		$return = '';
-		
+
 		$view_settings		= apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
 		$view_count			= apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
 		$page				= apply_filters( 'wpv_filter_wpv_get_current_page_number', 1 );
 		$max_page			= (int) apply_filters( 'wpv_filter_wpv_get_max_pages', 1 );
-		
+
 		if ( ! empty( $class ) ) {
 			$class = ' ' . $class;
 		}
@@ -865,10 +867,10 @@ class WPV_Pagination_Embedded {
 			$return .= '<option value="' . esc_attr( $i ) . '" ' . selected( $i, $page, false ) . '>' . esc_html( $i ) . '</option>';
 		}
 		$return .= '</select>';
-		
+
 		return $return;
 	}
-	
+
 	/**
 	 * Callback for the [wpv-pager-nav-links] shortcode, for Views pagination.
 	 *
@@ -891,7 +893,7 @@ class WPV_Pagination_Embedded {
 	 *     - apply the classname wpv-pagination-link-current to the current anchor.
 	 *         (mind there is nor a equivalent yet)
 	 */
-	
+
 	function wpv_pager_nav_links_callback( $atts ) {
 		// Check if the View wrapper DIV (and the filter FORM along with the pagination) is required.
 		/** This filter is documented in embedded/inc/wpv-layout-embedded.php */
@@ -906,10 +908,10 @@ class WPV_Pagination_Embedded {
 					'li_class'		=> '',
 					'anchor_class'	=> '',
 					'current_type'	=> 'text',
-					
+
 					'anchor_text'	=> __( '%%PAGE%%', 'wpv-views' ),
 					'anchor_title'	=> __( '%%PAGE%%', 'wpv-views' ),
-					
+
 					'sticky_first'			=> 'true',
 					'sticky_last'			=> 'true',
 					'step'					=> false,
@@ -924,22 +926,22 @@ class WPV_Pagination_Embedded {
 					'first_last_links' => 'false',
 
 					'links_type'	=> '',
-				), 
+				),
 				$atts
 			)
 		);
-		
+
 		$return = '';
-		
+
 		$view_settings		= apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
 		$view_count			= apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
 		$max_page			= (int) apply_filters( 'wpv_filter_wpv_get_max_pages', 1 );
 		$page				= (int) apply_filters( 'wpv_filter_wpv_get_current_page_number', 1 );
-		
+
 		if ( $max_page <= 1.0 ) {
 			return '';
 		}
-		
+
 		$ul_class_array = array( 'wpv-pagination-nav-links-container', 'js-wpv-pagination-nav-links-container' );
 		if ( 'bootstrap' == $output ) {
 			array_push( $ul_class_array, 'pagination' );
@@ -951,7 +953,7 @@ class WPV_Pagination_Embedded {
 			$ul_class_array = array_merge( $ul_class_array, array_map( 'esc_attr', explode( ' ', $ul_class ) ) );
 		}
 		$ul_class_array = array_values( $ul_class_array );
-		
+
 		$li_class_array = array( 'wpv-pagination-nav-links-item', 'js-wpv-pagination-nav-links-item' );
 		if ( 'bootstrap' == $output ) {
 			array_push( $li_class_array, 'page-item' );
@@ -960,21 +962,21 @@ class WPV_Pagination_Embedded {
 			$li_class_array = array_merge( $li_class_array, array_map( 'esc_attr', explode( ' ', $li_class ) ) );
 		}
 		$li_class_array = array_values( $li_class_array );
-			
+
 		$step = ( $step === false ) ? $step : intval( $step );
 		$reach = ( $reach === false ) ? $reach : intval( $reach );
 		$needs_ellipsis = true;
-		
+
 		$return .= '<ul class="' . implode( ' ', $ul_class_array ) . '">';
 
 		for ( $i = 1; $i < $max_page + 1; $i++ ) {
 			$is_visible = false;
-			if ( 
+			if (
 				(
-					$i == 1 
+					$i == 1
 					&& $sticky_first == 'true'
 				) || (
-					$i == $max_page 
+					$i == $max_page
 					&& $sticky_last == 'true'
 				)
 			) {
@@ -995,8 +997,8 @@ class WPV_Pagination_Embedded {
 				if ( $i % $step == 0 ) {
 					$is_visible = true;
 				}
-				if ( 
-					$reach !== false 
+				if (
+					$reach !== false
 					&& ( $i >= ( $page - $reach ) )
 					&& ( $i <= ( $page + $reach ) )
 				) {
@@ -1043,10 +1045,10 @@ class WPV_Pagination_Embedded {
 				$anchor_text_i = str_replace( '%%PAGE%%', $i, $anchor_text );
 				$anchor_title_i = str_replace( '%%PAGE%%', $i, $anchor_title );
 				$li_current_class_array = $li_class_array;
-				
+
 				$li_current_class_array[] = 'wpv-page-link-' . $view_count . '-' . $i;
 				$li_current_class_array[] = 'js-wpv-page-link-' . $view_count . '-' . $i;
-				
+
 				$anchor_class_array = array( 'wpv-filter-pagination-link', 'js-wpv-pagination-link' );
 				if ( ! empty( $anchor_class ) ) {
 					$anchor_class_array = array_merge( $anchor_class_array, array_map( 'esc_attr', explode( ' ', $anchor_class ) ) );
@@ -1065,9 +1067,9 @@ class WPV_Pagination_Embedded {
 					. ' data-viewnumber="' 		. esc_attr( $view_count ) . '"'
 					. ' data-page="' 			. esc_attr( $i ) . '"'
 					. '>'
-					. $anchor_text_i 
+					. $anchor_text_i
 					. '</a>';
-				
+
 				if ( $i == $page ) {
 					$li_current_class_array[] = 'wpv_page_current';
 					$li_current_class_array[] = 'wpv-pagination-nav-links-item-current';
@@ -1088,10 +1090,10 @@ class WPV_Pagination_Embedded {
 						. '</span>';
 					}
 				}
-				
+
 				$li_current_class_string = ( empty( $li_current_class_array ) ) ? '' : ' class="' . implode( ' ', $li_current_class_array ) . '"';
-				$return  .= '<li' . $li_current_class_string . '>' 
-					. $li_current_content 
+				$return  .= '<li' . $li_current_class_string . '>'
+					. $li_current_content
 					. '</li>';
 
 				// If we are rendering the pagination for the last page
@@ -1131,14 +1133,14 @@ class WPV_Pagination_Embedded {
 
 			} else if ( $needs_ellipsis ) {
 				$needs_ellipsis = false;
-				$return  .= '<li class="' . implode( ' ', $li_class_array ) . '">' 
+				$return  .= '<li class="' . implode( ' ', $li_class_array ) . '">'
 					. '<span class="wpv_page_ellipsis">' . $ellipsis . '</span>'
 					. '</li>';
 			}
 		}
-		
+
 		$return .= '</ul>';
-		
+
 		return $return;
 	}
 
@@ -1191,7 +1193,7 @@ class WPV_Pagination_Embedded {
 
 		return $out;
 	}
-	
+
 	/**
 	* wpv_archive_pager_prev_page_shortcode
 	*
@@ -1208,11 +1210,11 @@ class WPV_Pagination_Embedded {
 	*
 	* @deprecated 2.1
 	*/
-	
+
 	function wpv_archive_pager_prev_page_shortcode( $atts, $value ) {
 		return $this->wpv_pager_archive_next_page_shortcode( $atts, $value );
 	}
-	
+
 	/**
 	* wpv_archive_pager_next_page_shortcode
 	*
@@ -1228,24 +1230,24 @@ class WPV_Pagination_Embedded {
 	* @since 2.1	Adjusted to work with AJAX pagination
 	*
 	* @deprecated 2.1
-	*/ 
-	
+	*/
+
 	function wpv_archive_pager_next_page_shortcode( $atts, $value ) {
 		return $this->wpv_pager_archive_prev_page_shortcode( $atts, $value );
 	}
-	
+
 	/**
 	* wpv_pager_archive_prev_page_shortcode
 	*
 	* Callback for the [wpv-pager-archive-prev-page] on WPAs pagination.
 	*
 	* @since 2.1
-	*/ 
-	
+	*/
+
 	function wpv_pager_archive_prev_page_shortcode( $atts, $value ) {
 		extract(
 			shortcode_atts(
-				array( 'force' => 'false' ), 
+				array( 'force' => 'false' ),
 				$atts
 			)
 		);
@@ -1283,19 +1285,19 @@ class WPV_Pagination_Embedded {
 			}
 		}
 	}
-	
+
 	/**
 	* wpv_pager_archive_next_page_shortcode
 	*
 	* Callback for the [wpv-pager-archive-next-page] on WPAs pagination.
 	*
 	* @since 2.1
-	*/ 
-	
+	*/
+
 	function wpv_pager_archive_next_page_shortcode( $atts, $value ) {
 		extract(
 			shortcode_atts(
-				array( 'force' => 'false' ), 
+				array( 'force' => 'false' ),
 				$atts
 			)
 		);
@@ -1330,14 +1332,14 @@ class WPV_Pagination_Embedded {
 					. ' data-viewnumber="' . esc_attr( $view_unique_hash ) . '"'
 					. ' data-page="' . esc_attr( $nextpage ) . '"'
 					. ' href="' . $base_permalink . "\" $attr>"
-					. preg_replace('/&([^#])(?![a-z]{1,8};)/i', '&#038;$1', $label) 
+					. preg_replace('/&([^#])(?![a-z]{1,8};)/i', '&#038;$1', $label)
 					. '</a>';
 			} else if ( $force == 'true' ) {
 				return '<span class="wpv-archive-pagination-next-link wpv-archive-pagination-next-link-last">' . $label . '</span>';
 			}
 		}
 	}
-	
+
 	/**
 	* wpv_pager_archive_nav_links_callback
 	*
@@ -1351,16 +1353,16 @@ class WPV_Pagination_Embedded {
 	*     @type string $type               Controls format of the returned value. Possible values are 'plain' and 'list'. Default is 'list'.
 	*     @type string $ul_class           The list class attribute value. Default empty.
 	*     @type string $li_class           The list item class attribute value. Default empty.
-	*     
+	*
 	*     @type int    $reach              How many numbers to either side of the current pages. Default 0 which means show all.
 	*     @type int    $end_size           How many numbers on either the start and the end list edges. Default 1.
 	*     @type int    $step               Big numbers to show. Default 0 wich means no step pages will be shown.
 	*     @type string $ellipsis           The ellipsis text when skipping pages. Default is '...'.
-	*     
+	*
 	*     @type string $prev_next          Whether to include the previous and next links in the list. Possible values are 'none', 'maybe' and 'force'. Default is 'none'.
 	*     @type bool   $prev_text          The previous page text. Default '« Previous'.
 	*     @type bool   $next_text          The next page text. Default '« Previous'.
-	*     
+	*
 	*     @type string $current_type       The type of output for the current page item. Possible values are 'text' and 'link'. Default is 'text'.
 	*     @type string $anchor_text	       The anchor for each page link. Default is '%%PAGE%%.
 	*     @type string $anchor_title       The anchor title for each page link. Default is '%%PAGE%%.
@@ -1372,7 +1374,7 @@ class WPV_Pagination_Embedded {
 	* @since 2.4.0 Added the force_previous_next attribute
 	* @since 2.4.1 Added the first_last_links attribute
 	*/
-	
+
 	function wpv_pager_archive_nav_links_callback( $atts ) {
 		extract(
 			shortcode_atts(
@@ -1380,16 +1382,16 @@ class WPV_Pagination_Embedded {
 					'type'			=> 'list',
 					'ul_class'		=> '',
 					'li_class'		=> '',
-					
+
 					'reach'			=> 0,
 					'end_size'		=> 1,
 					'step'			=> 0,
 					'ellipsis'		=> '...',
-					
+
 					'prev_next'		=> 'none',
 					'prev_text'		=> __( 'Previous', 'wpv-views' ),
 					'next_text'		=> __( 'Next', 'wpv-views' ),
-					
+
 					'current_type'	=> 'text',
 					'anchor_text'	=> __( '%%PAGE%%', 'wpv-views' ),
 					'anchor_title'	=> __( '%%PAGE%%', 'wpv-views' ),
@@ -1401,7 +1403,7 @@ class WPV_Pagination_Embedded {
 					'first_last_links' => 'false',
 					'first_text' => __( 'First', 'wpv-views' ),
 					'last_text'	=> __( 'Last', 'wpv-views' ),
-				), 
+				),
 				$atts
 			)
 		);
@@ -1426,26 +1428,26 @@ class WPV_Pagination_Embedded {
 		$name = 'pagination_control_for_' . 'last_link' . '_' . md5( isset( $atts['text_for_last_link'] ) ? $atts['text_for_last_link'] : '' );
 		$string = isset( $atts['text_for_last_link'] ) ? __( $atts['text_for_last_link'], 'wpv-views' ) : $last_text;
 		$last_link_text = wpv_translate( $name, $string, false, $context );
-		
+
 		$args = array(
 			'type'				=> $type,
 			'ul_class'			=> $ul_class,
 			'li_class'			=> $li_class,
-			
+
 			'show_all'			=> ( ! ( $reach || $step ) ),
 			'mid_size'			=> ( ! empty( $reach ) ) ? $reach : 1,
 			'end_size'			=> ( ! empty( $end_size ) ) ? $end_size : 1,
 			'step'				=> $step,
 			'ellipsis'			=> $ellipsis,
-			
+
 			'prev_next'			=> ( 'true' == $previous_next_links ) ? ( 'true' == $force_previous_next ) ? 'force' : 'maybe' : $prev_next,
 			'prev_text'			=> $previous_link_text,
 			'next_text'			=> $next_link_text,
-			
+
 			'current_type'		=> $current_type,
 			'anchor_text'		=> $anchor_text,
 			'anchor_title'		=> $anchor_title,
-			
+
 			'ul_class_force'	=> 'wpv-archive-pagination-nav-links-container js-wpv-archive-pagination-nav-links-container',
 			'li_class_force'	=> 'wpv-archive-pagination-nav-links-item js-wpv-archive-pagination-nav-links-item',
 			'li_class_current'	=> 'wpv-archive-pagination-nav-links-item-current',
@@ -1464,30 +1466,30 @@ class WPV_Pagination_Embedded {
 		);
 
 		$args['viewnumber']	= $view_unique_hash;
-		
+
 		$view_url_data					= get_view_allowed_url_parameters( $view_id );
 		$view_url_parameters			= wp_list_pluck( $view_url_data, 'attribute', 'filter_type' );
 		$view_url_parameters['lang']	= 'lang';
-		
+
 		$view_url_param_maybe	= array();
 		$view_url_param_maybe[]	= 'orderby';
 		$view_url_param_maybe[]	= 'order';
 		$view_url_param_maybe[]	= 'orderby_as';
 		$view_url_param_maybe[]	= 'orderby_second';
 		$view_url_param_maybe[]	= 'order_second';
-		
+
 		$query_args			= array();
 		$query_args_remove	= array();
-		
+
 		// Avoid parametric search URL parameters when they are empty - post_relationship
 		foreach ( $view_url_parameters as $param_key => $param_value ) {
 			if ( isset( $_GET[ $param_value ] ) ) {
 				// Empty values on taxonomy filters are removed
-				// Real emoty values on field filters are removed                                                                     
+				// Real emoty values on field filters are removed
 				// Empty values on other filters are kept
 				if ( strpos( $param_key, 'post_taxonomy_' ) === 0 ) {
 					if (
-						empty( $_GET[ $param_value ] ) 
+						empty( $_GET[ $param_value ] )
 						|| $_GET[ $param_value ] == array( "0" )
 					) {
 						$query_args_remove[] = $param_value;
@@ -1502,7 +1504,7 @@ class WPV_Pagination_Embedded {
 					}
 				} else if ( strpos( $param_key, 'post_relationship' ) === 0 ) {
 					if (
-						empty( $_GET[ $param_value ] ) 
+						empty( $_GET[ $param_value ] )
 						|| $_GET[ $param_value ] == array( "0" )
 					) {
 						$query_args_remove[] = $param_value;
@@ -1516,13 +1518,13 @@ class WPV_Pagination_Embedded {
 				$query_args_remove[] = $param_value;
 			}
 		}
-		
+
 		// Avoid sorting URL parameters if they match the defaults
 		foreach ( $view_url_param_maybe as $param ) {
-			if ( 
-				isset( $_GET[ 'wpv_sort_' . $param ] ) 
+			if (
+				isset( $_GET[ 'wpv_sort_' . $param ] )
 				&& (
-					! isset( $view_settings[ $param ] ) 
+					! isset( $view_settings[ $param ] )
 					|| strtolower( $_GET[ 'wpv_sort_' . $param ] ) != strtolower( $view_settings[ $param ] )
 				)
 			) {
@@ -1531,24 +1533,24 @@ class WPV_Pagination_Embedded {
 				$query_args_remove[] = $param;
 			}
 		}
-		
+
 		$query_args				= urlencode_deep( $query_args );
-		
+
 		$args['add_args']		= $query_args;
 		$args['remove_args']	= $query_args_remove;
-		
+
 		// @todo we need to abstract the code in wpv_pager_nav_links_callback using this one as model
 		$return = $this->paginate_links( $args );
-		
+
 		return $return;
 	}
-	
+
 	/**
 	* wpv_pager_pause_rollover_callback
 	*
 	* Work in progress
 	*/
-	
+
 	function wpv_pager_pause_rollover_callback( $atts, $content ) {
 		extract(
 			shortcode_atts(
@@ -1568,25 +1570,25 @@ class WPV_Pagination_Embedded {
 		}
 		if ( ! empty( $class ) ) {
 			$class = ' ' . esc_attr( $class );
-		} 
-			
+		}
+
 		$return = '<a'
-			. ' class="wpv-filter-previous-link js-wpv-pagination-pause-rollover'. $class .'"' . $style 
+			. ' class="wpv-filter-previous-link js-wpv-pagination-pause-rollover'. $class .'"' . $style
 			. ' href="#"'
 			. ' data-viewnumber="' 		. esc_attr( $view_count ) . '"'
-			. '>' 
-			. $content 
+			. '>'
+			. $content
 			. '</a>';
-			
+
 		return $return;
 	}
-	
+
 	/**
 	* wpv_pager_resume_rollover_callback
 	*
 	* Work in progress
 	*/
-	
+
 	function wpv_pager_resume_rollover_callback( $atts, $content ) {
 		extract(
 			shortcode_atts(
@@ -1606,19 +1608,19 @@ class WPV_Pagination_Embedded {
 		}
 		if ( ! empty( $class ) ) {
 			$class = ' ' . esc_attr( $class );
-		} 
-			
+		}
+
 		$return = '<a'
-			. ' class="wpv-filter-previous-link js-wpv-pagination-resume-rollover'. $class .'"' . $style 
+			. ' class="wpv-filter-previous-link js-wpv-pagination-resume-rollover'. $class .'"' . $style
 			. ' href="#"'
 			. ' data-viewnumber="' 		. esc_attr( $view_count ) . '"'
-			. '>' 
-			. $content 
+			. '>'
+			. $content
 			. '</a>';
-			
+
 		return $return;
 	}
-	
+
 	/**
 	* wpv_ajax_pagination_lang
 	*
@@ -1635,7 +1637,7 @@ class WPV_Pagination_Embedded {
 			&& DOING_AJAX
 			&& isset( $_REQUEST['action'] )
 			&& (
-				$_REQUEST['action'] == 'wpv_get_view_query_results' 
+				$_REQUEST['action'] == 'wpv_get_view_query_results'
 				|| $_REQUEST['action'] == 'wpv_get_archive_query_results'
 			)
 			&& isset( $_POST['lang'] )
@@ -1644,7 +1646,7 @@ class WPV_Pagination_Embedded {
 		}
 		return $lang;
 	}
-	
+
 	/**
 	* get_pagination_permalink_data
 	*
@@ -1657,13 +1659,13 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function get_pagination_permalink_data( $permalink_data, $view_settings = array(), $view_id = null ) {
 		$permalinks = $this->pagination_permalink_data( $view_settings, $view_id );
 		$permalinks = array_map( array( $this, 'clean_permalink_url' ), $permalinks );
 		return $permalinks;
 	}
-	
+
 	/**
 	* pagination_permalink_data
 	*
@@ -1675,15 +1677,15 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function pagination_permalink_data( $view_settings = array(), $view_id = null ) {
 		$permalink_data = array(
 			'first'	=> '',
 			'other'	=> ''
 		);
-		if ( 
+		if (
 			! isset( $view_settings['view-query-mode'] )
-			|| ( 'normal' == $view_settings['view-query-mode'] ) 
+			|| ( 'normal' == $view_settings['view-query-mode'] )
 		) {
 			$permalink_data = $this->pagination_view_permalink_data( $view_settings, $view_id );
 		} else {
@@ -1692,7 +1694,7 @@ class WPV_Pagination_Embedded {
 		}
 		return $permalink_data;
 	}
-	
+
 	/**
 	* pagination_view_permalink_data
 	*
@@ -1704,7 +1706,7 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function pagination_view_permalink_data( $view_settings = array(), $view_id = null ) {
 		$permalink_data = array();
 		$view_hash = apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
@@ -1713,7 +1715,7 @@ class WPV_Pagination_Embedded {
 		$permalink_data['first'] = remove_query_arg( 'wpv_paged', $permalink );
 		return $permalink_data;
 	}
-	
+
 	/**
 	* pagination_archive_permalink_data
 	*
@@ -1725,10 +1727,10 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function pagination_archive_permalink_data( $view_settings = array(), $view_id = null ) {
 		global $wp_rewrite;
-		
+
 		$permalink_data = array();
 
 		// Setting up default values based on the current URL.
@@ -1741,22 +1743,22 @@ class WPV_Pagination_Embedded {
 		// URL base depends on permalink settings.
 		$format  	= $wp_rewrite->using_index_permalinks() && ! strpos( $pagenum_link, 'index.php' ) ? 'index.php/' : '';
 		$format_one	= $format;
-		
+
 		$format		.= $wp_rewrite->using_permalinks() ? user_trailingslashit( $wp_rewrite->pagination_base . '/%#%', 'paged' ) : '?paged=%#%';
 		//$format_one	.= $wp_rewrite->using_permalinks() ? user_trailingslashit( '', '' ) : '';
-		
+
 		// Merge additional query vars found in the original URL into $add_args.
 		$add_args		= array();
 		$add_args_one	= array();
-		
+
 		if ( isset( $url_parts[1] ) ) {
 			// Find the format argument.
 			$format_exploded		= explode( '?', str_replace( '%_%', $format, $pagenum_link ) );
 			$format_one_exploded	= explode( '?', str_replace( '%_%', $format_one, $pagenum_link ) );
-			
+
 			$format_query		= isset( $format_exploded[1] ) ? $format_exploded[1] : '';
 			$format_one_query	= isset( $format_one_exploded[1] ) ? $format_one_exploded[1] : '';
-			
+
 			wp_parse_str( $format_query, $format_args );
 			wp_parse_str( $format_one_query, $format_one_args );
 
@@ -1768,7 +1770,7 @@ class WPV_Pagination_Embedded {
 			foreach ( $format_args as $format_arg => $format_arg_value ) {
 				unset( $url_query_args[ $format_arg ] );
 			}
-			
+
 			foreach ( $format_one_args as $format_arg => $format_arg_value ) {
 				unset( $url_query_args_one[ $format_arg ] );
 			}
@@ -1776,46 +1778,46 @@ class WPV_Pagination_Embedded {
 			$add_args		= urlencode_deep( $url_query_args );
 			$add_args_one	= urlencode_deep( $url_query_args_one );
 		}
-		
+
 		$permalink		= str_replace( '%_%', $format, $pagenum_link );
 		$permalink_one	= str_replace( '%_%', $format_one, $pagenum_link );
-		
+
 		$permalink		= str_replace( '%#%', 'WPV_PAGE_NUM', $permalink );
 		$permalink_one	= str_replace( '%#%', 'WPV_PAGE_NUM', $permalink_one );// Might not be needed, does not hunt
-		
+
 		if ( $add_args ) {
 			$permalink = add_query_arg( $add_args, $permalink );
 		}
-		
+
 		if ( $add_args_one ) {
 			$permalink_one = add_query_arg( $add_args_one, $permalink_one );
 		}
-		
+
 		if ( ! is_null( $view_id ) ) {
-			
+
 			$view_url_data					= get_view_allowed_url_parameters( $view_id );
 			$view_url_parameters			= wp_list_pluck( $view_url_data, 'attribute', 'filter_type' );
 			$view_url_parameters['lang']	= 'lang';
-			
+
 			$view_url_param_maybe	= array();
 			$view_url_param_maybe[]	= 'orderby';
 			$view_url_param_maybe[]	= 'order';
 			$view_url_param_maybe[]	= 'orderby_as';
 			$view_url_param_maybe[]	= 'orderby_second';
 			$view_url_param_maybe[]	= 'order_second';
-			
+
 			$query_args			= array();
 			$query_args_remove	= array();
-			
+
 			// Avoid parametric search URL parameters when they are empty - post_relationship
 			foreach ( $view_url_parameters as $param_key => $param_value ) {
 				if ( isset( $_GET[ $param_value ] ) ) {
 					// Empty values on taxonomy filters are removed
-					// Real emoty values on field filters are removed                                                                     
+					// Real emoty values on field filters are removed
 					// Empty values on other filters are kept
 					if ( strpos( $param_key, 'post_taxonomy_' ) === 0 ) {
 						if (
-							empty( $_GET[ $param_value ] ) 
+							empty( $_GET[ $param_value ] )
 							|| $_GET[ $param_value ] == array( "0" )
 						) {
 							$query_args_remove[] = $param_value;
@@ -1823,8 +1825,8 @@ class WPV_Pagination_Embedded {
 							$query_args[ $param_value ] = $_GET[ $param_value ];
 						}
 					} else if (	strpos( $param_key, 'post_custom_field_' ) === 0 ) {
-						if ( 
-							$_GET[ $param_value ] == '' 
+						if (
+							$_GET[ $param_value ] == ''
 							|| $_GET[ $param_value ] == array( '' )
 						) {
 							$query_args_remove[] = $param_value;
@@ -1833,7 +1835,7 @@ class WPV_Pagination_Embedded {
 						}
 					} else if ( strpos( $param_key, 'post_relationship' ) === 0 ) {
 						if (
-							empty( $_GET[ $param_value ] ) 
+							empty( $_GET[ $param_value ] )
 							|| $_GET[ $param_value ] == array( "0" )
 						) {
 							$query_args_remove[] = $param_value;
@@ -1847,14 +1849,14 @@ class WPV_Pagination_Embedded {
 					$query_args_remove[] = $param_value;
 				}
 			}
-			
+
 			// Avoid sorting URL parameters if they match the defaults
 			foreach ( $view_url_param_maybe as $param ) {
-				if ( 
-					isset( $_GET[ 'wpv_sort_' . $param ] ) 
-					&& $_GET[ 'wpv_sort_' . $param ] != '' 
+				if (
+					isset( $_GET[ 'wpv_sort_' . $param ] )
+					&& $_GET[ 'wpv_sort_' . $param ] != ''
 					&& (
-						! isset( $view_settings[ $param ] ) 
+						! isset( $view_settings[ $param ] )
 						|| strtolower( $_GET[ 'wpv_sort_' . $param ] ) != strtolower( $view_settings[ $param ] )
 					)
 				) {
@@ -1863,51 +1865,51 @@ class WPV_Pagination_Embedded {
 					$query_args_remove[] = 'wpv_sort_' . $param;
 				}
 			}
-			
+
 			if (
-				in_array( 'wpv_sort_orderby_second', $query_args_remove ) 
+				in_array( 'wpv_sort_orderby_second', $query_args_remove )
 				&& isset( $query_args['wpv_sort_order_second'] )
 			) {
 				$query_args_remove[] = 'wpv_sort_order_second';
 				unset( $query_args['wpv_sort_order_second'] );
 			}
-			
+
 			$view_hash = apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings );
 			if ( $view_hash ) {
 				$query_args['wpv_view_count'] = $view_hash;
 			} else {
 				$query_args_remove[] = 'wpv_view_count';
 			}
-			
+
 			$query_args = urlencode_deep( $query_args );
-			
+
 			$permalink = remove_query_arg(
 				$query_args_remove,
 				$permalink
 			);
-			
+
 			$permalink = add_query_arg(
 				$query_args,
 				$permalink
 			);
-			
+
 			$permalink_one = remove_query_arg(
 				$query_args_remove,
 				$permalink_one
 			);
-			
+
 			$permalink_one = add_query_arg(
 				$query_args,
 				$permalink_one
 			);
 		}
-		
+
 		$permalink_data['other'] = $permalink;
 		$permalink_data['first'] = $permalink_one;
-		
+
 		return $permalink_data;
 	}
-	
+
 	/**
 	* get_pager_permalink
 	*
@@ -1919,14 +1921,14 @@ class WPV_Pagination_Embedded {
 	* 				$view_hash defaults to false and produces no wpv_view_count URL parameter.
 	* @since 2.1	$page can be WPV_PAGE_NUM to generate generic permalink URLs.
 	*/
-	
+
 	function get_pager_permalink( $page = 1, $view_hash = false, $get_override = array(), $view_id = null ) {
 		if ( is_null( $view_id ) ) {
 			$view_id				= apply_filters( 'wpv_filter_wpv_get_current_view', $view_id );
 		}
-		
+
 		$view_settings					= apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $view_id );
-		
+
 		$view_url_data					= get_view_allowed_url_parameters( $view_id );
 		$view_url_parameters			= wp_list_pluck( $view_url_data, 'attribute', 'filter_type' );
 		$view_url_parameters['lang']	= 'lang';
@@ -1934,7 +1936,7 @@ class WPV_Pagination_Embedded {
 		$view_url_parameters['wpv_aux_parent_post_id']		= 'wpv_aux_parent_post_id';
 		$view_url_parameters['wpv_aux_parent_term_id']		= 'wpv_aux_parent_term_id';
 		$view_url_parameters['wpv_aux_parent_user_id']		= 'wpv_aux_parent_user_id';
-		
+
 		// We can not avoid sorting URL parameters as they might need to be forced over shortcode attribute settings even for the default values
 		$view_url_parameters['wpv_sort_orderby']		= 'wpv_sort_orderby';
 		$view_url_parameters['wpv_sort_order']			= 'wpv_sort_order';
@@ -1942,13 +1944,13 @@ class WPV_Pagination_Embedded {
 		$view_url_parameters['wpv_sort_orderby_second']	= 'wpv_sort_orderby_second';
 		$view_url_parameters['wpv_sort_order_second']	= 'wpv_sort_order_second';
 		$view_url_param_maybe	= array();
-		
+
 		$origin					= false;
 		$url_request			= $_SERVER['REQUEST_URI'];
 		$query_args				= array();
 		$query_args_remove		= array();
-		
-		if ( 
+
+		if (
 			defined( 'DOING_AJAX' )
 			&& DOING_AJAX
 			&& isset( $_REQUEST['action'] )
@@ -1956,23 +1958,23 @@ class WPV_Pagination_Embedded {
 		) {
 			$origin = wp_get_referer();
 		}
-		
+
 		if ( ! empty( $get_override ) ) {
 			$post_old = $_GET;
 			foreach ( $get_override as $key => $value ) {
 				$_GET[ $key ] = $value;
 			}
 		}
-		
+
 		// Avoid parametric search URL parameters when they are empty
 		foreach ( $view_url_parameters as $param_key => $param_value ) {
 			if ( isset( $_GET[ $param_value ] ) ) {
 				// Empty values on taxonomy filters are removed
-				// Real emoty values on field filters are removed                                                                     
+				// Real emoty values on field filters are removed
 				// Empty values on other filters are kept
 				if ( strpos( $param_key, 'post_taxonomy_' ) === 0 ) {
 					if (
-						empty( $_GET[ $param_value ] ) 
+						empty( $_GET[ $param_value ] )
 						|| $_GET[ $param_value ] == array( "0" )
 					) {
 						$query_args_remove[] = $param_value;
@@ -1980,9 +1982,9 @@ class WPV_Pagination_Embedded {
 						$query_args[ $param_value ] = $_GET[ $param_value ];
 					}
 				} else if (	strpos( $param_key, 'post_custom_field_' ) === 0 ) {
-					if ( 
-						$_GET[ $param_value ] == '' 
-						|| $_GET[ $param_value ] == array( '' ) 
+					if (
+						$_GET[ $param_value ] == ''
+						|| $_GET[ $param_value ] == array( '' )
 					) {
 						$query_args_remove[] = $param_value;
 					} else {
@@ -1990,7 +1992,7 @@ class WPV_Pagination_Embedded {
 					}
 				} else if ( strpos( $param_key, 'post_relationship' ) === 0 ) {
 					if (
-						empty( $_GET[ $param_value ] ) 
+						empty( $_GET[ $param_value ] )
 						|| $_GET[ $param_value ] == array( "0" )
 					) {
 						$query_args_remove[] = $param_value;
@@ -2008,48 +2010,48 @@ class WPV_Pagination_Embedded {
 				$query_args_remove[] = $param_value;
 			}
 		}
-		
+
 		if (
-			in_array( 'wpv_sort_orderby_second', $query_args_remove ) 
+			in_array( 'wpv_sort_orderby_second', $query_args_remove )
 			&& isset( $query_args['wpv_sort_order_second'] )
 		) {
 			$query_args_remove[] = 'wpv_sort_order_second';
 			unset( $query_args['wpv_sort_order_second'] );
 		}
-		
+
 		if ( $view_hash ) {
 			$query_args['wpv_view_count']	= $view_hash;
 		} else {
 			$query_args_remove[] = 'wpv_view_count';
 		}
-		
+
 		if ( $page != 1 ) {
 			$query_args['wpv_paged']		= $page;
 		} else {
 			$query_args_remove[] = 'wpv_paged';
 		}
-		
+
 		if ( ! empty( $get_override ) ) {
 			$_GET = $post_old;
 		}
-		
+
 		$url = remove_query_arg(
 			$query_args_remove,
 			$origin
 		);
-		
+
 		$query_args = urlencode_deep( $query_args );
-		
+
 		$url = add_query_arg(
 			$query_args,
 			$url
 		);
-		
+
 		$url = $this->clean_permalink_url( $url );
-		
+
 		return $url;
 	}
-	
+
 	/**
 	* wpv_global_pagination_manage_history_status
 	*
@@ -2057,7 +2059,7 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 1.12.1
 	*/
-	
+
 	function wpv_global_pagination_manage_history_status( $status ) {
 		$settings = WPV_Settings::get_instance();
 		if ( $settings->wpv_enable_pagination_manage_history ) {
@@ -2067,7 +2069,7 @@ class WPV_Pagination_Embedded {
 		}
 		return $status;
 	}
-	
+
 	/**
 	* paginate_links
 	*
@@ -2084,22 +2086,22 @@ class WPV_Pagination_Embedded {
 	*     @type bool   $next_text          The next page text. Default '« Previous'.
 	*     @type array  $add_args           An array of query args to add. Default false.
 	*     @type string $add_fragment       A string to append to each link. Default empty.
-	*     
+	*
 	*     // Modified parameters from the native function
-	*     
+	*
 	*     @type int    $total              The total amount of pages. Default is the result of the 'wpv_filter_wpv_get_max_pages' filter or 1.
 	*     @type int    $current            The current page number. Default is the result of the 'wpv_filter_wpv_get_current_page_number' filter or 1.
 	*     @type string $type               Controls format of the returned value. Possible values are 'plain' and 'list'. Default is 'list'. Removed 'array'.
 	*     @type string $prev_next          Whether to include the previous and next links in the list. Possible values are 'none', 'maybe' and 'force'. Default is 'none'.
 	*     @type int    $mid_size           How many numbers to either side of the current pages. Default 1. Was 2.
-	*     
+	*
 	*     // Removed parameters from the native function
-	*     
+	*
 	*     @type string $before_page_number A string to appear before the page number. Default empty.
 	*     @type string $after_page_number  A string to append after the page number. Default empty.
-	*     
+	*
 	*     // Additional parameters not in the native function
-	*     
+	*
 	*     @type array  $remove_args        An array of query args to remove. Default false.
 	*     @type string $ul_class           The list class attribute value. Default empty.
 	*     @type string $ul_class_force     The list class attribute value that needs to be forced. Defaults to "wpv-archive-pagination-nav-links-container js-wpv-archive-pagination-nav-links-container".
@@ -2125,7 +2127,7 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function paginate_links( $args = array() ) {
 		global $wp_rewrite;
 
@@ -2150,19 +2152,19 @@ class WPV_Pagination_Embedded {
 			'total'					=> $total,
 			'current'				=> $current,
 			'show_all'				=> false,
-			
+
 			'prev_text'				=> __('&laquo; Previous'),
 			'next_text'				=> __('Next &raquo;'),
 			'end_size'				=> 1,
 			'step'					=> 0,
-			
+
 			'add_args'				=> array(),
 			'add_fragment'			=> '',
-			
+
 			'type'					=> 'list',
 			'prev_next'				=> 'none',
 			'mid_size'				=> 1,
-			
+
 			'remove_args'			=> array(),
 			'ul_class'				=> '',
 			'ul_class_force'		=> '',
@@ -2187,9 +2189,9 @@ class WPV_Pagination_Embedded {
 		if ( ! is_array( $args['remove_args'] ) ) {
 			$args['remove_args'] = array();
 		}
-		
+
 		$view_unique_hash = $args['viewnumber'];
-		
+
 		$ul_class_array = array();
 		if ( ! empty( $args['ul_class_force'] ) ) {
 			$ul_class_array = array_map( 'esc_attr', explode( ' ', $args['ul_class_force'] ) );
@@ -2201,7 +2203,7 @@ class WPV_Pagination_Embedded {
 			$ul_class_array = array_merge( $ul_class_array, array_map( 'esc_attr', explode( ' ', $args['ul_class'] ) ) );
 		}
 		$ul_class_array = array_values( $ul_class_array );
-		
+
 		$li_class_array = array();
 		if ( ! empty( $args['li_class_force'] ) ) {
 			$li_class_array = array_map( 'esc_attr', explode( ' ', $args['li_class_force'] ) );
@@ -2213,14 +2215,14 @@ class WPV_Pagination_Embedded {
 			$li_class_array = array_merge( $li_class_array, array_map( 'esc_attr', explode( ' ', $args['li_class'] ) ) );
 		}
 		$li_class_array = array_values( $li_class_array );
-		
+
 		$a_class_array = array();
 		if ( ! empty( $args['a_class_force'] ) ) {
 			$a_class_array = array_map( 'esc_attr', explode( ' ', $args['a_class_force'] ) );
 		}
 		$a_class_array_current = $a_class_array;
 		$a_class_array_current[] = $args['a_class_current'];
-		
+
 		$span_class_array = array();
 		if ( ! empty( $args['span_class_force'] ) ) {
 			$span_class_array = array_map( 'esc_attr', explode( ' ', $args['span_class_force'] ) );
@@ -2268,7 +2270,7 @@ class WPV_Pagination_Embedded {
 		$r				= '';
 		$page_links		= array();
 		$dots			= false;
-		
+
 		$link_prefix = '';
 		$link_prefix_current = '';
 		$link_suffix = '';
@@ -2323,13 +2325,13 @@ class WPV_Pagination_Embedded {
 								. $link_suffix;
 			}
 		}
-		
+
 		if ( 'none' != $args['prev_next'] ) {
 			switch ( $args['prev_next'] ) {
 				case 'maybe':
 				case 'force':
 					if (
-						$current 
+						$current
 						&& 1 < $current
 					) {
 						$link = str_replace( '%_%', 2 == $current ? '' : $args['format'], $args['base'] );
@@ -2355,16 +2357,16 @@ class WPV_Pagination_Embedded {
 							. ' data-viewnumber="' . esc_attr( $view_unique_hash ) . '"'
 							. ' data-page="' . esc_attr( $current - 1 ) . '"'
 							. ' href="' . esc_url( apply_filters( 'wpv_filter_pager_nav_links_url', $link ) ) . '"'
-							. '>' 
-							. $args['prev_text'] 
+							. '>'
+							. $args['prev_text']
 							. '</a>'
 							. $link_suffix;
 					} else if ( 'force' == $args['prev_next'] ) {
 						$page_links[] = $link_prefix_current_previous_next
 							. '<span'
 							. ' class="wpv-archive-pagination-links-prev-link wpv-archive-pagination-links-prev-link-first"'
-							. '>' 
-							. $args['prev_text'] 
+							. '>'
+							. $args['prev_text']
 							. '</span>'
 							. $link_suffix;
 					}
@@ -2372,33 +2374,33 @@ class WPV_Pagination_Embedded {
 			}
 		}
 		for ( $n = 1; $n <= $total; $n++ ) {
-			if ( 
-				$n == $current 
+			if (
+				$n == $current
 				&& 'text' == $args['current_type']
 			) {
 				$anchor_text_n = str_replace( '%%PAGE%%', $n, $args['anchor_text'] );
 				$page_links[] = $link_prefix_current
 					. "<span"
 					. " class='" . implode( ' ', $span_class_array ) . "'"
-					. ">" 
-					. $anchor_text_n 
+					. ">"
+					. $anchor_text_n
 					. "</span>"
 					. $link_suffix;
 				$dots = true;
 			} else {
-				if ( 
-					$args['show_all'] 
-					|| ( 
-						$n <= $end_size 
-						|| ( 
-							$current 
-							&& $n >= $current - $mid_size 
-							&& $n <= $current + $mid_size 
-						) 
-						|| $n > $total - $end_size 
+				if (
+					$args['show_all']
+					|| (
+						$n <= $end_size
+						|| (
+							$current
+							&& $n >= $current - $mid_size
+							&& $n <= $current + $mid_size
+						)
+						|| $n > $total - $end_size
 					) || (
-						0 < $args['step'] 
-						&& $n % $args['step'] == 0 
+						0 < $args['step']
+						&& $n % $args['step'] == 0
 					)
 				) {
 					$link = str_replace( '%_%', 1 == $n ? '' : $args['format'], $args['base'] );
@@ -2410,13 +2412,13 @@ class WPV_Pagination_Embedded {
 						$link = remove_query_arg( $remove_args, $link );
 					}
 					$link .= $args['add_fragment'];
-					
+
 					$anchor_text_n	= str_replace( '%%PAGE%%', $n, $args['anchor_text'] );
 					$anchor_title_n	= str_replace( '%%PAGE%%', $n, $args['anchor_title'] );
-					
+
 					$link_prefix_n = ( $n == $current ) ? $link_prefix_current : $link_prefix;
 					$a_class_array_n = ( $n == $current ) ? $a_class_array_current : $a_class_array;
-					
+
 					$page_links[] = $link_prefix_n
 						. "<a"
 						. " class='" . implode( ' ', $a_class_array_n ) . "'"
@@ -2424,20 +2426,20 @@ class WPV_Pagination_Embedded {
 						. " title='" . esc_attr( $anchor_title_n ) . "'"
 						. " data-viewnumber='" . esc_attr( $view_unique_hash ) . "'"
 						. " href='" . esc_url( apply_filters( 'wpv_filter_pager_nav_links_url', $link ) ) . "'"
-						. ">" 
-						. $anchor_text_n 
+						. ">"
+						. $anchor_text_n
 						. "</a>"
 						. $link_suffix;
 					$dots = true;
-				} elseif ( 
-					$dots 
-					&& ! $args['show_all'] 
+				} elseif (
+					$dots
+					&& ! $args['show_all']
 				) {
 					$page_links[] = $link_prefix
 						. '<span'
 						. ' class="' . implode( ' ', $ellipsis_class_array ) . '"'
-						. '>' 
-						. $args['ellipsis'] 
+						. '>'
+						. $args['ellipsis']
 						. '</span>'
 						. $link_suffix;
 					$dots = false;
@@ -2449,11 +2451,11 @@ class WPV_Pagination_Embedded {
 				case 'maybe':
 				case 'force':
 					if (
-						$current 
-						&& ( 
-							$current < $total 
-							|| -1 == $total 
-						) 
+						$current
+						&& (
+							$current < $total
+							|| -1 == $total
+						)
 					) {
 						$link = str_replace( '%_%', $args['format'], $args['base'] );
 						$link = str_replace( '%#%', $current + 1, $link );
@@ -2471,16 +2473,16 @@ class WPV_Pagination_Embedded {
 							. ' data-viewnumber="' . esc_attr( $view_unique_hash ) . '"'
 							. ' data-page="' . esc_attr( $current + 1 ) . '"'
 							. ' href="' . esc_url( apply_filters( 'wpv_filter_pager_nav_links_url', $link ) ) . '"'
-							. '>' 
-							. $args['next_text'] 
+							. '>'
+							. $args['next_text']
 							. '</a>'
 							. $link_suffix;
 					} else if ( 'force' == $args['prev_next'] ) {
 						$page_links[] = $link_prefix_current_previous_next
 							. '<span'
 							. ' class="wpv-archive-pagination-links-next-link wpv-archive-pagination-links-next-link-last"'
-							. '>' 
-							. $args['next_text'] 
+							. '>'
+							. $args['next_text']
 							. '</span>'
 							. $link_suffix;
 					}
@@ -2532,7 +2534,7 @@ class WPV_Pagination_Embedded {
 		}
 		return $r;
 	}
-	
+
 	/**
 	* get_pagenum_link
 	*
@@ -2543,11 +2545,11 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function get_pagenum_link( $pagenum = 1, $escape = true ) {
 		global $wp_rewrite;
-		
-		if ( 
+
+		if (
 			defined( 'DOING_AJAX' )
 			&& DOING_AJAX
 			&& isset( $_REQUEST['action'] )
@@ -2567,22 +2569,22 @@ class WPV_Pagination_Embedded {
 			}
 			$base = trailingslashit( $base );
 		}
-	 
+
 		$pagenum = (int) $pagenum;
-	 
+
 		$request = remove_query_arg( 'paged', $origin );
-	 
+
 		$home_root = parse_url(home_url());
 		$home_root = ( isset($home_root['path']) ) ? $home_root['path'] : '';
 		$home_root = preg_quote( $home_root, '|' );
-	 
+
 		$request = preg_replace('|^'. $home_root . '|i', '', $request);
 		$request = preg_replace('|^/+|', '', $request);
-	 
-		if ( 
-			! $wp_rewrite->using_permalinks() 
+
+		if (
+			! $wp_rewrite->using_permalinks()
 			|| ! $this->is_frontend()
-		) {	 
+		) {
 			if ( $pagenum > 1 ) {
 				$result = add_query_arg( 'paged', $pagenum, $base . $request );
 			} else {
@@ -2591,34 +2593,34 @@ class WPV_Pagination_Embedded {
 		} else {
 			$qs_regex = '|\?.*?$|';
 			preg_match( $qs_regex, $request, $qs_match );
-	 
+
 			if ( !empty( $qs_match[0] ) ) {
 				$query_string = $qs_match[0];
 				$request = preg_replace( $qs_regex, '', $request );
 			} else {
 				$query_string = '';
 			}
-	 
+
 			$request = preg_replace( "|$wp_rewrite->pagination_base/\d+/?$|", '', $request);
 			$request = preg_replace( '|^' . preg_quote( $wp_rewrite->index, '|' ) . '|i', '', $request);
 			$request = ltrim($request, '/');
-			
+
 			if ( $wp_rewrite->using_index_permalinks() && ( $pagenum > 1 || '' != $request ) )
 				$base .= $wp_rewrite->index . '/';
-	 
+
 			if ( $pagenum > 1 ) {
 				$request = ( ( !empty( $request ) ) ? trailingslashit( $request ) : $request ) . user_trailingslashit( $wp_rewrite->pagination_base . "/" . $pagenum, 'paged' );
 			}
-	 
+
 			$result = $base . $request . $query_string;
 		}
-	 
+
 		if ( $escape )
 			return esc_url( $result );
 		else
 			return esc_url_raw( $result );
 	}
-	
+
 	/**
 	* fix_indexed_arrays_in_nav_link_url
 	*
@@ -2632,13 +2634,13 @@ class WPV_Pagination_Embedded {
 	*
 	* @since 2.1
 	*/
-	
+
 	function fix_indexed_arrays_in_nav_link_url( $url ) {
 		$url = preg_replace( '/\[(\d+)]/is', '[]', $url );
 		$url = preg_replace( '/%5B(\d+)%5D/is', '%5B%5D', $url );
 		return $url;
 	}
-	
+
 	/**
 	* is_frontend
 	*
@@ -2654,7 +2656,7 @@ class WPV_Pagination_Embedded {
 			&& DOING_AJAX
 			&& isset( $_REQUEST['action'] )
 			&& (
-				$_REQUEST['action'] == 'wpv_get_view_query_results' 
+				$_REQUEST['action'] == 'wpv_get_view_query_results'
 				|| $_REQUEST['action'] == 'wpv_get_archive_query_results'
 			)
 		) {
@@ -2663,7 +2665,7 @@ class WPV_Pagination_Embedded {
 			return false;
 		}
 	}
-	
+
 	function clean_permalink_url( $url ) {
 		// Avoid problems with array-ed posted data
 		// We must remove the numeric indexes, or the history API will add them and break further AJAX calls
@@ -2672,7 +2674,7 @@ class WPV_Pagination_Embedded {
 		$url = preg_replace( '/%255B(\d+)%255D/is', '%255B%255D', $url );
 		return $url;
 	}
-	
+
 }
 
 global $WPV_Pagination_Embedded;

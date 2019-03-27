@@ -3,7 +3,7 @@
 WPV_Editor_Loop_Output::on_load();
 
 class WPV_Editor_Loop_Output{
-	
+
 	static function on_load() {
 		// Register the section in the screen options of the editor pages
 		add_filter( 'wpv_screen_options_editor_section_layout',		array( 'WPV_Editor_Loop_Output', 'wpv_screen_options_loop_output' ), 20 );
@@ -14,7 +14,7 @@ class WPV_Editor_Loop_Output{
 		// AJAX management
 		add_action( 'wp_ajax_wpv_update_layout_extra',				array( 'WPV_Editor_Loop_Output', 'wpv_update_layout_extra_callback' ) );
 	}
-	
+
 	static function wpv_screen_options_loop_output( $sections ) {
 		$sections['layout-extra'] = array(
 			'name'		=> __( 'Loop Editor', 'wpv-views' ),
@@ -28,15 +28,17 @@ class WPV_Editor_Loop_Output{
 		$loop_content_template = get_post_meta( $view_id, '_view_loop_template', true );
 		if ( ! empty( $loop_content_template ) ) {
 			$loop_template				= get_post( $loop_content_template );
-			$loop_content_template_name	= $loop_template->post_title;
+			$loop_content_template_title = $loop_template->post_title;
+			$loop_content_template_name = $loop_template->post_name;
 		} else {
 			$loop_content_template		= '';
+			$loop_content_template_title = '';
 			$loop_content_template_name	= '';
 		}
 		// What kind of view are we showing?
-		if ( 
+		if (
 			! isset( $view_settings['view-query-mode'] )
-			|| ( 'normal' == $view_settings['view-query-mode'] ) 
+			|| ( 'normal' == $view_settings['view-query-mode'] )
 		) {
 			$query_mode				= 'normal';
 			$section_help_pointer	= WPV_Admin_Messages::edit_section_help_pointer( 'layout_html_css_js' );
@@ -56,10 +58,21 @@ class WPV_Editor_Loop_Output{
 							data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 							data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 					</i>
+					<span class="js-wpv-update-button-wrap">
+						<span class="js-wpv-message-container"></span>
+						<input
+							type="hidden"
+							data-success="<?php echo esc_attr( __( 'Data updated', 'wpv-views' ) ); ?>"
+							data-unsaved="<?php echo esc_attr( __( 'Data not saved', 'wpv-views' ) ); ?>"
+							data-nonce="<?php echo esc_attr( wp_create_nonce( 'wpv_view_layout_extra_nonce' ) ); ?>"
+							class="js-wpv-layout-extra-update"
+						/>
+					</span>
 				</h2>
 			</div>
 			<div class="wpv-setting">
 				<input type="hidden" value="<?php echo esc_attr( $loop_content_template ); ?>" id="js-loop-content-template" />
+				<input type="hidden" value="<?php echo esc_attr( $loop_content_template_title ); ?>" id="js-loop-content-template-title" />
 				<input type="hidden" value="<?php echo esc_attr( $loop_content_template_name ); ?>" id="js-loop-content-template-name" />
 				<div class="js-error-container js-wpv-error-container js-wpv-toolset-messages"></div>
 				<div class="js-code-editor code-editor layout-html-editor" data-name="layout-html-editor">
@@ -68,12 +81,12 @@ class WPV_Editor_Loop_Output{
 							<?php
 							$toolbar_action_data = array(
 								'editor_id'					=> 'wpv_layout_meta_html_content',
-								'view_settings'				=> $view_settings, 
+								'view_settings'				=> $view_settings,
 								'view_layout_settings'		=> $view_layout_settings,
-								'view_id'					=> $view_id, 
-								'user_id'					=> $user_id, 
-								'loop_template_id'			=> $loop_content_template, 
-								'query_mode'				=> $query_mode, 
+								'view_id'					=> $view_id,
+								'user_id'					=> $user_id,
+								'loop_template_id'			=> $loop_content_template,
+								'query_mode'				=> $query_mode,
 								'has_default_loop_output'	=> $has_default_loop_output
 							);
 							do_action( 'wpv_action_wpv_codemirror_editor_toolbar', $toolbar_action_data );
@@ -121,7 +134,7 @@ class WPV_Editor_Loop_Output{
 									</li>
 									<?php
 								}
-								
+
 								// Action to add Toolset buttons to the Loop editor
 								do_action( 'toolset_action_toolset_editor_toolbar_add_buttons', 'wpv_layout_meta_html_content', 'views' );
 
@@ -140,7 +153,7 @@ class WPV_Editor_Loop_Output{
 					</div>
 
 					<textarea cols="30" rows="10" id="wpv_layout_meta_html_content" autocomplete="off" name="_wpv_layout_settings[layout_meta_html]"><?php echo ( isset( $view_layout_settings['layout_meta_html'] ) ) ? esc_textarea( $view_layout_settings['layout_meta_html'] ) : ''; ?></textarea>
-					<?php 
+					<?php
 					$layout_extra_css	= isset( $view_settings['layout_meta_html_css'] ) ? $view_settings['layout_meta_html_css'] : '';
 					$layout_extra_js	= isset( $view_settings['layout_meta_html_js'] ) ? $view_settings['layout_meta_html_js'] : '';
 					?>
@@ -154,7 +167,7 @@ class WPV_Editor_Loop_Output{
 					<div id="wpv-assets-layout-css-editor" class="wpv-assets-editor hidden js-wpv-assets-layout-css-editor">
 						<textarea cols="30" rows="10" id="wpv_layout_meta_html_css" autocomplete="off" name="_wpv_settings[layout_meta_html_css]"><?php echo esc_textarea( $layout_extra_css ); ?></textarea>
 					</div>
-					
+
 					<div class="wpv-editor-metadata-toggle js-wpv-editor-metadata-toggle js-wpv-assets-editor-toggle" data-instance="layout-js-editor" data-target="js-wpv-assets-layout-js-editor" data-type="js">
 						<span class="wpv-toggle-toggler-icon js-wpv-toggle-toggler-icon">
 							<i class="fa fa-caret-down icon-large fa-lg"></i>
@@ -169,15 +182,6 @@ class WPV_Editor_Loop_Output{
 						wpv_formatting_help_layout();
 					?>
 				</div>
-				<p class="update-button-wrap js-wpv-update-button-wrap">
-					<span class="js-wpv-message-container"></span>
-					<button data-success="<?php echo esc_attr( __( 'Data updated', 'wpv-views' ) ); ?>"
-							data-unsaved="<?php echo esc_attr( __( 'Data not saved', 'wpv-views' ) ); ?>"
-							data-nonce="<?php echo wp_create_nonce( 'wpv_view_layout_extra_nonce' ); ?>"
-							class="js-wpv-layout-extra-update button-secondary" disabled="disabled">
-						<?php _e( 'Update', 'wpv-views' ); ?>
-					</button>
-				</p>
 			</div>
 			<?php
 			// Add the inline Content Templates inside this main section
@@ -197,9 +201,9 @@ class WPV_Editor_Loop_Output{
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_layout_extra_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_layout_extra_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -213,9 +217,9 @@ class WPV_Editor_Loop_Output{
 		// This will give us a View, a WPA or null.
 		$view = WPV_View_Base::get_instance( $view_id );
 
-		if ( 
-			$view_id < 1 
-			|| ( null == $view ) 
+		if (
+			$view_id < 1
+			|| ( null == $view )
 		) {
 			$data = array(
 				'type' => 'id',

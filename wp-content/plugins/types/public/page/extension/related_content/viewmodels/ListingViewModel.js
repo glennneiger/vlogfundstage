@@ -227,7 +227,7 @@ Types.page.extension.relatedContent.viewmodels.ListingViewModel = function(relat
 				relationship_slug: relatedContentModels.relationship_slug,
 				page: page,
 				related_post_type: relatedContentModels.ajaxInfo.relatedPostType,
-				post_id: WPV_Toolset.Utils.getParameterByName('post'),
+				post_id: relatedContentModels.postId,
 				items_per_page: relatedContentModels.itemsPerPage,
 				sort_by : propertyName,
 				sort: newDirection,
@@ -446,7 +446,8 @@ Types.page.extension.relatedContent.viewmodels.ListingViewModel = function(relat
 							}
 						}
 						return {
-							results: data.data.items
+							results: data.data.items,
+							pagination: data.data.pagination
 						};
 					},
 					cache: false
@@ -507,13 +508,7 @@ Types.page.extension.relatedContent.viewmodels.ListingViewModel = function(relat
 			if (typeof wptColorpicker !== 'undefined') {
 				 wptColorpicker.init('body');
 			}
-			var $files = jQuery('.ui-dialog-content .js-wpt-field');
-			if ($files.length > 0) {
-				$files.on('click', '.js-wpt-file-upload', function( event ) {
-					event.preventDefault();
-					wptFile.bindOpen(jQuery(this), event, true);
-				});
-			}
+
 			jQuery( 'textarea.wpt-wysiwyg', '#' + id ).each(function() {
 				self.initWysiwygField( jQuery(this).attr('id') );
 			});

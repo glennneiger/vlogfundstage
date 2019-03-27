@@ -30,20 +30,22 @@ class WPV_Editor_Loop_Output_Deprecated{
 			if ( 'off' == $view_settings['sections-show-hide']['layout-settings-extra-js'] ) {
 				$hide = ' hidden';
 			}
-		} elseif ( ''== $js ) {
+		} elseif ( '' == $js ) {
 			$hide = ' hidden';
 		}
 		$section_help_pointer = WPV_Admin_Messages::edit_section_help_pointer( 'layout_extra_js' );
 		?>
 		<div class="wpv-setting wpv-settings-output-extra-js js-wpv-settings-layout-settings-extra-js<?php echo $hide; ?>">
-			<h3><?php echo __( 'Additional JavaScript files', 'wpv-views' ); ?></h3>
+			<h3>
+				<?php echo esc_html( __( 'Additional JavaScript files', 'wpv-views' ) ); ?>
+				<span class="js-wpv-update-button-wrap">
+					<span class="js-wpv-message-container"></span>
+					<input type="hidden" data-success="<?php echo esc_attr( __('Data saved', 'wpv-views') ); ?>" data-unsaved="<?php echo esc_attr( __('Data not saved', 'wpv-views') ); ?>" data-nonce="<?php echo wp_create_nonce( 'wpv_view_layout_settings_extra_js_nonce' ); ?>" class="js-wpv-layout-settings-extra-js-update" />
+				</span>
+			</h3>
 			<p>
 				<label for="wpv-layout-settings-extra-js"><?php _e( 'Additional Javascript files to be loaded with this View (comma separated): ', 'wpv-views' ) ?></label>
 				<input type="text" id="wpv-layout-settings-extra-js" autocomplete="off" class="js-wpv-layout-settings-extra-js" name="_wpv_layout_settings[additional_js]" value="<?php echo esc_attr( $js ); ?>" style="width:100%;" />
-			</p>
-			<p class="update-button-wrap js-wpv-update-button-wrap">
-				<span class="js-wpv-message-container"></span>
-				<button data-success="<?php echo esc_attr( __('Data saved', 'wpv-views') ); ?>" data-unsaved="<?php echo esc_attr( __('Data not saved', 'wpv-views') ); ?>" data-nonce="<?php echo wp_create_nonce( 'wpv_view_layout_settings_extra_js_nonce' ); ?>" class="js-wpv-layout-settings-extra-js-update button-secondary" disabled="disabled"><?php _e('Update', 'wpv-views'); ?></button>
 			</p>
 		</div>
 	<?php }

@@ -437,7 +437,7 @@ class WPV_Content_Template_Embedded extends WPV_Post_Object_Wrapper {
 		// "WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE" post meta is "basic" while when it's
 		// created through a Layouts cell the value of the post meta is empty.
 		// Content Templates built through the Layouts cell should be considered as Content Template using the basic editor.
-		return $this->constants->constant( 'BASIC_SCREEN_ID' ) === $this->get_postmeta( WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE ) ||
+		return Toolset_User_Editors_Editor_Basic::BASIC_SCREEN_ID === $this->get_postmeta( WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE ) ||
 			'' === $this->get_postmeta( WPV_Content_Template_Embedded::POST_TEMPLATE_USER_EDITORS_EDITOR_CHOICE );
 	}
 

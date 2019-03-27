@@ -334,13 +334,15 @@ class Toolset_Relationship_Cardinality {
 	/**
 	 * Get a string representation of the cardinality type.
 	 *
-	 * @return string 'many-to-many'|'one-to-many'|'one-to-one'
+	 * @return string 'many-to-many'|'one-to-many'|'many-to-one'|'one-to-one'
 	 */
 	public function get_type() {
 		if( $this->is_many_to_many() ) {
 			return 'many-to-many';
 		} elseif( $this->is_one_to_many() ) {
 			return 'one-to-many';
+		} elseif ( $this->is_many_to_one() ) {
+			return 'many-to-one';
 		} else {
 			return 'one-to-one';
 		}

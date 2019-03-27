@@ -13,8 +13,6 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 	const DISTANCE_RADIUS_DEFAULT_URL_PARAM = 'toolset_maps_distance_radius';
 	const DISTANCE_UNIT_DEFAULT_URL_PARAM = 'toolset_maps_distance_unit';
 
-	const DISTANCE_CENTER_USER_COORDS_PARAM = 'toolset_maps_visitor_coords';
-
 	const DISTANCE_FILTER_INPUTS_PLACEHOLDER = 'Show results within %%DISTANCE%% of %%CENTER%%';
     const DISTANCE_FILTER_VISITOR_LOCATION_BUTTON_TEXT = 'Use my location';
 
@@ -28,6 +26,7 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 	static $distance_filter_options = array(
 		'map_distance'                            => 5,
 		'map_distance_center'                     => '',
+		'map_distance_center_required'            => 'no',
 		'map_distance_unit'                       => 'km',
 		'map_center_lat'                          => '',
 		'map_center_lng'                          => '',
@@ -62,8 +61,6 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 			add_action( 'wp_ajax_wpv_filter_maps_distance_delete', array( $this, 'delete_callback' ) );
 			add_filter( 'wpv_filter_wpv_shortcodes_gui_data', array( $this,	'register_gui_data'	) );
 		}
-
-		add_filter( 'wpv_filter_query', array( $this, 'check_if_query_needed' ), 10, 3 );
 
 		// Add action to filter the loop items with distance before they're rendered
 		// (Priority 100 because it needs to run after Relevanssi, which has priority 99.)
@@ -167,41 +164,6 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 				);
 			}
 		}
-	}
-
-	/**
-     * When user location is center and not yet available, skip query. We'll get location on second load.
-     *
-	 * @param array $query
-	 * @param array $view_settings
-	 * @param int $id
-     *
-	 * @return array
-	 */
-	public function check_if_query_needed( array $query, array $view_settings, $id ) {
-	    // If this is not a distance filter query, do nothing.
-	    if ( !isset( $view_settings['map_distance_filter'] ) ) return $query;
-
-        $map_distance_filter = $view_settings['map_distance_filter'];
-		$distance_filter_options = array();
-
-		if ( isset( $_GET[ self::DISTANCE_CENTER_USER_COORDS_PARAM ] ) ) {
-			$coords_array = self::get_coords_array_from_input( $_GET[ self::DISTANCE_CENTER_USER_COORDS_PARAM ] );
-			if ( self::is_valid_coords_array( $coords_array ) ) {
-				$distance_filter_options['map_center_lat'] = $coords_array['lat'];
-				$distance_filter_options['map_center_lng'] = $coords_array['lon'];
-			}
-		}
-
-		if (
-            empty( $distance_filter_options['map_center_lat'] )
-            && empty( $distance_filter_options['map_center_lng'] )
-			&& $map_distance_filter['map_center_source'] === 'user_location'
-        ) {
-            $query['post__in'] = array(0); // WP hack to skip querying
-		}
-
-		return $query;
 	}
 
 	static function shortcode_attributes( $attributes, $view_settings ) {
@@ -389,6 +351,8 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 				? $distance_settings['map_distance']
 				: self::$distance_filter_options['map_distance']
 		);
+		$distance_center_settings = $distance_settings;
+		$distance_center_settings['frontend_served_over_https'] = self::is_frontend_served_over_https_static();
 
 		// Compatibility with old views, which don't have this saved
 		if ( array_key_exists( 'map_distance_what_to_show', $distance_settings ) ) {
@@ -413,7 +377,7 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 				'map_distance_what_to_show',
 				array( $what_to_show )
 			);
-			echo self::render_view_static( 'map_distance_center', $distance_settings );
+			echo self::render_view_static( 'map_distance_center', $distance_center_settings );
 			?>
 		</ul>
 		<div class="filter-helper js-wpv-author-helper"></div>
@@ -690,25 +654,27 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 			switch ( $distance_filter_options['map_center_source'] ) {
 
 				case 'address':
-					$address_coords = self::get_coords_array_from_input( $distance_filter_options['map_distance_center'] );
+					$address_coords = self::get_coords_array_from_input(
+						$distance_filter_options['map_distance_center']
+					);
 
-					if ( ! empty( $address_coords ) && array_key_exists( 'lat', $address_coords ) && array_key_exists( 'lon', $address_coords ) ) {
+					if (
+						! empty( $address_coords )
+						&& is_array( $address_coords )
+						&& array_key_exists( 'lat', $address_coords )
+						&& array_key_exists( 'lon', $address_coords )
+					) {
 						$distance_filter_options['map_center_lat'] = $address_coords['lat'];
 						$distance_filter_options['map_center_lng'] = $address_coords['lon'];
 					}
 					break;
 
-                case 'user_location':
-					if ( isset( $_GET[ self::DISTANCE_CENTER_USER_COORDS_PARAM ] ) ) {
-						$coords_array = self::get_coords_array_from_input( $_GET[ self::DISTANCE_CENTER_USER_COORDS_PARAM ] );
-						if ( self::is_valid_coords_array( $coords_array ) ) {
-							$distance_filter_options['map_center_lat'] = $coords_array['lat'];
-							$distance_filter_options['map_center_lng'] = $coords_array['lon'];
-						}
-					} else {
-						$this->frontend_js['use_user_location'] = true;
-						$this->frontend_js['view_id']           = $view_settings['view_id'];
-						do_action( 'toolset_maps_distance_use_frontend_script' );
+				case 'user_location':
+					$user_location = Toolset_Maps_Location_Factory::create_from_cookie();
+
+					if ( $user_location ) {
+						$distance_filter_options['map_center_lat'] = $user_location->get_lat();
+						$distance_filter_options['map_center_lng'] = $user_location->get_lng();
 					}
 					break;
 
@@ -970,7 +936,8 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
 			'distance_unit_url_param' => self::DISTANCE_UNIT_DEFAULT_URL_PARAM,
 			'inputs_placeholder' => self::DISTANCE_FILTER_INPUTS_PLACEHOLDER,
 			'visitor_location_button_text' => self::DISTANCE_FILTER_VISITOR_LOCATION_BUTTON_TEXT,
-			'what_to_show' => self::$distance_filter_options['map_distance_what_to_show']
+			'what_to_show' => self::$distance_filter_options['map_distance_what_to_show'],
+			'distance_center_required' => self::$distance_filter_options['map_distance_center_required'],
         ), $atts);
 
 		$distance_radius_url_param = esc_attr( $atts['distance_radius_url_param'] );
@@ -1010,6 +977,11 @@ class Toolset_Addon_Maps_Views_Distance_Filter extends Toolset_Maps_Views_Distan
             ? wpv_translate( 'Visitor location button text: '.$atts['visitor_location_button_text'], $atts['visitor_location_button_text'], false, 'toolset-maps' )
             : __( 'Use my location', 'toolset-maps' );
 
+		// Is distance center input required?
+		$distance_center_required = ( $atts['distance_center_required'] === 'yes' )
+			? ' required'
+			: '';
+
 		$distance_input = <<<HTML
             <input type="number" min="0" id="toolset-maps-distance-value"
                 name="$distance_radius_url_param"
@@ -1028,7 +1000,8 @@ HTML;
                 name="$distance_center_url_param"
                 class="form-control js-toolset-maps-distance-center js-wpv-filter-trigger-delayed js-toolset-maps-address-autocomplete"
                 value="{$defaults[ $distance_center_url_param ]}"
-                required>
+                $distance_center_required
+            >
             <input type="button" class="btn js-toolset-maps-distance-current-location" 
                 value="&#xf124; $use_my_location_translated" style="font: normal normal normal 14px/1 FontAwesome;"
             />
@@ -1125,13 +1098,25 @@ HTML;
 						),
 						'default_unit'              => array(
 							'label'   => __( 'Distance radius unit', 'toolset-maps' ),
-							'type'    => 'select',
-							'options' => array( 'km' => 'km', 'mi' => 'mi' ),
+							'type'    => 'radio',
+							'options' => array(
+								'km' => 'km',
+								'mi' => 'mi'
+							),
 							'default' => self::$distance_filter_options['map_distance_unit'],
+						),
+						'distance_center_required'  => array(
+							'label'     => __( 'Should distance center input be required', 'toolset-maps' ),
+							'type'      => 'radio',
+							'options'   => array(
+								'no'    => __( 'No (use when combining this filter with others)', 'toolset-maps' ),
+								'yes'   => __( 'Yes (UI optimization when using only this filter)', 'toolset-maps' ),
+							),
+							'default'   => self::$distance_filter_options['map_distance_center_required'],
 						),
 						'what_to_show' => array(
 							'label'     => __( 'What to show', 'toolset-maps' ),
-							'type'      => 'select',
+							'type'      => 'radio',
 							'options'   => array(
 								'outside' => __( 'Outside of radius', 'toolset-maps' ),
 								'inside'  => __( 'Inside of radius', 'toolset-maps' )
@@ -1194,6 +1179,16 @@ HTML;
 	 * @return bool
 	 */
 	public function is_frontend_served_over_https(){
+		return self::is_frontend_served_over_https_static();
+	}
+
+	/**
+	 * Static version of the same function, just so it can be called from other static functions...
+	 *
+	 * @since 1.7.2
+	 * @return bool
+	 */
+	public static function is_frontend_served_over_https_static() {
 		return ( parse_url( get_home_url(), PHP_URL_SCHEME ) === 'https' );
 	}
 }

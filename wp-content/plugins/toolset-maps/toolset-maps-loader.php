@@ -3,7 +3,7 @@
 Plugin Name: Toolset Maps
 Plugin URI: https://toolset.com/documentation/user-guides/display-on-google-maps/
 Description: Toolset Maps will extend Types, Views and Forms with advanced geolocalization features
-Version: 1.6
+Version: 1.7.2
 Text Domain: toolset-maps
 Domain Path: /languages
 Author: OnTheGoSystems
@@ -66,11 +66,11 @@ function toolset_addon_map_load_or_deactivate() {
 	foreach ( $requirements as $req_slug => $req_data ) {
 		if (
 			(
-				( 
-					isset( $req_data['class_exists'] ) 
+				(
+					isset( $req_data['class_exists'] )
 					&& class_exists( $req_data['class_exists'] )
-				) || ( 
-					isset( $req_data['function_exists'] ) 
+				) || (
+					isset( $req_data['function_exists'] )
 					&& function_exists( $req_data['function_exists'] )
 				)
 			)
@@ -92,7 +92,7 @@ function toolset_addon_map_load_or_deactivate() {
 	}
 
 	if ( $do_load ) {
-		define( 'TOOLSET_ADDON_MAPS_VERSION', '1.6' );
+		define( 'TOOLSET_ADDON_MAPS_VERSION', '1.7.2' );
 		define( 'TOOLSET_ADDON_MAPS_PATH', dirname( __FILE__ ) );
 		define( 'TOOLSET_ADDON_MAPS_TEMPLATE_PATH', TOOLSET_ADDON_MAPS_PATH . '/application/views/' );
 		define( 'TOOLSET_ADDON_MAPS_FOLDER', basename( TOOLSET_ADDON_MAPS_PATH ) );

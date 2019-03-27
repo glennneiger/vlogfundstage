@@ -23,13 +23,20 @@ class WPV_Filter_Post_Relationship extends WPV_Filter_Base {
 	 * @var Toolset_Relationship_Definition[]|null
 	 */
 	private $legacy_relationships = null;
+
+	/**
+	 * @var null|Toolset_Condition_Plugin_Types_Active
+	 */
+	protected $is_types_active = null;
 	
 	/**
 	 * @var null|string[]
 	 */
 	private $intermediary_post_types = null;
 	
-	function __construct() {
+	function __construct( \Toolset_Condition_Plugin_Types_Active $is_types_active = null ) {
+		$this->is_types_active = $is_types_active ?: new Toolset_Condition_Plugin_Types_Active();
+
 		if ( $this->is_types_installed() ) {
 			$this->gui = new WPV_Filter_Post_Relationship_Gui( $this );
 			$this->query = new WPV_Filter_Post_Relationship_Query( $this );
@@ -46,7 +53,7 @@ class WPV_Filter_Post_Relationship extends WPV_Filter_Base {
 	 */
 	public function is_types_installed() {
 		if ( ! isset( $this->conditions['types'] ) ) {
-			$this->conditions['types'] = new Toolset_Condition_Plugin_Types_Active();
+			$this->conditions['types'] = $this->is_types_active;
 		}
 		
 		return $this->conditions['types']->is_met();

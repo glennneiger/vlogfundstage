@@ -62,12 +62,7 @@ var wptCond = (function ($) {
                 $trigger = $('[data-wpt-name="wpcf[' + trigger + ']"]', formID);
             }
         }
-        /**
-         * handle skype field
-         */
-        if ($trigger.length < 1) {
-            $trigger = $('[data-wpt-name="' + trigger + '[skypename]"]', formID);
-        }
+
         /**
          * handle date field
          */

@@ -34,7 +34,13 @@ class Types_Shortcode_Types implements Types_Shortcode_Interface {
 		'size'         => null, // image
 		'resize'       => null, // image
 		'align'        => null, // image
-		'button_style' => null, // skype
+		'button_style' => null, // skype legacy
+		'button'       => null, // skype 3.1
+		'button-color' => null, // skype 3.1
+		'button-icon'  => null, // skype 3.1
+		'button-label' => null, // skype 3.1
+		'chat-color'   => null, // skype 3.1
+		'receiver'     => null, // skype 3.1
 		'no_protocol'  => null, // url
 		'poster'       => null, // video
 		'url'          => null, // image

@@ -135,7 +135,6 @@ class CRED_Form_Post extends CRED_Form_Base {
 					$cred_response = new CRED_Generic_Response( CRED_Generic_Response::CRED_GENERIC_RESPONSE_RESULT_REDIRECT, $url, $is_ajax, $thisform, $formHelper );
 
 					return $cred_response->show();
-					exit;  // just in case
 				}
 				break;
 		}
@@ -154,7 +153,6 @@ class CRED_Form_Post extends CRED_Form_Base {
 				$cred_response = new CRED_Generic_Response( CRED_Generic_Response::CRED_GENERIC_RESPONSE_RESULT_REDIRECT, $url, $is_ajax, $thisform, $formHelper, $redirect_delay );
 
 				return $cred_response->show();
-				exit;
 			}
 		}
 
@@ -180,7 +178,7 @@ class CRED_Form_Post extends CRED_Form_Base {
 	 * @return mixed
 	 */
 	public function check_form_access( $form_type, $form_id, $post, &$fbHelper ) {
-		$post_to_check = ( 
+		$post_to_check = (
 				is_object( $post )
 				&& isset( $post->post )
 			)
@@ -247,7 +245,7 @@ class CRED_Form_Post extends CRED_Form_Base {
 			$this->_postData = $post_data->get_post_data( $post_id );
 		}
 
-		$post_to_check = ( 
+		$post_to_check = (
 				is_object( $this->_postData )
 				&& isset( $this->_postData->post )
 			)
@@ -451,7 +449,7 @@ class CRED_Form_Post extends CRED_Form_Base {
 		$_fields = $this->_formData->getFields();
 		$form_type = $_fields['form_settings']->form['type'];
 		$form_id = $this->_formData->getForm()->ID;
-		$form_count = CRED_Form_Count_Handler::get_instance()->get_main_count();
+		$form_count = apply_filters( 'toolset_forms_frontend_flow_get_form_index', 1 );
 		$post_type = $_fields['form_settings']->post['post_type'];
 
 		if ( $zebraForm->preview ) {
@@ -672,10 +670,6 @@ class CRED_Form_Post extends CRED_Form_Base {
 			&& $fields['notification']->enable
 			&& ! empty( $fields['notification']->notifications )
 		) {
-			// add extra placeholder codes
-			add_filter( 'cred_subject_notification_codes', array(&$this, 'extraSubjectNotificationCodes'), 10, 3 );
-			add_filter( 'cred_body_notification_codes', array(&$this, 'extraBodyNotificationCodes'), 10, 3 );
-
 			// add the post/user to notification management
 			$this->add_form_data( $post_id );
 			// send any notifications now if needed
@@ -685,10 +679,6 @@ class CRED_Form_Post extends CRED_Form_Base {
 					'form_id' => $form->getForm()->ID,
 					'notification' => $fields['notification'],
 				), $attachedData );
-
-			// remove extra placeholder codes
-			remove_filter( 'cred_subject_notification_codes', array(&$this, 'extraSubjectNotificationCodes'), 10, 3 );
-			remove_filter( 'cred_body_notification_codes', array(&$this, 'extraBodyNotificationCodes'), 10, 3 );
 		}
 	}
 
@@ -786,7 +776,7 @@ class CRED_Form_Post extends CRED_Form_Base {
 				$cred_form_rendering->add_top_message( $result, $relationship_slug );
 			}
 		}
-		
+
 		return $results;
 	}
 }

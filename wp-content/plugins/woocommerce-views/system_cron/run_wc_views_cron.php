@@ -38,13 +38,12 @@ if (isset($_GET['cron_key'])) {
 	
 		if ($settings_set_sys=='using_system_cron') {
 		//Instantiate
-			if(!isset($Class_WooCommerce_Views))
-			{
-			$Class_WooCommerce_Views = new Class_WooCommerce_Views;
+			if(!isset($Class_WooCommerce_Views)){
+				$Class_WooCommerce_Views = new Class_WooCommerce_Views;
 			}
 			if (class_exists('Class_WooCommerce_Views')) {
-			//Call update method
-			$Class_WooCommerce_Views->ajax_process_wc_views_batchprocessing();
+				//Call update method
+				$Class_WooCommerce_Views->start_processing_products_fields();
 			}
 		}
 	

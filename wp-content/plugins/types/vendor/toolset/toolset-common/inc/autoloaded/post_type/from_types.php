@@ -1,5 +1,7 @@
 <?php
 
+use OTGS\Toolset\Common\PostType\EditorMode;
+
 /**
  * Represents a post type defined in Types.
  *
@@ -51,6 +53,12 @@ class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements
 	const DEF_PUBLIC = 'public';
 
 	const DEF_DISABLED = 'disabled';
+
+	const DEF_SHOW_IN_REST = 'show_in_rest';
+
+	const DEF_EDITOR = 'editor';
+
+	const DEF_HIERARCHICAL = 'hierarchical';
 
 	// Do not rename this value, it's hardcoded in Types (because of timing issues).
 	const DEF_NEEDS_FLUSH_REWRITE_RULES = '_needs_flush_rewrite_rules';
@@ -133,7 +141,7 @@ class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements
 	/**
 	 * Sanitize the definition array from Types.
 	 *
-	 * Tries to mimick the behaviour from the Edit Post Type page in Types.
+	 * Tries to mimic the behaviour from the Edit Post Type page in Types.
 	 * When a singular or plural labels are missing, they will be replaced by a post slug.
 	 *
 	 * @param array $definition
@@ -237,11 +245,11 @@ class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements
 			'show_in_menu_page' => '',
 			'publicly_queryable' => true,
 			'exclude_from_search' => false,
-			'hierarchical' => false,
+			self::DEF_HIERARCHICAL => false,
 			'query_var_enabled' => true,
 			'query_var' => '',
 			'can_export' => true,
-			'show_rest' => false,
+			self::DEF_SHOW_IN_REST => false,
 			'rest_base' => '',
 			'show_in_nav_menus' => true,
 			'register_meta_box_cb' => '',
@@ -477,10 +485,10 @@ class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements
 		// as we ALWAYS define all options on get_default_definition(), the 'public' option
 		// is useless on it's own and we have to explicit define the values `public` controls.
 		// https://codex.wordpress.org/Function_Reference/register_post_type#public
-		$this->definition[ 'exclude_from_search' ] = ! $is_public;
-		$this->definition[ 'publicly_queryable'] = $is_public;
-		$this->definition[ 'show_in_nav_menus'] = $is_public;
-		$this->definition[ 'show_ui'] = $is_public;
+		$this->definition['exclude_from_search' ] = ! $is_public;
+		$this->definition['publicly_queryable'] = $is_public;
+		$this->definition['show_in_nav_menus'] = $is_public;
+		$this->definition['show_ui'] = $is_public;
 	}
 
 
@@ -588,5 +596,71 @@ class Toolset_Post_Type_From_Types extends Toolset_Post_Type_Abstract implements
 		}
 
 		return new Toolset_Result( true );
+	}
+
+	/**
+	 * Set the 'show_in_rest' option of the post type.
+	 *
+	 * @param bool $value
+	 */
+	public function set_show_in_rest( $value ) {
+		$this->definition[ self::DEF_SHOW_IN_REST ] = (bool) $value;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return bool
+	 */
+	public function has_show_in_rest() {
+		return (
+			true === toolset_getarr( $this->definition, self::DEF_SHOW_IN_REST, false, array( true, false ) )
+		);
+	}
+
+	/**
+	 * Use the block editor for this post type
+	 */
+	public function use_block_editor() {
+		$this->set_editor_mode( EditorMode::BLOCK );
+	}
+
+	/**
+	 * Use the classic editor for this post type
+	 */
+	public function use_classic_editor() {
+		$this->set_editor_mode( EditorMode::CLASSIC );
+	}
+
+
+	public function set_editor_mode( $value ) {
+		if( ! EditorMode::is_valid( $value ) ) {
+			throw new \InvalidArgumentException( 'Invalid editor mode.' );
+		}
+
+		$this->definition[ self::DEF_EDITOR ] = $value;
+	}
+
+
+	public function get_editor_mode() {
+		return toolset_getarr( $this->definition, self::DEF_EDITOR, EditorMode::CLASSIC );
+	}
+
+	/**
+	 * Set the 'hierarchical' option of the post type.
+	 *
+	 * @param bool $value
+	 */
+	public function set_hierarchical( $value = true  ) {
+		$this->definition[ self::DEF_HIERARCHICAL ] = (bool) $value;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return bool
+	 */
+	public function has_hierarchical() {
+		return (
+			true === toolset_getarr( $this->definition, self::DEF_HIERARCHICAL, false, array( true, false ) )
+		);
 	}
 }

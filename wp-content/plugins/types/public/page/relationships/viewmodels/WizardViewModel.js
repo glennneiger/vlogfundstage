@@ -81,18 +81,26 @@ Types.page.relationships.viewmodels.WizardViewModel = function (listingModel) {
         return Types.page.relationships.main.modelData.nonce;
     };
 
-
     /**
      * Shows/hides visible intermediary checkbox
      *
      * @since m2m
      */
-    self.onCheckCreateIntermediary = ko.observable(true);
+    self.createIntermediaryPostType = ko.observable(true);
 
+	/**
+	 * Autodeleting of intermediary posts together with the associations they belong to.
+	 *
+	 * Enabled by default even for other than many-to-many relationships, in case the
+	 * cardinality is later increased.
+	 *
+	 * @since 3.2
+	 */
+	self.isAutodeletingIntermediaryPosts = ko.observable( true );
 
-    self.isIntermediarySectionVisible = ko.pureComputed(function () {
-        return self.relationshipType() === 'many-to-many';
-    });
+	self.isIntermediarySectionVisible = ko.pureComputed( function () {
+		return self.relationshipType() === 'many-to-many';
+	} );
 
 
     /**
@@ -113,7 +121,7 @@ Types.page.relationships.viewmodels.WizardViewModel = function (listingModel) {
             var thereAre = jQuery('input[name^="wpcf[fields]"]').length > 0;
             // If there are fields, forces to be checked
             if (thereAre) {
-                self.onCheckCreateIntermediary(true);
+                self.createIntermediaryPostType(true);
             }
             return thereAre;
         },
@@ -980,9 +988,10 @@ Types.page.relationships.viewmodels.WizardViewModel = function (listingModel) {
             }
         });
 
-        newRelationshipModel.wpcf = {fields: fields};
-        newRelationshipModel.intermediary = self.onCheckCreateIntermediary() && self.isIntermediarySectionVisible();
-        newRelationshipModel.visible = jQuery('#types-wizard-create-visible').is(':checked');
+		newRelationshipModel.wpcf = { fields: fields };
+		newRelationshipModel.intermediary = self.createIntermediaryPostType() && self.isIntermediarySectionVisible();
+		newRelationshipModel.isAutodeletingIntermediaryPosts = self.isAutodeletingIntermediaryPosts();
+		newRelationshipModel.visible = jQuery( '#types-wizard-create-visible' ).is( ':checked' );
 
         // Roles labels
         jQuery('[name^=role]').serializeArray().forEach(function (elem) {

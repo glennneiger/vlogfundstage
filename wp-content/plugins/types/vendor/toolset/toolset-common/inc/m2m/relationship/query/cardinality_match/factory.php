@@ -40,6 +40,28 @@ class Toolset_Relationship_Query_Cardinality_Match_Factory {
 		) );
 	}
 
+	/**
+	 * Matches all many-to-one relationships.
+	 *
+	 * @return Toolset_Relationship_Query_Cardinality_Match_Conjunction
+	 */
+	public function many_to_one() {
+		return new Toolset_Relationship_Query_Cardinality_Match_Conjunction( array(
+			$this->create(
+				new Toolset_Relationship_Role_Parent(),
+				Toolset_Relationship_Cardinality::MAX,
+				Toolset_Relationship_Query_Cardinality_Match_Operators::NOT_EQUAL,
+				1
+			),
+			$this->create(
+				new Toolset_Relationship_Role_Child(),
+				Toolset_Relationship_Cardinality::MAX,
+				Toolset_Relationship_Query_Cardinality_Match_Operators::EQUAL,
+				1
+			),
+		) );
+	}
+
 
 	/**
 	 * Matches all one-to-one relationships.

@@ -111,6 +111,7 @@ if ( ! class_exists( "CredFormCreator", false ) ) {
 				$fields['extra'] = new stdClass;
 				$fields['extra']->css = '';
 				$fields['extra']->js = '';
+				$fields['extra']->scaffold = '';
 
 				$fields['extra']->messages = $model->getDefaultMessages();
 

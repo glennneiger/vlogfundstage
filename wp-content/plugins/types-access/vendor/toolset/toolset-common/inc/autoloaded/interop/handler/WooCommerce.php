@@ -26,6 +26,9 @@ class WooCommerce {
 	public function initialize() {
 		// See \OTGS\Toolset\Common\Interop\Commands\RelatedPosts::get_post_statuses_to_query_by().
 		add_filter( 'toolset_accepted_post_statuses_for_api', array( $this, 'add_wc_order_statuses' ) );
+		// Also influence the post status filter in the association query (by default, only posts in the "available"
+		// category are returned, so this is relevant).
+		add_filter( 'toolset_get_available_post_statuses', array( $this, 'add_wc_order_statuses' ) );
 
 		$this->wc_get_order_statuses_exists->configure( 'wc_get_order_statuses' );
 	}

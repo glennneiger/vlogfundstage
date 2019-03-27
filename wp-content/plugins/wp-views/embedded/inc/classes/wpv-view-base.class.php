@@ -303,22 +303,24 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
 
         $collision_data = array();
         if( WPV_View_Base::is_name_used( $sanitized_value, $view_id, $collision_data ) ) {
+	        $view_query_mode = WPV_View_Base::is_archive_view( $collision_data['id'] ) ? __( 'WordPress Archive', 'wpv-views' ) : __( 'View', 'wpv-views' );
             switch( $collision_data['colliding_field'] ) {
                 case 'post_name':
                     $exception_message = sprintf(
-                        __( 'Another item (%s) already uses this title value as it\'s slug. Please use another title.', 'wpv-views' ),
+                        __( 'Another %1$s (%2$s) already uses this slug. Please use another name.', 'wpv-views' ),
+	                    $view_query_mode,
                         sanitize_text_field( $collision_data['post_title'] )
                     );
                     break;
                 case 'post_title':
-                    $exception_message = __( 'Another item already uses this name . Please use another name.', 'wpv-views' );
+                    $exception_message = sprintf( __( 'Another %1$s already uses this name. Please use another name.', 'wpv-views' ), $view_query_mode );
                     break;
                 case 'both':
-                    $exception_message = __( 'Another item already uses this name and slug. Please use another name.', 'wpv-views' );
+                    $exception_message = sprintf( __( 'Another %1$s already uses this name and slug. Please use another name.', 'wpv-views' ), $view_query_mode );
                     break;
                 default:
                     // Should never happen
-                    $exception_message = __( 'Another item with that slug or name already exists. Please use another name.', 'wpv-views' );
+                    $exception_message = sprintf( __( 'Another %1$s already uses this name and slug. Please use another name.', 'wpv-views' ), $view_query_mode );
                     break;
             }
             //$exception_message = print_r( $collision_data, true );
@@ -568,10 +570,10 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
                     );
                     break;
                 case 'post_title':
-                    $exception_message = __( 'Another item already uses this slug value as it\'s title. Please use another slug.', 'wpv-views' );
+                    $exception_message = __( 'Another item already uses this slug value as its title. Please use another slug.', 'wpv-views' );
                     break;
                 case 'both':
-                    $exception_message = __( 'Another item already uses this slug value as it\'s slug and title. Please use another slug.', 'wpv-views' );
+                    $exception_message = __( 'Another item already uses this slug value as its slug and title. Please use another slug.', 'wpv-views' );
                     break;
                 default:
                     $exception_message = __( 'Another item with that slug or title already exists. Please use another slug.', 'wpv-views' );
@@ -681,7 +683,7 @@ abstract class WPV_View_Base extends WPV_Post_Object_Wrapper {
     public function create_loop_template( $title, $content = '[wpv-post-link]' ) {
 
         $ct = WPV_Content_Template::create( $title, true );
-        if( null == $ct ) {
+        if( ! $ct instanceof WPV_Content_Template ) {
             throw new RuntimeException( 'couldn\'t create the loop template' );
         }
 

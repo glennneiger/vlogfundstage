@@ -324,6 +324,30 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 
 			$snapshot = isset( $attached_data[ $form_id ] ) ? $attached_data[ $form_id ][ 'current' ] : array();
 
+			/**
+			 * Modify the notification event type.
+			 *
+			 * Use this to create custom notification event types,
+			 * to send notifications out of their natural trigger action,
+			 * combined with the cred_custom_notification_event_type_condition hook.
+			 *
+			 * @param string $single_notification[ 'event' ][ 'type' ]
+			 * @param array $notification
+			 * @param int $form_id
+			 * @param int $post_id
+			 * @return string
+			 *
+			 * @since unknown
+			 * @since 1.9.6 Removed by mistake
+			 * @since 2.2 Restored
+			 */
+			$single_notification[ 'event' ][ 'type' ] = apply_filters(
+				'cred_notification_event_type',
+				$single_notification[ 'event' ][ 'type' ],
+				$single_notification,
+				$form_id,
+				$post_id
+			);
 			$is_correct_notification_event_type = ( $single_notification[ 'event' ][ 'type' ] == $this->event );
 
 			$is_payment_and_order_complete = ( $single_notification[ 'event' ][ 'type' ] == 'payment_complete'
@@ -349,11 +373,36 @@ class CRED_Notification_Manager_Post extends CRED_Notification_Manager_Base {
 			$is_order_created = ( $is_correct_notification_event_type
 				&& $this->event == 'order_created' );
 
+			/**
+			 * Bypass the notification conditions failure.
+			 *
+			 * Use this to submit notifications out of their natural trigger action,
+			 * combined with the cred_custom_notification_event_type_condition hook.
+			 *
+			 * @param bool false Whether to force send the notification.
+			 * @param array $notification
+			 * @param int $form_id
+			 * @param int $post_id
+			 * @return bool
+			 *
+			 * @since unknown
+			 * @since 1.9.6 Removed by mistake
+			 * @since 2.2 Restored
+			 */
+			$is_custom_notification_to_send = apply_filters(
+				'cred_custom_notification_event_type_condition',
+				false,
+				$single_notification,
+				$form_id,
+				$post_id
+			);
+
 			if ( $is_payment_and_order_complete
 				|| $is_order_modified
 				|| $is_post_modified
 				|| $is_form_submit
 				|| $is_order_created
+				|| $is_custom_notification_to_send
 			) {
 				$notifications_to_send[] = $single_notification;
 			} else {

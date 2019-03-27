@@ -20,7 +20,8 @@ class WPV_Shortcode_Post_Excerpt extends WPV_Shortcode_Base {
 		'count'	       => 'char',
 		'more'         => null,
 		'format'       => 'autop',
-		'output'       => 'formatted'
+		'output'       => 'formatted',
+		'wpml_context' => self::SHORTCODE_NAME,
 	);
 	
 	/**
@@ -117,7 +118,7 @@ class WPV_Shortcode_Post_Excerpt extends WPV_Shortcode_Base {
 			$out_array = array( 'out' => '', 'debug' => '' );
 
 			if ( $this->user_atts['output'] == 'formatted' ) {
-				$out_array = $this->get_formatted_excerpt( $item, $this->user_atts['length'], $this->user_atts['count'], $this->user_atts['more'], $this->user_atts['format'] );
+				$out_array = $this->get_formatted_excerpt( $item, $this->user_atts['length'], $this->user_atts['count'], $this->user_atts['more'], $this->user_atts['format'], $this->user_atts['wpml_context'] );
 			} else {
 				$out_array = $this->get_raw_excerpt( $item );
 			}
@@ -148,7 +149,7 @@ class WPV_Shortcode_Post_Excerpt extends WPV_Shortcode_Base {
 	 * @since 2.3.0
 	 * @since 2.5.0 Move to the shortcode class as a private method.
 	 */
-	private function get_formatted_excerpt( $item, $length, $count, $more, $format ) {
+	private function get_formatted_excerpt( $item, $length, $count, $more, $format, $wpml_context ) {
 		global $WPV_templates;
 
 		$debug = $out = '';
@@ -170,6 +171,15 @@ class WPV_Shortcode_Post_Excerpt extends WPV_Shortcode_Base {
 			$excerpt_length = strlen( $excerpt ); // don't cut manually inserted excerpts if there is no length attribute
 		} else {
 			$excerpt_length = apply_filters( 'excerpt_length', 252 ); // on automatically created excerpts, apply the core excerpt_length filter
+		}
+
+		if ( \OTGS\Toolset\Views\Controller\Compatibility\Wpml::get_instance()->is_wpml_st_loaded() ) {
+			$more = wpv_translate(
+				'post_control_for_excerpt_more_text_' . md5( $more ),
+				$more,
+				false,
+				$wpml_context
+			);
 		}
 
 		$excerpt_more = ! is_null( $more )
@@ -226,7 +236,14 @@ class WPV_Shortcode_Post_Excerpt extends WPV_Shortcode_Base {
 		) {
 			$WPV_templates->remove_wpautop();
 			$debug .= ' Show RAW data.';
-		} else if ( $format == 'noautop' ) {
+		} else if ( 
+			! $wpautop_was_removed &&
+			$format === 'noautop'
+		) {
+			// In views-1682, we dealt with a problem where an empty paragraph appeared somewhere below where the excerpt
+			// was printed. The reason for that was that an excerpt with "noautop" format, was restoring the "autop" even
+			// if it wasn't needed.
+			// Here we adjusted the if clause to rule out such case.
 			$WPV_templates->restore_wpautop( '' );
 		}
 

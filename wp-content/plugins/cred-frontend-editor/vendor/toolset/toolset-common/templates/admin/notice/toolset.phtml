@@ -8,8 +8,8 @@
  * @since 2.3.0 First release
  */
 ?>
-<div class="toolset-notice-wp notice toolset-notice">
-    <?php $this->render_content() ?>
+<div class="toolset-notice-wp notice toolset-notice <?php echo $this->is_inline? 'inline' : ''; ?>">
+	<?php $this->render_content() ?>
 
-    <?php @include( dirname( __FILE__ ) . '/presets/btn-dismiss.phtml' ); ?>
+	<?php @include( dirname( __FILE__ ) . '/presets/btn-dismiss.phtml' ); ?>
 </div>

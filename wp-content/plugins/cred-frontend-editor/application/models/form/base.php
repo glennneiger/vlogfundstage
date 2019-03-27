@@ -74,8 +74,6 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 		require_once CRED_ABSPATH . '/library/toolset/cred/embedded/classes/Form_Builder_Helper.php';
 		$this->_formHelper = new CRED_Form_Builder_Helper( $this ); //CRED_Loader::get('CLASS/Form_Helper', $this);
 		$this->_disable_progress_bar = (bool) apply_filters( 'cred_file_upload_disable_progress_bar', false );
-
-		CRED_Form_Count_Handler::get_instance()->init_form_counter_controller( $this->is_submitted() );
 	}
 
 	/**
@@ -207,7 +205,7 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 
 		// check if user has access to this form
 		if ( ! $this->_preview
-			&& ! $this->check_form_access( $_form_type, $this->_form_id, $this->_postData, $formHelper ) 
+			&& ! $this->check_form_access( $_form_type, $this->_form_id, $this->_postData, $formHelper )
 		) {
 			return $formHelper->error( __( 'User does not have access to this Form', 'wp-cred' ) );
 		}
@@ -282,7 +280,6 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 			&& $_GET[ '_success_message' ] == $prg_id
 			&& 'message' == $form_fields[ 'form_settings' ]->form[ 'action' ]
 		) {
-			CRED_Form_Count_Handler::get_instance()->maybe_increment( $this->is_submitted() );
 			$cred_form_rendering->is_submit_success = true;
 
 			$form_action_factory = new \OTGS\Toolset\CRED\Controller\FormAction\Factory();
@@ -364,12 +361,17 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 
 		$this->build_form();
 
-		if ( isset( $_POST[ CRED_StaticClass::PREFIX . 'form_count' ] )
-			&& (int) $_POST[ CRED_StaticClass::PREFIX . 'form_count' ] !== CRED_Form_Count_Handler::get_instance()->get_main_count()
+		if (
+			// We are not redirecting to itself a successfully POSTed form
+			$prg_id != toolset_getget( '_success' )
+			// Or the POSTed form, if any, does not match the currently rendering one
+			&& (
+				$form_id != toolset_getpost( CRED_StaticClass::PREFIX . 'form_id' )
+				|| apply_filters( 'toolset_forms_frontend_flow_get_form_index', 1 ) != toolset_getpost( CRED_StaticClass::PREFIX . 'form_count' )
+			)
 		) {
 			$output = $this->do_render_form();
 			$cred_response = new CRED_Generic_Response( CRED_Generic_Response::CRED_GENERIC_RESPONSE_RESULT_OK, $output, $is_ajax, $current_form, $formHelper );
-
 			return $cred_response->show();
 		}
 
@@ -378,20 +380,13 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 		}
 
 		$num_errors = 0;
+
+		// TODO Check why would we need to validated a post that has succeeded POSTing and is redirecting to itself!?
+		// Apparently i that case validation fails anyway, so everything is not lost
 		$validate = ( self::$_self_updated_form ) ? true : $this->validate_form( $validation_errors );
 
 		if ( $form_use_ajax ) {
 			$bypass_form = self::$_self_updated_form;
-		}
-
-		if ( ! empty( $_POST )
-			&& array_key_exists( CRED_StaticClass::PREFIX . 'form_id', $_POST )
-			&& $_POST[ CRED_StaticClass::PREFIX . 'form_id' ] != $form_id
-		) {
-			$output = $this->do_render_form();
-			$cred_response = new CRED_Generic_Response( $num_errors > 0 ? CRED_Generic_Response::CRED_GENERIC_RESPONSE_RESULT_KO : CRED_Generic_Response::CRED_GENERIC_RESPONSE_RESULT_OK, $output, $is_ajax, $current_form, $formHelper );
-
-			return $cred_response->show();
 		}
 
 		if ( ! $bypass_form
@@ -707,8 +702,6 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 		$this->_content = $shortcodeParser->do_shortcode( $this->_content );
 		$shortcodeParser->remove_shortcode( 'cred_post_parent', array( &$this, 'cred_parent' ) );
 
-		CRED_Form_Count_Handler::get_instance()->maybe_increment( $this->is_submitted() );
-
 		return $this->_content;
 	}
 
@@ -786,7 +779,7 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 	 * @return string
 	 */
 	public function createPrgID( $id ) {
-		return $id . '_' . CRED_Form_Count_Handler::get_instance()->get_main_count();
+		return $id . '_' . apply_filters( 'toolset_forms_frontend_flow_get_form_index', 1 );
 	}
 
 	/**
@@ -847,13 +840,12 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 	 * @return null|string
 	 */
 	public function wpml_save_post_lang( $lang ) {
-		global $sitepress;
-		if ( isset( $sitepress ) ) {
+		if ( apply_filters( 'toolset_is_wpml_active_and_configured', false ) ) {
 			if ( empty( $_POST[ 'icl_post_language' ] ) ) {
 				if ( isset( $_GET[ 'lang' ] ) ) {
-					$lang = $_GET[ 'lang' ];
+					$lang = sanitize_text_field( toolset_getget( 'lang' ) );
 				} else {
-					$lang = $sitepress->get_current_language();
+					$lang = apply_filters( 'wpml_current_language', '' );
 				}
 			}
 		}
@@ -867,19 +859,22 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 	 * @return mixed
 	 */
 	public function terms_clauses( $clauses ) {
-		global $sitepress;
-		if ( isset( $sitepress ) ) {
+		if ( apply_filters( 'toolset_is_wpml_active_and_configured', false ) ) {
 			if ( isset( $_GET[ 'source_lang' ] ) ) {
-				$src_lang = $_GET[ 'source_lang' ];
+				$src_lang = sanitize_text_field( toolset_getget( 'source_lang' ) );
 			} else {
-				$src_lang = $sitepress->get_current_language();
+				$src_lang = apply_filters( 'wpml_current_language', '' );
 			}
 			if ( isset( $_GET[ 'lang' ] ) ) {
-				$lang = sanitize_text_field( $_GET[ 'lang' ] );
+				$lang = sanitize_text_field( toolset_getget( 'lang' ) );
 			} else {
 				$lang = $src_lang;
 			}
-			$clauses[ 'where' ] = str_replace( "icl_t.language_code = '" . $src_lang . "'", "icl_t.language_code = '" . $lang . "'", $clauses[ 'where' ] );
+			$clauses[ 'where' ] = str_replace(
+				"icl_t.language_code = '" . $src_lang . "'",
+				"icl_t.language_code = '" . $lang . "'",
+				$clauses[ 'where' ]
+			);
 		}
 
 		return $clauses;
@@ -898,8 +893,10 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 	 */
 	protected function is_form_submitted() {
 		foreach ( $_POST as $name => $value ) {
-			if ( strpos( $name, 'form_submit' ) !== false ) {
-
+			if (
+				strpos( $name, 'form_submit') !== false
+				&& $this->_form_id == toolset_getpost( '_cred_cred_prefix_form_id' )
+			) {
 				return true;
 			}
 		}
@@ -957,173 +954,6 @@ abstract class CRED_Form_Base implements ICRED_Form_Base {
 				}
 			}
 		}
-	}
-
-	/**
-	 * @param array $codes
-	 * @param int $form_id
-	 * @param int|null $post_id
-	 *
-	 * @return mixed
-	 */
-	public function extraSubjectNotificationCodes( $codes, $form_id, $post_id ) {
-		$form = $this->_formData;
-		if ( $form_id == $form->getForm()->ID ) {
-			$codes[ '%%POST_PARENT_TITLE%%' ] = ( null === $post_id )
-				? ''
-				: $this->cred_parent_for_notification( $post_id, array( 'get' => 'title' ) );
-		}
-
-		return $codes;
-	}
-
-	/**
-	 * @param array $codes
-	 * @param int $form_id
-	 * @param int|null $post_id
-	 *
-	 * @return mixed
-	 */
-	public function extraBodyNotificationCodes( $codes, $form_id, $post_id ) {
-		$form = $this->_formData;
-		if ( $form_id == $form->getForm()->ID ) {
-			$codes[ '%%FORM_DATA%%' ] = isset( CRED_StaticClass::$out[ 'notification_data' ] ) ? CRED_StaticClass::$out[ 'notification_data' ] : '';
-			$codes[ '%%POST_PARENT_TITLE%%' ] = ( null === $post_id )
-				? ''
-				: $this->cred_parent_for_notification( $post_id, array( 'get' => 'title' ) );
-			$codes[ '%%POST_PARENT_LINK%%' ] = ( null === $post_id )
-				? ''
-				: $this->cred_parent_for_notification( $post_id, array( 'get' => 'url' ) );
-		}
-
-		return $codes;
-	}
-
-	/**
-	 * Get data from the parent post submitted in the form in a parent field selector.
-	 *
-	 * @param $post_id
-	 * @param $atts
-	 *
-	 * @return string
-	 *
-	 * @note This is broken since a form can have more than one legacy parent selector
-	 *       (the same post type can be the child of multiple parent post types)
-	 *       so keep it for legacy, and review with proper placeholders later.
-	 */
-	public function cred_parent_for_notification( $post_id, $atts ) {
-		if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
-			return $this->get_migrated_parent_for_notification( $post_id, $atts );
-		} else {
-			return $this->get_legacy_parent_for_notification( $post_id, $atts );
-		}
-	}
-
-	public function get_legacy_parent_for_notification( $post_id, $atts ) {
-
-		if (
-			! isset( CRED_StaticClass::$out[ 'fields' ][ 'parents' ] )
-			|| empty( CRED_StaticClass::$out[ 'fields' ][ 'parents' ] )
-		) {
-			return '';
-		}
-
-		extract( shortcode_atts( array(
-			'post_type' => null,
-			'get' => 'title',
-		), $atts ) );
-
-		$post_type = get_post_type( $post_id );
-		$parent_id = null;
-		foreach ( CRED_StaticClass::$out[ 'fields' ][ 'parents' ] as $k => $v ) {
-			if ( isset( $_REQUEST[ $k ] ) ) {
-				$parent_id = $_REQUEST[ $k ];
-				break;
-			}
-		}
-
-		if ( $parent_id !== null ) {
-			switch ( $get ) {
-				case 'title':
-					return get_the_title( $parent_id );
-				case 'url':
-					return get_permalink( $parent_id );
-				case 'id':
-					return $parent_id;
-				default:
-					return '';
-			}
-		}
-
-		return '';
-	}
-
-	public function get_migrated_parent_for_notification( $post_id, $atts ) {
-
-		if (
-			! isset( CRED_StaticClass::$out[ 'fields' ][ 'relationships' ] )
-			|| empty( CRED_StaticClass::$out[ 'fields' ][ 'relationships' ] )
-		) {
-			return '';
-		}
-
-		extract( shortcode_atts( array(
-			'get' => 'title',
-		), $atts ) );
-
-		$post_type = get_post_type( $post_id );
-		$legacy_relationships_fields_slugs = array();
-
-		do_action( 'toolset_do_m2m_full_init' );
-
-		$relationship_query = new Toolset_Relationship_Query_V2();
-		$definitions = $relationship_query
-			->add( $relationship_query->do_and(
-				$relationship_query->is_legacy( true ),
-				$relationship_query->has_domain_and_type( $post_type, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() )
-			) )
-			->get_results();
-		if ( empty( $definitions ) ) {
-			return '';
-		}
-
-		foreach( $definitions as $legacy_definition ) {
-			$legacy_relationships_fields_slugs[] = '@' . $legacy_definition->get_slug() . '.parent';
-		}
-
-		$parent_id = null;
-		foreach ( CRED_StaticClass::$out[ 'fields' ][ 'relationships' ] as $k => $v ) {
-			if (
-				$k !== $post_type
-				&& ! in_array( $k, $legacy_relationships_fields_slugs )
-			) {
-				break;
-			}
-			if ( isset( $_REQUEST[ $k ] ) ) {
-				$parent_id = $_REQUEST[ $k ];
-				break;
-			}
-			$k_trans = str_replace( array('.') , '_', $k );
-			if ( isset( $_REQUEST[ $k_trans ] ) ) {
-				$parent_id = $_REQUEST[ $k_trans ];
-				break;
-			}
-		}
-
-		if ( $parent_id !== null ) {
-			switch ( $get ) {
-				case 'title':
-					return get_the_title( $parent_id );
-				case 'url':
-					return get_permalink( $parent_id );
-				case 'id':
-					return $parent_id;
-				default:
-					return '';
-			}
-		}
-
-		return '';
 	}
 
 	/**

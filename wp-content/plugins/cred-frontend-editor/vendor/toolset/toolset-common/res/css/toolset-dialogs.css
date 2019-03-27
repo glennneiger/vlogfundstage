@@ -215,7 +215,7 @@
     border: none;
 	background: none;
     box-shadow: none;
-    width: 30%;
+    width: 25%;
 	max-width: 250px;
     display: block;
 	float: left;
@@ -251,8 +251,8 @@
 .toolset-shortcode-gui-dialog-container .ui-tabs-vertical .ui-tabs-panel {
     display: block;
 	float: left;
-	width: 60%;
-    padding-left: 5%;
+	width: 72%;
+    padding-left: 2%;
 	border-left: 1px solid #ccc;
 }
 

@@ -524,7 +524,7 @@ class WPV_Editor_Parametric_Search {
 				echo '<h4 class="group-title">' . esc_html( $filter_group ) . '</h4>';
 				foreach ( $filter_items as $filter_item_key => $filter_item_data ) {
 					echo '<button class="item button button-small js-wpv-parametric-search-filter-item-dialog"'
-					     . ' onclick="WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: \'' . esc_attr( $filter_item_data['shortcode'] ) . '\', title: \'' . esc_attr( $filter_item_data['name'] ) . '\', params: ' . esc_attr( json_encode( $filter_item_data['params'] ) ) . ' }); return false;"'
+					     . ' onclick="WPViews.shortcodes_gui.wpv_insert_shortcode_dialog_open({ shortcode: \'' . esc_js( $filter_item_data['shortcode'] ) . '\', title: \'' . esc_js( $filter_item_data['name'] ) . '\', params: ' . esc_attr( json_encode( $filter_item_data['params'] ) ) . ' }); return false;"'
 					     . ' ' . disabled( isset( $view_settings[ $filter_item_data['present'] ] ), true, false )
 					     . ' style="margin:5px 5px 0 0;font-size:11px;"'
 					     . '>'

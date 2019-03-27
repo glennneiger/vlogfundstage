@@ -11,8 +11,21 @@
 class Toolset_User_Editors_Editor_Beaver
 	extends Toolset_User_Editors_Editor_Abstract {
 
-	protected $id = 'beaver';
+	const BEAVER_SCREEN_ID = 'beaver';
+
+	/**
+	 * @var string
+	 */
+	protected $id = self::BEAVER_SCREEN_ID;
+
+	/**
+	 * @var string
+	 */
 	protected $name = '';
+
+	/**
+	 * @var string
+	 */
 	protected $option_name = '_toolset_user_editors_beaver_template';
 
 	protected $logo_image_svg = 'bb.svg';
@@ -20,16 +33,18 @@ class Toolset_User_Editors_Editor_Beaver
 	/**
 	 * Toolset_User_Editors_Editor_Beaver constructor.
 	 *
-	 * @param Toolset_User_Editors_Medium_Interface $medium
+	 * @param \Toolset_User_Editors_Medium_Interface $medium
+	 * @param \Toolset_Common_Bootstrap              $tc_bootstrap
+	 * @param \Toolset_Constants                     $constants
+	 * @param \Toolset_Condition_Plugin_Views_Active $is_views_active
 	 */
-	public function __construct( Toolset_User_Editors_Medium_Interface $medium ) {
-		parent::__construct( $medium );
+	public function __construct( \Toolset_User_Editors_Medium_Interface $medium, \Toolset_Common_Bootstrap $tc_bootstrap, \Toolset_Constants $constants, \Toolset_Condition_Plugin_Views_Active $is_views_active ) {
+		parent::__construct( $medium, $tc_bootstrap, $constants, $is_views_active );
 
 		$this->set_name( defined( 'FL_BUILDER_VERSION' ) ? FLBuilderModel::get_branding() : $this->get_name() );
 	}
 
 	public function required_plugin_active() {
-
 		if ( ! apply_filters( 'toolset_is_views_available', false ) ) {
 			return false;
 		}

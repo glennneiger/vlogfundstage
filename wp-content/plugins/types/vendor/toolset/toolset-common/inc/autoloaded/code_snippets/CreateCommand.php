@@ -11,7 +11,9 @@ namespace OTGS\Toolset\Common\CodeSnippets;
 class CreateCommand {
 
 
-	const EMPTY_SNIPPET_CODE = "<?php\n/**\n * New custom code snippet.\n */";
+	const EMPTY_SNIPPET_CODE = "<?php\n/**\n * New custom code snippet.\n */\n\ntoolset_snippet_security_check() or die( 'Direct access is not allowed' );";
+	const INDEX_PHP_CONTENTS = "<?php\n// Don't delete this file for security reasons.";
+
 
 	/** @var Explorer */
 	private $snippet_explorer;
@@ -86,8 +88,17 @@ class CreateCommand {
 		}
 
 		if( ! $this->files->file_exists( $basedir ) ) {
-			$this->files->mkdir( $basedir );
+			$is_directory_created = $this->files->mkdir( $basedir, 0755, true );
+			if( ! $is_directory_created ) {
+				return new OperationResult( new \Toolset_Result( false, sprintf(
+					__( 'Unable to create the base directory for code snippets "%s". Please check permissions on the server.', 'wp-views'),
+					$basedir
+				) ) );
+			}
 		}
+
+		// Add index.php if missing.
+		$this->prevent_directory_listing( $basedir );
 
 		$is_created = $this->files->touch( $file_path );
 		if( ! $is_created ) {
@@ -112,5 +123,25 @@ class CreateCommand {
 		$viewmodel = $this->snippet_view_model_factory->create( $snippet );
 
 		return new OperationResult( $result, $viewmodel );
+	}
+
+
+	/**
+	 * Add index.php to the base directory if it's missing.
+	 *
+	 * At the moment, we don't allow subdirectories to be created, so we don't need to concern ourselves with preventing
+	 * their listing. If anyone creates them manually, it's their responsibility.
+	 *
+	 * @param $basedir
+	 * @since Types 3.1.2
+	 */
+	private function prevent_directory_listing( $basedir ) {
+		$index_file = $basedir . '/index.php';
+
+		if( $this->files->file_exists( $index_file ) ) {
+			return;
+		}
+
+		$this->files->file_put_contents( $index_file, self::INDEX_PHP_CONTENTS );
 	}
 }

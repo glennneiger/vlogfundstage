@@ -59,11 +59,11 @@ abstract class Toolset_Field_Group_Factory {
 	 */
 	public static function get_factory_by_domain( $domain ) {
 		switch( $domain ) {
-			case Toolset_Field_Utils::DOMAIN_POSTS:
+			case Toolset_Element_Domain::POSTS:
 				return Toolset_Field_Group_Post_Factory::get_instance();
-			case Toolset_Field_Utils::DOMAIN_USERS:
+			case Toolset_Element_Domain::USERS:
 				return Toolset_Field_Group_User_Factory::get_instance();
-			case Toolset_Field_Utils::DOMAIN_TERMS:
+			case Toolset_Element_Domain::TERMS:
 				return Toolset_Field_Group_Term_Factory::get_instance();
 			default:
 				throw new InvalidArgumentException( 'Invalid field domain.' );
@@ -75,6 +75,14 @@ abstract class Toolset_Field_Group_Factory {
 	 * @return string Post type that holds information about this field group type.
 	 */
 	abstract public function get_post_type();
+
+
+	/**
+	 * Get the name of the domain for which this factory is intended.
+	 *
+	 * @return string
+	 */
+	abstract public function get_domain();
 
 
 	/**
@@ -332,13 +340,14 @@ abstract class Toolset_Field_Group_Factory {
 	/**
 	 * Get field groups based on query arguments.
 	 *
-	 * @param array $query_args Optional. Arguments for the WP_Query that will be applied on the underlying posts.
+	 * @param array $query_args Optional arguments for the WP_Query that will be applied on the underlying posts.
 	 *     Post type query is added automatically.
-	 *     Additional arguments are allowed:
+	 *     Additional arguments are allowed.
 	 *     - 'types_search': String for extended search. See WPCF_Field_Group::is_match() for details.
 	 *     - 'is_active' bool: If defined, only active/inactive field groups will be returned.
 	 *     - 'purpose' string: See Toolset_Field_Group::get_purpose(). Default is Toolset_Field_Group::PURPOSE_GENERIC.
 	 *        Special value '*' will return groups of all purposes.
+	 *     - 'assigned_to_post_type' string: For post field groups only, filter results by being assinged to a particular post type.
 	 * 
 	 * @return Toolset_Field_Group[]
 	 * @since 1.9
@@ -351,6 +360,7 @@ abstract class Toolset_Field_Group_Factory {
 		$search_string = toolset_getarr( $query_args, 'types_search' );
 		$is_active = toolset_getarr( $query_args, 'is_active', null );
 		$purpose = toolset_getarr( $query_args, 'purpose', Toolset_Field_Group::PURPOSE_GENERIC );
+		$assigned_to_post_type = toolset_getarr( $query_args, 'assigned_to_post_type', null );
 
 		// Query posts
 		$query_args = array_merge( $query_args, array( 'post_type' => $this->get_post_type(), 'posts_per_page' => -1 ) );
@@ -413,6 +423,16 @@ abstract class Toolset_Field_Group_Factory {
 			}
 		}
 
+		// Filter groups by being assigned to a post type
+		if ( $this->get_post_type() === Toolset_Element_Domain::POSTS && null !== $assigned_to_post_type ) {
+			$selected_groups = array_filter(
+				$selected_groups,
+				function ( Toolset_Field_Group_Post $field_group ) use ( $assigned_to_post_type ) {
+					return $field_group->is_assigned_to_type( $assigned_to_post_type );
+				}
+			);
+		}
+
 		return $selected_groups;
 	}
 
@@ -431,5 +451,16 @@ abstract class Toolset_Field_Group_Factory {
 		}
 		return $group_names;
 	}
+
+
+	/**
+	 * Retrieve groups that should be displayed with a certain element, taking all possible conditions into account.
+	 *
+	 * @param IToolset_Element $element Element of the domain matching the field group.
+	 * @return Toolset_Field_Group[]
+	 * @throws InvalidArgumentException On invalid input (e.g. if the element's domain doesn't match the factory domain).
+	 * @since Types 3.3
+	 */
+	abstract public function get_groups_for_element( IToolset_Element $element );
 
 }

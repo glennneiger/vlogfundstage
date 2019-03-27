@@ -17,6 +17,10 @@ if ( ! defined( 'WPTOOLSET_COMMON_PATH' ) ) {
  * Loading sequence
  */
 
+// Load OTGS/UI
+require_once CRED_ABSPATH . '/vendor/otgs/ui/loader.php';
+otgs_ui_initialize( CRED_ABSPATH . '/vendor/otgs/ui', CRED_ABSURL . '/vendor/otgs/ui' );
+
 
 // Load common resources
 require_once CRED_ABSPATH . '/vendor/toolset/onthego-resources/loader.php';

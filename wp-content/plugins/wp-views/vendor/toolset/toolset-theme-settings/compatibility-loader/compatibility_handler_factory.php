@@ -12,7 +12,7 @@ class Toolset_Compatibility_Handler_Factory {
 			throw new InvalidArgumentException( 'Non-existent compatibility handler name.' );
 		}
 
-		if( ! is_subclass_of( $class_name, 'Toolset_Compatibility_Handler_Interface', true ) ) {
+		if( ! is_subclass_of( $class_name, 'Toolset_Compatibility_Handler_Interface' ) ) {
 			throw new InvalidArgumentException( 'The provided classname is not a compatibility handler.' );
 		}
 

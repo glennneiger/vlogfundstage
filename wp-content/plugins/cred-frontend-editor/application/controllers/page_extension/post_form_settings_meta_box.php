@@ -1,5 +1,7 @@
 <?php
 
+use OTGS\Toolset\CRED\Model\Wordpress\Status;
+
 /**
  * Class Responsible to create Form Settings Meta Box
  *
@@ -7,9 +9,20 @@
  */
 class CRED_Page_Extension_Post_Form_Settings_Meta_Box extends CRED_Page_Extension_Form_Settings_Meta_Box_Base {
 
+	/**
+	 * @var CRED_Page_Extension_Post_Form_Settings_Meta_Box
+	 */
 	private static $instance;
 
-	public function __construct() {
+	/**
+	 * @var Status
+	 */
+	private $status_model = null;
+
+	public function __construct( Status $status_model_di = null ) {
+		$this->status_model = ( null === $status_model_di )
+			? Status::get_instance()
+			: $status_model_di;
 	}
 
 	public static function get_instance() {
@@ -35,7 +48,7 @@ class CRED_Page_Extension_Post_Form_Settings_Meta_Box extends CRED_Page_Extensio
 
 		//All Page List
 		$form_action_pages = $this->get_form_action_pages( $settings );
-		
+
 		$repeating_fields_groups_post_types = array();
 		if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
 			do_action( 'toolset_do_m2m_full_init' );
@@ -62,6 +75,15 @@ class CRED_Page_Extension_Post_Form_Settings_Meta_Box extends CRED_Page_Extensio
 			'form' => $form,
 			'settings' => $settings,
 			'post_types' => CRED_Loader::get( 'MODEL/Fields' )->getPostTypes(),
+			'stati' => array(
+				'basic' => $this->status_model->get_basic_stati(),
+				'native' => $this->status_model->get_native_stati(),
+				'custom' => $this->status_model->get_custom_stati(),
+			),
+			'stati_label' => array(
+				'native' => $this->status_model->get_native_stati_group_label(),
+				'custom' => $this->status_model->get_custom_stati_group_label(),
+			),
 			'repeating_fields_groups_post_types' => $repeating_fields_groups_post_types,
 			'form_post_types' => $form_post_types,
 			'form_current_custom_post' => $form_current_custom_post,

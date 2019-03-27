@@ -3,7 +3,7 @@
 WPV_Editor_Ordering::on_load();
 
 class WPV_Editor_Ordering {
-	
+
 	static function on_load() {
 		// Register the section in the screen options of the editor pages
 		add_filter( 'wpv_screen_options_editor_section_query',		array( 'WPV_Editor_Ordering', 'wpv_screen_options_ordering' ), 30 );
@@ -14,7 +14,7 @@ class WPV_Editor_Ordering {
 		// AJAX management
 		add_action( 'wp_ajax_wpv_update_sorting',					array( 'WPV_Editor_Ordering', 'wpv_update_sorting_callback' ) );
 	}
-	
+
 	static function wpv_screen_options_ordering( $sections ) {
 		$sections['ordering'] = array(
 			'name'		=> __( 'Ordering', 'wpv-views' ),
@@ -22,13 +22,13 @@ class WPV_Editor_Ordering {
 		);
 		return $sections;
 	}
-	
+
 	static function wpv_editor_section_ordering( $view_settings, $view_id ) {
 		global $wp_version;
 		$hide = '';
 		if (
-			isset( $view_settings['sections-show-hide'] ) 
-			&& isset( $view_settings['sections-show-hide']['ordering'] ) 
+			isset( $view_settings['sections-show-hide'] )
+			&& isset( $view_settings['sections-show-hide']['ordering'] )
 			&& 'off' == $view_settings['sections-show-hide']['ordering']
 		) {
 			$hide = ' hidden';
@@ -40,8 +40,8 @@ class WPV_Editor_Ordering {
 			<div class="wpv-settings-header">
 				<h2>
 					<?php _e( 'Ordering', 'wpv-views' ) ?>
-					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
-						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
+					<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
+						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 					</i>
 				</h2>
@@ -89,7 +89,7 @@ class WPV_Editor_Ordering {
 								} else {
 									$option_text = sprintf(__('Field - %s', 'wpv-views'), $key);
 								}
-								
+
 								if ( ! in_array( $field_type, array( 'checkboxes', 'skype' ) ) ) {
 									$option = '<option value="field-' . esc_attr( $key ) . '"' . $data_field_type . $selected . '>';
 									$option .= $option_text;
@@ -183,7 +183,7 @@ class WPV_Editor_Ordering {
 								$termmeta_keys = apply_filters( 'wpv_filter_wpv_get_termmeta_keys', array() );
 								$show_tax_orderby_as				= false;
 								$selected_tax_orderby_field_type	= '';
-								
+
 								foreach ( $termmeta_keys as $key ) {
 									$selected = ( $view_settings['taxonomy_orderby'] == "taxonomy-field-" . $key ) ? ' selected="selected"' : '';
 									$show_tax_orderby_as = ( !empty( $selected ) ) ? true : $show_tax_orderby_as;
@@ -284,7 +284,7 @@ class WPV_Editor_Ordering {
 										$usermeta_field_meta_key = $usermeta_field_data['meta_key'];
 										$usermeta_field_name = $usermeta_field_data['name'];
 										$usermeta_field_type = $usermeta_field_data['type'];
-										
+
 										$data_field_type = ' data-field-type="' . esc_attr( $usermeta_field_type ) . '"';
 										$selected = ( $view_settings['users_orderby'] == "user-field-" . $usermeta_field_meta_key ) ? ' selected="selected"' : '';
 										$option_text = sprintf( __( 'User Field - %s', 'wpv-views' ), $usermeta_field_name );
@@ -330,10 +330,10 @@ class WPV_Editor_Ordering {
 			</div>
 			<span class="update-action-wrap auto-update js-wpv-update-action-wrap">
 				<span class="js-wpv-message-container"></span>
-				<span type="hidden" data-success="<?php echo esc_attr( __('Updated', 'wpv-views') ); ?>" data-unsaved="<?php echo esc_attr( __('Not saved', 'wpv-views') ); ?>" data-nonce="<?php echo wp_create_nonce( 'wpv_view_ordering_nonce' ); ?>" class="js-wpv-ordering-update" />
+				<input type="hidden" data-success="<?php echo esc_attr( __( 'Updated', 'wpv-views' ) ); ?>" data-unsaved="<?php echo esc_attr( __( 'Not saved', 'wpv-views' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'wpv_view_ordering_nonce' ) ); ?>" class="js-wpv-ordering-update" />
 			</span>
 		</div>
-	<?php 
+	<?php
 	}
 
 	static function wpv_wpa_editor_section_ordering( $view_settings, $view_id, $user_id ) {
@@ -345,8 +345,8 @@ class WPV_Editor_Ordering {
 			<div class="wpv-settings-header">
 				<h2>
 					<?php _e( 'Ordering', 'wpv-views' ) ?>
-					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
-						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
+					<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
+						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 					</i>
 				</h2>
@@ -371,7 +371,7 @@ class WPV_Editor_Ordering {
 							$cf_keys						= apply_filters( 'wpv_filter_wpv_get_postmeta_keys', array() );
 							$show_orderby_as				= false;
 							$selected_orderby_field_type	= '';
-							
+
 							foreach ( $cf_keys as $key ) {
 								$selected = ( $view_settings['orderby'] == "field-" . $key ) ? ' selected="selected"' : '';
 								$show_orderby_as = ( ! empty( $selected ) ) ? true : $show_orderby_as;
@@ -394,7 +394,7 @@ class WPV_Editor_Ordering {
 								} else {
 									$option_text = sprintf(__('Field - %s', 'wpv-views'), $key);
 								}
-								
+
 								if ( ! in_array( $field_type, array( 'checkboxes', 'skype' ) ) ) {
 									$option = '<option value="field-' . esc_attr( $key ) . '"' . $data_field_type . $selected . '>';
 									$option .= $option_text;
@@ -460,12 +460,12 @@ class WPV_Editor_Ordering {
 			</div>
 			<span class="update-action-wrap auto-update js-wpv-update-action-wrap">
 				<span class="js-wpv-message-container"></span>
-				<span type="hidden" data-success="<?php echo esc_attr( __('Updated', 'wpv-views') ); ?>" data-unsaved="<?php echo esc_attr( __('Not saved', 'wpv-views') ); ?>" data-nonce="<?php echo wp_create_nonce( 'wpv_view_ordering_nonce' ); ?>" class="js-wpv-ordering-update" />
+				<input type="hidden" data-success="<?php echo esc_attr( __( 'Updated', 'wpv-views' ) ); ?>" data-unsaved="<?php echo esc_attr( __( 'Not saved', 'wpv-views' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'wpv_view_ordering_nonce' ) ); ?>" class="js-wpv-ordering-update" />
 			</span>
 		</div>
 		<?php
 	}
-	
+
 	static function wpv_update_sorting_callback() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
@@ -474,9 +474,9 @@ class WPV_Editor_Ordering {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_ordering_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_ordering_nonce' )
 		) {
 			$data = array(
 				'type'		=> 'nonce',
@@ -487,7 +487,7 @@ class WPV_Editor_Ordering {
 		if (
 			! isset( $_POST["id"] )
 			|| ! is_numeric( $_POST["id"] )
-			|| intval( $_POST['id'] ) < 1 
+			|| intval( $_POST['id'] ) < 1
 		) {
 			$data = array(
 				'type'		=> 'id',

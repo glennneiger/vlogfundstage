@@ -110,6 +110,10 @@ class CRED_Notification_Manager_Utils {
 	 */
 	public function initialize() {
 		add_action( 'wp_loaded', array( $this, 'add_hooks' ), 10 );
+
+		// API hooks
+		add_action( 'toolset_forms_add_notifications_trigger_hooks', array( $this, 'add_hooks' ) );
+		add_action( 'toolset_forms_remove_notifications_trigger_hooks', array( $this, 'remove_hooks' ) );
 	}
 
 	public function add_hooks() {

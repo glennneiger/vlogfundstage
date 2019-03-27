@@ -81,27 +81,27 @@ function wpv_view_default_settings( $purpose = 'full' ) {
 								'spinner'						=> 'default',
 								'spinner_image'					=> WPV_URL_EMBEDDED . '/res/img/ajax-loader.gif',
 								'spinner_image_uploaded'		=> '',
-								'callback_next'	=>				'' 
+								'callback_next'	=>				''
 			),
 			/*
 			'ajax_pagination' => array(// DEPRECATED
 				'disable',
 				'style'							=> 'fade',
-				'duration'						=> 500 
+				'duration'						=> 500
 			),
 			'rollover' => array(// DEPRECATED
 				'preload_images'				=> true,
 				'posts_per_page'				=> 1,
 				'speed'							=> 5,
 				'effect'						=> 'fade',
-				'duration'						=> 500 
+				'duration'						=> 500
 			),
 			*/
 			'filter_meta_html_state' => array(
 				'html'							=> 'on',
 				'css'							=> 'off',
 				'js'							=> 'off',
-				'img'							=> 'off' 
+				'img'							=> 'off'
 			),
 			'filter_meta_html' => "[wpv-filter-start hide=\"false\"]\n[wpv-filter-controls][/wpv-filter-controls]\n[wpv-filter-end]",
 			'filter_meta_html_css' => '',
@@ -110,10 +110,10 @@ function wpv_view_default_settings( $purpose = 'full' ) {
 				'html'							=> 'on',
 				'css'							=> 'off',
 				'js'							=> 'off',
-				'img'							=> 'off' 
+				'img'							=> 'off'
 			),
 			'layout_meta_html_css' => '',
-			'layout_meta_html_js' => '' 
+			'layout_meta_html_js' => ''
 	);
 
 	// purpose-specific modifications
@@ -243,7 +243,7 @@ function wpv_wordpress_archives_defaults( $settings = 'view_settings', $purpose 
 												'html'				=> 'on',
 												'css'				=> 'off',
 												'js'				=> 'off',
-												'img'				=> 'off' 
+												'img'				=> 'off'
 											),
 			'filter_meta_html'			=> "[wpv-filter-start hide=\"false\"]\n[wpv-filter-controls][/wpv-filter-controls]\n[wpv-filter-end]",
 			'filter_meta_html_css'		=> '',
@@ -252,7 +252,7 @@ function wpv_wordpress_archives_defaults( $settings = 'view_settings', $purpose 
 												'html'				=> 'on',
 												'css'				=> 'off',
 												'js'				=> 'off',
-												'img'				=> 'off' 
+												'img'				=> 'off'
 											),
 			'layout_meta_html_css'		=> '',
 			'layout_meta_html_js'		=> '',
@@ -263,24 +263,24 @@ function wpv_wordpress_archives_defaults( $settings = 'view_settings', $purpose 
 			'layout_meta_html'			=> $empty_loop_output['loop_output_settings']['layout_meta_html'],
 		),
 	);
-	
+
 	// purpose-specific modifications
 	$defaults['view_settings']['view_purpose'] = $purpose;
-	
+
 	switch ( $purpose ) {
 		case 'all':
 			$defaults['view_settings']['sections-show-hide'] = array(
 				'filter-extra-parametric'	=> 'off',
-				'filter-extra'				=> 'off'	
+				'filter-extra'				=> 'off'
 			);
 			break;
 		case 'parametric':
 			$defaults['view_settings']['sections-show-hide'] = array(
-				
+
 			);
 			break;
 	}
-	
+
 	return $defaults[ $settings ];
 }
 
@@ -311,295 +311,43 @@ function custom_media_uploader( $strings ) {
  * @since 2.3.0 Remove the wrapper div.wpv-vicon-for-{query-type} around the buttons.
  */
 function wpv_add_v_icon_to_codemirror( $editor_id ) {
-	
+
 	$fields_and_views_button_args = array(
 		'output'	=> 'button'
 	);
-	
-    if ( 
+
+    if (
 		isset( $_GET['page'] )
 		&& 'views-editor' == $_GET['page']
-		&& isset( $_GET['view_id'] ) 
+		&& isset( $_GET['view_id'] )
 		&& is_numeric( $_GET['view_id'] )
 	) {
-		
-		// Add a basic button that will generate the dialog for posts, 
+
+		// Add a basic button that will generate the dialog for posts,
 		// and then force generating the dialog for taxonomy terms and users.
 		do_action( 'wpv_action_wpv_generate_fields_and_views_button', $editor_id, $fields_and_views_button_args );
 		do_action( 'wpv_action_wpv_require_shortcodes_dialog_target', 'taxonomy' );
 		do_action( 'wpv_action_wpv_require_shortcodes_dialog_target', 'users' );
-		
+
     } else if (
 		isset( $_GET['page'] )
 		&& 'view-archives-editor' == $_GET['page']
-		&& isset( $_GET['view_id'] ) 
+		&& isset( $_GET['view_id'] )
 		&& is_numeric( $_GET['view_id'] )
 	) {
-		
+
 		// We should include termmeta fields here because users will need a way to show them for WPA taxonomy loops
 		// Note that they should produce no output on all other archive loops
 		// Add a basic button that will generate the dialog for posts.
 		do_action( 'wpv_action_wpv_generate_fields_and_views_button', $editor_id, $fields_and_views_button_args );
-		
+
 	} else {
-		
+
 		// Add a basic button that will generate the dialog for posts.
 		do_action( 'wpv_action_wpv_generate_fields_and_views_button', $editor_id, $fields_and_views_button_args );
-		
-	}
-	
-}
 
-// Deprecated, keep only for the Loop Wizard :-/
-function wpv_layout_taxonomy_V( $menu ) {
-    // remove post items and add taxonomy items.
-    global $wpv_shortcodes;
-    $basic = __( 'Basic', 'wpv-views' );
-    //$menu = array($basic => array());
-	$allowed_menus = array(
-		__( 'Post View', 'wpv-views' ) => true,
-		__( 'Taxonomy View', 'wpv-views' ) => true,
-		__( 'User View', 'wpv-views' ) => true
-	);
-	$allowed_menus = apply_filters( 'wpv_filter_wpv_editor_addon_keep_default_registered_menus_for_taxonomy', $allowed_menus );
-	$menu = array_intersect_key( $menu, $allowed_menus );
-    $taxonomy = array(
-		'wpv-taxonomy-title',
-		'wpv-taxonomy-link',
-		'wpv-taxonomy-url',
-		'wpv-taxonomy-slug',
-		'wpv-taxonomy-id',
-		'wpv-taxonomy-description',
-		'wpv-taxonomy-post-count'
-	);
-    foreach ( $taxonomy as $key ) {
-        $menu[ $basic ][ $wpv_shortcodes[ $key ][1] ] = array( 
-			$wpv_shortcodes[ $key ][1], 
-			$wpv_shortcodes[ $key ][0], 
-			$basic, 
-			''
-		);
-    }
-	$nonce = wp_create_nonce('wpv_editor_callback');
-	$wpv_shortcodes['wpv-taxonomy-field'] = array('wpv-taxonomy-field', __('Taxonomy field', 'wpv-views'), 'wpv_shortcode_wpv_tax_field');
-	$menu[ $basic ][ __('Taxonomy field', 'wpv-views') ] = array( 
-		__('Taxonomy field', 'wpv-views'), 
-		'wpv-taxonomy-field', 
-		$basic, 
-		"WPViews.shortcodes_gui.wpv_insert_popup('wpv-taxonomy-field', '" . esc_js( __('Taxonomy field', 'wpv-views') ). "', {}, '" . $nonce . "', this )"
-	);
-	
-    return $menu;
-}
+	}
 
-// Deprecated, keep only for the Loop Wizard :-/
-function wpv_include_types_termmeta_fields( $menu ) {
-	if ( function_exists('wpcf_init') ) {
-		//Get types groups and fields
-		$groups = wpcf_admin_fields_get_groups( 'wp-types-term-group' );
-		$add = array();
-		if ( ! empty( $groups ) ) {
-			foreach ( $groups as $group_id => $group ) {
-				if ( empty( $group['is_active'] ) ) {
-					continue;
-				}
-				$fields = wpcf_admin_fields_get_fields_by_group( 
-					$group['id'],
-					'slug',
-					true,
-					false,
-					true,
-					'wp-types-term-group',
-					'wpcf-termmeta' 
-				);
-				// @since m2m wpcf_admin_fields_get_fields_by_group returns strings for repeatng fields groups
-				$fields = array_filter( $fields, 'is_array' );
-				if ( ! empty( $fields ) ) {
-					foreach ( $fields as $field_id => $field ) {
-						$menu[$group['name']][$field['name']] = array(
-							$field['name'],
-							'types termmeta="'.$field['id'].'"][/types',
-							$group['name'],
-							'wpcfFieldsEditorCallback(\'' . $field['id'] . '\', \'views-termmeta\', -1)'
-						);
-						$add[] = $field['meta_key'];
-					}
-				}
-			}
-		}
-		//Get un-grouped Types fields
-		$cf_types = wpcf_admin_fields_get_fields( true, true, false, 'wpcf-termmeta' );
-		foreach ( $cf_types as $cf_id => $cf ) {
-			if ( ! in_array( $cf['meta_key'], $add ) ) {
-				$menu[__('Types fields', 'wpv-views')][$cf['name']] = array(
-					$cf['name'],
-					'types termmeta="'.$cf['id'].'"][/types',
-					__('Types fields', 'wpv-views'),
-					'wpcfFieldsEditorCallback(\'' . $cf['id'] . '\', \'views-termmeta\', -1)'
-				);
-			}
-		}
-	}
-	
-    return $menu;
-}
-
-/**
- * Add usermeta V icon menu
- *
- **/
-// Deprecated, keep only for the Loop Wizard :-/
-function wpv_layout_users_V( $menu ) {
-	$nonce = wp_create_nonce('wpv_editor_callback');
-    $basic = __( 'Basic', 'wpv-views' );
-    //$menu = array($basic => array());
-	$allowed_menus = array(
-		__( 'Post View', 'wpv-views' )		=> true,
-		__( 'Taxonomy View', 'wpv-views' )	=> true,
-		__( 'User View', 'wpv-views' )		=> true
-	);
-	$allowed_menus = apply_filters( 'wpv_filter_wpv_editor_addon_keep_default_registered_menus_for_users', $allowed_menus );
-	$menu = array_intersect_key( $menu, $allowed_menus );
-    $user_shortcodes = array(
-			'ID'			=> array(
-				'label'	=> __('User ID', 'wpv-views'),
-				'code'	=> 'wpv-user field="ID"'
-			),
-			'user_email'		=> array(
-				'label'	=> __('User Email', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_email"'
-			),
-			'user_login'		=> array(
-				'label'	=> __('User Login', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_login"'
-			),
-			'user_firstname'	=> array(
-				'label'	=> __('First Name', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_firstname"'
-			),
-			'user_lastname'		=> array(
-				'label'	=> __('Last Name', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_lastname"'
-			),
-			'nickname'			=> array(
-				'label'	=> __('Nickname', 'wpv-views'),
-				'code'	=> 'wpv-user field="nickname"'
-			),
-			'display_name'		=> array(
-				'label'	=> __('Display Name', 'wpv-views'),
-				'code'	=> 'wpv-user field="display_name"'
-			),
-            'profile_picture'	=> array(
-                'label'	=> __( 'Profile Picture', 'wpv-views' ),
-                'code'	=> 'wpv-user field="profile_picture"'
-            ),
-			'user_nicename'		=> array(
-				'label'	=> __('Nicename', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_nicename"'
-			),
-			'description'		=> array(
-				'label'	=> __('Description', 'wpv-views'),
-				'code'	=> 'wpv-user field="description"'
-			),
-			'yim'				=> array(
-				'label'	=> __('Yahoo IM', 'wpv-views'),
-				'code'	=> 'wpv-user field="yim"'
-			),
-			'jabber'			=> array(
-				'label'	=> __('Jabber', 'wpv-views'),
-				'code'	=> 'wpv-user field="jabber"'
-			),
-			'aim'				=> array(
-				'label'	=> __('AIM', 'wpv-views'),
-				'code'	=> 'wpv-user field="aim"'
-			),
-			'user_url'			=> array(
-				'label'	=> __('User URL', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_url"'
-			),
-			'user_registered'	=> array(
-				'label'	=> __('Registration Date', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_registered"'
-			),
-			'user_status'		=> array(
-				'label'	=> __('User Status', 'wpv-views'),
-				'code'	=> 'wpv-user field="user_status"'
-			),
-			'spam'				=> array(
-				'label'	=> __('User Spam Status', 'wpv-views'),
-				'code'	=> 'wpv-user field="spam"'
-			),
-		);
-    foreach ( $user_shortcodes as $shortcode_slug => $shortcode_data ) {
-		$menu[$basic][$shortcode_data['label']] = array( 
-			$shortcode_data['label'], 
-			$shortcode_data['code'], 
-			$basic, 
-			"WPViews.shortcodes_gui.wpv_insert_popup('wpv-user', '" . esc_js( $shortcode_data['label'] ) . "', {attributes:{field:'" . esc_js( $shortcode_slug ) . "'}}, '" . $nonce . "', this )"
-		);
-    }
-	
-	// Add the toolset-edit-user-link item, only when CRED is available
-	// @since 2.4.0
-	if ( defined( 'CRED_FE_VERSION' ) ) {
-		if ( ! isset( $menu[ __( 'CRED Editing', 'wpv-views' ) ] ) ) {
-			$menu[ __( 'CRED Editing', 'wpv-views' ) ] = array();
-		}
-		$menu[ __( 'CRED Editing', 'wpv-views' ) ][ __( 'CRED edit-user link', 'wpv-views' ) ] = array(
-			__( 'CRED edit-user link', 'wpv-views' ),
-			'toolset-edit-user-link',
-			__( 'CRED Editing', 'wpv-views' ),
-			"WPViews.shortcodes_gui.wpv_insert_popup('toolset-edit-user-link', '" . esc_js( __( 'CRED edit-user link', 'wpv-views' ) ) . "', {}, '" . $nonce . "', this )"
-		);
-	}
-	
-	if ( function_exists('wpcf_init') ) {
-		//Get types groups and fields
-		$groups = wpcf_admin_fields_get_groups( 'wp-types-user-group' );
-		$add = array();
-		if ( ! empty( $groups ) ) {
-			foreach ( $groups as $group_id => $group ) {
-				if ( empty( $group['is_active'] ) ) {
-					continue;
-				}
-				$fields = wpcf_admin_fields_get_fields_by_group( 
-					$group['id'],
-					'slug',
-					true,
-					false,
-					true,
-					'wp-types-user-group',
-					'wpcf-usermeta' 
-				);
-				// @since m2m wpcf_admin_fields_get_fields_by_group returns strings for repeatng fields groups
-				$fields = array_filter( $fields, 'is_array' );
-				if ( ! empty( $fields ) ) {
-					foreach ( $fields as $field_id => $field ) {
-						$menu[$group['name']][$field['name']] = array(
-							$field['name'],
-							'types usermeta="'.$field['id'].'"][/types',
-							$group['name'],
-							'wpcfFieldsEditorCallback(\'' . $field['id'] . '\', \'views-usermeta\', -1)'
-						);
-						$add[] = $field['meta_key'];
-					}
-				}
-			}
-		}
-		//Get un-grouped Types fields
-		$cf_types = wpcf_admin_fields_get_fields( true, true, false, 'wpcf-usermeta' );
-		foreach ( $cf_types as $cf_id => $cf ) {
-			if ( ! in_array( $cf['meta_key'], $add ) ) {
-				$menu[__('Types fields', 'wpv-views')][$cf['name']] = array(
-					$cf['name'],
-					'types usermeta="'.$cf['id'].'"][/types',
-					__('Types fields', 'wpv-views'),
-					'wpcfFieldsEditorCallback(\'' . $cf['id'] . '\', \'views-usermeta\', -1)'
-				);
-			}
-		}
-	}
-    return $menu;
 }
 
 /**
@@ -632,27 +380,19 @@ function wpv_create_content_template( $title, $suffix = '', $force = true, $cont
 	}
     $template_title = $title . $real_suffix;
 
-    $result = array();
+	$ct = WPV_Content_Template::create( $template_title, (bool) $force );
 
-    if( $force ) {
-        $ct = WPV_Content_Template::create( $template_title, true );
-    } else {
-
-        if( WPV_Content_Template::is_name_used( $template_title ) ) {
-            $result['error'] = __( 'A Content Template with that title already exists. Please use another title.', 'wpv-views' );
-            $result['title'] = $template_title;
-            return $result;
-        }
-
-        $ct = WPV_Content_Template::create( $template_title, false );
-    }
-
-    if( null == $ct ) {
+    if( ! $ct instanceof WPV_Content_Template ) {
         $return['title'] = $template_title;
-        $return['error'] = __( 'An error occurred while creating a Content Template.', 'wpv-views' );
+        $return['error'] = isset( $ct['error'] ) ? $ct['error'] : __( 'An error occurred while creating a Content Template.', 'wpv-views' );
     } else {
 
-        $return['title'] = $ct->title;
+    	// The "WPV_Content_Template_Embedded" class, parent of "WPV_Content_Template", implements the "post()" method (used
+	    // to get the post -here $ct- and later the post title -$ct->title-), to return the post using an "edit" filter
+	    // (https://developer.wordpress.org/reference/classes/wp_post/filter/), which ends up sanitizing the post fields
+	    // before returning them. We need to reverse the changes made on the post title by the "esc_textarea" method
+	    // when sanitizing it.
+        $return['title'] = htmlspecialchars_decode( $ct->title, ENT_QUOTES );
 
         try {
             $ct->content_raw = $content;
@@ -735,14 +475,14 @@ function wpv_create_view( $args ) {
  * @return string The result: 'class="current"' or an empty string.
  *
  * @since 1.8
- */ 
+ */
 function wpv_current_class( $first_value, $second_value = null, $echo = true ) {
 	if( $second_value == null ) {
 		$condition = (bool) $first_value;
 	} else {
 		$condition = ( $first_value == $second_value );
 	}
-	
+
 	$result = $condition ? 'class="current"' : '';
 
 	if( $echo ) {

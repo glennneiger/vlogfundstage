@@ -90,27 +90,29 @@ class LoopOutputGenerator {
 	 *              replaced by this method inside a non static class. The "WPV_Base_Class::generate_loop_output" became
 	 *              a wrapper that creates an instance of \OTGS\Toolset\Views\ViewLoopOutputGenerator and calls this
 	 *              method.
+	 * @since 2.7.3 Boolean options should be managed as string where '1' means TRUE and '' means FALSE,
+	 *     because we are using methods to sanitize string to deal with them.
 	 */
 	public function generate( $style = 'empty', $fields = array(), $args = array() ) {
 		// Default values for arguments.
 		$args = array_merge(
 			array(
-				'include_field_names' => true,
+				'include_field_names' => '1',
 				'tab_column_count' => 1,
 				'bootstrap_column_count' => 1,
 				'bootstrap_version' => 'undefined',
-				'add_container' => false,
-				'add_row_class' => false,
-				'render_individual_columns' => false,
-				'use_loop_template' => false,
+				'add_container' => '',
+				'add_row_class' => '',
+				'render_individual_columns' => '',
+				'use_loop_template' => '',
 				'loop_template_title' => '',
-				'render_only_wpv_loop' => false,
+				'render_only_wpv_loop' => '',
 				'list_separator' => ',',
 			),
 			$args
 		);
 
-		// Avoid extract() and validate.
+		// AValidate, and turn booleans into proper typed values.
 		$include_field_names = ( '1' === $args['include_field_names'] ) ? true : false;
 		$tab_column_count = (int) $args['tab_column_count'];
 		$bootstrap_column_count = (int) $args['bootstrap_column_count'];
@@ -294,7 +296,7 @@ class LoopOutputGenerator {
 
 		if ( $args['use_loop_template'] ) {
 			$ct_content = $field_codes;
-			$loop_template_body = "\t\t\t\t[wpv-post-body view_template=\"{$args['loop_template_title']}\"]";
+			$loop_template_body = "\t\t\t\t[wpv-post-body view_template=\"{$args['loop_template_name']}\"]";
 		} else {
 			$ct_content = '';
 			$loop_template_body = $field_codes;
@@ -371,11 +373,11 @@ class LoopOutputGenerator {
 		$col_class = $col_style . $column_offset;
 
 		// Add row class (optional for bootstrap 2).
-		$row_class = ( $args['add_row_class'] || ( 3 === $bootstrap_version ) ) ? 'row' : '';
+		$row_class = ( '1' === $args['add_row_class'] || ( 3 === intval( $bootstrap_version ) ) ) ? 'row' : '';
 
 		if ( $args['use_loop_template'] ) {
 			$ct_content = $field_codes;
-			$loop_item = "<div class=\"$col_class\">[wpv-post-body view_template=\"{$args['loop_template_title']}\"]</div>";
+			$loop_item = "<div class=\"$col_class\">[wpv-post-body view_template=\"{$args['loop_template_name']}\"]</div>";
 		} else {
 			$ct_content = '';
 			$loop_item = "<div class=\"$col_class\">\n$field_codes\n\t\t\t</div>";
@@ -388,7 +390,7 @@ class LoopOutputGenerator {
 		$output .= "\t<wpv-loop wrap=\"{$column_count}\" pad=\"true\">\n";
 
 		// If the first column is also a last column, close the div tag.
-		$ifone = ( 1 === $column_count ) ? "\n\t\t</div>" : '';
+		$ifone = ( 1 === intval( $column_count ) ) ? "\n\t\t</div>" : '';
 
 		if ( $args['render_individual_columns'] ) {
 			// Render items for each column.
@@ -475,7 +477,7 @@ class LoopOutputGenerator {
 
 		if ( $args['use_loop_template'] ) {
 			$ct_content = $field_codes;
-			$loop_template_body = "\t\t\t\t[wpv-post-body view_template=\"{$args['loop_template_title']}\"]";
+			$loop_template_body = "\t\t\t\t[wpv-post-body view_template=\"{$args['loop_template_name']}\"]";
 		} else {
 			$ct_content = '';
 			$loop_template_body = $field_codes;
@@ -526,7 +528,7 @@ class LoopOutputGenerator {
 
 		if ( $args['use_loop_template'] ) {
 			$ct_content = $field_codes;
-			$loop_template_body = "\t\t\t<li>[wpv-post-body view_template=\"{$args['loop_template_title']}\"]</li>";
+			$loop_template_body = "\t\t\t<li>[wpv-post-body view_template=\"{$args['loop_template_name']}\"]</li>";
 		} else {
 			$ct_content = '';
 			$loop_template_body = "\t\t\t<li>\n$field_codes\n\t\t\t</li>";
@@ -616,7 +618,7 @@ class LoopOutputGenerator {
 
 		if ( $args['use_loop_template'] ) {
 			$ct_content = $field_codes;
-			$loop_template_body = "\t\t[wpv-post-body view_template=\"{$args['loop_template_title']}\"]";
+			$loop_template_body = "\t\t[wpv-post-body view_template=\"{$args['loop_template_name']}\"]";
 		} else {
 			$ct_content = '';
 			$loop_template_body = $field_codes;

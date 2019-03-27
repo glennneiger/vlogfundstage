@@ -19,49 +19,92 @@
 WPV_Frontend_Render_Filters::on_load();
 
 class WPV_Frontend_Render_Filters {
-	
+
 	static function on_load() {
 		add_filter( 'the_content',								array( 'WPV_Frontend_Render_Filters', 'pre_process_shortcodes' ), 5 );
 		add_filter( 'wpv_filter_wpv_the_content_suppressed',	array( 'WPV_Frontend_Render_Filters', 'pre_process_shortcodes' ), 5 );
 		add_filter( 'wpv-pre-do-shortcode',						array( 'WPV_Frontend_Render_Filters', 'wpv_pre_do_shortcode' ), 5 );
 		add_filter( 'wpv-pre-process-shortcodes',       		array( 'WPV_Frontend_Render_Filters', 'pre_process_shortcodes' ), 5 );
+
+		add_action( 'toolset_common_loaded', array( 'WPV_Frontend_Render_Filters', 'register_shared_formatting_filter' ) );
 	}
-	
+
+	/**
+	 * Register the \OTGS\Toolset\Common\BasicFormatting::FILTER_NAME filter callback
+	 * to process inner, nested and all te other shortcodes goodies provided by this class.
+	 *
+	 * Note that this shared filter will become th replacement for wpv_filter_wpv_the_content_suppressed.
+	 *
+	 * @since 2.7
+	 */
+	public static function register_shared_formatting_filter() {
+		add_filter( \OTGS\Toolset\Common\BasicFormatting::FILTER_NAME, array( 'WPV_Frontend_Render_Filters', 'pre_process_shortcodes' ), 5 );
+	}
+
+	/**
+	 * Preprocess shortcodes performing the following actions:
+	 * - adjust alternative syntax.
+	 * - resolve formatting shortodes.
+	 * - resolve foreach shortcodes.
+	 * - resolve shortcodes in shortcodes.
+	 * - resolve conditional shortcodes, including legacy.
+	 * - resolve shortcodes as HTML attributes.
+	 *
+	 * @param string $content
+	 * @return string
+	 *
+	 * @note Keep this as a static method, because it is used by some user editors in Toolset Common.
+	 */
 	static function pre_process_shortcodes( $content ) {
 
 		$content = apply_filters( 'toolset_transform_shortcode_format', $content );
 
 		$content = WPV_Formatting_Embedded::resolve_wpv_noautop_shortcodes( $content );
-		
+
 		$content = wpv_preprocess_foreach_shortcodes( $content );
-		
+
 		$content = wpv_resolve_internal_shortcodes( $content );
-		
+
 		$content = wpv_preprocess_wpv_conditional_shortcodes( $content );
-		
+
 		$content = wpv_resolve_wpv_if_shortcodes( $content );
-		
+
 		$content = wpv_preprocess_shortcodes_in_html_elements( $content );
-		
+
 		return $content;
 	}
-	
+
+	/**
+	 * Preprocess shortcodes performing the following actions:
+	 * - adjust alternative syntax.
+	 * - resolve formatting shortodes.
+	 * - resolve foreach shortcodes.
+	 * - resolve shortcodes in shortcodes.
+	 * - resolve conditional shortcodes, including legacy.
+	 * - resolve shortcodes as HTML attributes.
+	 *
+	 * @param string $content
+	 * @return string
+	 *
+	 * @note Keep this as a static method, because it might be used somewhere else.
+	 * @note This is slightly different from WPV_Frontend_Render_Filters::pre_process_shortcodes for historical reasons.
+	 */
 	static function wpv_pre_do_shortcode( $content ) {
 
 		$content = apply_filters( 'toolset_transform_shortcode_format', $content );
-		
+
 		$content = WPV_Formatting_Embedded::resolve_wpv_noautop_shortcodes( $content );
-		
+
 		$content = wpv_preprocess_foreach_shortcodes( $content );
-		
+
 		$content = wpv_parse_content_shortcodes( $content );
-		
+
 		$content = wpv_preprocess_wpv_conditional_shortcodes( $content );
-		
+
 		$content = wpv_parse_wpv_if_shortcodes( $content );
-		
+
 		$content = wpv_preprocess_shortcodes_in_html_elements( $content );
-		
+
 		return $content;
 	}
 }
@@ -73,7 +116,7 @@ class WPV_Frontend_Render_Filters {
 
 function wpv_inner_shortcodes_list_regex() {
     $regex = 'wpv-post-|wpv-taxonomy-|types|wpv-current-user|wpv-user|wpv-attribute|wpv-archive-title|wpv-bloginfo|'.
-        'wpv-found-count|wpv-items-count|wpv-pager|wpv-posts-found|wpv-search-term|wpv-view|wpv-theme-option';
+        'wpv-found-count|wpv-items-count|wpv-pager|wpv-posts-found|wpv-search-term|wpv-view|wpv-theme-option|wpv-loop-index';
     return $regex;
 }
 
@@ -102,7 +145,7 @@ function wpv_preprocess_shortcodes_in_html_elements( $content ) {
 								 'regex'       => "/\\[(". $views_shortcodes_regex .").*?\\]/i",
 								 'has_content' => false
 								);
-	
+
 	// support for custom inner shortcodes via settings page
 	// since 1.4
 	$custom_inner_shortcodes = array();
@@ -128,12 +171,12 @@ function wpv_preprocess_shortcodes_in_html_elements( $content ) {
 									 'has_content' => false
 									);
 	}
-			
-			
+
+
 	// Normalize entities in unfiltered HTML before adding placeholders.
 	$trans = array( '&#91;' => '&#091;', '&#93;' => '&#093;' );
 	$content = strtr( $content, $trans );
-	
+
 	$textarr = wpv_html_split( $content );
 
 	foreach ( $textarr as &$element ) {
@@ -151,21 +194,21 @@ function wpv_preprocess_shortcodes_in_html_elements( $content ) {
 		if ( '<!--' === substr( $element, 0, 4 ) || '<![CDATA[' === substr( $element, 0, 9 ) ) {
 			continue;
 		}
-		
+
 		foreach ( $inner_expressions as $shortcode ) {
 			$counts = preg_match_all( $shortcode[ 'regex' ], $element, $matches );
-			
+
 			if ( $counts > 0 ) {
 				foreach ( $matches[0] as $index => &$match ) {
-					
+
 					// We need to exclude wpv-post-body here otherwise
 					// wpautop can be applied to it too soon.
-					
+
 					if ( strpos( $match, '[wpv-post-body' ) !== 0 ) {
 						$string_to_replace = $match;
-						
+
 						// execute shortcode content and replace
-						
+
 						if ( $shortcode[ 'has_content' ] ) {
 							$inner_content = $matches[1][ $index ];
 							if ( $inner_content ) {
@@ -182,29 +225,33 @@ function wpv_preprocess_shortcodes_in_html_elements( $content ) {
 				}
 			}
 		}
-		
+
 	}
-	
+
 	$content = implode( '', $textarr );
-	
+
 	return $content;
 }
 
 /**
-* wpv_preprocess_foreach_shortcodes
-*
-* Processes wpv-for-each shortcodes ahead of time, adding index attributes to wpv-post-field and types inner shortcodes.
-*
-* @since 1.9.1
-*/
+ * Processes wpv-for-each shortcodes ahead of time,
+ * adding index attributes to wpv-post-field and types inner shortcodes.
+ *
+ * @param string $content
+ * @return string
+ * @since 1.9.1
+ * @todo Move this pre-processing to the shortcode model class and include an API filter to execute it.
+ */
+function wpv_preprocess_foreach_shortcodes( $content ) {
+	if ( false === strpos( $content, '[wpv-for-each' ) ) {
+		return $content;
+	}
 
-
-function wpv_preprocess_foreach_shortcodes($content) {
 	global $shortcode_tags;
 	// Back up current registered shortcodes and clear them all out
 	$orig_shortcode_tags = $shortcode_tags;
-	remove_all_shortcodes();			
-	
+	remove_all_shortcodes();
+
 	// Register the wpv-for-each shortcode only
 	$relationship_service = new Toolset_Relationship_Service();
 	$attr_item_chain = new Toolset_Shortcode_Attr_Item_M2M(
@@ -215,11 +262,11 @@ function wpv_preprocess_foreach_shortcodes($content) {
 		$relationship_service
 	);
 	$factory = new WPV_Shortcode_Factory( $attr_item_chain );
+
 	if ( $shortcode = $factory->get_shortcode( 'wpv-for-each') ) {
 		add_shortcode( 'wpv-for-each', array( $shortcode, 'render' ) );
 	};
-	
-	
+
 	$expression = "/\\[wpv-for-each.*?\\](.*?)\\[\\/wpv-for-each\\]/is";
 	$counts = preg_match_all( $expression, $content, $matches );
 	while ( $counts ) {
@@ -231,9 +278,22 @@ function wpv_preprocess_foreach_shortcodes($content) {
 		}
 		$counts = preg_match_all( $expression, $content, $matches );
 	}
-	$shortcode_tags = $orig_shortcode_tags;		
-	
+	$shortcode_tags = $orig_shortcode_tags;
+
 	return $content;
+}
+
+/**
+ * Preprocess wpv-conditional shortcodes.
+ *
+ * @param string $content
+ * @return string
+ */
+function wpv_preprocess_wpv_conditional_shortcodes( $content ) {
+	if ( false === strpos( $content, '[' . WPV_Views_Conditional::SHORTCODE_NAME ) ) {
+		return $content;
+	}
+	return apply_filters( 'wpv_process_conditional_shortcodes', $content );
 }
 
 /**
@@ -304,8 +364,8 @@ function wpv_shortcode_parse_condition_atts( $text ) {
 		}
 		// Reject any unclosed HTML elements to help protect plugins.
 		foreach( $atts as $key => $value ) {
-			if ( 
-				$key != 'evaluate' 
+			if (
+				$key != 'evaluate'
 				&& $key != 'if'
 			) {
 				if ( false !== strpos( $value, '<' ) ) {
@@ -313,7 +373,7 @@ function wpv_shortcode_parse_condition_atts( $text ) {
 						$value = '';
 					}
 				}
-				
+
 			}
 			$atts[ $key ] = $value;
 		}

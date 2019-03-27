@@ -3,7 +3,7 @@
   Plugin Name: Toolset Forms
   Plugin URI: https://toolset.com/home/toolset-components/#cred
   Description: Create Edit Delete WordPress content (ie. posts, pages, custom posts) from the front end using fully customizable forms
-  Version: 2.1.2
+  Version: 2.3.2
   Author: OnTheGoSystems
   Author URI: http://www.onthegosystems.com/
   License: GPLv2
@@ -32,7 +32,7 @@ if (defined('CRED_FE_VERSION')) {
  /**
   * Plugin version
   */
-define( 'CRED_FE_VERSION', '2.1.2' );
+define( 'CRED_FE_VERSION', '2.3.2' );
 
 /**
  * Absolute plugin root path.
@@ -64,7 +64,7 @@ define( 'CRED_CAPABILITY', 'manage_options' );
 
 /**
  * Custom objects post types.
- * 
+ *
  * @deprecated Use \OTGS\Toolset\CRED\Controller\Forms\Post\Main::POST_TYPE instead.
  * @deprecated Use \OTGS\Toolset\CRED\Controller\Forms\User\Main::POST_TYPE instead.
  */

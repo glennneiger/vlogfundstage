@@ -20,17 +20,6 @@
 	{{ listing.columnHeader( __( 'Description', 'wpv-views' ), false ) }}
 {% endblock %}
 
-{# % block colgroup %}
-	<colgroup>
-		<col />
-		<col />
-		<col />
-		<col />
-		<col />
-		<col style="max-width: 10%"/>
-	</colgroup>
-{% endblock %}
-#}
 
 {# Row actions which will be embedded in the main column. #}
 {% block rowActions %}
@@ -71,6 +60,9 @@
 		<div data-bind="visible: display.hasLastError">
 			<span class="toolset_code_snippets__error_indication">{{ __( 'Error', 'wpv-views' ) }}</span>
 		</div>
+        <div data-bind="visible: display.hasWarning">
+            <span class="toolset_code_snippets__warning_indication">{{ __( 'Warning', 'wpv-views' ) }}</span>
+        </div>
 	</td>
 	<td data-bind="text: display.runMode"></td>
 	<td data-bind="text: display.runContexts"></td>
@@ -145,6 +137,16 @@
 							<p>{{ forms.button('click: onTryAgain', __( 'Save the snippet and try again', 'wpv-views' )) }}</p>
 						</td>
 					</tr>
+                    <tr data-bind="visible: ! hasSecurityCheck()">
+                        <td><label class="toolset_code_snippets__warning_indication">{{ __( 'Warning', 'wpv-views' ) }}</label></td>
+                        <td>
+                            <p>
+                                {# translators: A warning message on the Custom Code tab of Toolset Settings, displayed when editing a PHP code snippet. #}
+                                {{ __( 'The snippet is missing a security check which means that it could be executed directly by anyone who knows the file\'s URL. We highly recommend adding the following line at the beginning of this snippet:', 'wpv-views' ) }}
+                            </p>
+                            <p><code>toolset_snippet_security_check() or die( 'Direct access is not allowed' );</code></p>
+                        </td>
+                    </tr>
 				</table>
 
 				<div class="notice notice-warning inline" data-bind="visible: ! isCodeEditable()">

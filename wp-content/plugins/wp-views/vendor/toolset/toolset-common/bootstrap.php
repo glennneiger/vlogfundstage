@@ -218,6 +218,7 @@ class Toolset_Common_Bootstrap {
 
 		if ( ! $this->is_section_loaded( self::TOOLSET_RESOURCES ) ) {
 			$this->add_section_loaded( self::TOOLSET_RESOURCES );
+
 			// Use the class provided by Ric
 			require_once( TOOLSET_COMMON_PATH . '/inc/toolset.assets.manager.class.php' );
 			$this->assets_manager = Toolset_Assets_Manager::get_instance();
@@ -396,6 +397,14 @@ class Toolset_Common_Bootstrap {
 
 			$interop_mediator = new \OTGS\Toolset\Common\Interop\Mediator();
 			$interop_mediator->initialize();
+
+			require_once( TOOLSET_COMMON_PATH . '/inc/toolset.shortcode.transformer.class.php' );
+			$shortcode_transformer = new Toolset_Shortcode_Transformer();
+			$shortcode_transformer->init_hooks();
+			
+			// Passing Toolset_Shortcode_Transformer as a dependency.
+			$basic_formatting = new \OTGS\Toolset\Common\BasicFormatting( $shortcode_transformer );
+			$basic_formatting->initialize();
 			
 			/** 
 			 * Avoid the initialization of this class.
@@ -418,6 +427,13 @@ class Toolset_Common_Bootstrap {
 			require_once TOOLSET_COMMON_PATH . '/utility/autoloader.php';
 			Toolset_Common_Autoloader::initialize();
 			$this->add_section_loaded( self::TOOLSET_AUTOLOADER );
+
+			/**
+			 * Broadcast the news! The Toolset Common autoloader is available!
+			 *
+			 * @since 3.3.3
+			 */
+			do_action( 'toolset_common_autoloader_loaded' );
 		}
 
 		if ( ! $this->is_section_loaded( self::TOOLSET_UTILS ) ) {

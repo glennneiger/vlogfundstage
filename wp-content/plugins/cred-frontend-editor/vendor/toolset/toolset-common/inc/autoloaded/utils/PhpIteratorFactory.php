@@ -11,19 +11,25 @@ namespace OTGS\Toolset\Common\Utils;
  */
 class PhpIteratorFactory {
 
+
 	/**
 	 * @param string $path
+	 * @param bool $skip_index_files
+	 *
 	 * @return \RegexIterator
 	 */
-	public function create( $path ) {
+	public function create( $path, $skip_index_files = false ) {
 		$directory_iterator = new \RecursiveDirectoryIterator( $path );
 		$directory_iterator->setFlags( \FilesystemIterator::SKIP_DOTS );
 
 		$dot_iterator = new RecursiveDotFilterIterator( $directory_iterator );
 
 		$recursive_iterator = new \RecursiveIteratorIterator( $dot_iterator );
+
+		$regexp = ( $skip_index_files ? '/^(?!.*\/index\.php).+\.php$/i' : '/^.+\.php$/i' );
+
 		$php_files_iterator = new \RegexIterator(
-			$recursive_iterator, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH
+			$recursive_iterator, $regexp, \RecursiveRegexIterator::GET_MATCH
 		);
 
 		return $php_files_iterator;

@@ -55,13 +55,6 @@ class WPV_Widget extends WP_Widget {
 			}
 			$out = $WP_Views->render_view_ex( $instance['view'], $instance['view'] );
 			$out = wpv_do_shortcode( $out );
-			$post_type_object = get_post_type_object( 'view' );
-			if ( 
-				! $WP_Views->is_embedded() 
-				&& current_user_can( $post_type_object->cap->edit_post, $instance['view'] ) 
-			) {
-				$out .= widget_view_link( $instance['view']);
-			}
 			echo $out;
 			echo $after_widget;
 			$WP_Views->set_widget_view_id(0);
@@ -188,13 +181,6 @@ class WPV_Widget_filter extends WP_Widget {
 			$atts['target_id'] = $instance['target_id'];
 			$out = $WP_Views->short_tag_wpv_view_form( $atts );
 			$out = wpv_do_shortcode( $out );
-			$post_type_object = get_post_type_object( 'view' );
-			if ( 
-				! $WP_Views->is_embedded() 
-				&& current_user_can( $post_type_object->cap->edit_post, $instance['view'] ) 
-			) {
-				$out .= widget_view_link( $instance['view'] );
-			}
 			echo $out;
 			echo $after_widget;
 			$WP_Views->set_widget_view_id( 0 );
@@ -306,21 +292,6 @@ class WPV_Widget_filter extends WP_Widget {
 		$instance['target_title'] = strip_tags( $new_instance['target_title'] );
         return $instance;
     }
-    
-}
-  
-
-function widget_view_link( $view_id ) {
-
-    $link = '';	
-    
-    global $WPV_settings;
-	if ( $WPV_settings->wpv_show_edit_view_link == 1 ) {
-		$link = '<a href="'. admin_url() .'admin.php?page=views-editor&view_id=' . $view_id . '" title="' . __( 'Edit view', 'wpv-views' ) . '">' . __( 'Edit view', 'wpv-views' ) . ' "' . get_the_title( $view_id ) . '"</a>';
-		$link = apply_filters( 'wpv_edit_view_link', $link );
-	}
-    
-	return $link;
     
 }
 

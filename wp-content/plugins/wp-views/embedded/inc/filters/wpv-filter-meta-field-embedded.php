@@ -1724,9 +1724,13 @@ class WPV_Meta_Frontend_Filter {
 		$value_type_options = array(
 			'CHAR'		=> __( 'string', 'wpv-views' ),
 			'NUMERIC'	=> __( 'number', 'wpv-views' ),
-			'DATE'		=> __( 'SQL date', 'wpv-views' ),
-			'DATETIME'	=> __( 'SQL datetime', 'wpv-views' ),
-			'TIME'		=> __( 'SQL time', 'wpv-views' ),
+			'BINARY' => __( 'boolean', 'wpv-views' ),
+			'DECIMAL' => __( 'DECIMAL', 'wpv-views' ),
+			'DATE' => __( 'DATE', 'wpv-views' ),
+			'DATETIME' => __( 'DATETIME', 'wpv-views' ),
+			'TIME' => __( 'TIME', 'wpv-views' ),
+			'SIGNED' => __( 'SIGNED', 'wpv-views' ),
+			'UNSIGNED' => __( 'UNSIGNED', 'wpv-views' ),
 		);
 		
 		$value_compare_options = array(

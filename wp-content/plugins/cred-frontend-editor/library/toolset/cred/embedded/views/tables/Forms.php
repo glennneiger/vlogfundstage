@@ -2,14 +2,14 @@
 
 /**
  * class extends WP_List_Table class, gets data from the table and creates a table with pagination according to the data.
- * 
- * 
+ *
+ *
  */
 class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
 
     /**
-     * method calls parent's construct with array parameters  
-     * 
+     * method calls parent's construct with array parameters
+     *
      */
     function __construct() {
         parent::__construct(array(
@@ -75,36 +75,37 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
     }
 
     /**
-     * method overwrites WP_List_Table::get_columns() method and sets the names of the table fields 
-     * 
+     * method overwrites WP_List_Table::get_columns() method and sets the names of the table fields
+     *
      */
     function get_columns() {
         $post_type = CRED_FORMS_CUSTOM_POST_NAME;
         $columns = array(
             'cb' => '<input type="checkbox" />',
-            'cred_form_name' => __('Name', 'wp-cred'),
-            'cred_form_type' => __('Type', 'wp-cred'),
-            'cred_post_type' => __('Post Type', 'wp-cred'),
+            'cred_form_name' => __( 'Name', 'wp-cred' ),
+            'cred_form_usage' => __( 'Usage', 'wp-cred' ),
+			'date' => __( 'Modified', 'wp-cred' ),
         );
         // allow 3rd-party integration, eg Toolset Forms Commerce
-        $columns = apply_filters('manage_posts_columns', $columns, $post_type);
-        $columns = apply_filters("manage_{$post_type}_posts_columns", $columns);
+        $columns = apply_filters( 'manage_posts_columns', $columns, $post_type );
+        $columns = apply_filters( "manage_{$post_type}_posts_columns", $columns );
         return $columns;
     }
 
     /**
-     * method sets the names of the sortable fields 
-     * 
+     * method sets the names of the sortable fields
+     *
      */
     function get_sortable_columns() {
-        return $sortable = array(
-            'cred_form_name' => array('post_title', false)
+        return array(
+			'cred_form_name' => array( 'post_title', false ),
+			'date' => array( 'post_modified', false ),
         );
     }
 
     /**
-     * method gets data to be display inside the table sets pagination data and sets items fields of the parent class 
-     * 
+     * method gets data to be display inside the table sets pagination data and sets items fields of the parent class
+     *
      */
     function prepare_items() {
         global $wpdb, $_wp_column_headers;
@@ -164,8 +165,8 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
     }
 
     /**
-     * method forms the data output style 
-     * 
+     * method forms the data output style
+     *
      */
     function display_rows() {
         $post_type = CRED_FORMS_CUSTOM_POST_NAME;
@@ -178,40 +179,43 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
         list( $columns, $hidden ) = $this->get_column_info();
 
         //Loop for each record
-        if (empty($records)) {
+        if ( empty( $records ) ) {
             return false;
         }
 
-        $form_types = apply_filters('cred_admin_form_type_options', array(
-            "new" => __('Add new content', 'wp-cred'),
-            "edit" => __('Edit existing content', 'wp-cred')
-                ), '', null);
+        $form_types = array(
+			/* translators: Label for the post form listing page column about the form usage, when used to create new content; the placeholder will contain the related post type */
+			'new' => __( 'Create new %s', 'wp-cred' ),
+			/* translators: Label for the post form listing page column about the form usage, when used to edit existing content; the placeholder will contain the related post type */
+			'edit' => __( 'Edit existing %s', 'wp-cred' ),
+		);
 
-        foreach ($records as $rec) {
-            $settings = isset($rec->meta) ? maybe_unserialize($rec->meta) : false;
-            $editlink = CRED_CRED::getFormEditLink($rec->ID);
+		$missing_post_type_error = __( 'This form manages a post type that does not exist', 'wp-cred' );
+
+        foreach ( $records as $rec ) {
+            $settings = isset( $rec->meta ) ? maybe_unserialize( $rec->meta ) : false;
+            $editlink = CRED_CRED::getFormEditLink( $rec->ID) ;
 
             //Open the line
-            echo '<tr id="record_' . $rec->ID . '">';
-            $checkbox_id = "checkbox_" . $rec->ID;
-            $checkbox = "<input type='checkbox' name='checked[]' value='" . $rec->ID . "' id='" . $checkbox_id . "' /><label class='screen-reader-text' for='" . $checkbox_id . "' >" . __('Select') . " " . $rec->post_title . "</label>";
+            echo '<tr id="record_' . esc_attr( $rec->ID ) . '">';
+            $checkbox_id = "checkbox_" . esc_attr( $rec->ID );
+            $checkbox = "<input type='checkbox' name='checked[]' value='" . esc_attr( $rec->ID ) . "' id='" . $checkbox_id . "' /><label class='screen-reader-text' for='" . $checkbox_id . "' >" . __('Select') . " " . esc_html( $rec->post_title ) . "</label>";
             $exportpath = CRED_CRED::route('/Forms/exportForm' . "?form=$rec->ID&_wpnonce=" . wp_create_nonce('cred-export-' . $rec->ID));
 
-            foreach ($columns as $column_name => $column_display_name) {
+            foreach ( $columns as $column_name => $column_display_name ) {
                 //Style attributes for each col
-                $class = "class='$column_name column-$column_name'";
+                $class = 'class="' . esc_attr( $column_name ) . ' column-' . esc_attr( $column_name ) . '"';
                 $style = "";
-                if (in_array($column_name, $hidden))
-                    $style = ' style="display:none;"';
+                if ( in_array( $column_name, $hidden, true ) ) {
+					$style = ' style="display:none;"';
+				}
                 $attributes = $class . $style;
 
                 //Display the cell
-                switch ($column_name) {
-
+                switch( $column_name ) {
                     case "cb":
                         echo "<th scope='row' class='check-column'>$checkbox</th>";
                         break;
-
                     case "cred_form_name":
                         //$editlink = $editpath."&post=$rec->ID";
                         //$onclick_delete="if(confirm('".esc_js( sprintf( __( "Are you sure that you want to delete this form '%s'?\n\n Click [Cancel] to stop, [OK] to delete.", 'wp-cred' ), $rec->post_title ) ) . "' ) ) { return true;}return false;";
@@ -227,29 +231,25 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
                         echo '<td ' . $attributes . '><strong><a href="' . $editlink . '" title=\'' . esc_attr(__('Edit', 'wp-cred')) . '\'>' . stripslashes($rec->post_title) . '</a>&nbsp;&nbsp;(ID:&nbsp;' . $rec->ID . ')</strong>';
                         echo $this->row_actions($actions);
                         echo '</td>';
-                        break;
-
-                    case "cred_form_type":
-                        if ($settings && !empty($settings->form['type']) && isset($form_types[stripslashes($settings->form['type'])])) {
-                            echo '<td ' . $attributes . '>' . $form_types[stripslashes($settings->form['type'])] . '</td>';
-                        } else
-                            echo '<td ' . $attributes . '><strong>' . __('Not Set', 'wp-cred') . '</strong></td>';
-                        break;
-
-                    case "cred_post_type":
-                        if ($settings && !empty($settings->post['post_type'])) {
-                            $pt = stripslashes($settings->post['post_type']);
-                            $pto = get_post_type_object($pt);
-                            if ($pto) {
-                                $ptname = $pto->labels->name;
-                            } else {
-                                $ptname = $pt . '&nbsp&nbsp;<span style="color:red">(' . __('NOT FOUND', 'wp-cred') . ')</span>';
-                            }
-                            echo '<td ' . $attributes . '>' . $ptname . '</td>';
-                        } else
-                            echo '<td ' . $attributes . '><strong>' . __('Not Set', 'wp-cred') . '</strong></td>';
-                        break;
-
+						break;
+					case 'cred_form_usage':
+						$form_type = stripslashes( toolset_getarr( $settings->form, 'type', 'new' ) );
+						$form_type_usage = toolset_getarr( $form_types, $form_type, $form_types['new'] );
+						$post_to_manage = stripslashes( toolset_getarr( $settings->post, 'post_type', '' ) );
+						$post_object_to_manage = get_post_type_object( $post_to_manage );
+						echo '<td ' . $attributes . '>';
+						if ( $post_object_to_manage ) {
+							echo sprintf( $form_type_usage, $post_object_to_manage->labels->name );
+						} else {
+							echo '<span class="toolset-alert toolset-alert-error">' . $missing_post_type_error . '</span>';
+						}
+						echo '</td>';
+						break;
+					case 'date':
+						$display_date = get_the_modified_time( get_option( 'date_format' ), $rec->ID );
+						$abbr_date = get_the_modified_time( __( 'Y/m/d g:i:s a' ), $rec->ID );
+						echo '<td ' . $attributes . '><abbr title="' . $abbr_date . '">' . $display_date . '</abbr></td>';
+						break;
                     // display extra columns (if hooked)
                     default:
                         /**
@@ -262,8 +262,8 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
                          */
                         ?>
                         <td <?php echo $attributes ?>><?php
-                            do_action('manage_posts_custom_column', $column_name, $rec->ID);
-                            do_action("manage_{$post_type}_posts_custom_column", $column_name, $rec->ID);
+                            do_action( 'manage_posts_custom_column', $column_name, $rec->ID );
+                            do_action( "manage_{$post_type}_posts_custom_column", $column_name, $rec->ID );
                             ?></td>
                         <?php
                         break;
@@ -401,9 +401,9 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
         $search = "";
         if ('top' == $which) {
             $search_url = remove_query_arg('paged', $current_url);
-            $search = '<div style="margin-bottom:5px;"><label for="post-search-input" class="screen-reader-text">Search Posts:</label>
+            $search = '<div style="margin-bottom:5px;"><label for="search-input" class="screen-reader-text">Search Posts:</label>
 	<input type="search" value="" name="s" id="search-input">
-	<input type="button" value="Search Post Forms" class="button" id="search-submit"></div>';
+	<input type="submit" value="Search Post Forms" class="button" id="search-submit"></div>';
             $js = '<script>
                     function dosubmit() {
                         var src = jQuery("#search-input").val();
@@ -433,10 +433,10 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
         if ($current == $total_pages)
             $disable_last = ' disabled';
 
-        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'first-page' . $disable_first, esc_attr__('Go to the first page'), esc_url(remove_query_arg('paged', $current_url)), '&laquo;'
+        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'first-page button' . $disable_first, esc_attr__('Go to the first page'), esc_url(remove_query_arg('paged', $current_url)), '&laquo;'
         );
 
-        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'prev-page' . $disable_first, esc_attr__('Go to the previous page'), esc_url(add_query_arg('paged', max(1, $current - 1), $current_url)), '&lsaquo;'
+        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'prev-page button' . $disable_first, esc_attr__('Go to the previous page'), esc_url(add_query_arg('paged', max(1, $current - 1), $current_url)), '&lsaquo;'
         );
 
         if ('bottom' == $which)
@@ -448,10 +448,10 @@ class CRED_Forms_List_Table extends WP_List_Table implements CRED_Singleton {
         $html_total_pages = sprintf("<span class='total-pages'>%s</span>", number_format_i18n($total_pages));
         $page_links[] = '<span class="paging-input">' . sprintf(_x('%1$s of %2$s', 'paging', 'wp-cred'), $html_current_page, $html_total_pages) . '</span>';
 
-        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'next-page' . $disable_last, esc_attr__('Go to the next page'), esc_url(add_query_arg('paged', min($total_pages, $current + 1), $current_url)), '&rsaquo;'
+        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'next-page button' . $disable_last, esc_attr__('Go to the next page'), esc_url(add_query_arg('paged', min($total_pages, $current + 1), $current_url)), '&rsaquo;'
         );
 
-        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'last-page' . $disable_last, esc_attr__('Go to the last page'), esc_url(add_query_arg('paged', $total_pages, $current_url)), '&raquo;'
+        $page_links[] = sprintf("<a class='%s' title='%s' href='%s'>%s</a>", 'last-page button' . $disable_last, esc_attr__('Go to the last page'), esc_url(add_query_arg('paged', $total_pages, $current_url)), '&raquo;'
         );
 
         $pagination_links_class = 'pagination-links';

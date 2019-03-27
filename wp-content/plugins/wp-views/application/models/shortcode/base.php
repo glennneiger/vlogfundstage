@@ -32,4 +32,28 @@ abstract class WPV_Shortcode_Base implements WPV_Shortcode_Interface {
 
 		return $item;
 	}
+
+	/**
+	 * Get the translation, either if it follows the new or the legacy context.
+	 *
+	 * @param string      $name
+	 * @param string      $value
+	 * @param null|string $context
+	 * @param bool        $is_legacy
+	 *
+	 * @return string
+	 */
+	protected function get_translation( $name, $value, $context = null, $is_legacy = false ) {
+		if ( $is_legacy ) {
+			$view_settings = apply_filters( 'wpv_filter_wpv_get_view_settings', array() );
+			$context = 'View ' . $view_settings['view_slug'];
+		}
+
+		return wpv_translate(
+			$name,
+			$value,
+			false,
+			$context
+		);
+	}
 }

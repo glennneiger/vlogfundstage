@@ -26,22 +26,22 @@ var WPViews = WPViews || {};
 WPViews.EditScreenEditors = function( $ ) {
 
 	var self = this;
-	
+
 	self.editor_keymap = {
 		// Ctrl + Alt + Space = Try to edit the current Views shortcode under the cursor
 		"Ctrl-Alt-Space": function( cm ) {
 					var textarea_id = cm.getTextArea().id;
-					if ( 
-						textarea_id !== undefined 
-						&& _.has( WPV_Toolset.CodeMirror_instance, textarea_id ) 
+					if (
+						textarea_id !== undefined
+						&& _.has( WPV_Toolset.CodeMirror_instance, textarea_id )
 					) {
 						Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-maybe-edit-shortcode', textarea_id );
 					}
 				}
 	};
-	
+
 	self.init_hooks = function() {
-		
+
 		/**
 		 * Initialize Codemirror for a textarea.
 		 *
@@ -50,7 +50,7 @@ WPViews.EditScreenEditors = function( $ ) {
 		 * @since 2.3.0
 		 */
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-init-codemirror-editor', self.init_codemirror_editor );
-		
+
 		/**
 		 * Initialize Codemirror for a textarea.
 		 *
@@ -59,17 +59,17 @@ WPViews.EditScreenEditors = function( $ ) {
 		 * @since 2.3.0
 		 */
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-init-codemirror-auxiliar-editor', self.init_codemirror_auxiliar_editor, 10 );
-		
+
 		/**
 		 * Delete a Codemirror editor.
 		 *
 		 * @since 2.3.0
 		 */
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-delete-codemirror-editor', self.delete_codemirror_editor );
-		
+
 		return self;
 	};
-	
+
 	// @note: this might belong to the ViewEditScreen object below, using this API hooks.
 	self.init_main_editors = function() {
 
@@ -80,7 +80,7 @@ WPViews.EditScreenEditors = function( $ ) {
             self.init_codemirror_auxiliar_editor( 'wpv_filter_meta_html_js', 'javascript' );
             self.init_codemirror_editor( 'wpv_content' );
 		}
-		
+
 		self.init_codemirror_editor( 'wpv_layout_meta_html_content' );
 		self.init_codemirror_auxiliar_editor( 'wpv_layout_meta_html_css', 'css' );
 		self.init_codemirror_auxiliar_editor( 'wpv_layout_meta_html_js', 'javascript' );
@@ -91,10 +91,10 @@ WPViews.EditScreenEditors = function( $ ) {
 			Toolset.hooks.doAction( 'toolset_text_editor_CodeMirror_init', 'wpv_layout_meta_html_content' );
 			Toolset.hooks.doAction( 'toolset_text_editor_CodeMirror_init', 'wpv_content' );
 		});
-		
+
 		return self;
 	};
-	
+
 	/**
 	 * Instantiate a Codemirror editor based on its ID.
 	 *
@@ -102,24 +102,24 @@ WPViews.EditScreenEditors = function( $ ) {
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	self.init_codemirror_editor = function( editor_id ) {
-		
+
 		// Instantiate Codemirror
 		WPV_Toolset.CodeMirror_instance[ editor_id ]		= icl_editor.codemirror( editor_id, true );
 		// Cache the editor value
 		WPV_Toolset.CodeMirror_instance_value[ editor_id ]	= WPV_Toolset.CodeMirror_instance[ editor_id ].getValue();
 		// Instantiate Quicktags
-		WPV_Toolset.CodeMirror_instance_qt[ editor_id ]		= quicktags( { 
-																id: editor_id, 
-																buttons: 'strong,em,link,block,del,ins,img,ul,ol,li,code,close' 
+		WPV_Toolset.CodeMirror_instance_qt[ editor_id ]		= quicktags( {
+																id: editor_id,
+																buttons: 'strong,em,link,block,del,ins,img,ul,ol,li,code,close'
 															} );
 		WPV_Toolset.add_qt_editor_buttons( WPV_Toolset.CodeMirror_instance_qt[ editor_id ], WPV_Toolset.CodeMirror_instance[ editor_id ] );
 		// Add Codemirror keymap shortcuts
 		WPV_Toolset.CodeMirror_instance[ editor_id ].addKeyMap( self.editor_keymap );
-		
+
 	};
-	
+
 	/**
 	 * Instantiate a Codemirror editor based on its ID.
 	 *
@@ -127,24 +127,24 @@ WPViews.EditScreenEditors = function( $ ) {
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	self.init_codemirror_auxiliar_editor = function( editor_id, mode ) {
-		
+
 		mode = ( typeof mode === "undefined" ) ? "myshortcodes" : mode;
-		
+
 		// Instantiate Codemirror
 		WPV_Toolset.CodeMirror_instance[ editor_id ]		= icl_editor.codemirror( editor_id, true, mode );
 		// Cache the editor value
 		WPV_Toolset.CodeMirror_instance_value[ editor_id ]	= WPV_Toolset.CodeMirror_instance[ editor_id ].getValue();
-		
+
 	};
-	
+
 	/**
 	 * Delete a Codemirror instance, including its cached value, and maybe its Quicktags instance too.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	self.delete_codemirror_editor = function( editor_id ) {
 		if ( _.has( WPV_Toolset.CodeMirror_instance, editor_id ) ) {
 			WPV_Toolset.CodeMirror_instance[ editor_id ].focus();
@@ -160,7 +160,7 @@ WPViews.EditScreenEditors = function( $ ) {
 	};
 
 	self.init = function() {
-		
+
 		self.init_hooks()
 			.init_main_editors();
 
@@ -175,13 +175,13 @@ jQuery( document ).ready( function( $ ) {
 });
 
 WPViews.EditScreenOptions = function( $ ) {
-	
+
 	var self = this;
-	
+
 	// ---------------------------------
 	// Model
 	// ---------------------------------
-	
+
 	self.view_id				= $( '.js-post_ID' ).val();
 	self.model					= {};
 	self.purpose_extra_settings	= '.js-wpv-display-for-purpose';
@@ -207,7 +207,7 @@ WPViews.EditScreenOptions = function( $ ) {
 			hidden:		[]
 		}
 	};
-	
+
 	/**
 	* init_model
 	*
@@ -216,7 +216,7 @@ WPViews.EditScreenOptions = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.init_model = function() {
 		self.model['purpose']	= $( '.js-wpv-purpose' ).val();
 		self.model['visible']	= $( '.js-wpv-screen-options:checked' ).map( function() {
@@ -235,11 +235,11 @@ WPViews.EditScreenOptions = function( $ ) {
 								};
 		return self;
 	};
-	
+
 	// ---------------------------------
 	// Save
 	// ---------------------------------
-	
+
 	self.save_screen_options = function() {
 		var container = $( '.js-wpv-screen-options-wrapper' ),
 		options_visible = $( '.js-wpv-screen-options:checked' ).map( function() {
@@ -256,12 +256,12 @@ WPViews.EditScreenOptions = function( $ ) {
 		}).get(),
 		purpose = container.find('.js-wpv-purpose').val();
 		container.find('.toolset-alert').remove();
-		if ( 
-			self.model['purpose'] != purpose 
+		if (
+			self.model['purpose'] != purpose
 			|| self.model['visible'] != options_visible
-			|| self.model['hidden'] != options_hidden 
-			|| self.model['help'].visible != help_visible 
-			|| self.model['help'].hidden != help_hidden 
+			|| self.model['hidden'] != options_hidden
+			|| self.model['help'].visible != help_visible
+			|| self.model['help'].hidden != help_hidden
 		) {
 			var data = {
 				action:			'wpv_save_screen_options',
@@ -291,22 +291,22 @@ WPViews.EditScreenOptions = function( $ ) {
 					}
 				},
 				error:		function( ajaxContext ) {
-					
+
 				},
 				complete:	function() {
-					
+
 				}
 			});
 		}
 		return self;
 	};
-	
+
 	self.screen_options_debounce_update = _.debounce( self.save_screen_options, 1000 );
-	
+
 	// ---------------------------------
 	// Help boxes
 	// ---------------------------------
-	
+
 	$( document ).on( 'click', '.js-metasection-help-query .js-toolset-help-close-main', function() {
 		$( '.js-wpv-show-hide-query-help' ).prop( 'checked', false );
         self.screen_options_debounce_update();
@@ -321,13 +321,13 @@ WPViews.EditScreenOptions = function( $ ) {
 		$( '.js-wpv-show-hide-layout-help' ).prop( 'checked', false );
         self.screen_options_debounce_update();
 	});
-	
+
 	self.manage_howto_help_box = function() {
 		$( '.js-display-view-howto' ).hide();
 		$( '.js-display-view-howto.js-for-view-purpose-' + self.model['purpose'] ).show();
 		return self;
 	};
-	
+
 	self.manage_metasections_help = function() {
 		$( '.js-wpv-screen-options-metasection-help' ).each( function() {
 			var thiz = $( this ),
@@ -342,17 +342,17 @@ WPViews.EditScreenOptions = function( $ ) {
 		});
 		return self;
 	};
-	
+
 	$( document ).on( 'change', '.js-wpv-screen-options-metasection-help', function() {// Was .js-wpv-show-hide-help
 		self
 			.manage_metasections_help()
 			.screen_options_debounce_update();
 	});
-	
+
 	// ---------------------------------
 	// Screen options
 	// ---------------------------------
-	
+
 	self.init_screen_options = function() {
 		var views_screen_options_container = $( '#js-screen-meta-dup > div#js-screen-options-wrap-dup' );
 		$( '#screen-options-wrap' )
@@ -361,14 +361,14 @@ WPViews.EditScreenOptions = function( $ ) {
 		views_screen_options_container.remove();
 		return self;
 	};
-	
+
 	/**
 	 * Manage edit page sections dependency and ability to be shown/hidden.
 	 *
 	 * @since unknown
 	 * @since 2.3.0 Remove dependencies when hiding sections: we will only force "in" sections that depend on others
 	 */
-	
+
 	self.validate_screen_options = function( changed ) {
 		// First, validate against unsaved sections
 		$( '.js-wpv-screen-options:not(:checked)' ).each( function() {
@@ -386,10 +386,10 @@ WPViews.EditScreenOptions = function( $ ) {
 		});
 		// Now, specific dependencies
 		// @note we used to make paginaiton depend on filter-extra but I'd rather put pagination on the Loop Output directly - keeping it anyway for nbow
-		if ( 
-			changed.val() == 'filter-extra-parametric' 
-			&& changed.prop( 'checked' ) 
-			&& ! $( '.js-wpv-show-hide-filter-extra' ).prop( 'checked' ) 
+		if (
+			changed.val() == 'filter-extra-parametric'
+			&& changed.prop( 'checked' )
+			&& ! $( '.js-wpv-show-hide-filter-extra' ).prop( 'checked' )
 		) {
 			// If enabling the Custom Search Settings, force enable the Filter Editor
 			// Since 2.3.0 we no longer forbid unchecking the Filter Editor if the Custom Search Settings is enabled
@@ -402,9 +402,9 @@ WPViews.EditScreenOptions = function( $ ) {
 					stay:	true
 				});
 		} else if (
-			changed.val() == 'filter-extra' 
-			&& changed.prop( 'checked' ) 
-			&& ! $( '.js-wpv-show-hide-filter-extra-parametric' ).prop( 'checked' ) 
+			changed.val() == 'filter-extra'
+			&& changed.prop( 'checked' )
+			&& ! $( '.js-wpv-show-hide-filter-extra-parametric' ).prop( 'checked' )
 		) {
 			// If enabling the Filter Editor, force enable the Custom Search Settings
 			// Since 2.3.0 we no longer forbid unchecking the Custom Search Settings if the Filter Editor is enabled
@@ -416,10 +416,10 @@ WPViews.EditScreenOptions = function( $ ) {
 					inline:	true,
 					stay:	true
 				});
-		} else if ( 
-			changed.val() == 'pagination' 
-			&& changed.prop( 'checked' ) 
-			&& ! $( '.js-wpv-show-hide-filter-extra' ).prop( 'checked' ) 
+		} else if (
+			changed.val() == 'pagination'
+			&& changed.prop( 'checked' )
+			&& ! $( '.js-wpv-show-hide-filter-extra' ).prop( 'checked' )
 		) {
 			// If enabling the Pagination Settings, force enable the Filter Editor
 			// Since 2.3.0 we no longer forbid unchecking the Filter Editor if the Pagination Settings is enabled
@@ -434,7 +434,7 @@ WPViews.EditScreenOptions = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	self.apply_screen_options = function() {
 		$( '.js-wpv-screen-options:checked' ).each( function() {
 			var thiz_inner_val = $( this ).val();
@@ -458,7 +458,7 @@ WPViews.EditScreenOptions = function( $ ) {
 		});
 		return self;
 	};
-	
+
 	self.manage_metasections = function() {
 		$( '.js-wpv-screen-options-metasection' ).each( function() {
 			var thiz_metasection_container = $( this ),
@@ -475,7 +475,7 @@ WPViews.EditScreenOptions = function( $ ) {
 		});
 		return self;
 	};
-	
+
 	$( document ).on( 'change', '.js-wpv-screen-options', function() {
 		var thiz = $( this );
 		self
@@ -485,11 +485,11 @@ WPViews.EditScreenOptions = function( $ ) {
 			.manage_metasections()
 			.screen_options_debounce_update();
 	});
-	
+
 	// ---------------------------------
 	// Purpose management
 	// ---------------------------------
-	
+
 	self.set_purpose_sections = function( purpose ) {
 		_.each( self.purpose_to_sections[ purpose ].visible, function( element, index, list ) {
 			$( '.js-wpv-show-hide-' + element + ':not(:checked)' )
@@ -506,7 +506,7 @@ WPViews.EditScreenOptions = function( $ ) {
 		}, 1000 );
 		return self;
 	};
-	
+
 	/**
 	* manage_purpose_dependent
 	*
@@ -518,7 +518,7 @@ WPViews.EditScreenOptions = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.manage_purpose_dependent = function( purpose ) {
 		$( self.purpose_extra_settings ).hide();
 		$( self.purpose_extra_settings + '-' + purpose ).show();
@@ -533,7 +533,7 @@ WPViews.EditScreenOptions = function( $ ) {
 		});
 		return self;
 	};
-	
+
 	$( document ).on( 'change', '.js-wpv-purpose', function() {
 		self
 			.set_purpose_sections( $( this ).val() )
@@ -542,26 +542,26 @@ WPViews.EditScreenOptions = function( $ ) {
 			.manage_metasections()
 			.screen_options_debounce_update();
 	});
-	
+
 	self.get_view_purpose = function( purpose ) {
 		return self.model['purpose'];
 	};
-	
+
 	// ---------------------------------
 	// Init hooks
 	// ---------------------------------
-	
+
 	self.init_hooks = function() {
 		// Filter to get current View purpose
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-edit-screen-get-purpose', self.get_view_purpose );
-		
+
 		return self;
 	};
-	
+
 	// ---------------------------------
 	// Init
 	// ---------------------------------
-	
+
 	self.init = function() {
 		self
 			.init_screen_options()
@@ -571,7 +571,7 @@ WPViews.EditScreenOptions = function( $ ) {
 			.manage_metasections_help()
 			.manage_metasections();
 	};
-	
+
 	self.init();
 
 };
@@ -581,26 +581,26 @@ jQuery( document ).ready( function( $ ) {
 });
 
 WPViews.ViewEditScreen = function( $ ) {
-	
+
 	var self = this;
 
 	self.i18n = wpv_editor_strings;
-	
+
 	self.get_view_query_mode = function() {
 		return 'normal';
 	};
-	
+
 	// ---------------------------------
 	// Model
 	// ---------------------------------
-	
+
 	self.view_id			= $('.js-post_ID').val();
 	self.model				= {};
-	
+
 	self.get_view_id = function() {
 		return self.view_id;
 	};
-	
+
 	/**
 	* init_model
 	*
@@ -612,13 +612,14 @@ WPViews.ViewEditScreen = function( $ ) {
 	*/
 	self.init_model = function() {
 		self.model['.js-wpv-title']						= $( '.js-title' ).val();
+		self.model['.js-wpv-slug']						= $( '.js-wpv-slug' ).val();
 		self.model['.js-wpv-description']				= $( '.js-wpv-description' ).val();
-		
+
 		self.model['js-wpv-query-type']					= $( '.js-wpv-query-type:checked' ).val();
 		self.model['js-wpv-pagination-mode']			= $( '.js-wpv-pagination-mode:checked' ).val();
-		
+
 		self.model['.js-wpv-layout-settings-extra-js']	= $( '.js-wpv-layout-settings-extra-js' ).val();
-		
+
 		self.model['sorting']							= {
 															posts:		{
 																orderby:			$( 'select.js-wpv-posts-orderby' ).val(),
@@ -638,78 +639,78 @@ WPViews.ViewEditScreen = function( $ ) {
 																order:				$( 'select.js-wpv-users-order' ).val()
 															}
 														};
-		
+
 		return self;
 	};
-	
-	
+
+
 	self.get_view_query_type = function() {
 		return self.model['js-wpv-query-type'];
 	};
-	
+
 	self.get_view_pagination_mode = function() {
 		return self.model['js-wpv-pagination-mode'];
 	};
-	
-	self.pag_instructions_selector = '.js-wpv-editor-instructions-for-pagination';	
-	
+
+	self.pag_instructions_selector = '.js-wpv-editor-instructions-for-pagination';
+
 	// ---------------------------------
 	// Frontend events
 	// ---------------------------------
-	
+
 	self.frontend_events_comments = {
-		js_event_wpv_pagination_completed: "\n\t/**" 
+		js_event_wpv_pagination_completed: "\n\t/**"
 				+ "\n\t* data.view_unique_id " + wpv_editor_strings.event_trigger_callback_comments.view_unique_id
 				+ "\n\t* data.effect " + wpv_editor_strings.event_trigger_callback_comments.effect
 				+ "\n\t* data.speed " + wpv_editor_strings.event_trigger_callback_comments.speed
 				+ "\n\t* data.layout " + wpv_editor_strings.event_trigger_callback_comments.layout
 				+ "\n\t*/",
-		js_event_wpv_parametric_search_triggered: "\n\t/**" 
+		js_event_wpv_parametric_search_triggered: "\n\t/**"
 				+ "\n\t* data.view_unique_id " + wpv_editor_strings.event_trigger_callback_comments.view_unique_id
 				+ "\n\t* data.form " + wpv_editor_strings.event_trigger_callback_comments.form
 				+ "\n\t* data.update_form " + wpv_editor_strings.event_trigger_callback_comments.update_form
 				+ "\n\t* data.update_results " + wpv_editor_strings.event_trigger_callback_comments.update_results
 				+ "\n\t*/",
-		js_event_wpv_parametric_search_started: "\n\t/**" 
+		js_event_wpv_parametric_search_started: "\n\t/**"
 				+ "\n\t* data.view_unique_id " + wpv_editor_strings.event_trigger_callback_comments.view_unique_id
 				+ "\n\t*/",
-		js_event_wpv_parametric_search_form_updated: "\n\t/**" 
+		js_event_wpv_parametric_search_form_updated: "\n\t/**"
 				+ "\n\t* data.view_unique_id " + wpv_editor_strings.event_trigger_callback_comments.view_unique_id
 				+ "\n\t* data.view_changed_form " + wpv_editor_strings.event_trigger_callback_comments.form_updated
 				+ "\n\t* data.view_changed_form_additional_forms_only " + wpv_editor_strings.event_trigger_callback_comments.view_changed_form_additional_forms_only
 				+ "\n\t* data.view_changed_form_additional_forms_full " + wpv_editor_strings.event_trigger_callback_comments.view_changed_form_additional_forms_full
 				+ "\n\t*/",
-		js_event_wpv_parametric_search_results_updated: "\n\t/**" 
+		js_event_wpv_parametric_search_results_updated: "\n\t/**"
 				+ "\n\t* data.view_unique_id " + wpv_editor_strings.event_trigger_callback_comments.view_unique_id
 				+ "\n\t* data.layout " + wpv_editor_strings.event_trigger_callback_comments.layout
 				+ "\n\t*/"
 	};
-	
+
 	// ---------------------------------
 	// Helpers
 	// ---------------------------------
-	
+
 	self.overlay_container = $("<div class='wpv-setting-overlay js-wpv-setting-overlay'><div class='wpv-transparency'></div><i class='icon-lock fa fa-lock'></i></div>");
-	
+
 	self.dialog_minWidth = 870;
-	
+
 	self.calculate_dialog_maxWidth = function() {
 		return ( $( window ).width() - 100 );
 	};
-	
+
 	self.calculate_dialog_maxHeight = function() {
 		return ( $( window ).height() - 100 );
 	};
-	
+
 	$( document ).on( 'click', '.js-wpv-disable-events', function( e ) {
 		e.preventDefault();
 		return false;
 	});
-	
+
 	self.codemirror_highlight_options = {
 		className: 'wpv-codemirror-highlight'
 	};
-	
+
 	self.sanitize_arbitrary_shortcode_value = function( value ) {
 		value = value.replace( /\"/gi, '%%QUOTE%%' );
 		value = value.replace( /\'/gi, '%%SQUOTE%%' );
@@ -717,17 +718,17 @@ WPViews.ViewEditScreen = function( $ ) {
 		value = value.replace( /\]/gi, '%%CBRAK%%' );
 		return value;
 	};
-	
+
 	// ---------------------------------
 	// Save queue
 	// ---------------------------------
-	
+
 	/**
 	* Store sections to be manually updatd on a queue.
 	*
 	* @since 2.1
 	*/
-	
+
 	self.save_queue					= [];
 	self.save_fail_queue			= [];
 	self.save_callbacks				= {};
@@ -735,10 +736,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		callback:	self.save_section_defaults_callback,
 		event:		'js_event_wpv_save_section_defaults_completed'
 	};
-	self.save_all_queue_step		= 0;
-	self.save_all_queue_completed	= 100;
-	self.save_all_progress_bar		= $( '#js-wpv-general-actions-bar .js-wpv-view-save-all-progress' );
-	
+
 	/**
 	* save_section_defaults_callback
 	*
@@ -747,7 +745,7 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.save_section_defaults_callback = function( event, propagate ) {
 		$( document ).trigger( event );
 		if ( propagate ) {
@@ -756,7 +754,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	/**
 	* manage_save_queue
 	*
@@ -764,19 +762,19 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.manage_save_queue = function( section, action, args ) {
 		if ( typeof args === 'undefined' ) {
 			args = {};
 		}
-		var target = { 
-			section:	section, 
-			args:		args 
+		var target = {
+			section:	section,
+			args:		args
 		};
 		switch ( action ) {
 			case 'add':
 				self.save_queue.push( target );
-				self.save_queue = _.uniq( self.save_queue, function( item, key, a ) { 
+				self.save_queue = _.uniq( self.save_queue, function( item, key, a ) {
 					return item.section + '#' + _.keys( item.args ).join( '#' ) + '#' + _.values( item.args ).join( '#' );
 				});
 				break;
@@ -788,7 +786,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		self.save_fail_queue = _.without( self.save_fail_queue, section );
 	};
-	
+
 	/**
 	* modify_save_queue
 	*
@@ -796,17 +794,17 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.modify_save_queue = function( data ) {
 		var safe_data = $.extend( {}, { section: '', action: '', args: {} }, data );
 		if (
-			'' != safe_data.section 
+			'' != safe_data.section
 			&& '' != safe_data.action
 		) {
 			self.manage_save_queue( safe_data.section, safe_data.action, safe_data.args );
 		}
 	};
-	
+
 	/**
 	* define_save_callbacks
 	*
@@ -814,14 +812,14 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.define_save_callbacks = function( data ) {
 		self.save_callbacks[ data.handle ] = {
 			callback:	data.callback,
 			event:		data.event
 		};
 	};
-	
+
 	/**
 	* modify_save_fail_queue
 	*
@@ -829,33 +827,19 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.modify_save_fail_queue = function( section ) {
 		self.save_fail_queue.push( section );
 	};
-	
+
 	/**
 	* Process save queue, one item at a time.
 	*
 	* @since 2.1
 	*/
-		
+
 	$( document ).on( 'js_wpv_save_section_queue', function( event ) {
 		if ( _.size( self.save_queue ) > 0 ) {
-			
-			if ( self.save_all_queue_step > 0 ) {
-				self.save_all_progress_bar.addClass( 'wpv-view-save-all-progress-working' );
-				if ( self.save_all_queue_completed >= 100 ) {
-					self.save_all_queue_completed = 0;
-				} else {
-					self.save_all_queue_completed += self.save_all_queue_step;
-					
-				}
-				self.save_all_progress_bar.css({
-					'width': self.save_all_queue_completed + '%'
-				});
-			}
-			
 			var save_section_to_fire = _.first( self.save_queue ),
 			save_section_to_fire_data = _.has( self.save_callbacks, save_section_to_fire.section ) ? self.save_callbacks[ save_section_to_fire.section ]: self.save_section_defaults;
 			if ( typeof save_section_to_fire_data.callback == "function" ) {
@@ -866,100 +850,127 @@ WPViews.ViewEditScreen = function( $ ) {
 			$( document ).trigger( 'js_wpv_save_section_queue_completed' );
 		}
 	});
-	
+
 	// ---------------------------------
 	// Action Bar
 	// ---------------------------------
-	
+
 	self.action_bar						= $( '#js-wpv-general-actions-bar' );
 	self.action_bar_message_container	= $( '#js-wpv-general-actions-bar .js-wpv-message-container' );
 	self.html							= $( 'html' );
-	
-	if ( self.action_bar && self.action_bar.offset() ) {
-		var toolbarPos = self.action_bar.offset().top,
-		adminBarHeight = 0,
-		adminBarWidth = $( '.wpv-title-section .wpv-setting-container' ).width();
-		if ( $('#wpadminbar').length !== 0 ) {
-			adminBarHeight = $('#wpadminbar').height();
-			self.action_bar.width( adminBarWidth );
+
+	self.initTopBar = function() {
+		var adminBarWidth = $( '.wrap.toolset-views' ).width(),
+        	adminBarHeight = self.action_bar.height(),
+        	adminBarTopOffset = 0,
+			adjustControls = function() {
+				if ( $( window ).scrollTop() > 5 ) {
+					$( '#save-form-actions' ).fadeOut( 'fast' );
+					$( '#describe-actions' ).fadeOut( 'fast' );
+				}
+				else {
+					$( '#save-form-actions' ).fadeIn( 'fast' );
+					$( '#describe-actions' ).fadeIn( 'fast' );
+				}
+			};
+
+		if ( $( '#wpadminbar' ).length !== 0 ) {
+			adminBarTopOffset = $('#wpadminbar').height();
 		}
-		self.set_toolbar_pos = function() {
-			if ( toolbarPos <= $(window).scrollTop() + adminBarHeight + 15) {
-				self.html.addClass('wpv-general-actions-bar-fixed');
-			}
-			else {
-				self.html.removeClass('wpv-general-actions-bar-fixed');
-			}
-		};
 
-		$( window ).on( 'scroll', function() {
-			self.set_toolbar_pos();
+		self.action_bar.css({
+			'position': 'fixed',
+			'top':adminBarTopOffset,
+			'width':adminBarWidth
 		});
-		
+
+		$( 'div#wpbody-content' ).css({
+			'padding-top':( adminBarHeight + 20 )
+		});
+
+		$( window ).on( 'scroll', adjustControls );
+
 		$( window ).on( 'resize', function() {
-			var adminBarWidth = $( '.wpv-title-section .wpv-setting-container' ).width();
+			var adminBarWidth = $( '.wrap.toolset-views' ).width();
 			self.action_bar.width( adminBarWidth );
 		});
 
-		self.set_toolbar_pos();
-	}
-	
+		$( document ).on( 'click', '#title-alt', function( e ) {
+			e.preventDefault();
+			$( this ).hide();
+			$( '#title' ).show();
+		});
+
+		$( document ).on( 'click', '#description-alt', function( e ) {
+			e.preventDefault();
+			$( this ).hide();
+			$( '.js-wpv-description' ).show();
+			var updatedAdminBarHeight = self.action_bar.height();
+			$( 'div#wpbody-content' ).css({
+				'padding-top':( updatedAdminBarHeight + 20 )
+			});
+
+		});
+
+		adjustControls();
+	};
+
 	// ---------------------------------
 	// Init hooks
 	// ---------------------------------
-	
+
 	self.init_hooks = function() {
-		
+
 		/**
 		* Filters
 		*/
-		
-		// Filter to get current View 
+
+		// Filter to get current View
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-edit-screen-get-query-mode', self.get_view_query_mode );
-		
+
 		// Filter to get current View ID
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-edit-screen-get-id', self.get_view_id );
-		
+
 		// Filter to get current View query type
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-edit-screen-get-query-type', self.get_view_query_type );
-		
+
 		/**
 		* Actions
 		*/
-		
+
 		// Action to execute self.trigger_ajax_fail, a wrapper for self.manage_ajax_fail
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', self.trigger_ajax_fail );
-		
+
 		// Action to execute self.set_confirm_unload
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', self.set_confirm_unload );
-		
+
 		// Action to add or remove from the save queue
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-manage-save-queue', self.modify_save_queue );
-		
+
 		// Action to add or remove from the save callbacks
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-define-save-callbacks', self.define_save_callbacks );
-		
+
 		// Action to add or remove from the save fail queue
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-manage-save-fail-queue', self.modify_save_fail_queue );
-		
+
 		// Action to refresh a CodeMirror instance
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-refresh-codemirror-instances', self.refresh_codemirror_instances );
-		
+
 		// Actions after the query type of a View has changed
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-query-type-changed', self.query_type_sections, 10 );
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-query-type-changed', self.content_selection_mandatory, 20 );
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-query-type-changed', self.sorting_random_and_pagination, 30 );
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-query-type-changed', self.content_selection_debounce_update, 40 );
-		
+
 		// Action to adjust the sorting section, per query type
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-adjust-sorting-section', self.adjust_sorting_section );
-		
+
 	};
-	
+
 	// ---------------------------------
 	// Init cache
 	// ---------------------------------
-	
+
 	/**
 	 * Cache for repeating expensive structures.
 	 *
@@ -972,79 +983,79 @@ WPViews.ViewEditScreen = function( $ ) {
 			users:		{}
 		}
 	};
-	
+
 	/**
 	 * Init cached structures.
 	 *
 	 * @since 2.3.0 Add cache for sorting options, used in several interfaces.
 	 */
 	self.init_cache = function() {
-		
+
 		/**
 		 * Cache orderby options for the sorting controls dialog
 		 */
-		
+
 		var orderby_option = null;
-		
+
 		$( 'select.js-wpv-posts-orderby option' ).each( function () {
-			
+
 			orderby_option = $( this );
-			
+
 			self.cache['sorting_options'].posts[ orderby_option.attr( 'value' ) ] = {
 				value:	orderby_option.attr( 'value' ),
 				title:	orderby_option.text(),
 				type:	''
 			};
-			
-			if ( 
-				'field-' == orderby_option.attr( 'value' ).substr( 0, 6 ) 
+
+			if (
+				'field-' == orderby_option.attr( 'value' ).substr( 0, 6 )
 				&& orderby_option.data( 'field-type' ) !== undefined
 			) {
 				self.cache['sorting_options'].posts[ orderby_option.attr( 'value' ) ].type	= orderby_option.data( 'field-type' );
 			}
-			
+
 		});
-		
+
 		$( 'select.js-wpv-taxonomy-orderby option' ).each( function () {
-			
+
 			orderby_option = $( this );
-			
+
 			self.cache['sorting_options'].taxonomy[ orderby_option.attr( 'value' ) ] = {
 				value:	orderby_option.attr( 'value' ),
 				title:	orderby_option.text(),
 				type:	''
 			};
-			
-			if ( 
-				'taxonomy-field-' == orderby_option.attr( 'value' ).substr( 0, 15 ) 
+
+			if (
+				'taxonomy-field-' == orderby_option.attr( 'value' ).substr( 0, 15 )
 				&& orderby_option.data( 'field-type' ) !== undefined
 			) {
 				self.cache['sorting_options'].taxonomy[ orderby_option.attr( 'value' ) ].type	= orderby_option.data( 'field-type' );
 			}
-			
+
 		});
-		
+
 		$( 'select.js-wpv-users-orderby option' ).each( function () {
-			
+
 			orderby_option = $( this );
-			
+
 			self.cache['sorting_options'].users[ orderby_option.attr( 'value' ) ] = {
 				value:	orderby_option.attr( 'value' ),
 				title:	orderby_option.text(),
 				type:	''
 			};
-			
-			if ( 
-				'user-field-' == orderby_option.attr( 'value' ).substr( 0, 11 ) 
+
+			if (
+				'user-field-' == orderby_option.attr( 'value' ).substr( 0, 11 )
 				&& orderby_option.data( 'field-type' ) !== undefined
 			) {
 				self.cache['sorting_options'].users[ orderby_option.attr( 'value' ) ].type	= orderby_option.data( 'field-type' );
 			}
-			
+
 		});
-		
+
 	};
-	
+
 	// ---------------------------------
 	// CodeMirror settings
 	// ---------------------------------
@@ -1073,18 +1084,18 @@ WPViews.ViewEditScreen = function( $ ) {
 		WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].on( 'change', function() {
 			self.codemirror_layout_editors_track();
 		});
-		
+
 		WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_css'].on( 'change', function() {
 			self.codemirror_layout_editors_track();
 		});
-		
+
 		WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_js'].on( 'change', function() {
 			self.codemirror_layout_editors_track();
 		});
-		
 
 
-		
+
+
 		CodeMirror.commands.save = function(cm) {
 			// Prevent Firefox trigger Save Dialog
 			var keypress_handler = function (cm, event) {
@@ -1096,33 +1107,33 @@ WPViews.ViewEditScreen = function( $ ) {
 			};
 			CodeMirror.off(cm.getWrapperElement(), 'keypress', keypress_handler);
 			cm.on('keypress', keypress_handler);
-			
+
 			var textarea_id = cm.getTextArea().id;
 			if (
-					textarea_id === 'wpv_filter_meta_html_content' ||
-					textarea_id === 'wpv_filter_meta_html_css' ||
-					textarea_id === 'wpv_filter_meta_html_js'
-					) {
+				textarea_id === 'wpv_filter_meta_html_content' ||
+				textarea_id === 'wpv_filter_meta_html_css' ||
+				textarea_id === 'wpv_filter_meta_html_js'
+			) {
 				/* Filter */
-				$('.js-wpv-filter-extra-update').click();
+				self.save_section_filter( 'js_event_wpv_save_section_filter_completed', false );
 			} else if (
-					textarea_id === 'wpv_layout_meta_html_content' ||
-					textarea_id === 'wpv_layout_meta_html_css' ||
-					textarea_id === 'wpv_layout_meta_html_js'
-					) {
+				textarea_id === 'wpv_layout_meta_html_content' ||
+				textarea_id === 'wpv_layout_meta_html_css' ||
+				textarea_id === 'wpv_layout_meta_html_js'
+			) {
 				/* Loop Output */
-				$('.js-wpv-layout-extra-update').click();
+				self.save_section_loop_output( 'js_event_wpv_save_section_loop_output_completed', false );
 			} else if (
-					textarea_id === 'wpv_content'
-					) {
+				textarea_id === 'wpv_content'
+			) {
 				/* Filter and Loop Output Integration */
-				$('.js-wpv-content-update').click();
+				self.save_section_content( 'js_event_wpv_save_section_content_completed', false );
 			}
 		};
 		// Autoresize setting
-		if ( 
-			wpv_editor_strings.codemirror_autoresize == 'true' 
-			|| wpv_editor_strings.codemirror_autoresize == '1' 
+		if (
+			wpv_editor_strings.codemirror_autoresize == 'true'
+			|| wpv_editor_strings.codemirror_autoresize == '1'
 		) {
 			$( '.CodeMirror' ).css( 'height', 'auto' );
 			$( '.CodeMirror-scroll' ).css( {'overflow-y':'hidden', 'overflow-x':'auto', 'min-height':'15em'} );
@@ -1153,7 +1164,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			WPV_Toolset.CodeMirror_instance[ element ].refresh();
 		});
 	};
-	
+
 	self.refresh_codemirror = function( instance ) {
 		if ( instance === 'all' ) {
 			WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].refresh();
@@ -1175,15 +1186,15 @@ WPViews.ViewEditScreen = function( $ ) {
 			}
 		}
 	};
-	
+
 	// ---------------------------------
 	// Save actions: errors and successes
 	// ---------------------------------
-	
+
 	self.trigger_ajax_fail = function( args ) {
 		self.manage_ajax_fail( args.data, args.container );
 	}
-	
+
 	self.manage_ajax_fail = function( data, message_container ) {
 		if ( data.type ) {
 			switch ( data.type ) {
@@ -1218,7 +1229,12 @@ WPViews.ViewEditScreen = function( $ ) {
 			}
 		}
 	};
-	
+
+	/**
+	 * Manage success when saving individual sections on their own.
+	 *
+	 * @deprecated 2.7 We save all sections with just one button, and a single feedback.
+	 */
 	self.manage_ajax_success = function( data, message_container ) {
 		if ( data.message ) {
 			message_container
@@ -1244,7 +1260,7 @@ WPViews.ViewEditScreen = function( $ ) {
         }
     };
 
-	
+
 	self.manage_action_bar_error = function( data ) {
 		if ( data.message ) {
             var stay = (typeof(data.stay) != 'undefined') ? data.stay : true;
@@ -1257,13 +1273,13 @@ WPViews.ViewEditScreen = function( $ ) {
 				});
 		}
 	};
-	
+
 	// ---------------------------------
 	// Title and description
 	// ---------------------------------
-	
+
 	// Title placeholder
-	
+
 	self.title_placeholder = function() {
 		$( '.js-title' ).each( function() {
 			var thiz = $( this );
@@ -1289,64 +1305,45 @@ WPViews.ViewEditScreen = function( $ ) {
 			});
 		});
 	};
-	
+
 	// Title: track and save
-	
+
 	self.title_track_callback = function() {
-		$( '#titlediv' ).find( '.toolset-alert' ).remove();
-		$( '.js-wpv-title-update' ).parent().find( '.toolset-alert-error' ).remove();
 		if ( self.model['.js-wpv-title'] != $( '.js-title' ).val() ) {
 			self.manage_save_queue( 'save_section_title', 'add' );
-			$( '.js-wpv-title-update' )
-				.prop('disabled', false)
-				.removeClass('button-secondary')
-				.addClass('button-primary js-wpv-section-unsaved');
+			$( '.js-wpv-title-update' ).addClass('js-wpv-section-unsaved');
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
 		} else {
 			self.manage_save_queue( 'save_section_title', 'remove' );
-			$( '.js-wpv-title-update' )
-				.prop('disabled', true)
-				.removeClass('button-primary js-wpv-section-unsaved')
-				.addClass('button-secondary');
+			$( '.js-wpv-title-update' ).removeClass('js-wpv-section-unsaved');
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	self.title_track = _.debounce( self.title_track_callback, 100 );
-	
+
 	$( document ).on( 'keyup input cut paste', '.js-title', function() {
 		self.title_track();
 	});
-	
+
 	self.save_section_title = function( event, propagate ) {
 		var thiz = $( '.js-wpv-title-update' ),
-		thiz_container = thiz.parents( '.js-wpv-settings-title-and-desc' ),
-		thiz_message_container = thiz_container.find( '.js-wpv-message-container-title' ),
+		thiz_container = thiz.parents( '#js-wpv-general-actions-bar' ),
+		thiz_message_container = thiz_container.find( '.js-wpv-message-container' ),
 		unsaved_message = thiz.data('unsaved'),
-		nonce = thiz.data('nonce'),
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( thiz ).show();
-		
+		nonce = thiz.data('nonce');
+
 		self.manage_save_queue( 'save_section_title', 'remove' );
-		
+
 		thiz_container.find('.toolset-alert-error').remove();
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
-		
-		var titleOriginal = $('.js-title').val(),
-		titleEscaped = titleOriginal.replace( /\'/gi, '' ),
-		isTitleEscaped = true;
-		
-		titleEscaped = WPV_Toolset.Utils._strip_tags_and_preserve_text( _.unescape( titleEscaped ) );
-		isTitleEscaped = ( titleOriginal != titleEscaped );
+
+		var newTitle = $('.js-title').val();
 
 		var data = {
-			action:				'wpv_update_title',
+			action: self.i18n.ajax.action.update_view_title,
 			id:					self.view_id,
-			title:				titleEscaped,
-			is_title_escaped:	isTitleEscaped ? 1 : 0,
-			wpnonce:			nonce
+			title:				newTitle,
+			wpnonce: self.i18n.ajax.nonce.update_view_title
 		};
 
 		$.ajax({
@@ -1357,9 +1354,8 @@ WPViews.ViewEditScreen = function( $ ) {
 			success:	function( response ) {
 				if ( response.success ) {
 					thiz.removeClass( 'js-wpv-section-unsaved' );
-					self.model['.js-wpv-title'] = titleEscaped;
-					$( '.js-title' ).val(titleEscaped);
-					self.manage_ajax_success( response.data, thiz_message_container );
+					self.model['.js-wpv-title'] = newTitle;
+					$( '.js-title' ).val( newTitle );
 					$( document ).trigger( event );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
@@ -1372,10 +1368,6 @@ WPViews.ViewEditScreen = function( $ ) {
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
 					}
-					thiz
-						.prop( 'disabled', false )
-						.removeClass( 'button-secondary' )
-						.addClass( 'button-primary' );
 				}
 			},
 			error:		function( ajaxContext ) {
@@ -1390,84 +1382,60 @@ WPViews.ViewEditScreen = function( $ ) {
 				if ( propagate ) {
 					$( document ).trigger( 'js_wpv_save_section_queue' );
 				}
-				thiz
-					.prop( 'disabled', false )
-					.removeClass( 'button-secondary' )
-					.addClass( 'button-primary' );
 			},
 			complete:	function() {
-				spinnerContainer.remove();
+
 			}
 		});
 	};
-	
+
 	self.save_callbacks['save_section_title'] = {
 		callback:	self.save_section_title,
 		event:		'js_event_wpv_save_section_title_completed'
 	};
-	
-	$( document ).on( 'click', '.js-wpv-title-update', function( e ) {
-		e.preventDefault();
-		self.save_section_title( 'js_event_wpv_save_section_title_completed', false );
-	});
-	
+
 	// Description: track and save
-	
+
 	$( '.js-wpv-description-toggle' ).on( 'click', function() {
 		$( this ).hide();
 		$( '.js-wpv-description-container' ).fadeIn( 'fast' );
 		$( '#wpv-description' ).focus();
 	});
-	
+
 	self.description_track_callback = function() {
-		$( '.js-wpv-title-update' ).parent().find( '.toolset-alert-error' ).remove();
 		if ( self.model['.js-wpv-description'] != $( '.js-wpv-description' ).val() ) {
 			self.manage_save_queue( 'save_section_description', 'add' );
-			$( '.js-wpv-description-update' )
-				.prop('disabled', false)
-				.removeClass('button-secondary')
-				.addClass('button-primary js-wpv-section-unsaved');
+			$( '.js-wpv-description-update' ).addClass('js-wpv-section-unsaved');
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
 		} else {
 			self.manage_save_queue( 'save_section_description', 'remove' );
-			$( '.js-wpv-description-update' )
-				.prop('disabled', true)
-				.removeClass('button-primary js-wpv-section-unsaved')
-				.addClass('button-secondary');
+			$( '.js-wpv-description-update' ).removeClass('js-wpv-section-unsaved');
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	self.description_track = _.debounce( self.description_track_callback, 100 );
-	
+
 	$( document ).on( 'keyup input cut paste', '.js-wpv-description', function() {
 		self.description_track();
 	});
-	
+
 	self.save_section_description = function( event, propagate ) {
 		var thiz = $( '.js-wpv-description-update' ),
 		thiz_container = thiz.parents( '.js-wpv-settings-title-and-desc' ),
 		thiz_message_container = thiz_container.find( '.js-wpv-message-container-description' ),
-		//update_message = thiz.data('success'),
-		unsaved_message = thiz.data('unsaved'),
-		nonce = thiz.data('nonce'),
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( thiz ).show();
-		
+		unsaved_message = thiz.data('unsaved');
+
 		self.manage_save_queue( 'save_section_description', 'remove' );
-		
+
 		thiz_container.find('.toolset-alert-error').remove();
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
 
 		var data = {
-			action: 		'wpv_update_description',
-			id:				self.view_id,
-			description:	$('.js-wpv-description').val(),
-			wpnonce:		nonce
+			action: self.i18n.ajax.action.update_description,
+			id: self.view_id,
+			description: $('.js-wpv-description').val(),
+			wpnonce: self.i18n.ajax.nonce.update_description
 		};
-
 
 		$.ajax({
 			type:		"POST",
@@ -1478,7 +1446,6 @@ WPViews.ViewEditScreen = function( $ ) {
 				if ( response.success ) {
 					thiz.removeClass( 'js-wpv-section-unsaved' );
 					self.model['.js-wpv-description'] = $( '.js-wpv-description' ).val();
-					self.manage_ajax_success( response.data, thiz_message_container );
 					$( document ).trigger( event );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
@@ -1491,10 +1458,6 @@ WPViews.ViewEditScreen = function( $ ) {
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
 					}
-					thiz
-						.prop( 'disabled', false )
-						.removeClass( 'button-secondary' )
-						.addClass( 'button-primary' );
 				}
 			},
 			error:		function( ajaxContext ) {
@@ -1509,103 +1472,102 @@ WPViews.ViewEditScreen = function( $ ) {
 				if ( propagate ) {
 					$( document ).trigger( 'js_wpv_save_section_queue' );
 				}
-				thiz
-					.prop( 'disabled', false )
-					.removeClass( 'button-secondary' )
-					.addClass( 'button-primary' );
 			},
 			complete:	function() {
-				spinnerContainer.remove();
+
 			}
 		});
 	};
-	
+
 	self.save_callbacks['save_section_description'] = {
 		callback:	self.save_section_description,
 		event:		'js_event_wpv_save_section_description_completed'
 	};
-	
-	$( document ).on( 'click', '.js-wpv-description-update', function( e ) {
-		e.preventDefault();
-		self.save_section_description( 'js_event_wpv_save_section_description_completed', false );
+
+	// Slug: track and save
+
+	self.slug_track_callback = function() {
+		if ( self.model['.js-wpv-slug'] != $( '.js-wpv-slug' ).val() ) {
+			self.manage_save_queue( 'save_section_slug', 'add' );
+			$( '.js-wpv-slug-update' ).addClass('js-wpv-section-unsaved');
+			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
+		} else {
+			self.manage_save_queue( 'save_section_slug', 'remove' );
+			$( '.js-wpv-slug-update' ).removeClass('js-wpv-section-unsaved');
+			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
+		}
+	};
+
+	self.slug_track = _.debounce( self.slug_track_callback, 100 );
+
+	$( document ).on( 'keyup input cut paste', '.js-wpv-slug', function() {
+		self.slug_track();
 	});
-	
-	// Slug: edit and update
-	
-	$( document ).on( 'click', '.js-wpv-edit-slug, #editable-post-name', function( e ) {
-		$('.js-wpv-edit-slug-toggle').toggle();
-		$('#wpv-slug').val($('#editable-post-name').html());
-    });
-	
-	$( document ).on( 'click', '.js-wpv-edit-slug-cancel', function( e ) {
-		$('.js-wpv-edit-slug-toggle').toggle();
-		$('.js-wpv-slug-container .js-wpv-message-container-slug' ).html('');
-		$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
-	});
-	
-	$( document ).on( 'click', '.js-wpv-edit-slug-update', function( e ) {
-		e.preventDefault();
-		var thiz = $( this );
-		var message_where = $( '.js-wpv-slug-container .js-wpv-message-container-slug' );
-		var update_message = thiz.data( 'success' );
-		var error_message = thiz.data( 'unsaved' );
-		var data = {
-			action:		'wpv_view_change_post_name',
-			id:			self.view_id,
-			post_name:	$('#wpv-slug').val(),
-			wpnonce :	thiz.data( 'nonce' )
-		};
+
+	self.save_section_slug = function( event, propagate ) {
+		var thiz = $( '.js-wpv-slug-update' ),
+			data = {
+				action:		'wpv_view_change_post_name',
+				id:			self.view_id,
+				post_name:	$('#wpv-slug').val(),
+				wpnonce :	thiz.data( 'nonce' )
+			};
+
+		self.manage_save_queue( 'save_section_slug', 'remove' );
+
 		$.ajax({
 			type:		"POST",
 			url:		ajaxurl,
 			data:		data,
 			dataType:	"json",
 			success: function( response ) {
-				if (
-					typeof( response ) !== 'undefined'
-					&& typeof( response.success ) !== 'undefined'
-					&& response.success
-				) {
-					$('.js-wpv-edit-slug-toggle').toggle();
-					$('#editable-post-name').html( response.data.slug );
-                    message_where.wpvToolsetMessage( 'wpvMessageRemove' );
+				if ( response.success ) {
+					thiz.removeClass( 'js-wpv-section-unsaved' );
+					$('#wpv-slug').val( response.data.slug );
+					self.model['.js-wpv-slug'] = $( '.js-wpv-slug' ).val();
+					$( document ).trigger( event );
+					if ( propagate ) {
+						$( document ).trigger( 'js_wpv_save_section_queue' );
+					} else {
+						$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
+					}
 				} else {
-					message_where.wpvToolsetMessage({
-						text: 'undefined' == typeof( response.data.message)? error_message:response.data.message,
-						type:'error',
-						inline:true,
-						stay:true
-					});
+					//Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: thiz_message_container} );
+					self.save_fail_queue.push( 'save_section_slug' );
+					if ( propagate ) {
+						$( document ).trigger( 'js_wpv_save_section_queue' );
+					}
 				}
 			},
 			error: function( ajaxContext ) {
-				message_where.wpvToolsetMessage({
-					text:error_message,
-					type:'error',
-					inline:true,
-					stay:true
-				});
+				self.save_fail_queue.push( 'save_section_slug' );
+				if ( propagate ) {
+					$( document ).trigger( 'js_wpv_save_section_queue' );
+				}
 			},
 			complete: function() {
 			}
 		});
-	});
-	
+	};
+
+	self.save_callbacks['save_section_slug'] = {
+		callback:	self.save_section_slug,
+		event:		'js_event_wpv_save_section_slug_completed'
+	};
+
 	// Status: change
 
 	$( document ).on( 'click', '.js-wpv-change-view-status', function( e ) {
 		e.preventDefault();
 		var thiz = $( this ),
 		newstatus = thiz.data( 'statusto' ),
-		spinnerContainer = $( '<div class="wpv-spinner ajax-loader">' ).insertAfter( thiz ).show(),
 		update_message = thiz.data( 'success' ),
 		error_message = thiz.data( 'unsaved' ),
 		redirect_url = thiz.data( 'redirect' ),
 		message_where = $( '.js-wpv-settings-title-and-desc .js-wpv-message-container' );
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
+
+		self.toggleTopBarSpinner( 'visible' );
+
 		var data = {
 			action:			'wpv_view_change_status',
 			id:				self.view_id,
@@ -1624,6 +1586,7 @@ WPViews.ViewEditScreen = function( $ ) {
 						$( location ).attr( 'href', redirect_url );
 					}
 				} else {
+					self.toggleTopBarSpinner( 'hidden' );
 					message_where.wpvToolsetMessage({
 						text:error_message,
 						type:'error',
@@ -1633,8 +1596,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				}
 			},
 			error:		function( ajaxContext ) {
-				thiz.prop( 'disabled', false );
-				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 				message_where.wpvToolsetMessage({
 					text:error_message,
 					type:'error',
@@ -1643,7 +1605,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				});
 			},
 			complete:	function() {
-			  
+
 			}
 		});
 	});
@@ -1651,9 +1613,9 @@ WPViews.ViewEditScreen = function( $ ) {
 	// ---------------------------------
 	// Content selection
 	// ---------------------------------
-	
+
 	// Content selection - mandatory selection
-	
+
 	self.content_selection_mandatory = function() {
 		if (
 			( $('.js-wpv-query-post-type:checked').length == 0 && self.model['js-wpv-query-type'] == 'posts' )
@@ -1676,9 +1638,9 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	// Content selection - change sections based on query type
-	
+
 	self.query_type_sections = function() {
 		$( '.js-wpv-toolbar-item-for-posts, .js-wpv-toolbar-item-for-taxonomy, .js-wpv-toolbar-item-for-users' ).hide();
 		$( '.js-wpv-toolbar-item-for-' + self.model['js-wpv-query-type'] ).show();
@@ -1703,9 +1665,9 @@ WPViews.ViewEditScreen = function( $ ) {
 				break;
 		}
 	};
-	
+
 	// Content selection - update automatically
-	
+
 	self.save_view_query_type_options = function() {
 		var dataholder = $( '.js-wpv-query-type-update' ),
 		section_container = $( '.js-wpv-settings-content-selection' ),
@@ -1717,9 +1679,12 @@ WPViews.ViewEditScreen = function( $ ) {
 		wpv_query_users_items = [],
 		spinnerContainer,
 		query_type = $('input:radio.js-wpv-query-type:checked').val();
-		section_container.find( '.wpv-spinner.ajax-loader' ).remove();
+
 		messages_container.find('.toolset-alert-error').remove();
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( dataholder ).show();
+
+		self.toggleTopBarSpinner( 'visible' );
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( dataholder ).css( { 'visibility': 'visible' } );
+
 		$('.js-wpv-query-post-type:checked').each( function() {
 			wpv_query_post_items.push( $(this).val() );
 		});
@@ -1750,11 +1715,14 @@ WPViews.ViewEditScreen = function( $ ) {
 							Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-replace-query-filter-list', response.data.updated_filters_list );
 						}
 						$( document ).trigger( 'js_event_wpv_query_type_saved' );
+						self.manageTopBarSavingEvent( 'success' );
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messages_container} );
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			error: function (ajaxContext) {
+				self.manageTopBarSavingEvent( 'failure' );
 				messages_container
 					.wpvToolsetMessage({
 						text:unsaved_message,
@@ -1766,20 +1734,21 @@ WPViews.ViewEditScreen = function( $ ) {
 			},
 			complete: function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 				dataholder.trigger( 'js_event_wpv_query_type_options_saved', [ query_type ] );
 			}
 		});
 	};
-	
+
 	self.content_selection_debounce_update = _.debounce( self.save_view_query_type_options, 1000 );
-	
+
 	// Content selection - events
-	
+
 	$( document ).on( 'change', '.js-wpv-query-type', function() {
 		self.model['js-wpv-query-type'] = $('.js-wpv-query-type:checked').val();
 		Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-query-type-changed', self.model['js-wpv-query-type'] );
 	});
-	
+
 	$( document ).on('change', '.js-wpv-query-post-type, .js-wpv-query-taxonomy-type, .js-wpv-query-users-type', function(){
 		self.content_selection_mandatory();
 		self.content_selection_debounce_update();
@@ -1792,7 +1761,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			$( '.js-wpv-query-users-type[value!="any"]' ).prop( 'checked', false );
 		}
 	});
-	
+
 	$( document ).on('change', '.js-wpv-query-post-type-rfg', function() {
 		if ( $( '.js-wpv-query-post-type-rfg:checked' ).length > 0 ) {
 			$( '.js-wpv-settings-query-type-posts-rfg-info' ).fadeIn();
@@ -1800,13 +1769,13 @@ WPViews.ViewEditScreen = function( $ ) {
 			$( '.js-wpv-settings-query-type-posts-rfg-info' ).fadeOut();
 		}
 	});
-	
+
 	// ---------------------------------
 	// Query options
 	// ---------------------------------
-	
+
 	// Query options - update automatically
-	
+
 	self.save_view_query_options = function() {
 		var dataholder = $( '.js-wpv-query-options-update' ),
 		messages_container = dataholder.parents( '.js-wpv-update-action-wrap' ).find( '.js-wpv-message-container' ),
@@ -1815,9 +1784,12 @@ WPViews.ViewEditScreen = function( $ ) {
 		nonce = dataholder.data('nonce'),
 		spinnerContainer,
 		view_id = self.view_id;
-		section_container.find( '.wpv-spinner.ajax-loader' ).remove();
+
 		messages_container.find('.toolset-alert-error').remove();
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( dataholder ).show();
+
+		self.toggleTopBarSpinner( 'visible' );
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( dataholder ).css( { 'visibility': 'visible' } );
+
 		var data = {
 			action: 'wpv_update_query_options',
 			id: view_id,
@@ -1836,11 +1808,14 @@ WPViews.ViewEditScreen = function( $ ) {
 			success: function( response ) {
 				if ( response.success ) {
 					$('.js-screen-options').find('.toolset-alert').remove();
+					self.manageTopBarSavingEvent( 'success' );
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messages_container} );
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			error: function (ajaxContext) {
+				self.manageTopBarSavingEvent( 'failure' );
 				messages_container
 					.wpvToolsetMessage({
 						text:unsaved_message,
@@ -1852,24 +1827,25 @@ WPViews.ViewEditScreen = function( $ ) {
 			},
 			complete: function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.query_options_debounce_update = _.debounce( self.save_view_query_options, 2000 );
-	
+
 	// Query options - events
-	
+
 	$( document ).on( 'change', '.js-wpv-query-options-users-show-current, .js-wpv-query-options-post-type-dont, .js-wpv-query-options-taxonomy-hide-empty, .js-wpv-query-options-taxonomy-non-empty-decendants, .js-wpv-query-options-taxonomy-pad-counts', function() {
 		self.query_options_debounce_update();
 	});
-	
+
 	// ---------------------------------
 	// Sorting
 	// ---------------------------------
-	
+
 	// Sorting - update automatically
-	
+
 	self.save_view_sorting_options = function() {
 		var dataholder = $( '.js-wpv-ordering-update' ),
 		messages_container = dataholder.parents( '.js-wpv-update-action-wrap' ).find( '.js-wpv-message-container' ),
@@ -1877,9 +1853,12 @@ WPViews.ViewEditScreen = function( $ ) {
 		unsaved_message = dataholder.data( 'unsaved' ),
 		nonce = dataholder.data( 'nonce' ),
 		spinnerContainer;
-		section_container.find( '.wpv-spinner.ajax-loader' ).remove();
+
 		messages_container.find('.toolset-alert-error').remove();
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( dataholder ).show();
+
+		self.toggleTopBarSpinner( 'visible' );
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( dataholder ).css( { 'visibility': 'visible' } );
+
 		var data = {
 			action:				'wpv_update_sorting',
 			id:					self.view_id,
@@ -1928,11 +1907,14 @@ WPViews.ViewEditScreen = function( $ ) {
 						}
 					};
 					$( document ).trigger( 'js_event_wpv_save_section_sorting_completed' );
+					self.manageTopBarSavingEvent( 'success' );
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messages_container} );
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			error:		function( ajaxContext ) {
+				self.manageTopBarSavingEvent( 'failure' );
 				messages_container
 					.wpvToolsetMessage({
 						text:unsaved_message,
@@ -1944,14 +1926,15 @@ WPViews.ViewEditScreen = function( $ ) {
 			},
 			complete:	function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.sorting_debounce_update = _.debounce( self.save_view_sorting_options, 2000 );
-	
+
 	// Sorting - rand and pagination do not work well together
-	
+
 	self.sorting_random_and_pagination = function() {
 		$('.js-wpv-settings-ordering .js-wpv-toolset-messages .toolset-alert, .js-wpv-settings-pagination .js-wpv-toolset-messages .toolset-alert').remove();
 		if ( self.model['js-wpv-query-type'] == 'posts'
@@ -1985,8 +1968,8 @@ WPViews.ViewEditScreen = function( $ ) {
             $( 'select.js-wpv-posts-order' ).prop( 'disabled', false );
 			$( '.js-wpv-settings-posts-order-secondary' ).fadeIn( 'fast' );
         }
-		if ( 
-			$( 'select.js-wpv-posts-orderby-second' ).val() == 'rand' 
+		if (
+			$( 'select.js-wpv-posts-orderby-second' ).val() == 'rand'
 			|| $( 'select.js-wpv-posts-orderby-second' ).val() == ''
 		) {
             $( 'select.js-wpv-posts-order-second' ).prop( 'disabled', true );
@@ -2019,25 +2002,25 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.sorting_manage_orderby_as = function( kind ) {
 		var selector_orderby = $( "select.js-wpv-" + kind + "-orderby" ),
 		selector_type = self.model['js-wpv-query-type'];
-		if ( 
-			'posts' == selector_type 
-			|| 'taxonomy' == selector_type 
-			|| 'users' == selector_type 
+		if (
+			'posts' == selector_type
+			|| 'taxonomy' == selector_type
+			|| 'users' == selector_type
 		) {
 			var selected = selector_orderby.val();
-			if ( 
-				( 
-					'' !== selected 
-					|| typeof selected !== undefined 
+			if (
+				(
+					'' !== selected
+					|| typeof selected !== undefined
 				) && (
-					'field-' == selected.substr( 0, 6 ) 
-					|| 'taxonomy-field-' == selected.substr( 0, 15 ) 
-					|| 'user-field-' == selected.substr( 0, 11 ) 
-				) 
+					'field-' == selected.substr( 0, 6 )
+					|| 'taxonomy-field-' == selected.substr( 0, 15 )
+					|| 'user-field-' == selected.substr( 0, 11 )
+				)
 			) {
 				var field_type = selector_orderby.find( ":selected" ).data( "field-type" );
 				if ( field_type !== undefined ) {
@@ -2074,7 +2057,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	}
-	
+
 	$( document ).on( 'click', '.js-wpv-settings-orderby-second-display', function( e ) {
 		e.preventDefault();
 		$( this )
@@ -2082,7 +2065,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				.toggleClass( 'fa-caret-down fa-caret-up' );
 		$( '.js-wpv-settings-orderby-second-wrapper' ).fadeToggle( 'fast' );
 	});
-	
+
 	self.adjust_sorting_section = function( type ) {
 		self
 			.sorting_manage_orderby_as( type )
@@ -2091,17 +2074,17 @@ WPViews.ViewEditScreen = function( $ ) {
 	};
 
 	// Sorting - events
-	
+
 	$( document ).on( 'change', 'select.js-wpv-posts-orderby, select.js-wpv-posts-orderby-second', function() {
 		self.adjust_sorting_section( 'posts' );
 		self.sorting_debounce_update();
 	});
-	
+
 	$( document ).on( 'change', 'select.js-wpv-taxonomy-orderby', function() {
 		self.adjust_sorting_section( 'taxonomy' );
 		self.sorting_debounce_update();
 	});
-	
+
 	$( document ).on( 'change', 'select.js-wpv-users-orderby', function() {
 		self.adjust_sorting_section( 'users' );
 		self.sorting_debounce_update();
@@ -2109,11 +2092,11 @@ WPViews.ViewEditScreen = function( $ ) {
 	$( document ).on( 'change', 'select.js-wpv-posts-order, select.js-wpv-posts-orderby-as, select.js-wpv-posts-order-second, select.js-wpv-taxonomy-order, select.js-wpv-taxonomy-orderby-as, select.js-wpv-users-order, select.js-wpv-users-orderby-as', function() {
 		self.sorting_debounce_update();
 	});
-	
+
 	// ---------------------------------
 	// Sorting controls
 	// ---------------------------------
-	
+
 	/**
 	 * Cache sorting controls new row, per query type.
 	 *
@@ -2124,20 +2107,20 @@ WPViews.ViewEditScreen = function( $ ) {
 		taxonomy:	'',
 		users:		''
 	};
-	
+
 	/**
 	 * Flag to decide whether we need a new line when inserting sorting controls.
 	 *
 	 * @since 2.3.0
 	 */
 	self.sorting_insert_newline = false;
-	
+
 	/**
 	 * Make the fronted sorting orderby options sortable.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( '.js-wpv-frontend-sorting-orderby-options-list tbody' ).sortable({
 		handle: ".js-wpv-frontend-sorting-orderby-options-list-item-move",
 		axis: 'y',
@@ -2156,13 +2139,13 @@ WPViews.ViewEditScreen = function( $ ) {
 			self.update_sorting_controls_management();
 		}
 	});
-	
+
 	/**
 	 * Restore the frontend sorting controls dialog to defaults on close.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	self.restore_sorting_dialog_options = function() {
 		$( '#js-wpv-frontend-sorting-orderby-options-type, #js-wpv-frontend-sorting-order-options-type' ).val( 'select' ).trigger( 'change' );
 		$( '#js-wpv-frontend-sorting-orderby-list-style, #js-wpv-frontend-sorting-order-list-style' ).val( 'default' ).trigger( 'change' );
@@ -2174,52 +2157,52 @@ WPViews.ViewEditScreen = function( $ ) {
 		$( '.js-wpv-frontend-sorting-order-options-label-desc' ).val( wpv_editor_strings.dialog_sorting.labels.descending );
 		$( '.js-wpv-frontend-sorting-orderby-options-enabled' ).hide();
 	};
-	
+
 	/**
 	 * Add a new frontend sorting oderby option.
 	 *
 	 * We add all the available values from the posts, taxonomy and users orderby native setting,
 	 * stored on self.cache['sorting_options'],
-	 * but we restict the valid options by meta fields, to avoid sorting by meta keys containing 
-	 * commas, brackets or quotes (we only support alphanumeric, hypens and sashes) 
-	 * becuse they are not easy to manage as URL parameters, and also 
+	 * but we restict the valid options by meta fields, to avoid sorting by meta keys containing
+	 * commas, brackets or quotes (we only support alphanumeric, hypens and sashes)
+	 * becuse they are not easy to manage as URL parameters, and also
 	 * because it is difficult to define their optional label in the resulting shortcode.
 	 *
 	 * @note We cache each option per query type in self.sorting_orderby_options_row.
-	 * @note We use the "dropdownParent" option for toolset_select2 since jQuery UI dialogs 
+	 * @note We use the "dropdownParent" option for toolset_select2 since jQuery UI dialogs
 	 *     restrict focusable elements to the dialog structure itself.
-	 * @note The data( 'toolset_select2' ) property of a toolset_Select2 object opens the door 
+	 * @note The data( 'toolset_select2' ) property of a toolset_Select2 object opens the door
 	 *     to some specificity per toolset_Select2 usage, including classnames and, therefore, styling.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( document ).on( 'click', '.js-wpv-frontend-sorting-orderby-options-add', function( e ) {
 		e.preventDefault();
 		self.add_sorting_dialog_orderby_option();
 	});
-	
-	self.add_sorting_dialog_orderby_option = function() {		
+
+	self.add_sorting_dialog_orderby_option = function() {
 		var current_query_type			= self.get_view_query_type(),
 			orderby_control				= '',
 			orderby_as_control			= '',
 			orderby_label_control		= '',
 			orderby_set_order_control	= '',
 			orderby_new_row				= null;
-		
+
 		if ( self.sorting_orderby_options_row[ current_query_type ] == '' ) {
-			
+
 			self.sorting_orderby_options_row[ current_query_type ] = wpv_editor_strings.dialog_sorting.option_row;
-			
+
 			self.sorting_orderby_options_row[ current_query_type ] = self.sorting_orderby_options_row[ current_query_type ]
 				.replace( '%%orderby_sortable%%', '<i class="icon-move fa fa-arrows wpv-editable-list-item-move js-wpv-frontend-sorting-orderby-options-list-item-move"></i>' );
 			self.sorting_orderby_options_row[ current_query_type ] = self.sorting_orderby_options_row[ current_query_type ]
-				.replace( 
-					'%%orderby_delete%%', 
-					'<button class="button button-secondary button-small wpv-editable-list-item-delete js-wpv-frontend-sorting-orderby-options-list-item-delete"><i class="icon-remove fa fa-times"></i></button>' 
+				.replace(
+					'%%orderby_delete%%',
+					'<button class="button button-secondary button-small wpv-editable-list-item-delete js-wpv-frontend-sorting-orderby-options-list-item-delete"><i class="icon-remove fa fa-times"></i></button>'
 					+ '<button class="button buton-secondary button-smal wpv-editable-list-item-default-info js-wpv-frontend-sorting-orderby-options-list-item-default-info" style="display:none"><i class="fa fa-question-circle"></i></button>'
 				);
-			
+
 			// Orderby select dropdown per query type
 			orderby_control = '<select class="js-wpv-frontend-sorting-orderby-options-list-item-dropdown">';
 			_.each( self.cache['sorting_options'][ current_query_type ], function( item, key, list ) {
@@ -2244,14 +2227,14 @@ WPViews.ViewEditScreen = function( $ ) {
 				*/
 			});
 			orderby_control += '</select>';
-			
+
 			// Orderby as select dropdown
 			orderby_as_control += '<select class="js-wpv-frontend-sorting-orderby-options-list-item-as" style="display:none">';
 			orderby_as_control += '<option value="">' + wpv_editor_strings.dialog_sorting.labels.sort_as_native + '</option>';
 			orderby_as_control += '<option value="STRING">' + wpv_editor_strings.dialog_sorting.labels.sort_as_string + '</option>';
 			orderby_as_control += '<option value="NUMERIC">' + wpv_editor_strings.dialog_sorting.labels.sort_as_number + '</option>';
 			orderby_as_control += '</select>';
-			
+
 			// Orderby label input
 			orderby_label_control += '<input type="text" class="js-wpv-frontend-sorting-orderby-options-list-item-label" value="" />';
 			orderby_label_control += '<div class="js-wpv-frontend-sorting-orderby-options-list-item-label-direction" style="display:none;border-top: 1px solid #ccc; margin-top: 5px; padding: 3px 0;">';
@@ -2259,13 +2242,13 @@ WPViews.ViewEditScreen = function( $ ) {
 			orderby_label_control += '<label style="display:block"><em>Ascending:</em> <input type="text" class="js-wpv-frontend-sorting-orderby-options-list-item-label-asc" value="" /></label>';
 			orderby_label_control += '<label style="display:block"><em>Descending:</em> <input type="text" class="js-wpv-frontend-sorting-orderby-options-list-item-label-desc" value="" /></label>';
 			orderby_label_control += '</div>';
-			
+
 			// Orderby set order select dropdown
 			orderby_set_order_control += '<select class="js-wpv-frontend-sorting-orderby-options-list-item-force-order">';
 			orderby_set_order_control += '<option value="ASC">' + wpv_editor_strings.dialog_sorting.labels.direction_asc + '</option>';
 			orderby_set_order_control += '<option value="DESC">' + wpv_editor_strings.dialog_sorting.labels.direction_desc + '</option>';
 			orderby_set_order_control += '</select>';
-			
+
 			// Replace placeholders per query type
 			self.sorting_orderby_options_row[ current_query_type ] = self.sorting_orderby_options_row[ current_query_type ]
 				.replace( '%%orderby_options_select%%', orderby_control );
@@ -2275,63 +2258,63 @@ WPViews.ViewEditScreen = function( $ ) {
 				.replace( '%%orderby_label%%', orderby_label_control );
 			self.sorting_orderby_options_row[ current_query_type ] = self.sorting_orderby_options_row[ current_query_type ]
 				.replace( '%%orderby_set_order%%', orderby_set_order_control );
-			
+
 		}
-		
+
 		orderby_new_row = $( self.sorting_orderby_options_row[ current_query_type ] );
-		
+
 		if ( $( '#js-wpv-frontend-sorting-order-enable' ).prop( 'checked' ) ) {
 			orderby_new_row
 				.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label-direction' )
 					.show();
 		}
-		
+
 		self.update_sorting_controls_row_labels( orderby_new_row );
-		
+
 		$( '.js-wpv-frontend-sorting-orderby-options-list tbody' ).append( orderby_new_row );
-		
+
 		var orderby_option_select = $( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item:last-child .js-wpv-frontend-sorting-orderby-options-list-item-dropdown' ),
 			orderby_option_selected_value = orderby_option_select.val();
-			
+
 		if ( _.has( self.cache['sorting_options'][ current_query_type ], orderby_option_selected_value ) ) {
 			$( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item:last-child .js-wpv-frontend-sorting-orderby-options-list-item-label' )
 				.val( self.cache['sorting_options'][ current_query_type ][ orderby_option_selected_value ].title );
 		}
-		
+
 		orderby_option_select
 			.addClass( 'js-wpv-toolset_selec2-inited' )
 			.toolset_select2(
-				{ 
+				{
 					width:				'resolve',
-					dropdownAutoWidth:	true, 
+					dropdownAutoWidth:	true,
 					dropdownParent:		$( '#js-wpv-frontend-sorting-dialog' )
 				}
 			)
 			.data( 'toolset_select2' )
 				.$dropdown
 					.addClass( 'toolset_select2-dropdown-in-dialog' );
-		
+
 		$( '.js-wpv-frontend-sorting-orderby-options-list tbody' ).sortable( 'refresh' );
-		
+
 		self
 			.update_sorting_controls_management()
 			.update_sorting_controls_visibility()
 			.update_sorting_controls_preview();
-		
+
 		return self;
-		
+
 	};
-	
+
 	/**
 	 * Remove a frontend sorting oderby option.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( document ).on( 'click', '.js-wpv-frontend-sorting-orderby-options-list-item-delete', function() {
 		var delete_button = $( this ),
 			delete_item = delete_button.closest( '.js-wpv-frontend-sorting-orderby-options-list-item' );
-		
+
 		delete_item.addClass( 'wpv-editable-list-item-deleted' );
 		setTimeout( function () {
 			delete_item.fadeOut( 'fast', function() {
@@ -2344,13 +2327,13 @@ WPViews.ViewEditScreen = function( $ ) {
 			});
 		}, 500 );
 	});
-	
+
 	/**
 	 * Display an informtional overlay when clicking the question icon on the first frontend sorting options row.
 	 *
 	 * @since 2.3.1
 	 */
-	
+
 	$( document ).on( 'click', '.js-wpv-frontend-sorting-orderby-options-list-item-default-info', function() {
 		var table_overlay = '<tr class="wpv-editable-list-item-default-info-overlay toolset-alert toolset-alert-info js-wpv-editable-list-item-default-info-overlay">';
 		table_overlay += '<td colspan="5">';
@@ -2362,17 +2345,17 @@ WPViews.ViewEditScreen = function( $ ) {
 		table_overlay += '</tr>';
 		$( '.js-wpv-frontend-sorting-orderby-options-list tbody' ).prepend( table_overlay );
 	});
-	
+
 	/**
 	 * Close the informtional overlay for the first frontend sorting options row.
 	 *
 	 * @since 2.3.1
 	 */
-	
+
 	$( document ).on( 'click', '.js-wpv-editable-list-item-default-info-close', function() {
 		$( '.wpv-editable-list-item-default-info-overlay' ).remove();
 	});
-	
+
 	/**
 	 * Map sorting values (and field types when sorting by meta values) to labels for ascending/descending directions.
 	 *
@@ -2415,7 +2398,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			'desc':	wpv_editor_strings.dialog_sorting.labels.descending
 		}
 	};
-	
+
 	/**
 	 * Apply different sorting directions labels depending on the sorting option selected.
 	 *
@@ -2428,23 +2411,23 @@ WPViews.ViewEditScreen = function( $ ) {
 			item_dropdown_selected_type = item_dropdown_selected.data( 'type' ),
 			item_dropdown_selected_labels = {},
 			current_query_type = self.get_view_query_type();
-		
+
 		// Remove orphan warning signs
 		item
 			.removeClass( 'wpv-editable-list-item-warning' )
 			.find( '.toolset-alert' )
 				.remove();
-		
+
 		// Return early if the selected field is excluded:
-		if ( 
-			item_dropdown_selected_value == '' 
+		if (
+			item_dropdown_selected_value == ''
 			&& 'excluded:' == item_dropdown_selected_type.substr( 0, 9 )
 		) {
-			
+
 			item
 				.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label' )
 					.val( '' );
-					
+
 			var item_dropdown_selected_type_excluded_reason = item_dropdown_selected_type.substring( 9 );
 			switch( item_dropdown_selected_type_excluded_reason ) {
 				case 'quote':
@@ -2457,24 +2440,24 @@ WPViews.ViewEditScreen = function( $ ) {
 						.append( '<p class="toolset-alert toolset-alert-error">' + wpv_editor_strings.dialog_sorting.warnings.unsupported_field + '</p>' );
 					break;
 			}
-			
+
 			return;
-			
+
 		}
-		
+
 		// Fill the label input
 		if ( _.has( self.cache['sorting_options'][ current_query_type ], item_dropdown_selected_value ) ) {
 			item
 				.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label' )
 					.val( self.cache['sorting_options'][ current_query_type ][ item_dropdown_selected_value ].title );
 		}
-		
+
 		// Fill the directions label inputs
 		// Fill the orderby_as selector
 		if (
-			'field-' == item_dropdown_selected_value.substr( 0, 6 ) 
-			|| 'taxonomy-field-' == item_dropdown_selected_value.substr( 0, 15 ) 
-			|| 'user-field-' == item_dropdown_selected_value.substr( 0, 11 ) 
+			'field-' == item_dropdown_selected_value.substr( 0, 6 )
+			|| 'taxonomy-field-' == item_dropdown_selected_value.substr( 0, 15 )
+			|| 'user-field-' == item_dropdown_selected_value.substr( 0, 11 )
 		) {
 			switch( item_dropdown_selected_type ) {
 				case 'date':
@@ -2518,10 +2501,10 @@ WPViews.ViewEditScreen = function( $ ) {
 			item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label-desc' )
 				.val( item_dropdown_selected_labels.desc );
 		}
-		
+
 		return self;
 	};
-	
+
 	/**
 	 * Manage changes in the frontend sorting orderby select dropdowns.
 	 *
@@ -2530,23 +2513,23 @@ WPViews.ViewEditScreen = function( $ ) {
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( document ).on( 'change', '.js-wpv-frontend-sorting-orderby-options-list-item-dropdown', function() {
-		
+
 		var item_dropdown = $( this ),
 			item = item_dropdown.closest( '.js-wpv-frontend-sorting-orderby-options-list-item' );
-		
+
 		self.update_sorting_controls_row_labels( item )
 			.update_sorting_controls_preview();// Mabe this one is not needed...
-		
+
 	});
-	
+
 	/**
 	 * Enable the order settings in the frontend sorting controls dialog.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( document ).on( 'change', '#js-wpv-frontend-sorting-order-enable', function() {
 		var sorting_order_enable = $( this );
 		if ( sorting_order_enable.prop( 'checked' ) ) {
@@ -2554,31 +2537,31 @@ WPViews.ViewEditScreen = function( $ ) {
 		} else {
 			$( '.js-wpv-frontend-sorting-order-options, .js-wpv-frontend-sorting-orderby-options-list-item-label-direction' ).fadeOut( 'fast' );
 		}
-		
+
 		self.update_sorting_controls_preview();
-		
+
 	});
-	
+
 	/**
 	 * Track changes in the selectors to set frontend control types to update the previews accordingly.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( document ).on( 'change', '.js-wpv-frontend-sorting-orderby-options-type, .js-wpv-frontend-sorting-order-options-type', function() {
 		self.update_sorting_controls_visibility();
 		self.update_sorting_controls_preview();
 	});
-	
+
 	/**
 	 * Helper method to manage visibility of elements in the frontend sorting controls dialog.
 	 *
 	 * We will only display relevant options when there is at least one orderby option.
 	 * Also, the list type style will only be visible when relevant.
-	 * 
+	 *
 	 * @since 2.3.0
 	 */
-	
+
 	self.update_sorting_controls_visibility = function() {
 		var orderby_count = $( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item' ).length;
 		if ( orderby_count > 0 ) {
@@ -2593,13 +2576,13 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	/**
 	 * Handle the clssname and visibility of delete/info buttons on frontend sorting controls rows.
 	 *
 	 * @since 2.3.1
 	 */
-	
+
 	self.update_sorting_controls_management = function() {
 		var orderby_options = $( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item' );
 		if ( orderby_options.length > 0 ) {
@@ -2624,26 +2607,26 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	/**
 	 * Helper method to manage visibility of the preview in the frontend sorting controls dialog.
 	 *
 	 * We will only display an actual preview when there is at least one orderby option.
-	 * 
+	 *
 	 * @since 2.3.0
 	 */
-	
+
 	self.update_sorting_controls_preview = function() {
-		
+
 		var orderby_type = $( '#js-wpv-frontend-sorting-orderby-options-type' ).val(),
 			orderby_count = $( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item' ).length,
 			order_type = $( '#js-wpv-frontend-sorting-order-options-type' ).val(),
 			order_enable = $( '#js-wpv-frontend-sorting-order-enable' ).prop( 'checked' );
-		
+
 		if ( orderby_count > 0 ) {
 			$( '.js-wpv-frontend-sorting-preview-disabled' ).hide();
 			$( '.js-wpv-frontend-sorting-preview-enabled' ).show();
-			
+
 			$( '.js-wpv-frontend-sorting-orderby-preview' )
 				.addClass( 'disabled' )
 				.hide();
@@ -2663,42 +2646,42 @@ WPViews.ViewEditScreen = function( $ ) {
 					.hide();
 				$( '.js-wpv-frontend-sorting-order-' + order_type + '-preview' ).show();
 			}
-			
+
 		} else {
-			
+
 			$( '.js-wpv-frontend-sorting-preview-disabled' ).show();
 			$( '.js-wpv-frontend-sorting-preview-enabled' ).hide();
-			
+
 		}
-		
+
 	};
-	
+
 	/**
 	 * Sorting controls list mode preview interaction: display on hover.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( document ).on( 'mouseenter', '.js-wpv-sort-list-dropdown', function() {
 		var orderby_list = $( this );
 		orderby_list
 			.find( '.js-wpv-sort-list-item' )
 				.css( {'display': 'block'} );
 	});
-	
+
 	$( document ).on( 'mouseleave', '.js-wpv-sort-list-dropdown', function() {
 		var orderby_list = $( this );
 		orderby_list
 			.find( '.js-wpv-sort-list-item:not(.wpv-sort-list-current)' )
 				.css( {'display': 'none'} );
 	});
-	
+
 	/**
 	 * Helper method to update the preview style for frontend sorting controls as lists.
 	 *
 	 * @since 2.3.0
 	 */
-	 
+
 	self.update_sorting_controls_preview_for_lists = function( current_control, current_style ) {
 		$( '.js-wpv-sort-list-' + current_control + '-dropdown' )
 			.removeClass( function( index, classes ) {
@@ -2712,48 +2695,48 @@ WPViews.ViewEditScreen = function( $ ) {
 			})
 			.addClass( 'wpv-sort-list-dropdown-style-' + current_style );
 	};
-	
+
 	$( document ).on( 'change', '#js-wpv-frontend-sorting-orderby-list-style', function() {
 		var current_style = $( this ).val();
 		self.update_sorting_controls_preview_for_lists( 'orderby', current_style );
 	});
-	
+
 	$( document ).on( 'change', '#js-wpv-frontend-sorting-order-list-style', function() {
 		var current_style = $( this ).val();
 		self.update_sorting_controls_preview_for_lists( 'order', current_style );
 	});
-	
+
 	/**
 	 * Insert the sorting controls shortcodes into the relevant editor.
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	self.insert_sorting_controls = function() {
 		var shortcode = '',
 			current_cursor,
 			end_cursor,
 			sorting_marker;
-		
+
 		if ( ! self.validate_sorting_controls() ) {
 			$( '#js-wpv-frontend-sorting-dialog .wpv-shortcode-gui-content-wrapper' )
 				.append( '<p class="toolset-alert toolset-alert-error js-wpv-frontend-sorting-orderby-options-list-empty">' + wpv_editor_strings.dialog_sorting.warnings.missing_options + '</p>' );
 			setTimeout( function() {
 				$( '.js-wpv-frontend-sorting-orderby-options-list-empty' )
 					.fadeOut( 'fast', function() {
-						$( this ).remove(); 
+						$( this ).remove();
 					});
 			}, 2000 );
 			return;
 		}
-		
+
 		shortcode = self.get_sorting_shortcode();
-		
+
 		if ( self.sorting_insert_newline ) {
 			shortcode += '\n';
 			self.sorting_insert_newline = false;
 		}
-		
+
 		if ( _.has( WPV_Toolset.CodeMirror_instance, window.wpcfActiveEditor ) ) {
 			current_cursor = WPV_Toolset.CodeMirror_instance[ window.wpcfActiveEditor ].getCursor( true );
 			WPV_Toolset.CodeMirror_instance[ window.wpcfActiveEditor ].replaceRange( shortcode, current_cursor, current_cursor );
@@ -2766,9 +2749,9 @@ WPViews.ViewEditScreen = function( $ ) {
 				sorting_marker.clear();
 			}, 2000);
 		}
-		
+
 	};
-	
+
 	/**
 	 * Validate sorting controls against empty or non supported values, to block the shortcode generation.
 	 *
@@ -2786,8 +2769,8 @@ WPViews.ViewEditScreen = function( $ ) {
 				var orderby_item = $( this ),
 					orderby_item_value = orderby_item.val(),
 					orderby_item_type = orderby_item.find( ':selected' ).data( 'type' );
-				if ( 
-					orderby_item_value == '' 
+				if (
+					orderby_item_value == ''
 					|| 'excluded:' == orderby_item_type.substr( 0, 9 )
 				) {
 					rejected_options_counter++;
@@ -2798,16 +2781,16 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return is_valid;
 	};
-	
+
 	/**
 	 * Get the frontend sorting shortcodes given the dialog settings.
 	 *
 	 * @since 2.3.0
 	 * @since 2.3.1 Add the ability to force a sorting direction to each sorting option.
 	 */
-	
+
 	self.get_sorting_shortcode = function() {
-		
+
 		var output = '',
 			orderby_item,
 			orderby_item_option = '',
@@ -2821,13 +2804,13 @@ WPViews.ViewEditScreen = function( $ ) {
 				ASC: [],
 				DESC: []
 			};
-		
+
 		// Orderby shortcode
-		
+
 		output += '[wpv-sort-orderby';
-		
+
 		output += ' type="' + $( '#js-wpv-frontend-sorting-orderby-options-type' ).val() + '"';
-		
+
 		$.each( $( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item' ), function() {
 			orderby_item = $( this );
 			if ( orderby_item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-dropdown' ).val() != '' ) {
@@ -2835,7 +2818,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				if ( _.indexOf( orderby_options, orderby_item_option ) == -1 ) {
 					orderby_item_label = self.sanitize_arbitrary_shortcode_value( orderby_item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label' ).val() );
 					orderby_options.push( orderby_item_option );
-					
+
 					orderby_options_labels += ' label_for_' + orderby_item_option + '="' + orderby_item_label + '"';
 					if ( orderby_item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label-asc' ).val() != '' ) {
 						order_options_labels += ' label_asc_for_' + orderby_item_option + '="' + self.sanitize_arbitrary_shortcode_value( orderby_item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label-asc' ).val() ) + '"';
@@ -2843,7 +2826,7 @@ WPViews.ViewEditScreen = function( $ ) {
 					if ( orderby_item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label-desc' ).val() != '' ) {
 						order_options_labels += ' label_desc_for_' + orderby_item_option + '="' + self.sanitize_arbitrary_shortcode_value( orderby_item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-label-desc' ).val() ) + '"';
 					}
-					
+
 					if ( orderby_item.find( '.js-wpv-frontend-sorting-orderby-options-list-item-as' ).val() == 'NUMERIC' ) {
 						orderby_as_numeric.push( orderby_item_option );
 					}
@@ -2870,45 +2853,45 @@ WPViews.ViewEditScreen = function( $ ) {
 		if ( 'list' == $( '#js-wpv-frontend-sorting-orderby-options-type' ).val() ) {
 			output += ' list_style="' + $( '#js-wpv-frontend-sorting-orderby-list-style' ).val() + '"';
 		}
-		
+
 		output += ']';
-		
+
 		// Order shortcode, if needed
-		
+
 		if ( $( '#js-wpv-frontend-sorting-order-enable' ).prop( 'checked' ) ) {
-			
+
 			output += '[wpv-sort-order';
-			
+
 			output += ' type="' + $( '#js-wpv-frontend-sorting-order-options-type' ).val() + '"';
-			
+
 			output += ' options="' + $( '.js-wpv-frontend-sorting-order-options-order' ).val() + '"';
-			
+
 			if ( $( '.js-wpv-frontend-sorting-order-options-label-asc' ).val() != '' ) {
 				output += ' label_for_asc="' + self.sanitize_arbitrary_shortcode_value( $( '.js-wpv-frontend-sorting-order-options-label-asc' ).val() ) + '"';
 			}
 			if ( $( '.js-wpv-frontend-sorting-order-options-label-desc' ).val() != '' ) {
 				output += ' label_for_desc="' + self.sanitize_arbitrary_shortcode_value( $( '.js-wpv-frontend-sorting-order-options-label-desc' ).val() ) + '"';
 			}
-			
+
 			output += order_options_labels;
-			
+
 			if ( 'list' == $( '#js-wpv-frontend-sorting-order-options-type' ).val() ) {
 				output += ' list_style="' + $( '#js-wpv-frontend-sorting-order-list-style' ).val() + '"';
 			}
-			
+
 			output+= ']';
-			
+
 		}
-		
+
 		return output;
 	}
-	
+
 	/**
 	 * Set the first frontend sorting controls row values from the View stored settings.
 	 *
 	 * @since 2.3.1
 	 */
-	
+
 	self.force_sorting_controls_from_settings = function() {
 		var orderby_options = $( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item' );
 		if ( orderby_options.length > 0 ) {
@@ -2938,28 +2921,28 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	/**
 	 * Populate a first frontend sorting controls row with the View stored settings.
 	 *
 	 * @since 2.3.1
 	 */
-	
+
 	self.populate_sorting_dialog_options = function() {
 		self
 			// Add a first sorting control
 			.add_sorting_dialog_orderby_option()
 			// Set the settings stored in the "Ordering" section
 			.force_sorting_controls_from_settings();
-			
+
 	};
-	
+
 	/**
 	 * Force the settings form the first row of the frontend sorting controls to the stored View settings.
 	 *
 	 * @since 2.3.1
 	 */
-	
+
 	self.force_sorting_controls_to_settings = function() {
 		var orderby_options = $( '.js-wpv-frontend-sorting-orderby-options-list tbody tr.js-wpv-frontend-sorting-orderby-options-list-item' );
 		if ( orderby_options.length > 0 ) {
@@ -2984,12 +2967,12 @@ WPViews.ViewEditScreen = function( $ ) {
 						.val( order_to_force )
 						.trigger( 'change' );
 				}
-				// Note that the orderby_as value alwas needs to be forced, 
+				// Note that the orderby_as value alwas needs to be forced,
 				// since otherwise orderby Types fields would force their own values on the View settings.
 				if (
-					'field-' == orderby_to_force.substr( 0, 6 ) 
-					|| 'taxonomy-field-' == orderby_to_force.substr( 0, 15 ) 
-					|| 'user-field-' == orderby_to_force.substr( 0, 11 ) 
+					'field-' == orderby_to_force.substr( 0, 6 )
+					|| 'taxonomy-field-' == orderby_to_force.substr( 0, 15 )
+					|| 'user-field-' == orderby_to_force.substr( 0, 11 )
 				) {
 					$( 'select.js-wpv-posts-orderby-as' )
 						.val( orderby_as_to_force )
@@ -3002,7 +2985,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	/**
 	 * Open the frontend sorting controlos dialog.
 	 *
@@ -3010,10 +2993,10 @@ WPViews.ViewEditScreen = function( $ ) {
 	 *
 	 * @since 2.3.0
 	 */
-	
+
 	$( document ).on( 'click', '.js-wpv-sorting-dialog', function( e ) {
 		e.preventDefault();
-		
+
 		var thiz = $( this ),
 			active_textarea = thiz.data( 'content' ),
 			current_cursor,
@@ -3025,9 +3008,9 @@ WPViews.ViewEditScreen = function( $ ) {
 			current_cursor = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getCursor( true );
 			text_before = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getRange({line:0,ch:0}, current_cursor);
 			text_after = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getRange(current_cursor, {line:WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].lastLine(),ch:null});
-			if ( 
-				text_before.search(/\[wpv-filter-start.*?\]/g) == -1 
-				|| text_after.search(/\[wpv-filter-end.*?\]/g) == -1 
+			if (
+				text_before.search(/\[wpv-filter-start.*?\]/g) == -1
+				|| text_after.search(/\[wpv-filter-end.*?\]/g) == -1
 			) {
 				// Set the cursor at the end and open popup
 				insert_position = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getSearchCursor( '[wpv-filter-end]', false );
@@ -3040,9 +3023,9 @@ WPViews.ViewEditScreen = function( $ ) {
 			current_cursor = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getCursor( true );
 			text_before = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getRange({line:0,ch:0}, current_cursor);
 			text_after = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getRange(current_cursor, {line:WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].lastLine(),ch:null});
-			if ( 
-				text_before.search(/\[wpv-layout-start.*?\]/g) == -1 
-				|| text_after.search(/\[wpv-layout-end.*?\]/g) == -1 
+			if (
+				text_before.search(/\[wpv-layout-start.*?\]/g) == -1
+				|| text_after.search(/\[wpv-layout-end.*?\]/g) == -1
 			) {
 				// Set the cursor at the end and open popup
 				insert_position = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getSearchCursor( '[wpv-layout-end]', false );
@@ -3051,7 +3034,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				self.sorting_insert_newline = true;
 			}
 		}
-		
+
 		self.sorting_dialog.dialog( 'open' ).dialog({
 			maxHeight:	self.calculate_dialog_maxHeight(),
 			width:		self.calculate_dialog_maxWidth(),
@@ -3063,15 +3046,15 @@ WPViews.ViewEditScreen = function( $ ) {
 				collision:	"none"
 			}
 		});
-		
+
 	});
 
 	// ---------------------------------
 	// Limit and offset
 	// ---------------------------------
-	
+
 	// Limit and offset - update automatically
-	
+
 	self.save_view_limit_offset_options = function() {
 		var dataholder = $( '.js-wpv-limit-offset-update' ),
 		messages_container = dataholder.parents( '.js-wpv-update-action-wrap' ).find( '.js-wpv-message-container' ),
@@ -3082,7 +3065,10 @@ WPViews.ViewEditScreen = function( $ ) {
 		view_id = self.view_id;
 		section_container.find( '.wpv-spinner.ajax-loader' ).remove();
 		messages_container.find('.toolset-alert-error').remove();
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( dataholder ).show();
+
+		self.toggleTopBarSpinner( 'visible' );
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( dataholder ).css( { 'visibility': 'visible' } );
+
 		var data = {
 			action: 'wpv_update_limit_offset',
 			id: view_id,
@@ -3102,11 +3088,14 @@ WPViews.ViewEditScreen = function( $ ) {
 			success: function( response ) {
 				if ( response.success ) {
 					$('.js-screen-options').find('.toolset-alert').remove();
+					self.manageTopBarSavingEvent( 'success' );
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messages_container} );
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			error: function (ajaxContext) {
+				self.manageTopBarSavingEvent( 'failure' );
 				messages_container
 					.wpvToolsetMessage({
 						text:unsaved_message,
@@ -3118,22 +3107,23 @@ WPViews.ViewEditScreen = function( $ ) {
 			},
 			complete: function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.limit_offset_debounce_update = _.debounce( self.save_view_limit_offset_options, 2000 );
-	
+
 	// Limit and offset - events
-	
+
 	$( document ).on( 'change', '.js-wpv-limit, .js-wpv-offset, .js-wpv-taxonomy-limit, .js-wpv-taxonomy-offset, .js-wpv-users-limit, .js-wpv-users-offset', function() {
 		self.limit_offset_debounce_update();
 	});
-	
+
 	// ---------------------------------
 	// Pagination
 	// ---------------------------------
-	
+
 	/**
 	* save_view_pagination_options
 	*
@@ -3141,7 +3131,7 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.2
 	*/
-	
+
 	self.save_view_pagination_options = function() {
 		var dataholder = $( '.js-wpv-pagination-update' ),
 		messages_container = dataholder.parents( '.js-wpv-update-action-wrap' ).find( '.js-wpv-message-container' ),
@@ -3168,9 +3158,11 @@ WPViews.ViewEditScreen = function( $ ) {
 			'spinner_image_uploaded':	$( '.js-wpv-pagination-spinner-image' ).val(),
 			'callback_next':	$( '.js-wpv-pagination-callback-next' ).val()
 		};
-		section_container.find( '.wpv-spinner.ajax-loader' ).remove();
 		messages_container.find('.toolset-alert-error').remove();
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( dataholder ).show();
+
+		self.toggleTopBarSpinner( 'visible' );
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( dataholder ).css( { 'visibility': 'visible' } );
+
 		var data = {
 			action: 'wpv_update_pagination',
 			id: view_id,
@@ -3185,11 +3177,14 @@ WPViews.ViewEditScreen = function( $ ) {
 			success: function( response ) {
 				if ( response.success ) {
 					$('.js-screen-options').find('.toolset-alert').remove();
+					self.manageTopBarSavingEvent( 'success' );
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messages_container} );
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			error: function (ajaxContext) {
+				self.manageTopBarSavingEvent( 'failure' );
 				messages_container
 					.wpvToolsetMessage({
 						text:unsaved_message,
@@ -3201,10 +3196,11 @@ WPViews.ViewEditScreen = function( $ ) {
 			},
 			complete: function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.pagination_debounce_update = _.debounce( self.save_view_pagination_options, 2000 );
 	// init codmirror only for full version
     if( ! wpv_editor_strings.is_views_lite ) {
@@ -3215,7 +3211,7 @@ WPViews.ViewEditScreen = function( $ ) {
 	WPV_Toolset.CodeMirror_instance[ 'wpv_layout_meta_html_content' ].on( 'change', function() {
 		self.manage_editor_pagination_controls_button();
 	});
-	
+
 	self.manage_editor_pagination_controls_button = function() {
 		var type		= $( '.js-wpv-pagination-type:checked' ).val(),
 		effect			= $( '.js-wpv-ajax-pagination-effect' ).val(),
@@ -3266,26 +3262,26 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	self.hasPaginationControls = function() {
 		var filterContent = WPV_Toolset.CodeMirror_instance[ 'wpv_filter_meta_html_content' ].getValue();
 		var loopContent = WPV_Toolset.CodeMirror_instance[ 'wpv_layout_meta_html_content' ].getValue();
-		return ( 
-			filterContent.search(/\[wpv-pager/) == -1 
-			&& loopContent.search(/\[wpv-pager/) == -1 
+		return (
+			filterContent.search(/\[wpv-pager/) == -1
+			&& loopContent.search(/\[wpv-pager/) == -1
 			) ? false : true ;
 	};
-	
+
 	self.manage_pagination_crossed_dependent_items = function() {
 		var type		= $( '.js-wpv-pagination-type:checked' ).val(),
 		effect			= $( '.js-wpv-ajax-pagination-effect' ).val(),
 		rollover_effect	= $( '.js-wpv-rollover-pagination-effect' ).val();
 		switch ( type ) {
 			case 'disabled':
-				
+
 				break;
 			case 'paged':
-				
+
 				break;
 			case 'ajaxed':
 				if ( effect == 'infinite' ) {
@@ -3303,7 +3299,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		}
 		return self;
 	};
-	
+
 	$( document ).on( 'change', '.js-wpv-pagination-type', function() {
 		var type = $( '.js-wpv-pagination-type:checked' ).val();
 		switch ( type ) {
@@ -3345,7 +3341,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			.sorting_random_and_pagination()
 			.pagination_debounce_update();
 	});
-	
+
 	$( document ).on( 'change', '.js-wpv-ajax-pagination-effect', function() {
 		if ( $( this ).val() == 'infinite' ) {
 			$( '.js-wpv-pagination-advanced-infinite-tolerance' ).fadeIn( 'fast' );
@@ -3358,7 +3354,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			.manage_editor_pagination_controls_button()
 			.manage_pagination_crossed_dependent_items();
 	});
-	
+
 	$( document ).on( 'click', '.js-wpv-pagination-advanced', function( e ) {
 		e.preventDefault();
 		$( this )
@@ -3366,7 +3362,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				.toggleClass( 'fa-caret-down fa-caret-up' );
 		$( '.js-wpv-pagination-advanced-container' ).fadeToggle( 'fast' );
 	});
-	
+
 	$( document ).on( 'change', '.js-wpv-pagination-spinner', function() {
 		var thiz_value = $( '.js-wpv-pagination-spinner:checked' ).val();
 		switch ( thiz_value ) {
@@ -3383,17 +3379,17 @@ WPViews.ViewEditScreen = function( $ ) {
 				break;
 		}
 	});
-	
+
 	$( document ).on( 'change keyup', '.js-wpv-pagination-advanced-settings input, .js-wpv-pagination-advanced-settings select', function() {
 		self.pagination_debounce_update();
 	});
-	
+
 	// ---------------------------------
 	// Pagination controls
 	// ---------------------------------
-	
+
 	self.pagination_insert_newline = false;
-	
+
 	self.get_pagination_shortcode = function() {
 		var output = '',
 			output_framework = '',
@@ -3516,9 +3512,9 @@ WPViews.ViewEditScreen = function( $ ) {
 		});
 		return output;
 	};
-	
+
 	// Insert pagination shortcode
-	
+
 	$( document ).on( 'click', '.js-wpv-pagination-popup', function() {
 		var thiz = $( this ),
 		active_textarea = thiz.data( 'content' ),
@@ -3534,9 +3530,9 @@ WPViews.ViewEditScreen = function( $ ) {
 			current_cursor = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getCursor(true);
 			text_before = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getRange({line:0,ch:0}, current_cursor);
 			text_after = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getRange(current_cursor, {line:WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].lastLine(),ch:null});
-			if ( 
-				text_before.search(/\[wpv-filter-start.*?\]/g) == -1 
-				|| text_after.search(/\[wpv-filter-end.*?\]/g) == -1 
+			if (
+				text_before.search(/\[wpv-filter-start.*?\]/g) == -1
+				|| text_after.search(/\[wpv-filter-end.*?\]/g) == -1
 			) {
 				// Set the cursor at the end and open popup
 				insert_position = WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getSearchCursor( '[wpv-filter-end]', false );
@@ -3549,9 +3545,9 @@ WPViews.ViewEditScreen = function( $ ) {
 			current_cursor = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getCursor(true);
 			text_before = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getRange({line:0,ch:0}, current_cursor);
 			text_after = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getRange(current_cursor, {line:WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].lastLine(),ch:null});
-			if ( 
-				text_before.search(/\[wpv-layout-start.*?\]/g) == -1 
-				|| text_after.search(/\[wpv-layout-end.*?\]/g) == -1 
+			if (
+				text_before.search(/\[wpv-layout-start.*?\]/g) == -1
+				|| text_after.search(/\[wpv-layout-end.*?\]/g) == -1
 			) {
 				// Set the cursor at the end and open popup
 				insert_position = WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getSearchCursor( '[wpv-layout-end]', false );
@@ -3570,7 +3566,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			}
 		});
 	});
-	
+
 	self.init_pagination_dialog_options = function() {
 		$( '.js-wpv-insert-pagination' )
 			.prop( 'disabled', true )
@@ -3586,7 +3582,7 @@ WPViews.ViewEditScreen = function( $ ) {
         $( '.js-wpv-dialog-pagination-wizard [class*="js-wpv-dialog-pagination-wizard-sub-item-dependant-"]' ).hide();
         dialog_pagination_preview.find( '[class *= js-wpv-dialog-pagination-wizard-preview- ]' ).hide();
 	};
-	
+
 	$( document ).on( 'change', 'input.js-wpv-pagination-dialog-control', function() {
 		var thiz = $( this ),
 		thiz_checked = thiz.prop( 'checked' ),
@@ -3630,7 +3626,7 @@ WPViews.ViewEditScreen = function( $ ) {
             sub_dialog_pagination_preview.hide();
         }
     });
-	
+
 	$( document ).on( 'click', '.js-wpv-insert-pagination', function() {
 		var shortcode = '',
 		wrap = $( 'input.js-wpv-pagination-dialog-display' ).prop('checked'),
@@ -3657,13 +3653,13 @@ WPViews.ViewEditScreen = function( $ ) {
 			}, 2000);
 		}
 	});
-	
+
 	// ---------------------------------
 	// Parametric search
 	// ---------------------------------
-	
+
 	// Parametric search - update automatically
-	
+
 	self.save_view_parametric_search_options = function() {
 		var dataholder = $( '.js-wpv-filter-dps-update' ),
 		messages_container = dataholder.parents( '.js-wpv-update-action-wrap' ).find( '.js-wpv-message-container' ),
@@ -3674,7 +3670,10 @@ WPViews.ViewEditScreen = function( $ ) {
 		dps_data = $('.js-wpv-dps-settings input, .js-wpv-dps-settings select').serialize();
 		section_container.find( '.wpv-spinner.ajax-loader' ).remove();
 		messages_container.find('.toolset-alert-error').remove();
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( dataholder ).show();
+
+		self.toggleTopBarSpinner( 'visible' );
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( dataholder ).css( { 'visibility': 'visible' } );
+
 		var params = {
 			action: 'wpv_filter_update_dps_settings',
 			id: self.view_id,
@@ -3688,12 +3687,14 @@ WPViews.ViewEditScreen = function( $ ) {
 			data: params,
 			success: function( response ) {
 				if ( response.success ) {
-					
+					self.manageTopBarSavingEvent( 'success' );
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messages_container} );
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			error:function(ajaxContext){
+				self.manageTopBarSavingEvent( 'failure' );
 				messages_container
 					.wpvToolsetMessage({
 						 text:unsaved_message,
@@ -3705,22 +3706,23 @@ WPViews.ViewEditScreen = function( $ ) {
 			},
 			complete:function(){
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.parametric_search_debounce_update = _.debounce( self.save_view_parametric_search_options, 1000 );
-	
+
 	// Parametric search - events
-	
+
 	$( document ).on( 'change keypress keyup input cut paste', '.js-wpv-dps-settings input', function() {
 		self.parametric_search_debounce_update();
 	});
-	
+
 	// ---------------------------------
 	// Filter editor
 	// ---------------------------------
-	
+
 	self.codemirror_filter_editors_track = function() {
 		$( '.js-wpv-filter-extra-update' ).parent().find( '.toolset-alert-error' ).remove();
 		if (
@@ -3729,43 +3731,34 @@ WPViews.ViewEditScreen = function( $ ) {
 			|| WPV_Toolset.CodeMirror_instance_value['wpv_filter_meta_html_js'] != WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_js'].getValue()
 		) {
 			self.manage_save_queue( 'save_section_filter', 'add' );
-			$( '.js-wpv-filter-extra-update' )
-				.prop('disabled', false)
-				.removeClass('button-secondary')
-				.addClass('button-primary js-wpv-section-unsaved');
+			$( '.js-wpv-filter-extra-update' ).addClass('js-wpv-section-unsaved');
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
 		} else {
 			self.manage_save_queue( 'save_section_filter', 'remove' );
-			$( '.js-wpv-filter-extra-update' )
-				.prop('disabled', true)
-				.removeClass('button-primary js-wpv-section-unsaved')
-				.addClass('button-secondary');
+			$( '.js-wpv-filter-extra-update' ).removeClass('js-wpv-section-unsaved');
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	self.save_section_filter = function( event, propagate ) {
 		var thiz		= $( '.js-wpv-filter-extra-update' ),
 		query_val		= WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_content'].getValue(),
 		query_css_val	= WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_css'].getValue(),
 		query_js_val	= WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_js'].getValue(),
-		
+
 		thiz_container = thiz.parents( '.js-wpv-settings-filter-extra' ),
 		thiz_message_container = thiz_container.find( '.js-wpv-message-container' ),
 		//update_message = thiz.data('success'),
 		unsaved_message = thiz.data('unsaved'),
 		nonce = thiz.data('nonce'),
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( thiz ).show();
-		
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( thiz ).css( {'visibility':'visible'} );
+
+		self.toggleTopBarSpinner( 'visible' );
+
 		self.manage_save_queue( 'save_section_filter', 'remove' );
-		
+
 		thiz_container.find('.toolset-alert-error').remove();
-		
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
-			
+
 		var data = {
 			action:			'wpv_update_filter_extra',
 			id:				self.view_id,
@@ -3774,7 +3767,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			query_js_val:	query_js_val,
 			wpnonce:		nonce
 		};
-		
+
 		$.ajax({
 			type:		"POST",
 			dataType:	"json",
@@ -3786,21 +3779,22 @@ WPViews.ViewEditScreen = function( $ ) {
 					WPV_Toolset.CodeMirror_instance_value['wpv_filter_meta_html_content']	= query_val;
 					WPV_Toolset.CodeMirror_instance_value['wpv_filter_meta_html_css']		= query_css_val;
 					WPV_Toolset.CodeMirror_instance_value['wpv_filter_meta_html_js']		= query_js_val;
-					
+
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-parametric-search-hints', response.data.parametric );
-					
-					self.manage_ajax_success( response.data, thiz_message_container );
 					$( document ).trigger( event );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
 					} else {
 						$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
+						self.manageTopBarSavingEvent( 'success' );
 					}
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: thiz_message_container} );
 					self.save_fail_queue.push( 'save_section_filter' );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
+					} else {
+						self.manageTopBarSavingEvent( 'failure' );
 					}
 				}
 			},
@@ -3815,28 +3809,26 @@ WPViews.ViewEditScreen = function( $ ) {
 				self.save_fail_queue.push( 'save_section_filter' );
 				if ( propagate ) {
 					$( document ).trigger( 'js_wpv_save_section_queue' );
+				} else {
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			complete:	function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.save_callbacks['save_section_filter'] = {
 		callback:	self.save_section_filter,
 		event:		'js_event_wpv_save_section_filter_completed'
 	};
 
-	$( '.js-wpv-filter-extra-update' ).on( 'click', function( e ) {
-		e.preventDefault();
-		self.save_section_filter( 'js_event_wpv_save_section_filter_completed', false );
-	});
-	
 	// ---------------------------------
 	// Loop Output
-	// ---------------------------------	
-	
+	// ---------------------------------
+
 	self.codemirror_layout_editors_track = function() {
 		$( '.js-wpv-layout-extra-update' ).parent().find( '.toolset-alert-error' ).remove();
 		if (
@@ -3845,43 +3837,35 @@ WPViews.ViewEditScreen = function( $ ) {
 			|| WPV_Toolset.CodeMirror_instance_value['wpv_layout_meta_html_js'] != WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_js'].getValue()
 		) {
 			self.manage_save_queue( 'save_section_loop_output', 'add' );
-			$( '.js-wpv-layout-extra-update' )
-				.prop('disabled', false)
-				.removeClass('button-secondary')
-				.addClass('button-primary js-wpv-section-unsaved');
+			$( '.js-wpv-layout-extra-update' ).addClass('js-wpv-section-unsaved');
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
 		} else {
 			self.manage_save_queue( 'save_section_loop_output', 'remove' );
 			$( '.js-wpv-layout-extra-update' )
-				.prop('disabled', true)
-				.removeClass('button-primary js-wpv-section-unsaved')
-				.addClass('button-secondary');
+				.removeClass('js-wpv-section-unsaved');
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	self.save_section_loop_output = function( event, propagate ) {
 		var thiz		= $( '.js-wpv-layout-extra-update' ),
 		layout_val		= WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_content'].getValue(),
 		layout_css_val	= WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_css'].getValue(),
 		layout_js_val	= WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_js'].getValue(),
-		
+
 		thiz_container = thiz.parents( '.js-wpv-settings-layout-extra' ),
 		thiz_message_container = thiz_container.find( '.js-wpv-message-container' ),
 		//update_message = thiz.data('success'),
 		unsaved_message = thiz.data('unsaved'),
 		nonce = thiz.data('nonce'),
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( thiz ).show();
-		
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( thiz ).css( { 'visibility': 'visible' } );
+
+		self.toggleTopBarSpinner( 'visible' );
+
 		self.manage_save_queue( 'save_section_loop_output', 'remove' );
-		
+
 		thiz_container.find('.toolset-alert-error').remove();
-		
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
-			
+
 		var data = {
 			action:			'wpv_update_layout_extra',
 			id:				self.view_id,
@@ -3906,7 +3890,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				WPViews.layout_wizard.use_loop_template_title = '';
 			}
 		}
-		
+
 		$.ajax({
 			type:		"POST",
 			dataType:	"json",
@@ -3918,18 +3902,20 @@ WPViews.ViewEditScreen = function( $ ) {
 					WPV_Toolset.CodeMirror_instance_value['wpv_layout_meta_html_content']	= layout_val;
 					WPV_Toolset.CodeMirror_instance_value['wpv_layout_meta_html_css']		= layout_css_val;
 					WPV_Toolset.CodeMirror_instance_value['wpv_layout_meta_html_js']		= layout_js_val;
-					self.manage_ajax_success( response.data, thiz_message_container );
 					$( document ).trigger( event );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
 					} else {
 						$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
+						self.manageTopBarSavingEvent( 'success' );
 					}
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: thiz_message_container} );
 					self.save_fail_queue.push( 'save_section_loop_output' );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
+					} else {
+						self.manageTopBarSavingEvent( 'failure' );
 					}
 				}
 			},
@@ -3944,23 +3930,21 @@ WPViews.ViewEditScreen = function( $ ) {
 				self.save_fail_queue.push( 'save_section_loop_output' );
 				if ( propagate ) {
 					$( document ).trigger( 'js_wpv_save_section_queue' );
+				} else {
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			complete:	function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.save_callbacks['save_section_loop_output'] = {
 		callback:	self.save_section_loop_output,
 		event:		'js_event_wpv_save_section_loop_output_completed'
 	};
-	
-	$( document ).on( 'click', '.js-wpv-layout-extra-update', function( e ) {
-		e.preventDefault();
-		self.save_section_loop_output( 'js_event_wpv_save_section_loop_output_completed', false );
-	});
 
 	// ---------------------------------
 	// View Wrapper
@@ -3977,12 +3961,15 @@ WPViews.ViewEditScreen = function( $ ) {
 			viewID = self.view_id;
 		sectionContainer.find( '.wpv-spinner.ajax-loader' ).remove();
 		messagesContainer.find('.toolset-alert-error').remove();
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( dataHolder, null ).show();
+
+		self.toggleTopBarSpinner( 'visible' );
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( dataHolder ).css( { 'visibility': 'visible' } );
+
 		var data = {
-			action: self.i18n.ajax.action.view_wrapper_section_update_action,
+			action: self.i18n.ajax.action.view_wrapper_section_update,
 			id: viewID,
 			disable_view_wrapper: $('.js-wpv-settings-disable-view-wrapper:checked').val(),
-			wpnonce: nonce
+			wpnonce: self.i18n.ajax.nonce.view_wrapper_section_update
 		};
 		$.ajax({
 			type: "POST",
@@ -3992,11 +3979,14 @@ WPViews.ViewEditScreen = function( $ ) {
 			success: function( response ) {
 				if ( response.success ) {
 					$('.js-screen-options').find('.toolset-alert').remove();
+					self.manageTopBarSavingEvent( 'success' );
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: messagesContainer} );
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			error: function (ajaxContext) {
+				self.manageTopBarSavingEvent( 'failure' );
 				messagesContainer
 					.wpvToolsetMessage({
 						text:unsavedMessage,
@@ -4008,6 +3998,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			},
 			complete: function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
@@ -4019,56 +4010,47 @@ WPViews.ViewEditScreen = function( $ ) {
 		self.view_wrapper_debounce_update();
 	});
 
-	
+
 	// ---------------------------------
 	// Content
 	// ---------------------------------
-	
+
 	self.codemirror_content_track = function() {
 		$('.js-wpv-content-update').parent().find('.toolset-alert-error').remove();
 		if ( WPV_Toolset.CodeMirror_instance_value['wpv_content'] != WPV_Toolset.CodeMirror_instance['wpv_content'].getValue() ) {
 			self.manage_save_queue( 'save_section_content', 'add' );
-			$( '.js-wpv-content-update' )
-				.prop('disabled', false)
-				.removeClass('button-secondary')
-				.addClass('button-primary js-wpv-section-unsaved');
+			$( '.js-wpv-content-update' ).addClass('js-wpv-section-unsaved');
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
 		} else {
 			self.manage_save_queue( 'save_section_content', 'remove' );
-			$( '.js-wpv-content-update' )
-				.prop('disabled', true)
-				.removeClass('button-primary js-wpv-section-unsaved')
-				.addClass('button-secondary');
+			$( '.js-wpv-content-update' ).removeClass('js-wpv-section-unsaved');
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	self.save_section_content = function( event, propagate ) {
 		var thiz = $( '.js-wpv-content-update' ),
 		content_val = WPV_Toolset.CodeMirror_instance['wpv_content'].getValue(),
-		
+
 		thiz_container = thiz.parents( '.js-wpv-settings-content' ),
 		thiz_message_container = thiz_container.find( '.js-wpv-message-container' ),
-		//update_message = thiz.data('success'),
 		unsaved_message = thiz.data('unsaved'),
 		nonce = thiz.data('nonce'),
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( thiz ).show();
-		
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( thiz ).css( { 'visibility': 'visible' } );
+
+		self.toggleTopBarSpinner( 'visible' );
+
 		self.manage_save_queue( 'save_section_content', 'remove' );
-		
+
 		thiz_container.find('.toolset-alert-error').remove();
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
-		
+
 		var data = {
 			action:		'wpv_update_content',
 			id:			self.view_id,
 			content:	content_val,
 			wpnonce:	nonce
 		};
-		
+
 		$.ajax({
 			type:		"POST",
 			dataType:	"json",
@@ -4078,18 +4060,20 @@ WPViews.ViewEditScreen = function( $ ) {
 				if ( response.success ) {
 					thiz.removeClass('js-wpv-section-unsaved');
 					WPV_Toolset.CodeMirror_instance_value['wpv_content'] = content_val;
-					self.manage_ajax_success( response.data, thiz_message_container );
 					$( document ).trigger( event );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
 					} else {
 						$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
+						self.manageTopBarSavingEvent( 'success' );
 					}
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: thiz_message_container} );
 					self.save_fail_queue.push( 'save_section_content' );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
+					} else {
+						self.manageTopBarSavingEvent( 'failure' );
 					}
 				}
 			},
@@ -4104,34 +4088,32 @@ WPViews.ViewEditScreen = function( $ ) {
 				self.save_fail_queue.push( 'save_section_content' );
 				if ( propagate ) {
 					$( document ).trigger( 'js_wpv_save_section_queue' );
+				} else {
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			complete:	function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.save_callbacks['save_section_content'] = {
 		callback:	self.save_section_content,
 		event:		'js_event_wpv_save_section_content_completed'
 	};
-	
-	$( document ).on( 'click', '.js-wpv-content-update', function( e ) {
-		e.preventDefault();
-		self.save_section_content( 'js_event_wpv_save_section_content_completed', false );
-	});
-	
+
 	// ---------------------------------
 	// Scan usage
 	// ---------------------------------
-	
+
 	$( document ).on('click', '.js-wpv-settings-scan-usage .js-wpv-scan', function( e ) {
 		e.preventDefault();
 		var thiz = $( this ),
 		cellParent = thiz.closest( '.js-wpv-setting' ),
 		postsList = $('<table class="posts-list widefat striped hidden"></table>'),
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertAfter( thiz ).show(),
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertAfter( thiz ).css( { 'visibility': 'visible' } );
 		data = {
 			action: self.i18n.ajax.action.scan_view_usage,
 			id: thiz.data( 'view-id' ),
@@ -4185,58 +4167,50 @@ WPViews.ViewEditScreen = function( $ ) {
 				spinnerContainer.remove();
 			}
 		});
-			
+
         return false;
     });
-	
+
 	// ---------------------------------
 	// Legacy - Layouts extra JavaScript files - track and update
 	//
 	// This is only available to users who already used it
 	// ---------------------------------
-	
+
 	self.layout_extra_js_track = function() {
 		$( '.js-wpv-layout-settings-extra-js-update' ).parent().find('.toolset-alert-error').remove();
 		if ( self.model['.js-wpv-layout-settings-extra-js'] != $('.js-wpv-layout-settings-extra-js').val() ) {
 			self.manage_save_queue( 'save_section_layout_extra_js', 'add' );
-			$( '.js-wpv-layout-settings-extra-js-update' )
-				.prop('disabled', false)
-				.removeClass('button-secondary')
-				.addClass('button-primary js-wpv-section-unsaved');
+			$( '.js-wpv-layout-settings-extra-js-update' ).addClass('js-wpv-section-unsaved');
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
 		} else {
 			self.manage_save_queue( 'save_section_layout_extra_js', 'remove' );
-			$( '.js-wpv-layout-settings-extra-js-update' )
-				.prop('disabled', true)
-				.removeClass('button-primary js-wpv-section-unsaved')
-				.addClass('button-secondary');
+			$( '.js-wpv-layout-settings-extra-js-update' ).removeClass('js-wpv-section-unsaved');
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	$( document ).on( 'keyup input cut paste', '.js-wpv-layout-settings-extra-js', function() {
 		self.layout_extra_js_track();
 	});
-	
+
 	self.save_section_layout_extra_js = function( event, propagate ) {
 		var thiz = $( '.js-wpv-layout-settings-extra-js-update' ),
 		extra_js = $('.js-wpv-layout-settings-extra-js').val(),
-		
+
 		thiz_container = thiz.parents( '.js-wpv-settings-layout-settings-extra-js' ),
 		thiz_message_container = thiz_container.find( '.js-wpv-message-container' ),
 		//update_message = thiz.data('success'),
 		unsaved_message = thiz.data('unsaved'),
 		nonce = thiz.data('nonce'),
-		spinnerContainer = $('<div class="wpv-spinner ajax-loader">').insertBefore( thiz ).show();
-		
+		spinnerContainer = $('<span class="spinner ajax-loader">').insertBefore( thiz ).css( { 'visibility': 'visible' } );
+
+		self.toggleTopBarSpinner( 'visible' );
+
 		self.manage_save_queue( 'save_section_layout_extra_js', 'remove' );
-		
+
 		thiz_container.find('.toolset-alert-error').remove();
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
-		
+
 		var data = {
 			action:		'wpv_update_layout_extra_js',
 			id:			self.view_id,
@@ -4254,18 +4228,20 @@ WPViews.ViewEditScreen = function( $ ) {
 				if ( response.success ) {
 					thiz.removeClass('js-wpv-section-unsaved');
 					self.model['.js-wpv-layout-settings-extra-js'] = $('.js-wpv-layout-settings-extra-js').val();
-					self.manage_ajax_success( response.data, thiz_message_container );
 					$( document ).trigger( event );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
 					} else {
 						$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
+						self.manageTopBarSavingEvent( 'success' );
 					}
 				} else {
 					Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-ajax-fail', { data: response.data, container: thiz_message_container} );
 					self.save_fail_queue.push( 'save_section_layout_extra_js' );
 					if ( propagate ) {
 						$( document ).trigger( 'js_wpv_save_section_queue' );
+					} else {
+						self.manageTopBarSavingEvent( 'failure' );
 					}
 				}
 			},
@@ -4280,28 +4256,26 @@ WPViews.ViewEditScreen = function( $ ) {
 				self.save_fail_queue.push( 'save_section_layout_extra_js' );
 				if ( propagate ) {
 					$( document ).trigger( 'js_wpv_save_section_queue' );
+				} else {
+					self.manageTopBarSavingEvent( 'failure' );
 				}
 			},
 			complete:	function() {
 				spinnerContainer.remove();
+				self.toggleTopBarSpinner( 'hidden' );
 			}
 		});
 	};
-	
+
 	self.save_callbacks['save_section_layout_extra_js'] = {
 		callback:	self.save_section_layout_extra_js,
 		event:		'js_event_wpv_save_section_layout_extra_js_completed'
 	};
-	
-	$( document ).on( 'click', '.js-wpv-layout-settings-extra-js-update', function( e ) {
-		e.preventDefault();
-		self.save_section_layout_extra_js( 'js_event_wpv_save_section_layout_extra_js_completed', false );
-	});
-	
+
 	// ---------------------------------
 	// Toggle boxes
 	// ---------------------------------
-	
+
 	self.show_hide_toggle = function( thiz ) {
 		$( '.' + thiz.data( 'target' ) ).slideToggle( 400, function() {
 			thiz
@@ -4310,7 +4284,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			$( document ).trigger( 'js_event_wpv_editor_metadata_toggle_toggled', [ thiz ] );
 		});
 	};
-	
+
 	$( document ).on( 'js_event_wpv_editor_metadata_toggle_toggled', function( event, toggler ) {
 		var thiz_instance = toggler.data( 'instance' ),
 		thiz_flag = toggler.find( '.js-wpv-textarea-full' ),
@@ -4321,18 +4295,18 @@ WPViews.ViewEditScreen = function( $ ) {
 				self.refresh_codemirror( thiz_instance );
 				toggler.addClass( 'js-wpv-assets-editor-toggle-refreshed' );
 			}
-			if ( 
-				self.asset_needs_flag( thiz_instance ) 
+			if (
+				self.asset_needs_flag( thiz_instance )
 				&& (
-					this_toggler_icon.hasClass( 'icon-caret-down' ) 
-					|| this_toggler_icon.hasClass( 'fa-caret-down' ) 
+					this_toggler_icon.hasClass( 'icon-caret-down' )
+					|| this_toggler_icon.hasClass( 'fa-caret-down' )
 				)
 			) {
 				thiz_flag.animate( {width: 'toggle'}, 200 );
 			}
 		}
 	});
-	
+
 	self.asset_needs_flag = function( instance ) {
 		if ( instance == 'filter-css-editor' ) {
 			return ( WPV_Toolset.CodeMirror_instance['wpv_filter_meta_html_css'].getValue() != '' );
@@ -4344,12 +4318,12 @@ WPViews.ViewEditScreen = function( $ ) {
 			return ( WPV_Toolset.CodeMirror_instance['wpv_layout_meta_html_js'].getValue() != '' );
 		}
 	};
-	
+
 	$( document ).on( 'click', '.js-wpv-editor-instructions-toggle, .js-wpv-editor-metadata-toggle', function() {
 		var thiz = $( this );
 		self.show_hide_toggle( thiz );
 	});
-	
+
 	self.manage_pagination_instructions = function() {
 		if ( self.model['js-wpv-pagination-mode'] == 'paged' || self.model['js-wpv-pagination-mode'] == 'rollover' ) {
 			$( self.pag_instructions_selector ).show();
@@ -4357,11 +4331,11 @@ WPViews.ViewEditScreen = function( $ ) {
 			$( self.pag_instructions_selector ).hide();
 		}
 	};
-	
+
 	// ---------------------------------
 	// Sections help pointers
 	// ---------------------------------
-	
+
 	$( '.js-display-tooltip' ).click( function() {
 		var thiz = $( this ),
 		edge = ( $( 'html[dir="rtl"]' ).length > 0 ) ? 'right' : 'left';
@@ -4388,11 +4362,11 @@ WPViews.ViewEditScreen = function( $ ) {
 			}
 		}).pointer('open');
 	});
-	
+
 	// ---------------------------------
 	// Dismiss pointers
 	// ---------------------------------
-	
+
 	$( document ).on( 'js_event_wpv_dismiss_pointer', function( event, pointer_name ) {
 		var data = {
 			action: 'wpv_dismiss_pointer',
@@ -4404,7 +4378,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			url : ajaxurl,
 			data : data,
 			success : function( response ) {
-				
+
 			},
 			error: function ( ajaxContext ) {
 				console.log( "Error: ", ajaxContext.responseText );
@@ -4414,11 +4388,11 @@ WPViews.ViewEditScreen = function( $ ) {
 			}
 		});
 	});
-	
+
 	// ---------------------------------
 	// Toolset compatibility
 	// ---------------------------------
-	
+
 	/**
      * Interoperation with other Toolset plugins.
      *
@@ -4433,7 +4407,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			}
 		}
 	};
-	
+
 	/**
 	* init_third_party
 	*
@@ -4441,7 +4415,7 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.init_third_party = function() {
 		// toolset_select2 in orderby dropdowns
 		// IE11 needs a minimum width set in CSS or hidden items will get visible with no width at all
@@ -4450,9 +4424,9 @@ WPViews.ViewEditScreen = function( $ ) {
 				{ 'min-width': '100px' }
 			)
 			.toolset_select2(
-				{ 
+				{
 					width:				'resolve',
-					dropdownAutoWidth:	true 
+					dropdownAutoWidth:	true
 				}
 			);
 		// Adding specific classnames to those select2 instances dropdown and container:
@@ -4472,7 +4446,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		// Admin menu link target
 		$( '#adminmenu li.current a' ).attr( 'href', $( '#adminmenu li.current a' ).attr( 'href' ) + '&view_id=' + self.view_id );
 	};
-	
+
 	/**
 	* init_dialogs
 	*
@@ -4480,7 +4454,7 @@ WPViews.ViewEditScreen = function( $ ) {
 	*
 	* @since 1.9
 	*/
-	
+
 	self.init_dialogs = function() {
 		self.pagination_dialog = $( "#js-wpv-view-hidden-dialogs-container .js-wpv-pagination-form-dialog" ).dialog({
 			autoOpen:	false,
@@ -4489,9 +4463,9 @@ WPViews.ViewEditScreen = function( $ ) {
 			width:		self.dialog_minWidth,
 			draggable:	false,
 			resizable:	false,
-			show: { 
-				effect:		"blind", 
-				duration:	800 
+			show: {
+				effect:		"blind",
+				duration:	800
 			},
 			open: function( event, ui ) {
 				$( 'body' ).addClass( 'modal-open' );
@@ -4517,13 +4491,13 @@ WPViews.ViewEditScreen = function( $ ) {
 				}
 			]
 		});
-		
+
 		/**
 		 * Dialog for the frontend sorting controls.
 		 *
 		 * @since 2.3.0
 		 */
-		
+
 		self.sorting_dialog = $( "#js-wpv-shared-hidden-dialogs-container #js-wpv-frontend-sorting-dialog" ).dialog({
 			autoOpen:	false,
 			modal:		true,
@@ -4531,9 +4505,9 @@ WPViews.ViewEditScreen = function( $ ) {
 			minWidth:	self.calculate_dialog_maxWidth(),
 			draggable:	false,
 			resizable:	false,
-			show: { 
-				effect:		"blind", 
-				duration:	800 
+			show: {
+				effect:		"blind",
+				duration:	800
 			},
 			create: function( event, ui ) {
 				$( event.target ).parent().css( 'position', 'fixed' );
@@ -4563,7 +4537,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				}
 			]
 		});
-		
+
 		self.frontend_events_dialog = $( "#js-wpv-dialog-views-frontend-events" ).dialog({
 			autoOpen:	false,
 			modal:		true,
@@ -4571,9 +4545,9 @@ WPViews.ViewEditScreen = function( $ ) {
 			minWidth:	self.dialog_minWidth,
 			draggable:	false,
 			resizable:	false,
-			show: { 
-				effect: "blind", 
-				duration: 800 
+			show: {
+				effect: "blind",
+				duration: 800
 			},
 			open: function( event, ui ) {
 				$( 'body' ).addClass( 'modal-open' );
@@ -4605,11 +4579,11 @@ WPViews.ViewEditScreen = function( $ ) {
 			]
 		});
 	};
-	
+
 	$( document ).on( 'change', '.js-wpv-frontend-event-gui', function() {
 		self.manage_frontend_events_dialog_button();
 	});
-	
+
 	self.manage_frontend_events_dialog_button = function() {
 		if ( $( 'input.js-wpv-frontend-event-gui:checked', '#js-wpv-dialog-views-frontend-events' ).length > 0 ) {
 			$( '.js-wpv-frontend-events-insert' )
@@ -4623,7 +4597,7 @@ WPViews.ViewEditScreen = function( $ ) {
 				.prop( 'disabled', true );
 		}
 	};
-	
+
 	self.insert_frontend_event_handler = function() {
 		var thiz_insert_array = [],
 		thiz_insert = '';;
@@ -4641,16 +4615,16 @@ WPViews.ViewEditScreen = function( $ ) {
 		self.frontend_events_dialog.dialog( "close" );
 		window.icl_editor.insert( thiz_insert_array.join( "\n") );
 	};
-	
+
 	$( document ).on( 'click', '.js-wpv-views-frontend-events-popup', function() {
 		window.wpcfActiveEditor = $( this ).data( 'content' );
 		self.frontend_events_dialog.dialog('open').dialog({
             maxHeight:	self.calculate_dialog_maxHeight(),
 			maxWidth:	self.calculate_dialog_maxWidth(),
-			position:	{ 
-				my:			"center top+50", 
-				at:			"center top", 
-				of:			window, 
+			position:	{
+				my:			"center top+50",
+				at:			"center top",
+				of:			window,
 				collision:	"none"
 			}
         });
@@ -4666,7 +4640,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		e.preventDefault();
 
 		var createPageButton = $( this );
-		var spinnerContainer = $( '<div class="wpv-spinner ajax-loader">' ).insertAfter( createPageButton ).show();
+		var spinnerContainer = $( '<span class="spinner ajax-loader">' ).insertAfter( createPageButton ).css( { 'visibility': 'visible' } );
 		var errorMessage = {
 			message: createPageButton.data('error')
 		};
@@ -4674,11 +4648,11 @@ WPViews.ViewEditScreen = function( $ ) {
 		createPageButton.prop( 'disabled', true );
 
 		var data = {
-			action: 'wpv_create_page_for_view',
+			action: self.i18n.ajaxCallbacks.createPageForView.action,
 			id: self.view_id,
 			title: $( '.js-title' ).val(),
-			slug: $( '#editable-post-name' ).text(),
-			wpnonce : $( '.js-wpv-title-update' ).data( 'nonce' )
+			slug: $( '#wpv-slug' ).val(),
+			wpnonce : self.i18n.ajaxCallbacks.createPageForView.nonce
 		};
 		$.ajax({
 			type: 'POST',
@@ -4689,13 +4663,8 @@ WPViews.ViewEditScreen = function( $ ) {
 				if ( response.success ) {
 					var page_url = response.data.edit_url;
 					window.open( page_url );
-					self.manage_action_bar_success( response.data );
 				} else {
-					if ( 0 == response ) {
-						self.manage_action_bar_error( errorMessage );
-					} else  {
-						self.manage_action_bar_error( response.data );
-					}
+					self.manage_action_bar_error( errorMessage );
 				}
 			},
 			error: function( ajaxContext ) {
@@ -4710,77 +4679,74 @@ WPViews.ViewEditScreen = function( $ ) {
 
 		return false;
 	});
-	
+
 	// ---------------------------------
 	// Save all
 	// ---------------------------------
-	
+
+	self.toggleTopBarSpinner = function( status ) {
+		$( '#js-wpv-top-bar-spinner' ).css( { 'visibility': status } );
+	};
+
+	self.manageTopBarSavingEvent = function( event ) {
+		var $topBar = $( '#js-wpv-general-actions-bar' );
+		switch ( event ) {
+			case 'success':
+				self.manage_action_bar_success({message: wpv_editor_strings.sections_saved});
+				$topBar.addClass( 'wpv-action-success' );
+				setTimeout( function () { $topBar.removeClass( 'wpv-action-success' ); }, 1000 );
+				break;
+			case 'failure':
+				self.manage_action_bar_error({message: wpv_editor_strings.some_section_unsaved, stay: false});
+				$topBar.addClass( 'wpv-action-failure' );
+				setTimeout( function () { $topBar.removeClass( 'wpv-action-failure' ); }, 1000 );
+				break;
+		}
+	}
+
 	$( document ).on( 'js_wpv_save_section_queue_completed', function( event ) {
-		
-		$( '.js-wpv-view-save-all-spinner' ).remove();
-		self.save_all_queue_step		= 0;
-		self.save_all_queue_completed	= 100;
-		self.save_all_progress_bar
-			.removeClass( 'wpv-view-save-all-progress-working' )
-			.css({
-				'width': '100%'
-			});
+
+		self.toggleTopBarSpinner( 'hidden' );
 		// Determine the overall result.
-		var is_queue_successfull = ( self.save_fail_queue.length == 0 ),
-		action_bar_class = ( is_queue_successfull ? 'wpv-action-success' : 'wpv-action-failure' );
-		
+		var is_queue_successfull = ( self.save_fail_queue.length == 0 );
+
 		self.save_fail_queue = [];
-		
+
 		// Display success/failure message.
 		if ( is_queue_successfull ) {
-			//noinspection JSUnresolvedVariable
-			self.manage_action_bar_success({message: wpv_editor_strings.sections_saved});
+			self.manageTopBarSavingEvent( 'success' );
 		} else {
-			//noinspection JSUnresolvedVariable
-			self.manage_action_bar_error( { message: wpv_editor_strings.some_section_unsaved, stay: false } );
+			self.manageTopBarSavingEvent( 'failure' );
 		}
 
-		// Highlight the action bar
-		$( '.js-wpv-general-actions-bar' ).addClass( action_bar_class );
-		setTimeout( function () {
-			$( '.js-wpv-general-actions-bar' ).removeClass( action_bar_class );
-			self.save_all_progress_bar.css({
-				'width': '0'
-			});
-		}, 1000 );
-		
 	});
-	
+
 	$( document ).on( 'click', '.js-wpv-view-save-all', function( e ) {
 		e.preventDefault();
-		var thiz = $( this ),
-		spinnerContainerAll = $('<div class="wpv-spinner ajax-loader js-wpv-view-save-all-spinner">').insertBefore( thiz ).show();
-		
-		thiz
-			.prop('disabled', true).
-			removeClass('button-primary')
+
+		self.toggleTopBarSpinner( 'visible' );
+
+		$( this )
+			.prop('disabled', true)
+			.removeClass('button-primary')
 			.addClass('button-secondary');
-		
-		if ( _.size( self.save_queue ) > 0 ) {
-			self.save_all_queue_step = Math.round( 100 / _.size( self.save_queue ) );
-		}
-		
+
 		$( document ).trigger( 'js_wpv_save_section_queue' );
 	});
-	
+
 	// ---------------------------------
 	// Warning when clicking away on unsaved changes
 	// ---------------------------------
-	
+
 	$( document ).on( 'js_event_wpv_set_confirmation_unload_check', function( event ) {
 		if ( $( '.js-wpv-section-unsaved' ).length < 1 ) {
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', false );
-		}	
+		}
 	});
-	
+
 	self.set_confirm_unload = function( on ) {
 		if (
-			on 
+			on
 			&& $('.js-wpv-section-unsaved').length > 0
 		) {
 			window.onbeforeunload = function(e) {
@@ -4816,7 +4782,7 @@ WPViews.ViewEditScreen = function( $ ) {
 			$(document).trigger( 'js_event_wpv_set_confirmation_unload_done', [ false ] );
 		}
 	};
-	
+
 	self.initToolbarsButtons = function() {
 		var $paginationButtonWrapper = $( '.js-wpv-editor-pagination-button-wrapper' ),
 			$paginationButton = $( '.js-wpv-pagination-popup', $paginationButtonWrapper );
@@ -4889,10 +4855,12 @@ WPViews.ViewEditScreen = function( $ ) {
 	// ---------------------------------
 	// Init
 	// ---------------------------------
-	
+
 	self.init = function() {
 		// Init the model
 		self.init_model();
+		// Init top bar
+		self.initTopBar();
 		// Init hooks
 		self.init_hooks();
 		// Init cache
@@ -4922,7 +4890,7 @@ WPViews.ViewEditScreen = function( $ ) {
 		// Init toolbars butons
 		self.initToolbarsButtons();
 	};
-	
+
 	self.init();
 
 };
@@ -4960,8 +4928,8 @@ if ( typeof WPV_Toolset.add_qt_editor_buttons !== 'function' ) {
 						WPV_Toolset.CodeMirror_instance[id].focus();
                     }
                 } else if ( qt_instance.theButtons[button_name].id == 'wpv_conditional' ) {
-                    qt_instance.theButtons[button_name].callback = function ( e, c, ed ) {                     
-                        WPV_Toolset.activeUrlEditor = ed;                        
+                    qt_instance.theButtons[button_name].callback = function ( e, c, ed ) {
+                        WPV_Toolset.activeUrlEditor = ed;
 						var id = jQuery( c ).attr( 'id' ),
                         t = this;
                         window.wpcfActiveEditor = id;
@@ -4981,7 +4949,7 @@ if ( typeof WPV_Toolset.add_qt_editor_buttons !== 'function' ) {
 							}
 							if ( ret === false ) {
 								t.tagStart = '';
-								t.tagEnd = false;                
+								t.tagEnd = false;
 								if ( ! ed.openTags ) {
 									ed.openTags = [];
 								}
@@ -4998,7 +4966,7 @@ if ( typeof WPV_Toolset.add_qt_editor_buttons !== 'function' ) {
 							}
 						} else {
 							// last resort, no selection and no open tags
-							// so prompt for input and just open the tag           
+							// so prompt for input and just open the tag
 							t.tagStart = '';
 							t.tagEnd = false;
 							if ( ! ed.openTags ) {
@@ -5011,7 +4979,7 @@ if ( typeof WPV_Toolset.add_qt_editor_buttons !== 'function' ) {
 						}
 					}
                 } else if ( qt_instance.theButtons[button_name].id == 'close' ) {
-                    
+
                 } else if ( qt_instance.theButtons[button_name].id == 'link' ) {
 					var t = this;
 					qt_instance.theButtons[button_name].callback = function ( b, c, d, e ) {
@@ -5075,11 +5043,11 @@ if ( typeof WPV_Toolset.add_qt_editor_buttons !== 'function' ) {
 						return false;
                     });
                 } else {
-                    qt_instance.theButtons[button_name].callback = function( element, canvas, ed ) {                    
+                    qt_instance.theButtons[button_name].callback = function( element, canvas, ed ) {
                         var id = jQuery( canvas ).attr( 'id' ),
                         t = this,
                         selection = WPV_Toolset.CodeMirror_instance[id].getSelection();
-						if ( selection.length > 0 ) { 
+						if ( selection.length > 0 ) {
 							if ( !t.tagEnd ) {
 								selection = selection + t.tagStart;
 							} else {

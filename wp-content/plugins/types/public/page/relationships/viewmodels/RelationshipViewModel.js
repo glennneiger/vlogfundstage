@@ -93,6 +93,13 @@ Types.page.relationships.viewmodels.RelationshipViewModel = function(modelSource
 
     self.isActive = createModelProperty(ko.observable, model, 'isActive');
 
+	/**
+	 * Autodeleting of intermediary posts together with the associations they belong to.
+	 *
+	 * @since 3.2
+	 */
+	self.isAutodeletingIntermediaryPosts = createModelProperty( ko.observable, model, 'isAutodeletingIntermediaryPosts' );
+
     self.cardinality = {
         parent: {
             min: createModelProperty(ko.observable, model, ['cardinality', 'parent', 'min'] ),

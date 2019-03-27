@@ -22,16 +22,41 @@ class CRED_Asset_Manager {
 	const SCRIPT_CODEMIRROR_SHORTCODES_MODE = 'cred_codemirror_shortcodes';
 
 	const SCRIPT_EDITOR_PROTOTYPE = 'cred_editor_prototype';
+	const SCRIPT_EDITOR_PROTOTYPE_I18N = 'cred_editor_prototype_i18n';
+	const STYLE_EDITOR = 'cred_editor_shared_styles';
+	const STYLE_EDITOR_REL_PATH = '/public/css/editor.css';
+	const SCRIPT_EDITOR_SCAFFOLD = 'cred_editor_scaffold';
+	const STYLE_EDITOR_BASE = 'cred_editor_base';
+
+	const EDITOR_BLOCK_FORM_JS = 'cred-form-block-js';
+	const EDITOR_BLOCK_FORM_JS_PATH = 'js/blocks.editor.js';
+	const EDITOR_BLOCK_FORM_CSS = 'cred-form-block-editor-css';
+	const EDITOR_BLOCK_FORM_CSS_PATH = 'css/blocks.editor.css';
 
 	private static $instance;
 
-	private function __construct() {
+	/**
+	 * @var string
+	 */
+	private $assets_version = null;
+
+	/**
+	 * @var Toolset_Assets_Manager
+	 */
+	private $toolset_assets_manager = null;
+
+
+	private function __construct( \Toolset_Assets_Manager $di_toolset_assets_manager = null ) {
+		$this->toolset_assets_manager = ( null === $di_toolset_assets_manager )
+			? Toolset_Assets_Manager::get_instance()
+			: $di_toolset_assets_manager;
+
 		add_action( 'init', array( $this, 'register_assets' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_cred_button_assets' ), 1 );
 
 		add_action( 'toolset_forms_enqueue_frontend_form_assets', array( $this, 'enqueue_frontend_assets_on_demand' ) );
 	}
-	
+
 	public function register_assets() {
 		$this->register_cred_scripts();
 		$this->register_cred_styles();
@@ -60,11 +85,36 @@ class CRED_Asset_Manager {
 	}
 
 	/**
+	 * Generate an unique version number on development environments
+	 * to be used in assets versioning and avoid caching issues.
+	 *
+	 * @return string
+	 */
+	private function get_assets_version() {
+		if ( null !== $this->assets_version ) {
+			return $this->assets_version;
+		}
+
+		$this->assets_version = CRED_FE_VERSION;
+
+		if (
+			defined( 'WP_DEBUG' )
+			&& true === WP_DEBUG
+		) {
+			$this->assets_version .= '.' . time();
+		}
+
+		return $this->assets_version;
+	}
+
+	/**
 	 * Registers all CRED scripts
 	 *
 	 * @since 1.9
 	 */
 	public function register_cred_scripts() {
+		$cred_ajax = CRED_Ajax::get_instance();
+
 		//template post form-settings-meta-box
 		wp_register_script(self::CRED_FORM_SETTINGS_BOX, $this->get_admin_assets_url('js/cred_form_settings_box.js'), array('jquery','cred_gui','toolset_select2'), CRED_FE_VERSION);
 
@@ -106,6 +156,13 @@ class CRED_Asset_Manager {
 		) );
 
 		wp_register_script(
+			self::SCRIPT_EDITOR_SCAFFOLD,
+			CRED_ABSURL . '/public/js/editor.scaffold.js',
+			array(),
+			CRED_FE_VERSION
+		);
+
+		wp_register_script(
 			self::SCRIPT_EDITOR_PROTOTYPE,
 			CRED_ABSURL . '/public/js/editor.prototype.js',
 			array(
@@ -130,10 +187,28 @@ class CRED_Asset_Manager {
 				Toolset_Assets_Manager::SCRIPT_KNOCKOUT,
 				Toolset_Assets_Manager::SCRIPT_UTILS,
 				Toolset_Assets_Manager::SCRIPT_SELECT2,
-				CRED_Asset_Manager::SCRIPT_CODEMIRROR_SHORTCODES_MODE
+				Toolset_Assets_Manager::SCRIPT_TIPPY,
+				CRED_Asset_Manager::SCRIPT_CODEMIRROR_SHORTCODES_MODE,
+				CRED_Asset_Manager::SCRIPT_EDITOR_SCAFFOLD,
 			),
-			CRED_FE_VERSION
+			$this->get_assets_version()
 		);
+
+		wp_localize_script( self::SCRIPT_EDITOR_PROTOTYPE, self::SCRIPT_EDITOR_PROTOTYPE_I18N, array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'delete' => array(
+				/* translators: Text of the confirmation popup to delete a post or user form from its editor page */
+				'confirmation' => __( 'Are you sure you want to delete this form?', 'wp-cred' ),
+				'ajax' => array(
+					'action' => $cred_ajax->get_action_js_name( \CRED_Ajax::CALLBACK_DELETE_FORM ),
+					'nonce' => wp_create_nonce( \CRED_Ajax::CALLBACK_DELETE_FORM ),
+				),
+			),
+			'listing' => array(
+				\OTGS\Toolset\CRED\Controller\Forms\Post\Main::POST_TYPE => admin_url( 'admin.php?page=CRED_Forms' ),
+				\OTGS\Toolset\CRED\Controller\Forms\User\Main::POST_TYPE => admin_url( 'admin.php?page=CRED_User_Forms' ),
+			),
+		));
 
 		wp_register_script(
 			'cred-frontend-js',
@@ -161,8 +236,16 @@ class CRED_Asset_Manager {
 				'cred_lang' => apply_filters( 'wpml_current_language', '' )
 			)
 		);
+
+		$this->toolset_assets_manager->register_script(
+			self::EDITOR_BLOCK_FORM_JS,
+			$this->get_asset_url( self::EDITOR_BLOCK_FORM_JS_PATH ),
+			array( 'wp-editor' ),
+			CRED_FE_VERSION
+		);
+
 	}
-	
+
 	private function get_rfg_post_types() {
 		$rfg_post_types = array();
 
@@ -288,10 +371,24 @@ class CRED_Asset_Manager {
 		wp_register_style( 'cred_template_style', $this->get_admin_assets_url( 'css/gfields.css' ), array( 'wp-admin', 'colors-fresh', 'font-awesome', 'cred_cred_style_nocodemirror_dev' ), CRED_FE_VERSION );
 		wp_register_style( 'cred_cred_style_dev', $this->get_admin_assets_url( 'css/cred.css' ), array( 'font-awesome', 'toolset-meta-html-codemirror-css-hint-css', 'toolset-meta-html-codemirror-css', 'wp-jquery-ui-dialog', 'wp-pointer' ), CRED_FE_VERSION );
 		wp_register_style( 'cred_cred_style_nocodemirror_dev', $this->get_admin_assets_url( 'css/cred.css' ), array( 'font-awesome', 'wp-jquery-ui-dialog', 'wp-pointer' ), CRED_FE_VERSION );
-		
+
 		wp_register_style( 'cred_wizard_general_style', $this->get_admin_assets_url( 'css/wizard-general.css' ), array(
 			'cred_cred_style_dev',
 		), CRED_FE_VERSION );
+
+		$this->toolset_assets_manager->register_style(
+			self::STYLE_EDITOR,
+			CRED_ABSURL . self::STYLE_EDITOR_REL_PATH,
+			array(),
+			CRED_FE_VERSION
+		);
+
+		$this->toolset_assets_manager->register_style(
+			self::EDITOR_BLOCK_FORM_CSS,
+			$this->get_asset_url( self::EDITOR_BLOCK_FORM_CSS_PATH ),
+			array(),
+			CRED_FE_VERSION
+		);
 	}
 
 	public static function get_instance() {
@@ -378,7 +475,7 @@ class CRED_Asset_Manager {
 
 	/**
 	 * Adds all assets needed for the frontend form display/submit.
-	 * 
+	 *
 	 * Note that we only add styles here: scripts are loaded on demand, in the footer.
 	 *
 	 * @since 1.9

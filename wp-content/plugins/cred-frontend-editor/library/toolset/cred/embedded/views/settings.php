@@ -87,7 +87,6 @@ if ($doaction) {
             $settings_model->updateSettings($settings);
             break;
     }
-    // CRED_PostExpiration
     do_action('cred_settings_action', $doaction, $settings);
 }
 ?>
@@ -165,16 +164,15 @@ if ($doaction) {
                                 <td>
                                     <strong><?php _e('Other settings:', 'wp-cred'); ?></strong>
                                 </td>
-                                <td>                                    
+                                <td>
                                     <label class='cred-label'><input type="checkbox" class='cred-checkbox-invalid' name="settings[syntax_highlight]" value="1" <?php if (isset($settings['syntax_highlight']) && $settings['syntax_highlight']) echo "checked='checked'"; ?> /><span class='cred-checkbox-replace'></span>
                                         <span><?php _e('Enable Syntax Highlight for Toolset Forms', 'wp-cred'); ?></span></label>
                                     <div style="clear: both;"></div>
                                     <?php
-                                    // CRED_PostExpiration
                                     do_action('cred_pe_general_settings', $settings);
                                     ?>
                                 </td>
-                            </tr>       
+                            </tr>
 
                             <tr>
                                 <td>
@@ -193,12 +191,12 @@ if ($doaction) {
                                             <td width="20%"><?php _e('Secret Key', 'wp-cred'); ?></td>
                                             <td width="5%"><input type="text" size='50' name="settings[recaptcha][private_key]" value="<?php if (isset($settings['recaptcha']['private_key'])) echo $settings['recaptcha']['private_key']; ?>"  /></td>
                                             <td></td>
-                                        </tr>        
+                                        </tr>
                                         <tr>
                                             <td><?php _e('Site Key', 'wp-cred'); ?></td>
                                             <td><input type="text" size='50' name="settings[recaptcha][public_key]" value="<?php if (isset($settings['recaptcha']['public_key'])) echo $settings['recaptcha']['public_key']; ?>"  /></td>
                                             <td></td>
-                                        </tr>        
+                                        </tr>
                                         <tr>
                                             <td></td>
                                             <td align="right">
@@ -285,7 +283,7 @@ if ($doaction) {
                                 echo "<div style=\"width: 150px; display: inline-block\">";
 
                             if ($key == 'select_all') {
-                                
+
                             } else {
                                 ?>
                                 <div>
@@ -331,7 +329,6 @@ if ($doaction) {
         </div>
     </form>
     <?php
-// CRED_PostExpiration
     do_action('cred_ext_metabox_settings', $settings);
     ?>
 

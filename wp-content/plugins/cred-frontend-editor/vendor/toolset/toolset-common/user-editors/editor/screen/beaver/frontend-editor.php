@@ -74,7 +74,7 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 	}
 
 	public function register_frontend_editor_assets() {
-		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager = Toolset_Assets_Manager::get_instance();
 		$toolset_assets_manager->register_style(
 			'toolset-user-editors-beaver-frontend-editor-style',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/beaver/frontend-editor.css',
@@ -84,7 +84,7 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 	}
 
 	public function enqueue_frontend_editor_assets() {
-		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager = Toolset_Assets_Manager::get_instance();
 		$toolset_assets_manager->enqueue_styles( array( 'toolset-user-editors-beaver-frontend-editor-style' ) );
 		$toolset_assets_manager->enqueue_scripts( array( 'views-widgets-gui-script' ) );
 	}

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // @cred-984 This array merging has no sense at all: we are not setting any default whatsoever because the first array is multidimmensional
 $settings = CRED_Helper::mergeArrays( array(
 	'post' => array(
-		'post_type' => 'post',
+		'post_type' => '',
 		'post_status' => 'draft',
 	),
 	'form' => array(
@@ -28,7 +28,7 @@ $renderer = \Toolset_Renderer::get_instance();
 ?>
 
 <script>
-	var $__my_option = "<option value='original'><?php _e( "Keep original status", "wp-cred" ); ?></option>";
+	var $toolsetFormsOriginalStatusOption = "<option value='original'><?php echo esc_html( 'Keep original status', 'wp-cred' ); ?></option>";
 </script>
 <?php wp_nonce_field( 'cred-admin-post-page-action', 'cred-admin-post-page-field' ); ?>
 <table class="widefat cred-editor-table">
@@ -62,7 +62,7 @@ $renderer = \Toolset_Renderer::get_instance();
 				<?php _e( 'Post type to create/edit:', 'wp-cred' ); ?>
 			</td>
 			<td>
-				<select id="cred_post_type" name="_cred[post][post_type]" class='cred_ajax_change'>
+				<select id="cred_post_type" name="_cred[post][post_type]" class='cred_ajax_change' required>
 					<?php
 					echo '<option value="" selected="selected">' . __( '-- Select Post Type --', 'wp-cred' ) . '</option>';
 					foreach ( $post_types as $pt ) {
@@ -86,8 +86,8 @@ $renderer = \Toolset_Renderer::get_instance();
 						foreach ( $repeating_fields_groups_post_types as $rfg_pt ) {
 							echo '<option value="' . esc_attr( $rfg_pt->name ) . '"'
 								. ' ' . selected( $settings['post']['post_type'], $rfg_pt->name, false )
-								. '>' 
-								. $rfg_pt->labels->name 
+								. '>'
+								. $rfg_pt->labels->name
 								. '</option>';
 						}
 						?>
@@ -104,15 +104,41 @@ $renderer = \Toolset_Renderer::get_instance();
 				<?php _e( 'Set this post status:', 'wp-cred' ); ?>
 			</td>
 			<td>
-				<select id="cred_post_status" name="_cred[post][post_status]" class='cred_ajax_change'>
+				<select id="cred_post_status" name="_cred[post][post_status]" class='cred_ajax_change' required>
 					<option value='' <?php if ( ! isset( $settings['post']['post_status'] ) || empty( $settings['post']['post_status'] ) ) {
 						echo 'selected="selected"';
 					} ?>><?php _e( '-- Select status --', 'wp-cred' ); ?></option>
-					<option value='original' <?php selected( $settings['post']['post_status'], 'original' ); ?>><?php _e( 'Keep original status', 'wp-cred' ); ?></option>
-					<option value='draft' <?php selected( $settings['post']['post_status'], 'draft' ); ?>><?php _e( 'Draft', 'wp-cred' ); ?></option>
-					<option value='pending' <?php selected( $settings['post']['post_status'], 'pending' ); ?>><?php _e( 'Pending Review', 'wp-cred' ); ?></option>
-					<option value='private' <?php selected( $settings['post']['post_status'], 'private' ); ?>><?php _e( 'Private', 'wp-cred' ); ?></option>
-					<option value='publish' <?php selected( $settings['post']['post_status'], 'publish' ); ?>><?php _e( 'Published', 'wp-cred' ); ?></option>
+					<?php
+					foreach ( $stati['basic'] as $basic_post_status_name => $basic_post_status_label ) {
+						?>
+						<option value='<?php echo esc_attr( $basic_post_status_name ); ?>'><?php echo esc_html( $basic_post_status_label ); ?></option>
+						<?php
+					}
+					?>
+					<optgroup label="<?php echo esc_attr( $stati_label['native'] ); ?>">
+					<?php
+					foreach ( $stati['native'] as $native_post_status_name => $native_post_status_label ) {
+						?>
+						<option value='<?php echo esc_attr( $native_post_status_name ); ?>'><?php echo esc_html( $native_post_status_label ); ?></option>
+						<?php
+					}
+					?>
+					</optgroup>
+					<?php
+					if ( count( $stati['custom'] ) > 0 ) {
+						?>
+						<optgroup label="<?php echo esc_attr( $stati_label['custom'] ); ?>">
+						<?php
+						foreach ( $stati['custom'] as $custom_post_status_name => $custom_post_status_label ) {
+							?>
+							<option value='<?php echo esc_attr( $custom_post_status_name ); ?>'><?php echo esc_html( $custom_post_status_label ); ?></option>
+							<?php
+						}
+						?>
+						</optgroup>
+						<?php
+					}
+					?>
 				</select>
 			</td>
 		</tr>
@@ -129,7 +155,7 @@ $renderer = \Toolset_Renderer::get_instance();
 				<?php _e( 'After visitors submit this form:', 'wp-cred' ); ?>
 			</td>
 			<td>
-				<select id="cred_form_success_action" name="_cred[form][action]">
+				<select id="cred_form_success_action" name="_cred[form][action]" required>
 					<?php
 					$form_actions = apply_filters( 'cred_admin_submit_action_options', array(
 						"form" => __( 'Keep displaying this form', 'wp-cred' ),
@@ -148,7 +174,7 @@ $renderer = \Toolset_Renderer::get_instance();
 					}
 					?>
 				</select>
-				
+
 				<div id="after_visitors_submit_this_form">
 					<span data-cred-bind="{ action: 'show', condition: '_cred[form][action]=page' }">
 						<select id="cred_form_success_action_page" name="_cred[form][action_page]">

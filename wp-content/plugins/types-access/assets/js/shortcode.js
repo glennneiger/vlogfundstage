@@ -14,13 +14,44 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 	var self = this;
 
 	/**
-	 * Store the action to perform when generating a shortcode.
-	 * - 'insert' will insert the shortcode into the active editor.
-	 * - 'create' will create the shortcode in an auxiliar dialog.
+	 * The current GUI API action to be performed. Can be 'insert', 'create', 'save', 'append', 'edit', 'skip'.
+	 *
+	 * Access to it using the API methods, from inside this object:
+	 * - self.getShortcodeGuiAction
+	 * - self.setShortcodeGuiAction
+	 *
+	 * Access to it using the API hooks, from the outside world:
+	 * - toolset-access-filter-get-shortcode-gui-action
+	 * - toolset-access-action-set-shortcode-gui-action
 	 *
 	 * @since 2.3.0
 	 */
-	self.shortcode_gui_action					= 'insert';
+	self.shortcode_gui_action = 'insert';
+	self.validActions = [ 'insert', 'create', 'save', 'append', 'edit', 'skip' ];
+
+	/**
+	 * Get the current shortcodes GUI action.
+	 *
+	 * @see toolset-access-filter-get-shortcode-gui-action
+	 *
+	 * @since 2.6
+	 */
+	self.getShortcodeGuiAction = function( action ) {
+		return self.shortcode_gui_action;
+	};
+
+	/**
+	 * Set the current shortcodes GUI action.
+	 *
+	 * @see toolset-access-action-set-shortcode-gui-action
+	 *
+	 * @since 2.6
+	 */
+	self.setShortcodeGuiAction = function( action ) {
+		if ( -1 !== $.inArray( action, self.validActions ) ) {
+			self.shortcode_gui_action = action;
+		}
+	};
 
 	/**
 	 * Store the shortcode to insert on the auxiliar dialog.
@@ -180,13 +211,33 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 	self.init_hooks = function() {
 
 		/**
-		 * otg-access-action-perform-shortcode-gui-action
-		 *
-		 * Set the action to perform after crafting a shortcode, based on self.shortcode_gui_action.
+		 * Perform an action after crafting a shortcode, based on self.shortcode_gui_action.
 		 *
 		 * @since 2.3.0
 		 */
 		Toolset.hooks.addAction( 'otg-access-action-perform-shortcode-gui-action', self.perform_shortcode_gui_action );
+
+
+		/**
+		 * Set the action to perform after crafting a shortcode, based on self.shortcode_gui_action.
+		 *
+		 * @since 2.6
+		 */
+		Toolset.hooks.addAction( 'toolset-access-action-do-shortcode-gui-action', self.perform_shortcode_gui_action );
+
+		/**
+		 * Return the current shortcode GUI action: 'insert', 'create', 'save', 'append', 'edit', 'skip'.
+		 *
+		 * @since 2.6
+		 */
+		Toolset.hooks.addFilter( 'toolset-access-filter-get-shortcode-gui-action', self.getShortcodeGuiAction );
+
+		/**
+		 * Set the current shortcodes GUI action: 'insert', 'create', 'save', 'append', 'edit', 'skip'.
+		 *
+		 * @since 2.6
+		 */
+		Toolset.hooks.addAction( 'toolset-access-action-set-shortcode-gui-action', self.setShortcodeGuiAction );
 
 	};
 
@@ -197,9 +248,32 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 	 */
 	self.perform_shortcode_gui_action = function( shortcode ) {
 		self.shortcode_dialog.dialog( 'close' );
-		switch ( self.shortcode_gui_action ) {
-			case 'insert':
-				window.icl_editor.insert( shortcode );
+
+		var action = self.shortcode_gui_action;
+
+		/**
+		 * Custom action executed before performing the GUI action.
+		 *
+		 * @param string shortcode   The shortcode to action upon
+		 * @param string self.action The action to execute
+		 *
+		 * @since 2.6
+		 */
+		Toolset.hooks.doAction( 'toolset-access-action-before-do-shortcode-gui-action', shortcode, action );
+
+		switch ( action ) {
+			case 'skip':
+			case 'append':
+			case 'edit':
+			case 'save':
+				/**
+				 * Do the GUI skip|append|edit|save action, if there is a callback for that.
+				 *
+				 * @param shortcode string
+				 *
+				 * @since 2.6
+				 */
+				Toolset.hooks.doAction( 'toolset-access-action-do-shortcode-gui-action-' + action, shortcode );
 				break;
 			case 'create':
 				self.shortcode_to_insert_on_target_dialog = shortcode;
@@ -214,7 +288,22 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 					}
 				});
 				break;
+			case 'insert':
+			default:
+				window.icl_editor.insert( shortcode );
+				break;
 		}
+
+		/**
+		 * Custom action executed after performing the GUI action.
+		 *
+		 * @param string shortcode   The shortcode to action upon
+		 * @param string self.action The action executed
+		 *
+		 * @since 2.6
+		 */
+		Toolset.hooks.doAction( 'toolset-access-action-after-do-shortcode-gui-action', shortcode, action );
+
 		self.shortcode_gui_action = 'insert';
 	}
 
@@ -237,6 +326,20 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 
 	};
 
+	self.openAccessDialog = function() {
+		self.shortcode_dialog.dialog( 'open' ).dialog({
+			height:		self.calculate_dialog_maxHeight(),
+			width:		self.calculate_dialog_maxWidth(),
+			maxWidth:	self.calculate_dialog_maxWidth(),
+			position: 	{
+				my:			"center top+50",
+				at:			"center top",
+				of:			window,
+				collision:	"none"
+			}
+		});
+	};
+
 	/**
 	 * ----------------------
 	 * Events
@@ -247,17 +350,7 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 	$( document ).on( 'click','.js-otg-access-shortcode-gui-in-adminbar', function( e ) {
 		e.preventDefault();
 		self.shortcode_gui_action = 'create';
-		self.shortcode_dialog.dialog( 'open' ).dialog({
-			height:		self.calculate_dialog_maxHeight(),
-			width:		self.calculate_dialog_maxWidth(),
-			maxWidth:	self.calculate_dialog_maxWidth(),
-			position: 	{
-				my:			"center top+50",
-				at:			"center top",
-				of:			window,
-				collision:	"none"
-			}
-		});
+		self.openAccessDialog();
 		//self.manage_shortcode_dialog_button_labels();
 		return false;
 	});
@@ -267,17 +360,7 @@ OTGAccess.ShortcodesGUI = function( $ ) {
 		e.preventDefault();
 		window.wpcfActiveEditor = $( this ).data( 'editor' );
 		self.shortcode_gui_action = 'insert';
-		self.shortcode_dialog.dialog( 'open' ).dialog({
-			height:		self.calculate_dialog_maxHeight(),
-			width:		self.calculate_dialog_maxWidth(),
-			maxWidth:	self.calculate_dialog_maxWidth(),
-			position: 	{
-				my:			"center top+50",
-				at:			"center top",
-				of:			window,
-				collision:	"none"
-			}
-		});
+		self.openAccessDialog();
 		//self.manage_shortcode_dialog_button_labels();
 		return false;
 	});

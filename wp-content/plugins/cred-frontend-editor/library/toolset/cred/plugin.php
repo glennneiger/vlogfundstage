@@ -50,7 +50,7 @@ function toolset_cred_plugin_plugin_row_meta($plugin_meta, $plugin_file, $plugin
         $ver2url = strtolower( str_replace( ".", "-", CRED_FE_VERSION ) );
         $plugin_meta[] = sprintf(
             '<a href="%s" target="_blank">%s</a>',
-            'https://toolset.com/version/cred-' . $ver2url . '/?utm_source=credplugin&utm_campaign=cred&utm_medium=release-notes-plugin-row&utm_term=CRED ' . CRED_FE_VERSION . ' release notes', __('Toolset Forms ' . CRED_FE_VERSION . ' release notes', 'wp-cred')
+            'https://toolset.com/version/cred-' . $ver2url . '/?utm_source=credplugin&utm_campaign=cred&utm_medium=release-notes-plugin-row&utm_term=Forms ' . CRED_FE_VERSION . ' release notes', __('Toolset Forms ' . CRED_FE_VERSION . ' release notes', 'wp-cred')
         );
     }
     return $plugin_meta;
@@ -238,10 +238,6 @@ if (defined('ABSPATH')) {
                 array(
                     'class' => 'CRED_CRED',
                     'path' => CRED_CLASSES_PATH . '/CRED.php'
-                ),
-                array(
-                    'class' => 'CRED_PostExpiration',
-                    'path' => CRED_CLASSES_PATH . '/CredPostExpiration.php'
                 )
             ),
             'Form_Helper' => array(
@@ -377,9 +373,6 @@ if (defined('ABSPATH')) {
             ),
             'pe_form_notification_option' => array(
                 'path' => CRED_ABSPATH . '/library/toolset/cred/embedded/views/templates/pe_form_notification_option.tpl.php'
-            ),
-            'pe_post_meta_box' => array(
-                'path' => CRED_ABSPATH . '/library/toolset/cred/embedded/views/templates/pe_post_meta_box.tpl.php'
             ),
             'pe_settings_meta_box' => array(
                 'path' => CRED_ABSPATH . '/library/toolset/cred/embedded/views/templates/pe_settings_meta_box.tpl.php'

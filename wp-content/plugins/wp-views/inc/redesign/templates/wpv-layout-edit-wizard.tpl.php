@@ -88,7 +88,7 @@
                 <p class="toolset-alert toolset-alert-info js-wpv-layout-wizard-separators-list-characters-trimming-notice" style="display:none">
 		            <?php esc_html_e( 'When you select the "List with separators" style, all line breaks and tabs will be removed from the View output if you have omitted the wrapping DIV around the View.', 'wpv-views' ); ?>
                     <br />
-                    <?php esc_html_e( 'Unless you change it, the wizard will automatically omit the wrapping DIV around the View when it\'s finished.', 'wpv-views' ); ?>
+                    <?php esc_html_e( 'Unless you select another loop style, the wizard will automatically omit the wrapping DIV around the View when it\'s finished.', 'wpv-views' ); ?>
                 </p>
                 <div class="wpv-layout-wizard-layout-style-options js-wpv-layout-wizard-layout-style-options">
 					<div class="js-wpv-layout-wizard-layout-style-options-bootstrap-grid js-layout-wizard-bootstrap-grid-box hidden">

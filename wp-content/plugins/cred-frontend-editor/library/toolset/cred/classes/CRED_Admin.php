@@ -23,7 +23,7 @@ final class CRED_Admin {
         add_action('fusion_builder_admin_scripts_hook', array(__CLASS__, 'fusionBuildrCompatibilityHook'));
 
     }
-	
+
     public static function forcePrivateforForms($post) {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
             return $post;
@@ -86,15 +86,15 @@ final class CRED_Admin {
 
                 if (isset($_POST['_cred']['form']['user_role'])) {
 	                if ( isset( $_POST['_cred']['form']['user_role'] ) ) {
-		                $_POST['_cred']['form']['user_role'] = array_filter( $_POST['_cred']['form']['user_role'], 'strlen' );
+                    $_POST['_cred']['form']['user_role'] = array_filter( $_POST['_cred']['form']['user_role'], 'strlen' );
 	                }
 	                $tmp_array = array();
 	                if ( isset( $_POST['_cred']['form']['user_role'] ) &&
-		                count( $_POST['_cred']['form']['user_role'] ) > 0 ) {
-		                foreach ( $_POST['_cred']['form']['user_role'] as $ele ) {
-			                $tmp_array[] = $ele;
-		                }
-		                $tmp_array = array_unique( $tmp_array );
+                    count( $_POST['_cred']['form']['user_role'] ) > 0 ) {
+                    foreach ( $_POST['_cred']['form']['user_role'] as $ele ) {
+    	                $tmp_array[] = $ele;
+                    }
+                    $tmp_array = array_unique( $tmp_array );
 	                }
                     $_POST['_cred']['form']['user_role'] = json_encode($tmp_array);
                 }
@@ -144,7 +144,7 @@ final class CRED_Admin {
             $curr_settings = $settings_model->getSettings();
             $__allowed_tags = (isset($curr_settings) && isset($curr_settings['allowed_tags'])) ? $curr_settings['allowed_tags'] : array();
 
-            // extra                        
+            // extra
             $allowed_tags = wp_kses_allowed_html('post');
             foreach ($allowed_tags as $key => $value) {
                 if (isset($__allowed_tags) && !empty($__allowed_tags) && !array_key_exists($key, $__allowed_tags)) {
@@ -157,12 +157,16 @@ final class CRED_Admin {
 
             $extra_js = toolset_getnest( $_POST, array( '_cred', 'extra', 'js' ) );
             $extra_css = toolset_getnest( $_POST, array( '_cred', 'extra', 'css' ) );
+            $extra_scaffold = toolset_getnest( $_POST, array( '_cred', 'extra', 'scaffold' ) );
+            $extra_editor_origin = toolset_getnest( $_POST, array( '_cred', 'extra', 'editor_origin' ) );
 
             $messages = $model->getDefaultMessages();
             $extra = new stdClass;
             $extra->css = $extra_css;
             $extra->js = $extra_js;
             $extra->messages = (isset($_POST['_cred']['extra']['messages'])) ? $_POST['_cred']['extra']['messages'] : $model->getDefaultMessages();
+            $extra->scaffold = $extra_scaffold;
+            $extra->editor_origin = $extra_editor_origin;
 
             // update
             $model->updateFormCustomFields($post_id, array(

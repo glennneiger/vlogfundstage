@@ -3,7 +3,7 @@
 WPV_Editor_Content::on_load();
 
 class WPV_Editor_Content{
-	
+
 	static function on_load() {
 		// Register the section in the screen options of the editor pages
 		add_filter( 'wpv_screen_options_editor_section_layout',		array( 'WPV_Editor_Content', 'wpv_screen_options_content' ), 40 );
@@ -15,7 +15,7 @@ class WPV_Editor_Content{
 		// AJAX management
 		add_action( 'wp_ajax_wpv_update_content',					array( 'WPV_Editor_Content', 'wpv_update_content_callback' ) );
 	}
-	
+
 	static function wpv_screen_options_content( $sections ) {
 		$sections['content'] = array(
 			'name'		=> __( 'Output Editor', 'wpv-views' ),
@@ -23,9 +23,9 @@ class WPV_Editor_Content{
 		);
 		return $sections;
 	}
-	
+
 	static function wpv_editor_section_content( $view_settings, $view_id ) {
-		
+
 		/* This section will be visible if
 		* - this is a View (not WPA) edit page and
 		* - the 'filter-extra' section is displayed (not hidden).
@@ -35,11 +35,11 @@ class WPV_Editor_Content{
 		*
 		* Note that the container div has class js-wpv-settings-filter-extra, which will cause it to be shown or hidden
 		* simultaneously with the filter-extra section when user changes the according option Screen options.
-		*/ 
-		
+		*/
+
 		$is_section_hidden = false;
 
-		if ( 
+		if (
 			isset( $view_settings['sections-show-hide'] )
 			&& isset( $view_settings['sections-show-hide']['content'] )
 			&& 'off' == $view_settings['sections-show-hide']['content'] )
@@ -48,7 +48,7 @@ class WPV_Editor_Content{
 		}
 		$hide_class = $is_section_hidden ? 'hidden' : '';
 		if (
-			isset( $view_settings['view-query-mode'] ) 
+			isset( $view_settings['view-query-mode'] )
 			&& $view_settings['view-query-mode'] == 'normal'
 		) {
 			$section_help_pointer = WPV_Admin_Messages::edit_section_help_pointer( 'complete_output' );
@@ -61,10 +61,14 @@ class WPV_Editor_Content{
 			<div class="wpv-settings-header">
 				<h2>
 					<?php _e( 'Output Editor', 'wpv-views' ) ?>
-					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
-						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
+					<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
+						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 					</i>
+					<span class="js-wpv-update-button-wrap">
+						<span class="js-wpv-message-container"></span>
+						<input type="hidden" data-success="<?php echo esc_attr( __( 'Content updated', 'wpv-views' ) ); ?>" data-unsaved="<?php echo esc_attr( __( 'Content not saved', 'wpv-views' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'wpv_view_content_nonce' ) ); ?>" class="js-wpv-content-update" />
+					</span>
 				</h2>
 			</div>
 
@@ -94,17 +98,13 @@ class WPV_Editor_Content{
 					wpv_formatting_help_combined_output();
 					?>
 				</div>
-				<p class="update-button-wrap js-wpv-update-button-wrap">
-					<span class="js-wpv-message-container"></span>
-					<button data-success="<?php echo esc_attr( __('Content updated', 'wpv-views') ); ?>" data-unsaved="<?php echo esc_attr( __('Content not saved', 'wpv-views') ); ?>" data-nonce="<?php echo wp_create_nonce( 'wpv_view_content_nonce' ); ?>" class="js-wpv-content-update button-secondary" disabled="disabled"><?php _e('Update', 'wpv-views'); ?></button>
-				</p>
 			</div>
 
 		</div>
 	<?php }
-	
+
 	static function wpv_editor_section_scan( $view_settings, $view_id ) {
-		
+
 		/* This section will be visible if
 		* - this is a View (not WPA) edit page and
 		*/
@@ -124,8 +124,8 @@ class WPV_Editor_Content{
 			<div class="wpv-settings-header">
 				<h2>
 					<?php _e( 'Used on', 'wpv-views' ) ?>
-					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
-						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
+					<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
+						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 					</i>
 				</h2>
@@ -150,7 +150,7 @@ class WPV_Editor_Content{
 			</div>
 
 		</div>
-		<?php 
+		<?php
 	}
 
 	static function wpv_update_content_callback() {
@@ -161,9 +161,9 @@ class WPV_Editor_Content{
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_content_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_content_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -174,7 +174,7 @@ class WPV_Editor_Content{
 		if (
 			! isset( $_POST['id'] )
 			|| ! is_numeric( $_POST['id'] )
-			|| intval( $_POST['id'] ) < 1 
+			|| intval( $_POST['id'] ) < 1
 		) {
 			$data = array(
 				'type' => 'id',

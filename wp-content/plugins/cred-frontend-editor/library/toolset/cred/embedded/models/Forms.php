@@ -136,13 +136,13 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
             $form_settings = $fields['form_settings'];
             if ( !isset( $form_settings->form ) ) {
 	            if ( isset( $form_settings->message ) ) {
-		            if ( is_string( $form_settings->message ) ) {
-			            $_message = $form_settings->message;
-		            } else {
-			            $_message = '';
-		            }
+                if ( is_string( $form_settings->message ) ) {
+    	            $_message = $form_settings->message;
+                } else {
+    	            $_message = '';
+                }
 	            } else {
-		            $_message = '';
+                $_message = '';
 	            }
 
                 $setts = new stdClass;
@@ -294,7 +294,8 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
             'extra' => (object) array(
                 'css' => '',
                 'js' => '',
-                'messages' => $this->getDefaultMessages()
+                'messages' => $this->getDefaultMessages(),
+                'scaffold' => '',
             ),
             'notification' => (object) array(
                 'enable' => 0,
@@ -317,7 +318,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 * @return mixed
 	 */
 	public function getPostMeta( $post_id, $meta, $single = true ) {
-		return get_post_meta( $post_id, $meta, $single );
+    return get_post_meta( $post_id, $meta, $single );
 	}
 
 	/**
@@ -356,9 +357,9 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 */
     public function deletePost($post_id, $force_delete = true) {
 	    if ( $force_delete ) {
-		    $result = wp_delete_post( $post_id, $force_delete );
+        $result = wp_delete_post( $post_id, $force_delete );
 	    } else {
-		    $result = wp_trash_post( $post_id );
+        $result = wp_trash_post( $post_id );
 	    }
         return ($result !== false);
     }
@@ -370,7 +371,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 * @return array
 	 */
 	public function get_object_fields( $object_field, $include_fields_only = null ) {
-		return $this->getPostFields( $object_field, $include_fields_only );
+    return $this->getPostFields( $object_field, $include_fields_only );
 	}
 
 	/**
@@ -380,33 +381,33 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 * @return array
 	 */
 	public function getPostFields( $post_id, $only = null ) {
-		$fields = get_post_custom( $post_id );
+    $fields = get_post_custom( $post_id );
 
-		//Adding post fields that can be used as conditions meta_modified
-		$post = get_post($post_id);
-		$fields['post_title'] = $post->post_title;
-		$fields['post_content'] = $post->post_content;
-		$fields['post_excerpt'] = $post->post_excerpt;
+    //Adding post fields that can be used as conditions meta_modified
+    $post = get_post($post_id);
+    $fields['post_title'] = $post->post_title;
+    $fields['post_content'] = $post->post_content;
+    $fields['post_excerpt'] = $post->post_excerpt;
 
-		foreach ( $fields as $field_slug => $field ) {
-			if ( is_array( $field ) ) {
-				foreach ( $field as $index => $value ) {
-					$fields[ $field_slug ][ $index ] = maybe_unserialize( maybe_unserialize( $value ) );
-				}
-			} else {
-				$fields[ $field_slug ] = maybe_unserialize( $field );
-			}
-		}
-		if ( null !== $only
-			&& empty( $only ) ) {
-			$fields = array();
-		} elseif ( $only
-			&& is_array( $only )
-			&& ! empty( $only ) ) {
-			$fields = array_intersect_key( $fields, array_flip( $only ) );
-		}
+    foreach ( $fields as $field_slug => $field ) {
+    	if ( is_array( $field ) ) {
+        foreach ( $field as $index => $value ) {
+        	$fields[ $field_slug ][ $index ] = maybe_unserialize( maybe_unserialize( $value ) );
+        }
+    	} else {
+        $fields[ $field_slug ] = maybe_unserialize( $field );
+    	}
+    }
+    if ( null !== $only
+    	&& empty( $only ) ) {
+    	$fields = array();
+    } elseif ( $only
+    	&& is_array( $only )
+    	&& ! empty( $only ) ) {
+    	$fields = array_intersect_key( $fields, array_flip( $only ) );
+    }
 
-		return $fields;
+    return $fields;
 	}
 
 	/**
@@ -416,16 +417,16 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 */
     public function getPostTaxonomies($post) {
 	    $all_taxonomies = get_taxonomies( array(
-		    'public'   => true,
-		    '_builtin' => false,
+        'public'   => true,
+        '_builtin' => false,
 	    ), 'objects', 'or' );
         $taxonomies = array();
         foreach ( $all_taxonomies as $taxonomy ) {
 	        if ( ! in_array( $post->post_type, $taxonomy->object_type ) ) {
-		        continue;
+            continue;
 	        }
 	        if ( in_array( $taxonomy->name, array( 'post_format' ) ) ) {
-		        continue;
+            continue;
 	        }
 
 	        $key = $taxonomy->name;
@@ -446,30 +447,30 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 * @return array
 	 */
 	public function getPost( $post_id ) {
-		$post_id = intval( $post_id );
+    $post_id = intval( $post_id );
 
-		// get post
-		$post = get_post( $post_id );
-		$fields = array();
-		$taxonomies = array();
-		$extra = array();
-		if ( isset( $post ) ) {
-			// get post meta fields
-			$fields = $this->getPostFields( $post_id );
+    // get post
+    $post = get_post( $post_id );
+    $fields = array();
+    $taxonomies = array();
+    $extra = array();
+    if ( isset( $post ) ) {
+    	// get post meta fields
+    	$fields = $this->getPostFields( $post_id );
 
-			// get post type taxonomies
-			$taxonomies = $this->getPostTaxonomies( $post );
+    	// get post type taxonomies
+    	$taxonomies = $this->getPostTaxonomies( $post );
 
-			$_featured_image = wp_get_attachment_image_src( get_post_thumbnail_id( $post_id ), 'thumbnail' );
-			$_featured_image_url = isset( $_featured_image[0] ) ? $_featured_image[0] : "";
+    	$_featured_image = wp_get_attachment_image_src( get_post_thumbnail_id( $post_id ), 'thumbnail' );
+    	$_featured_image_url = isset( $_featured_image[0] ) ? $_featured_image[0] : "";
 
-			// extra fields
-			$extra = array(
-				'featured_img_html' => $_featured_image_url,
-			);
-		}
+    	// extra fields
+    	$extra = array(
+        'featured_img_html' => $_featured_image_url,
+    	);
+    }
 
-		return array( $post, $fields, $taxonomies, $extra );
+    return array( $post, $fields, $taxonomies, $extra );
 	}
 
 	/**
@@ -481,52 +482,52 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 * @since 2.0.1 Splitted in different methods so another actions can be inserted inbetween
 	 */
 	public function addPost( $post ) {
-		global $user_ID;
-		$allowed_tags = $allowed_protocols = array();
-		$this->setAllowed( $allowed_tags, $allowed_protocols );
+    global $user_ID;
+    $allowed_tags = $allowed_protocols = array();
+    $this->setAllowed( $allowed_tags, $allowed_protocols );
 
-		if ( isset( $post->post_title ) ) {
-			$post->post_title = wp_kses( $post->post_title, $allowed_tags, $allowed_protocols );
-		}
-		if ( isset( $post->post_content ) ) {
-			$post->post_content = wp_kses( $post->post_content, $allowed_tags, $allowed_protocols );
-		}
-		if ( isset( $post->post_excerpt ) ) {
-			$post->post_excerpt = wp_kses( $post->post_excerpt, $allowed_tags, $allowed_protocols );
-		}
+    if ( isset( $post->post_title ) ) {
+    	$post->post_title = wp_kses( $post->post_title, $allowed_tags, $allowed_protocols );
+    }
+    if ( isset( $post->post_content ) ) {
+    	$post->post_content = wp_kses( $post->post_content, $allowed_tags, $allowed_protocols );
+    }
+    if ( isset( $post->post_excerpt ) ) {
+    	$post->post_excerpt = wp_kses( $post->post_excerpt, $allowed_tags, $allowed_protocols );
+    }
 
-		$up_post = array(
-			'ID' => $post->ID,
-			'post_date' => date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ),
-			'post_type' => $post->post_type,
-			'post_category' => array(0)
-		);
+    $up_post = array(
+    	'ID' => $post->ID,
+    	'post_date' => date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ),
+    	'post_type' => $post->post_type,
+    	'post_category' => array(0)
+    );
 
-		if ( isset( $post->post_author ) ) {
-			$up_post['post_author'] = $post->post_author;
-		}
-		if ( isset( $post->post_title ) ) {
-			$up_post['post_title'] = $post->post_title;
-		}
-		if ( isset( $post->post_content ) ) {
-			$up_post['post_content'] = $post->post_content;
-		}
-		if ( isset( $post->post_excerpt ) ) {
-			$up_post['post_excerpt'] = $post->post_excerpt;
-		}
-		if ( isset( $post->post_status ) ) {
-			$up_post['post_status'] = $post->post_status;
-		}
-		if ( isset( $post->post_parent ) ) {
-			$up_post['post_parent'] = $post->post_parent;
-		}
-		if ( isset( $post->post_type ) ) {
-			$up_post['post_type'] = $post->post_type;
-		}
+    if ( isset( $post->post_author ) ) {
+    	$up_post['post_author'] = $post->post_author;
+    }
+    if ( isset( $post->post_title ) ) {
+    	$up_post['post_title'] = $post->post_title;
+    }
+    if ( isset( $post->post_content ) ) {
+    	$up_post['post_content'] = $post->post_content;
+    }
+    if ( isset( $post->post_excerpt ) ) {
+    	$up_post['post_excerpt'] = $post->post_excerpt;
+    }
+    if ( isset( $post->post_status ) ) {
+    	$up_post['post_status'] = $post->post_status;
+    }
+    if ( isset( $post->post_parent ) ) {
+    	$up_post['post_parent'] = $post->post_parent;
+    }
+    if ( isset( $post->post_type ) ) {
+    	$up_post['post_type'] = $post->post_type;
+    }
 
-		$post_id = wp_insert_post( $up_post, true );
+    $post_id = wp_insert_post( $up_post, true );
 
-		return $post_id;
+    return $post_id;
 	}
 
 
@@ -538,39 +539,39 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 * @since 2.0.1
 	 */
 	public function addFields( $post_id, $fields ) {
-		if ( isset( $fields['removed'] )
-			&& is_array( $fields['removed'] ) ) {
-			// remove the fields that need to be removed
-			foreach ( $fields['removed'] as $meta_key ) {
-				delete_post_meta( $post_id, $meta_key );
-			}
-		}
-		$fields['fields'] = $this->esc_data( $fields['fields'] );
-		foreach ( $fields['fields'] as $meta_key => $meta_value ) {
-			if ( is_array( $meta_value )
-				&& ! $fields['info'][ $meta_key ]['save_single'] ) {
-				foreach ( $meta_value as $meta_value_single ) {
-					$meta_value_single = str_replace( '\\\\"', '"', $meta_value_single );
-					$meta_value_single = wp_kses( $meta_value_single, $allowed_tags, $allowed_protocols );
-					$meta_value_single = str_replace( "&amp;", "&", $meta_value_single );
-					add_post_meta( $post_id, $meta_key, $meta_value_single, false /* $unique */ );
-				}
-			} else {
-				if ( is_array( $meta_value ) ) {
-					foreach ( $meta_value as &$meta_val ) {
-						$meta_val = str_replace( '\\\\"', '"', $meta_val );
-						$meta_val = wp_kses( $meta_val, $allowed_tags, $allowed_protocols );
-						$meta_val = str_replace( "&amp;", "&", $meta_val );
-					}
-				} else {
-					$meta_value = str_replace( '\\\\"', '"', $meta_value );
-					$meta_value = wp_kses( $meta_value, $allowed_tags, $allowed_protocols );
-					//avoid & to be replaced with &amp;
-					$meta_value = str_replace( "&amp;", "&", $meta_value );
-				}
-				add_post_meta( $post_id, $meta_key, $meta_value, false /* $unique */ );
-			}
-		}
+    if ( isset( $fields['removed'] )
+    	&& is_array( $fields['removed'] ) ) {
+    	// remove the fields that need to be removed
+    	foreach ( $fields['removed'] as $meta_key ) {
+        delete_post_meta( $post_id, $meta_key );
+    	}
+    }
+    $fields['fields'] = $this->esc_data( $fields['fields'] );
+    foreach ( $fields['fields'] as $meta_key => $meta_value ) {
+    	if ( is_array( $meta_value )
+        && ! $fields['info'][ $meta_key ]['save_single'] ) {
+        foreach ( $meta_value as $meta_value_single ) {
+        	$meta_value_single = str_replace( '\\\\"', '"', $meta_value_single );
+        	$meta_value_single = wp_kses( $meta_value_single, $allowed_tags, $allowed_protocols );
+        	$meta_value_single = str_replace( "&amp;", "&", $meta_value_single );
+        	add_post_meta( $post_id, $meta_key, $meta_value_single, false /* $unique */ );
+        }
+    	} else {
+        if ( is_array( $meta_value ) ) {
+        	foreach ( $meta_value as &$meta_val ) {
+            $meta_val = str_replace( '\\\\"', '"', $meta_val );
+            $meta_val = wp_kses( $meta_val, $allowed_tags, $allowed_protocols );
+            $meta_val = str_replace( "&amp;", "&", $meta_val );
+        	}
+        } else {
+        	$meta_value = str_replace( '\\\\"', '"', $meta_value );
+        	$meta_value = wp_kses( $meta_value, $allowed_tags, $allowed_protocols );
+        	//avoid & to be replaced with &amp;
+        	$meta_value = str_replace( "&amp;", "&", $meta_value );
+        }
+        add_post_meta( $post_id, $meta_key, $meta_value, false /* $unique */ );
+    	}
+    }
 	}
 
 
@@ -582,63 +583,63 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 	 * @since 2.0.1
 	 */
 	public function addTaxonomies( $post_id, $taxonomies = null ) {
-		if ( $taxonomies ) {
-			$taxonomies = $this->esc_data( $taxonomies );
-			foreach ( $taxonomies['flat'] as $tax ) {
-				// attach them to post
-				wp_set_post_terms( $post_id, $tax['add'], $tax['name'], false );
-			}
+    if ( $taxonomies ) {
+    	$taxonomies = $this->esc_data( $taxonomies );
+    	foreach ( $taxonomies['flat'] as $tax ) {
+        // attach them to post
+        wp_set_post_terms( $post_id, $tax['add'], $tax['name'], false );
+    	}
 
-			foreach ( $taxonomies['hierarchical'] as $tax ) {
-				foreach ( $tax['add_new'] as $ii => $addnew ) {
-					/**
-					 * if numeric parent, then check is there such a taxonomy
-					 */
-					if ( is_numeric( $addnew['parent'] ) && is_object( get_term( $addnew['parent'], $tax['name'] ) ) ) {
-						$pid = (int) $addnew['parent'];
-						if ( $pid < 0 )
-							$pid = 0;
+    	foreach ( $taxonomies['hierarchical'] as $tax ) {
+        foreach ( $tax['add_new'] as $ii => $addnew ) {
+        	/**
+        	 * if numeric parent, then check is there such a taxonomy
+        	 */
+        	if ( is_numeric( $addnew['parent'] ) && is_object( get_term( $addnew['parent'], $tax['name'] ) ) ) {
+            $pid = (int) $addnew['parent'];
+            if ( $pid < 0 )
+            	$pid = 0;
 
-						$result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
-						if ( !is_wp_error( $result ) ) {
-							$tax['add_new'][$ii]['id'] = $result['term_id'];
-							$ind = array_search( $addnew['term'], $tax['terms'] );
-							if ( $ind !== false )
-								$tax['terms'][$ind] = $result['term_id'];
-						}
-					}
-					else {
-						$par_id = false;
-						foreach ( $tax['add_new'] as $ii2 => $addnew2 ) {
-							if ( $addnew['parent'] == $addnew2['term'] && isset( $addnew2['id'] ) ) {
-								$par_id = $addnew2['id'];
-								break;
-							}
-						}
-						if ( $par_id !== false ) {
-							$pid = (int) $par_id;
-							if ( $pid < 0 ) {
-								$pid = 0;
-							}
-							$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => $pid ) );
-						} else {
-							$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => 0 ) );
-						}
+            $result = wp_insert_term( $addnew['term'], $tax['name'], array('parent' => $pid) );
+            if ( !is_wp_error( $result ) ) {
+            	$tax['add_new'][$ii]['id'] = $result['term_id'];
+            	$ind = array_search( $addnew['term'], $tax['terms'] );
+            	if ( $ind !== false )
+                $tax['terms'][$ind] = $result['term_id'];
+            }
+        	}
+        	else {
+            $par_id = false;
+            foreach ( $tax['add_new'] as $ii2 => $addnew2 ) {
+            	if ( $addnew['parent'] == $addnew2['term'] && isset( $addnew2['id'] ) ) {
+                $par_id = $addnew2['id'];
+                break;
+            	}
+            }
+            if ( $par_id !== false ) {
+            	$pid = (int) $par_id;
+            	if ( $pid < 0 ) {
+                $pid = 0;
+            	}
+            	$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => $pid ) );
+            } else {
+            	$result = wp_insert_term( $addnew['term'], $tax['name'], array( 'parent' => 0 ) );
+            }
 
-						if ( !is_wp_error( $result ) ) {
-							$tax['add_new'][$ii]['id'] = $result['term_id'];
-							$ind = array_search( $addnew['term'], $tax['terms'] );
-							if ( $ind !== false ) {
-								$tax['terms'][ $ind ] = $result['term_id'];
-							}
-						}
-					}
-					delete_option( $tax['name'] . "_children" ); // clear the cache
-				}
-				// attach them to post
-				wp_set_post_terms( $post_id, $tax['terms'], $tax['name'], false );
-			}
-		}
+            if ( !is_wp_error( $result ) ) {
+            	$tax['add_new'][$ii]['id'] = $result['term_id'];
+            	$ind = array_search( $addnew['term'], $tax['terms'] );
+            	if ( $ind !== false ) {
+                $tax['terms'][ $ind ] = $result['term_id'];
+            	}
+            }
+        	}
+        	delete_option( $tax['name'] . "_children" ); // clear the cache
+        }
+        // attach them to post
+        wp_set_post_terms( $post_id, $tax['terms'], $tax['name'], false );
+    	}
+    }
 	}
 
 	/**
@@ -662,7 +663,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
 
 	/**
      * Remove all the taxonomy terms assigned to a post.
-     * 
+     *
 	 * @param WP_Post $post
 	 *
 	 * @return array The list of removed terms, grouped by taxonomy
@@ -674,7 +675,7 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
             //Delete all terms only if taxonomy does exist on frontend
             $to_delete = "new_tax_text_" . $taxonomy['name'];
 	        if ( ! isset( $_POST[ $to_delete ] ) ) {
-		        continue;
+            continue;
 	        }
 
 	        if ( count( $taxonomy['terms'] ) > 0 ) {
@@ -733,22 +734,22 @@ class CRED_Forms_Model extends CRED_Abstract_Model {
             'post_type' => $post->post_type
         );
 	    if ( isset( $post->post_author ) ) {
-		    $up_post['post_author'] = $post->post_author;
+        $up_post['post_author'] = $post->post_author;
 	    }
 	    if ( isset( $post->post_status ) ) {
-		    $up_post['post_status'] = $post->post_status;
+        $up_post['post_status'] = $post->post_status;
 	    }
 	    if ( isset( $post->post_title ) ) {
-		    $up_post['post_title'] = $post->post_title;
+        $up_post['post_title'] = $post->post_title;
 	    }
 	    if ( isset( $post->post_content ) ) {
-		    $up_post['post_content'] = $post->post_content;
+        $up_post['post_content'] = $post->post_content;
 	    }
 	    if ( isset( $post->post_excerpt ) ) {
-		    $up_post['post_excerpt'] = $post->post_excerpt;
+        $up_post['post_excerpt'] = $post->post_excerpt;
 	    }
 	    if ( isset( $post->post_parent ) ) {
-		    $up_post['post_parent'] = $post->post_parent;
+        $up_post['post_parent'] = $post->post_parent;
 	    }
 
         wp_update_post( $up_post );

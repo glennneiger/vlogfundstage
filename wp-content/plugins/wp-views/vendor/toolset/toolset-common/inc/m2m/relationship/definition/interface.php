@@ -265,6 +265,19 @@ interface IToolset_Relationship_Definition {
 
 
 	/**
+	 * Defines whether intermediary posts of this relationship should be automatically deleted
+	 * together with an association.
+	 *
+	 * @param null|bool $value If a boolean value is provided, it will be set.
+	 *
+	 * @return bool
+	 * @since Types 3.2
+	 */
+	public function is_autodeleting_intermediary_posts( $value = null );
+
+
+
+	/**
 	 * @return IToolset_Relationship_Origin
 	 * @since m2m
 	 */

@@ -6,12 +6,13 @@
  * Full version with setters & co.
  *
  * @since 1.9
+ * @since 2.7.0 Removed the "final" keyword.
  *
  * @property-write string $content
  * @property-write string $content_raw
  * @property int $loop_output_id
  */
-final class WPV_Content_Template extends WPV_Content_Template_Embedded {
+class WPV_Content_Template extends WPV_Content_Template_Embedded {
 
 
     /* ************************************************************************* *\
@@ -79,7 +80,7 @@ final class WPV_Content_Template extends WPV_Content_Template_Embedded {
      *     should) check for the value that was actually saved to database through the returned $ct->title. If this is
      *     false and the title is not unique (determined by is_name_used()), the operation will fail.
      *
-     * @return null|WPV_Content_Template CT object or null if creating has failed.
+     * @return null|array|WPV_Content_Template CT object or null if creating has failed.
      *
      * @since 1.9
      */
@@ -88,28 +89,26 @@ final class WPV_Content_Template extends WPV_Content_Template_Embedded {
         $sanitized_title = sanitize_text_field( $title );
 		$sanitized_name = sanitize_text_field( sanitize_title( $title ) );
 
-        // Handle empty title
-        if( empty( $sanitized_title ) ) {
-            if( $adjust_duplicate_title ) {
-                $sanitized_title = sanitize_text_field( __( 'Content Template', 'wpv-views' ) );
-            } else {
-                // empty title, but we're not allowed to adjust it -> fail
-                return null;
-            }
-        }
+		// Handle empty title
+		if ( empty( $sanitized_title ) ) {
+			if ( $adjust_duplicate_title ) {
+				$sanitized_title = sanitize_text_field( __( 'Content Template', 'wpv-views' ) );
+			} else {
+				// empty title, but we're not allowed to adjust it -> fail
+				return array( 'error' => __( 'The sanitized Content Template title is empty. Creating a Content Template with no title is not allowed.', 'wpv-views' ) );
+			}
+		}
 
-        // Ensure title uniqueness (or fail)
-        $is_title_unique = ! WPV_Content_Template_Embedded::is_name_used( $sanitized_title );
+		try {
+			$sanitized_title = self::validate_title( $sanitized_title );
+		} catch ( WPV_RuntimeExceptionWithMessage $e ) {
+			if ( $adjust_duplicate_title ) {
+				$sanitized_title = WPV_Content_Template::get_unique_title( $sanitized_title );
+			} else {
+				return array( 'error' => $e->getUserMessage() );
+			}
+		}
 
-        if( !$is_title_unique ) {
-            if( $adjust_duplicate_title ) {
-                $sanitized_title = WPV_Content_Template::get_unique_title( $sanitized_title );
-            } else {
-                // Non-unique title & we're not allowed to re-use it -> fail
-                return null;
-            }
-        }
-		
 		if ( empty( $sanitized_name ) ) {
 			$sanitized_name = WPV_Content_Template_Embedded::POST_TYPE . '-rand-' . uniqid();
 		}
@@ -253,8 +252,8 @@ final class WPV_Content_Template extends WPV_Content_Template_Embedded {
 
         // Create new CT
         $cloned_ct = WPV_Content_Template::create( $title, $adjust_duplicate_title );
-        if( null == $cloned_ct ) {
-            return null;
+        if( ! $cloned_ct instanceof WPV_Content_Template ) {
+            return $cloned_ct;
         }
 
 
@@ -315,59 +314,82 @@ final class WPV_Content_Template extends WPV_Content_Template_Embedded {
      * @return string Sanitized value, safe to be used.
      * @throws WPV_RuntimeExceptionWithMessage
      * @since 1.9
+     * @since 2.7.0 Transferred the functionality to a static method in order to be available from
+     *              the inside of "create" method.
      */
     protected function _validate_title( $value ) {
-
-        $sanitized_value = sanitize_text_field( $value );
-
-        // Check if the original value contains something that shouldn't be there.
-        // We tolerate whitespace at the beginning and end, ergo the trim (but we will
-        // work with the trimmed value from now on).
-        if( trim( $value ) != $sanitized_value ) {
-            throw new WPV_RuntimeExceptionWithMessage(
-                '_validate_title failed: invalid characters',
-                __( 'The title can not contain any tabs, line breaks or HTML code.', 'wpv-views' )
-            );
-        }
-
-        if( empty( $sanitized_value ) ) {
-            throw new WPV_RuntimeExceptionWithMessage(
-                '_validate_title failed: empty value',
-                __( 'You can not leave the title empty.', 'wpv-views' )
-            );
-        }
-
-        $collision_data = array();
-        if( WPV_Content_Template_Embedded::is_name_used( $sanitized_value, $this->id, $collision_data ) ) {
-            switch( $collision_data['colliding_field'] ) {
-                case 'post_name':
-                    $exception_message = sprintf(
-                        __( 'Another Content Template (%s) already uses this title value as it\'s slug. Please use another title.', 'wpv-views' ),
-                        sanitize_text_field( $collision_data['post_title'] )
-                    );
-                    break;
-                case 'post_title':
-                    $exception_message = __( 'Another Content Template with that title already exists. Please use another title.', 'wpv-views' );
-                    break;
-                case 'both':
-                    $exception_message = __( 'Another Content Template already uses this title value as it\'s title and slug. Please use another title.', 'wpv-views' );
-                    break;
-                default:
-                    // Should never happen
-                    $exception_message = __( 'Another item with that slug or title already exists. Please use another title.', 'wpv-views' );
-                    break;
-            }
-            //$exception_message = print_r( $collision_data, true );
-            throw new WPV_RuntimeExceptionWithMessage(
-                '_validate_title failed: name is already being used for another CT',
-                $exception_message,
-                WPV_RuntimeExceptionWithMessage::EXCEPTION_VALUE_ALREADY_USED
-            );
-        }
-
-        return $sanitized_value;
+    	return WPV_Content_Template::validate_title( $value, $this->id );
     }
 
+	/**
+	 * Validate the post title.
+	 *
+	 * The value must already be sanitized (without HTML tags etc.) and unique among CT post
+	 * titles and slugs. It also can't be empty. Surrounding whitespaces will not cause
+	 * an exception, but they will be trimmed.
+	 *
+	 * @param string      $value New post title.
+	 * @param int $ct_id The Content Template ID to exclude.
+	 *
+	 * @return string Sanitized value, safe to be used.
+	 *
+	 * @throws WPV_RuntimeExceptionWithMessage
+	 *
+	 * @return string
+	 *
+	 * @since 2.7.0 Inherited the functionality from the "_validate_title" method in order to be available from
+	 *              the inside of "create" method.
+	 */
+	protected static function validate_title( $value, $ct_id = 0 ) {
+	    $sanitized_value = sanitize_text_field( $value );
+
+	    // Check if the original value contains something that shouldn't be there.
+	    // We tolerate whitespace at the beginning and end, ergo the trim (but we will
+	    // work with the trimmed value from now on).
+	    if( trim( $value ) != $sanitized_value ) {
+		    throw new WPV_RuntimeExceptionWithMessage(
+			    '_validate_title failed: invalid characters',
+			    __( 'The title can not contain any tabs, line breaks or HTML code.', 'wpv-views' )
+		    );
+	    }
+
+	    if( empty( $sanitized_value ) ) {
+		    throw new WPV_RuntimeExceptionWithMessage(
+			    '_validate_title failed: empty value',
+			    __( 'You can not leave the title empty.', 'wpv-views' )
+		    );
+	    }
+
+	    $collision_data = array();
+	    if( WPV_Content_Template_Embedded::is_name_used( $sanitized_value, $ct_id, $collision_data ) ) {
+		    switch( $collision_data['colliding_field'] ) {
+			    case 'post_name':
+				    $exception_message = sprintf(
+					    __( 'Another Content Template (%s) already uses this slug. Please use another name.', 'wpv-views' ),
+					    sanitize_text_field( $collision_data['post_title'] )
+				    );
+				    break;
+			    case 'post_title':
+				    $exception_message = __( 'Another Content Template already uses this name. Please use another name.', 'wpv-views' );
+				    break;
+			    case 'both':
+				    $exception_message = __( 'Another Content Template already uses this name and slug. Please use another name.', 'wpv-views' );
+				    break;
+			    default:
+				    // Should never happen
+				    $exception_message = __( 'Another Content Template already uses this name and slug. Please use another name.', 'wpv-views' );
+				    break;
+		    }
+		    //$exception_message = print_r( $collision_data, true );
+		    throw new WPV_RuntimeExceptionWithMessage(
+			    '_validate_title failed: name is already being used for another CT',
+			    $exception_message,
+			    WPV_RuntimeExceptionWithMessage::EXCEPTION_VALUE_ALREADY_USED
+		    );
+	    }
+
+	    return $sanitized_value;
+    }
 
     /**
      * Post title setter.
@@ -422,18 +444,18 @@ final class WPV_Content_Template extends WPV_Content_Template_Embedded {
             switch( $collision_data['colliding_field'] ) {
                 case 'post_name':
                     $exception_message = sprintf(
-                        __( 'Another Content Template (%s) with that slug already exists. Please use another slug.', 'wpv-views' ),
+                        __( 'Another Content Template (%s) already uses this slug. Please use another name.', 'wpv-views' ),
                         sanitize_text_field( $collision_data['post_title'] )
                     );
                     break;
                 case 'post_title':
-                    $exception_message = __( 'Another Content Template already uses this slug value as it\'s title. Please use another slug.', 'wpv-views' );
+                    $exception_message = __( 'Another Content Template already uses this name. Please use another name.', 'wpv-views' );
                     break;
                 case 'both':
-                    $exception_message = __( 'Another Content Template already uses this slug value as it\'s slug and title. Please use another slug.', 'wpv-views' );
+                    $exception_message = __( 'Another Content Template already uses this name and slug. Please use another name.', 'wpv-views' );
                     break;
                 default:
-                    $exception_message = __( 'Another item with that slug or title already exists. Please use another slug.', 'wpv-views' );
+                    $exception_message = __( 'Another Content Template already uses this name and slug. Please use another name.', 'wpv-views' );
                     break;
             }
             throw new WPV_RuntimeExceptionWithMessage(

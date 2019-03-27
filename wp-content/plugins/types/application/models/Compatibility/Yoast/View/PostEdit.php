@@ -40,7 +40,7 @@ class PostEdit {
 
 		wp_enqueue_script(
 			'toolset-yoast-post',
-			TYPES_RELPATH . '/public/js/bundle.yoast.js',
+			TYPES_RELPATH . '/public/js/compatibility/bundle.yoast.js',
 			array( 'jquery', \WPSEO_Admin_Asset_Manager::PREFIX . 'post-scraper' ),
 			TYPES_VERSION,
 			true

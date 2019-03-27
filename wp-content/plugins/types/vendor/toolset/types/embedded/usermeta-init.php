@@ -327,24 +327,17 @@ class Usermeta_Access
     public static function register_access_usermeta_caps( $caps, $area_id,
             $group_id )
     {
-        $USERMETA_ACCESS_AREA_NAME = __( 'User Meta Fields Frontend Access', 'wpcf' );
         $USERMETA_ACCESS_AREA_ID = '__USERMETA_FIELDS';
         $default_role = 'guest'; //'administrator';
         //List of caps with default permissions
         $usermeta_caps = array(
-           /* array('view_own_on_site', $default_role, __( 'View own fields on site', 'wpcf' )),
-            array('view_others_on_site', $default_role, __( 'View others fields on site', 'wpcf' )),*/
             array('view_own_in_profile', $default_role, __( 'View own fields in profile', 'wpcf' )),
             array('modify_own', $default_role, __( 'Modify own fields', 'wpcf' )),
-                /*
-                  array('view_others_in_profile',$default_role,__('View others fields in profile','wpcf')),
-                  array('modify_others_','administrator',__('Modify others fields','wpcf')), */
         );
         if ( $area_id == $USERMETA_ACCESS_AREA_ID ) {
             $fields_groups = wpcf_admin_fields_get_groups( TYPES_USER_META_FIELD_GROUP_CPT_NAME );
             if ( !empty( $fields_groups ) ) {
                 foreach ( $fields_groups as $group ) {
-                    $USERMETA_ACCESS_GROUP_NAME = $group['name'] . ' Access Group';
                     $USERMETA_ACCESS_GROUP_ID = '__USERMETA_FIELDS_GROUP_' . $group['slug'];
                     if ( $group_id == $USERMETA_ACCESS_GROUP_ID ) {
                         for ( $i = 0; $i < count( $usermeta_caps ); $i++ ) {
@@ -365,7 +358,6 @@ class Usermeta_Access
     // register a new Types Access Group within Area for Usermeta Fields Groups Frontend capabilities
     public static function register_access_usermeta_groups( $groups, $id )
     {
-        $USERMETA_ACCESS_AREA_NAME = __( 'User Meta Fields Frontend Access', 'wpcf' );
         $USERMETA_ACCESS_AREA_ID = '__USERMETA_FIELDS';
 
         if ( $id == $USERMETA_ACCESS_AREA_ID ) {
@@ -460,10 +452,7 @@ class Post_Fields_Access
     }
 
     // register custom CRED Frontend capabilities specific to each group
-    public static function register_access_fields_caps( $caps, $area_id,
-            $group_id )
-    {
-        $FIELDS_ACCESS_AREA_NAME = __( 'Post Custom Fields Frontend Access', 'wpcf' );
+    public static function register_access_fields_caps( $caps, $area_id, $group_id ) {
         $FIELDS_ACCESS_AREA_ID = '__FIELDS';
         $default_role = 'guest'; //'administrator';
         //List of caps with default permissions
@@ -476,7 +465,6 @@ class Post_Fields_Access
 
             if ( !empty( self::$fields_groups ) ) {
                 foreach ( self::$fields_groups as $group ) {
-                    $FIELDS_ACCESS_GROUP_NAME = $group['name'] . ' Access Group';
                     $FIELDS_ACCESS_GROUP_ID = '__FIELDS_GROUP_' . $group['slug'];
                     if ( $group_id == $FIELDS_ACCESS_GROUP_ID ) {
                         for ( $i = 0; $i < count( $fields_caps ); $i++ ) {
@@ -497,7 +485,6 @@ class Post_Fields_Access
     // register a new Types Access Group within Area for Post Fields Groups Frontend capabilities
     public static function register_access_fields_groups( $groups, $id )
     {
-        $FIELDS_ACCESS_AREA_NAME = __( 'Post Fields Frontend Access', 'wpcf' );
         $FIELDS_ACCESS_AREA_ID = '__FIELDS';
 
         if ( $id == $FIELDS_ACCESS_AREA_ID ) {
@@ -512,20 +499,21 @@ class Post_Fields_Access
         }
         return $groups;
     }
-	
+
+
 	/**
-	* Register a custom tab on the Access Control admin page, for Types fields.
-	*
-	* @param $tabs
-	* @return $tabs
-	*
-	* @since 2.1
-	*/
-	
+	 * Register a custom tab on the Access Control admin page, for Types fields.
+	 *
+	 * @param $tabs
+	 *
+	 * @since 2.1
+	 * @return mixed
+	 */
 	public static function register_access_types_fields_tab( $tabs ) {
 		$tabs['types-fields'] = __( 'Types Fields', 'wp-cred' );
 		return $tabs;
 	}
+
 
     // register a new Types Access Area for Post Fields Groups Frontend capabilities
     public static function register_access_fields_area( $areas,

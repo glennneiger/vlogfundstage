@@ -25,7 +25,7 @@ function views_update_help_wpv_if() {
 		<p><?php _e( 'We have changed the way that the <strong>[wpv-if]</strong> conditional shortcode works.', 'wpv-views' ); ?></p>
 		<p><?php _e( 'On a recent update, we added support for functions as conditions. From now on, you will need to <strong>first register</strong> the functions that you want to use as conditionals.', 'wpv-views' ); ?></p>
 		<p><?php _e( 'To do so, just head to the Views Settings page and look for the new <strong><em>Functions inside conditional evaluations</em></strong> section, and follow the instructions.', 'wpv-views' ); ?></p>
-		
+
 		<h3><?php _e( 'Backwards compatibility', 'wpv-views' ); ?></h3>
 		<p><?php _e( 'You may be using functions inside your <strong>[wpv-if]</strong> conditions already, and you will need to register those functions for them to work again.', 'wpv-views' ); ?></p>
 		<p><?php _e( 'Clicking the button below will scan all your content and provide a list of items that contain <strong>[wpv-if]</strong> shortcodes, so you can review them and register any function if needed:', 'wpv-views' ); ?></p>
@@ -48,38 +48,38 @@ function wpv_scan_wpv_if_callback() {
 	}
 	global $wpdb, $sitepress, $WP_Views;
 	$values_to_prepare = array();
-    
+
     $trans_join = '';
     $trans_where = '';
     $trans_meta_where = '';
-    
+
     if (
-		isset( $sitepress ) 
+		isset( $sitepress )
 		&& function_exists( 'icl_object_id' )
 	) {
 		$current_lang_code = $sitepress->get_current_language();
-		$trans_join = " JOIN {$wpdb->prefix}icl_translations t ";
-		$trans_where = " AND ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
+		$trans_join = " JOIN {$wpdb->prefix}icl_translations icl_t ";
+		$trans_where = " AND ID = icl_t.element_id AND icl_t.language_code = %s AND icl_t.element_type LIKE 'post_%' ";
 		$values_to_prepare[] = $current_lang_code;
     }
-	
+
 	$needle = '%[wpv-if%';
 	$values_to_prepare[] = $needle;
 	$values_to_prepare[] = $needle;
 
     $q = "SELECT DISTINCT * FROM {$wpdb->posts} {$trans_join}
-	WHERE post_status='publish' 
+	WHERE post_status='publish'
 	{$trans_where}
-	AND post_type NOT IN ('revision') 
-	AND ( 
+	AND post_type NOT IN ('revision')
+	AND (
 		ID IN (
-			SELECT DISTINCT ID FROM {$wpdb->posts} 
+			SELECT DISTINCT ID FROM {$wpdb->posts}
 			WHERE post_content LIKE %s
 		)
 		OR ID IN (
-			SELECT DISTINCT post_id FROM {$wpdb->postmeta} 
+			SELECT DISTINCT post_id FROM {$wpdb->postmeta}
 			WHERE meta_value LIKE %s
-		) 
+		)
 	)
 	";
     $res = $wpdb->get_results(
@@ -87,7 +87,7 @@ function wpv_scan_wpv_if_callback() {
 			$q,
 			$values_to_prepare
 		),
-		OBJECT 
+		OBJECT
 	);
 
 	$items = array();
@@ -132,7 +132,7 @@ function wpv_scan_wpv_if_callback() {
 				$items[$type][] = $edit_link;
 			}
         }
-        
+
     }
 	echo json_encode( $items );
 

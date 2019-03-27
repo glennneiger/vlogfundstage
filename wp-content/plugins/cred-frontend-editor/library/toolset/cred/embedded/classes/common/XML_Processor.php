@@ -10,6 +10,54 @@ final class CRED_XML_Processor {
 	private static $filename = '';
 
 	/**
+	 * Helper to get the post expiration settings.
+	 *
+	 * @return array
+	 * @since 2.3
+	 */
+	private static function get_normalized_post_expiration_settings() {
+		$settings = apply_filters( 'toolset_forms_get_post_expiration_settings', array() );
+		return $settings;
+	}
+
+	/**
+	 * Helper to set the normalized post expiration settings.
+	 *
+	 * @param array $settings
+	 * @since 2.3
+	 */
+	private static function set_post_exporation_settings( $settings ) {
+		$settings = cred_sanitize_array( $settings );
+		do_action( 'toolset_forms_set_post_expiration_settings', $settings );
+		if ( apply_filters( 'toolset_forms_is_post_expiration_enabled', false ) ) {
+			do_action( 'toolset_forms_setup_post_expiration_schedule' );
+		} else {
+			do_action( 'toolset_forms_clear_post_expiration_schedule' );
+		}
+	}
+
+	/**
+	 * Merge recursive arrays.
+	 *
+	 * @param array $array1
+	 * @param array $array2
+	 * @return array
+	 * @since 2.3
+	 */
+	private static function array_merge_distinct( array $array1, array &$array2 ) {
+		$merged = $array1;
+		foreach ( $array2 as $key => &$value ) {
+			if ( is_array( $value ) && isset( $merged [ $key ] ) && is_array( $merged [ $key ] ) ) {
+				$merged[ $key ] = self::array_merge_distinct( $merged[ $key ], $value );
+			} else {
+				$merged[ $key ] = $value;
+			}
+		}
+
+		return $merged;
+	}
+
+	/**
 	 * @param $array
 	 * @param $depth
 	 * @param $parent
@@ -1463,9 +1511,8 @@ final class CRED_XML_Processor {
 			$new_settings = self::updateSettings( $data );
 
 			// Import Toolset Forms Post Expiration to options table
-			global $cred_post_expiration;
 			if ( $new_settings['enable_post_expiration'] && isset( $data['post_expiration_settings'] ) && ! ( empty( $data['post_expiration_settings'] ) ) ) {
-				$oldsettings_expiration = $cred_post_expiration->getCredPESettings();
+				$oldsettings_expiration = self::get_normalized_post_expiration_settings();
 				$newsettings_expiration = $data['post_expiration_settings'];
 				$newsettings_expiration['post_expiration_post_types'] = array();
 				if ( isset( $data['post_expiration_settings']['post_expiration_post_types']['post_expiration_post_types_item'] ) ) {
@@ -1475,10 +1522,10 @@ final class CRED_XML_Processor {
 					}
 					$newsettings_expiration['post_expiration_post_types'] = $data['post_expiration_settings']['post_expiration_post_types']['post_expiration_post_types_item'];
 				}
-				$newsettings_expiration = CRED_PostExpiration::array_merge_distinct( $oldsettings_expiration, $newsettings_expiration );
-				$cred_post_expiration->setCronSettings( $newsettings_expiration );
+				$newsettings_expiration = self::array_merge_distinct( $oldsettings_expiration, $newsettings_expiration );
+				self::set_post_exporation_settings( $newsettings_expiration );
 			} else {
-				$cred_post_expiration->deleteCredPESettings();
+				do_action( 'toolset_forms_remove_post_expiration_settings' );
 			}
 
 			$results['settings'] = 1;
@@ -1630,9 +1677,8 @@ final class CRED_XML_Processor {
 			$new_settings = self::updateSettings( $data );
 
 			//Import Toolset Forms Post Expiration to options table
-			global $cred_post_expiration;
 			if ( $new_settings['enable_post_expiration'] && isset( $data['post_expiration_settings'] ) && ! ( empty( $data['post_expiration_settings'] ) ) ) {
-				$oldsettings_expiration = $cred_post_expiration->getCredPESettings();
+				$oldsettings_expiration = self::get_normalized_post_expiration_settings();
 				$newsettings_expiration = $data['post_expiration_settings'];
 				$newsettings_expiration['post_expiration_post_types'] = array();
 				if ( isset( $data['post_expiration_settings']['post_expiration_post_types']['post_expiration_post_types_item'] ) ) {
@@ -1642,10 +1688,10 @@ final class CRED_XML_Processor {
 					}
 					$newsettings_expiration['post_expiration_post_types'] = $data['post_expiration_settings']['post_expiration_post_types']['post_expiration_post_types_item'];
 				}
-				$newsettings_expiration = CRED_PostExpiration::array_merge_distinct( $oldsettings_expiration, $newsettings_expiration );
-				$cred_post_expiration->setCronSettings( $newsettings_expiration );
+				$newsettings_expiration = self::array_merge_distinct( $oldsettings_expiration, $newsettings_expiration );
+				self::set_post_exporation_settings( $newsettings_expiration );
 			} else {
-				$cred_post_expiration->deleteCredPESettings();
+				do_action( 'toolset_forms_remove_post_expiration_settings' );
 			}
 
 			$results['settings'] = 1;
@@ -1983,8 +2029,7 @@ final class CRED_XML_Processor {
 		$setts = CRED_Loader::get( 'MODEL/Settings' )->getSettings();
 
 		// Export Toolset Forms post expiration settings
-		global $cred_post_expiration;
-		$cred_post_expiration_setts = $cred_post_expiration->getCredPESettings();
+		$cred_post_expiration_setts = self::get_normalized_post_expiration_settings();
 
 		if ( isset( $setts['export_settings'] ) && $setts['export_settings'] ) {
 			$data[ self::$root ]['settings'] = $setts;
@@ -2012,8 +2057,7 @@ final class CRED_XML_Processor {
 		$setts = CRED_Loader::get( 'MODEL/Settings' )->getSettings();
 
 		// Export Toolset Forms post expiration settings
-		global $cred_post_expiration;
-		$cred_post_expiration_setts = $cred_post_expiration->getCredPESettings();
+		$cred_post_expiration_setts = self::get_normalized_post_expiration_settings();
 
 		if ( isset( $setts['export_settings'] ) && $setts['export_settings'] ) {
 			$data[ self::$root ]['settings'] = $setts;
@@ -2045,8 +2089,7 @@ final class CRED_XML_Processor {
 		$setts = CRED_Loader::get( 'MODEL/Settings' )->getSettings();
 
 		// Export Toolset Forms post expiration settings
-		global $cred_post_expiration;
-		$cred_post_expiration_setts = $cred_post_expiration->getCredPESettings();
+		$cred_post_expiration_setts = self::get_normalized_post_expiration_settings();
 
 		if ( isset( $setts['export_settings'] ) && $setts['export_settings'] ) {
 			$data[ self::$root ]['settings'] = $setts;

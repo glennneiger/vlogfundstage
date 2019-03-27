@@ -3,6 +3,11 @@ var WPViews = WPViews || {};
 WPViews.WPAListingScreen = function( $ ) {
 
     var self = this;
+
+	self.i18n_data = {
+		create_wordpress_archive_action: wpa_listing_texts.ajax.action.create_wordpress_archive,
+		create_wordpress_archive_nonce: wpa_listing_texts.ajax.nonce.create_wordpress_archive,
+	};
 	
 	self.dialog_create_or_change_usage = '';
 	self.deleting_id = 0;
@@ -354,14 +359,12 @@ WPViews.WPAListingScreen = function( $ ) {
 		
 		if ( self.dialog_create_or_change_usage == 'create' ) {
 			title = $( '.js-wpv-new-archive-name' ).val();
-			title = title.replace( /\'/gi, '' );
-			title = WPV_Toolset.Utils._strip_tags_and_preserve_text( _.unescape( title ) );
 			data = {
-				action:		'wpv_wp_archive_create_new',
+				action:		self.i18n_data.create_wordpress_archive_action,
 				form:		$('#wpv-create-archive-view-form').serialize(),
 				title:		title,
 				purpose:	$( '.js-wpv-purpose:checked' ).val(),
-				wpnonce:	$('#work_views_listing').val()
+				wpnonce:	self.i18n_data.create_wordpress_archive_nonce
 			};
 		} else if ( self.dialog_create_or_change_usage == 'change' ) {
 			data = {
@@ -462,21 +465,17 @@ WPViews.WPAListingScreen = function( $ ) {
 		e.preventDefault();
 		
 		var thiz = $( this ),
-		thiz_container = thiz.closest( '.ui-dialog' ),
-        thiz_message_container = thiz_container.find( '.js-wpv-error-container' ),
-		redirectUrl = typeof thiz.data( 'redirect-url' ) != 'undefined' ? thiz.data( 'redirect-url' ) : '',
-		data = {
-            action:		'wpv_create_wpa_for_archive_loop',
-			loop:		self.creating_archive_loop,
-			purpose:	$( '.js-wpv-usage-purpose:checked' ).val(),
-            wpnonce:	$('#work_views_listing').val()
-        },
-		title = $( '.js-wpv-create-wpa-for-archive-loop-title' ).val();
-		
-		title = title.replace( /\'/gi, '' );
-		title = WPV_Toolset.Utils._strip_tags_and_preserve_text( _.unescape( title ) );
-		
-		data.title = title;
+			thiz_container = thiz.closest( '.ui-dialog' ),
+			thiz_message_container = thiz_container.find( '.js-wpv-error-container' ),
+			redirectUrl = typeof thiz.data( 'redirect-url' ) != 'undefined' ? thiz.data( 'redirect-url' ) : '',
+			title = $( '.js-wpv-create-wpa-for-archive-loop-title' ).val(),
+			data = {
+	            action:		'wpv_create_wpa_for_archive_loop',
+				loop:		self.creating_archive_loop,
+				purpose:	$( '.js-wpv-usage-purpose:checked' ).val(),
+				title: title,
+	            wpnonce:	$('#work_views_listing').val()
+	        };
 
         showSpinnerBefore( thiz );
 		thiz_message_container.html( '' );

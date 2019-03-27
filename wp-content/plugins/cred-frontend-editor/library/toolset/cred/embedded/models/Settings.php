@@ -44,7 +44,6 @@ class CRED_Settings_Model extends CRED_Abstract_Model implements CRED_Singleton
             $defaults[ 'dont_load_cred_css' ] = 1;
         }
 
-        // CRED_PostExpiration
         $defaults = apply_filters('cred_ext_general_settings_options', $defaults);
 
         $settings = get_option($this->option_name);

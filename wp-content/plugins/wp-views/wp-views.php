@@ -5,7 +5,7 @@ Plugin URI: https://toolset.com/?utm_source=viewsplugin&utm_campaign=views&utm_m
 Description: When you need to create lists of items, Views is the solution. Views will query the content from the database, iterate through it and let you display it with flair. You can also enable pagination, search, filtering and sorting by site visitors.
 Author: OnTheGoSystems
 Author URI: https://toolset.com
-Version: 2.6.4.2
+Version: 2.7.5
 */
 
 
@@ -22,7 +22,7 @@ if ( defined( 'WPV_VERSION' ) ) {
 	return;
 }
 
-define( 'WPV_VERSION', '2.6.4.2' );
+define( 'WPV_VERSION', '2.7.5' );
 
 /**
 * Set constants
@@ -35,11 +35,11 @@ define( 'WPV_FOLDER',			basename( WPV_PATH ) );
 $wpv_templates = WPV_PATH . '/application/views';
 define( 'WPV_TEMPLATES', $wpv_templates );
 
-if ( 
-	( 
-		defined( 'FORCE_SSL_ADMIN' ) 
-		&& FORCE_SSL_ADMIN 
-	) || is_ssl() 
+if (
+	(
+		defined( 'FORCE_SSL_ADMIN' )
+		&& FORCE_SSL_ADMIN
+	) || is_ssl()
 ) {
 	define( 'WPV_URL',			rtrim( str_replace( 'http://', 'https://', plugins_url() ), '/' ) . '/' . WPV_FOLDER );
 } else {
@@ -63,10 +63,16 @@ define( 'WPV_URL_EMBEDDED_TOOLSET',	WPV_URL . '/vendor/toolset' );
 define('WPV_TOOLSET_THEME_SETTINGS_ABSPATH', WPV_PATH_EMBEDDED_TOOLSET . '/toolset-theme-settings');
 define('WPV_TOOLSET_THEME_SETTINGS_URL', WPV_URL_EMBEDDED_TOOLSET . '/toolset-theme-settings');
 
+//// Load OTGS/UI
+require_once WPV_PATH . '/vendor/otgs/ui/loader.php';
+otgs_ui_initialize( WPV_PATH . '/vendor/otgs/ui', WPV_URL . '/vendor/otgs/ui' );
+// Load OnTheGoResources
 require WPV_PATH_EMBEDDED_TOOLSET . '/onthego-resources/loader.php';
 onthego_initialize( WPV_PATH_EMBEDDED_TOOLSET . '/onthego-resources/', WPV_URL_EMBEDDED_TOOLSET . '/onthego-resources/' );
+// Load Toolset Common
 require WPV_PATH_EMBEDDED_TOOLSET . '/toolset-common/loader.php';
 toolset_common_initialize( WPV_PATH_EMBEDDED_TOOLSET . '/toolset-common/', WPV_URL_EMBEDDED_TOOLSET . '/toolset-common/' );
+// Load Toolset Theme Settings
 require_once WPV_TOOLSET_THEME_SETTINGS_ABSPATH . '/loader.php';
 toolset_theme_settings_initialize(WPV_TOOLSET_THEME_SETTINGS_ABSPATH, WPV_TOOLSET_THEME_SETTINGS_URL );
 
@@ -153,7 +159,7 @@ require WPV_PATH . '/inc/wpv-admin-ajax-layout-wizard.php';
 * Debug tool
 */
 
-if ( ! function_exists( 'wpv_debuger' ) ) { 
+if ( ! function_exists( 'wpv_debuger' ) ) {
 	require_once WPV_PATH_EMBEDDED . '/inc/wpv-query-debug.class.php';
 }
 
@@ -180,7 +186,6 @@ if ( ! function_exists( 'wpv_shortcode_generator_initialize' ) ) {
 * Conditional
 */
 
-require WPV_PATH_EMBEDDED . '/inc/wpv-conditional.php';
 require WPV_PATH_EMBEDDED . '/inc/wpv-condition.php';
 
 /**
@@ -215,21 +220,20 @@ require WPV_PATH_EMBEDDED . '/inc/wpv-filter-limit-embedded.php';
  * @since 2.4.0 WIP Added the post type filter
  */
 
-if ( 
-	( 
-		isset( $_GET['page'] ) 
-		&& in_array( $_GET['page'], array( 'views-editor', 'view-archives-editor' ) ) 
+if (
+	(
+		isset( $_GET['page'] )
+		&& in_array( $_GET['page'], array( 'views-editor', 'view-archives-editor' ) )
 	) || (
-		defined( 'DOING_AJAX' ) 
+		defined( 'DOING_AJAX' )
 		&& DOING_AJAX
 	)
 ) {
 	// Edit sections
 	require_once WPV_PATH . '/inc/sections/wpv-screen-options.php';
-	require_once WPV_PATH . '/inc/sections/wpv-section-title.php';
-	
+
 	require_once WPV_PATH . '/inc/sections/wpv-section-limit-offset.php';
-	
+
 	require_once WPV_PATH . '/inc/sections/wpv-section-layout-extra.php';
 	require_once WPV_PATH . '/inc/sections/wpv-section-layout-extra-js.php';
 	if( ! wpv_is_views_lite() ){
@@ -248,7 +252,7 @@ if (
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-sticky.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-taxonomy-term.php' );
 	require_once( WPV_PATH . '/inc/filters/wpv-filter-users.php' );
-	
+
 	//require_once( WPV_PATH . '/inc/filters/editor-addon-parametric.class.php' );
 }
 
@@ -276,18 +280,8 @@ require_once( WPV_PATH_EMBEDDED . '/inc/filters/wpv-filter-sticky-embedded.php' 
 require WPV_PATH_EMBEDDED . '/inc/WPML/wpv_wpml_core.php';
 
 /**
- * CRED integration
- *
- * @since 2.4.0
- */
-require_once WPV_PATH_EMBEDDED . '/inc/third-party/wpv-compatibility-cred.class.php';
-WPV_Compatibility_CRED::initialize();
-
-
-/**
  * WooCommerce integration
  */
-
 require WPV_PATH_EMBEDDED . '/inc/third-party/wpv-compatibility-woocommerce.class.php';
 
 
@@ -412,13 +406,13 @@ if( did_action( 'inline_doc_help_viewfilter' )== 0){
 }
 if( did_action( 'inline_doc_help_viewpagination' )== 0){
 	do_action('inline_doc_help_viewpagination', 'admin_screen_view_pagination_init');
-}	
+}
 if( did_action( 'inline_doc_help_viewlayout' )== 0){
 	do_action('inline_doc_help_viewlayout', 'admin_screen_view_layout_init');
-}	
+}
 if( did_action( 'inline_doc_help_viewlayoutmetahtml' )== 0){
 	do_action('inline_doc_help_viewlayoutmetahtml', 'admin_screen_view_layoutmetahtml_init');
-}	
+}
 if( did_action( 'inline_doc_help_viewtemplate' )== 0){
 	do_action('inline_doc_help_viewtemplate', 'admin_screen_view_template_init');
 }

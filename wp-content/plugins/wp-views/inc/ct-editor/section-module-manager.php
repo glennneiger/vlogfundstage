@@ -8,15 +8,11 @@
  * @since 1.9
  */
 
-add_action( 'init', 'wpv_ct_editor_module_manager_section_init' );
-
 /**
  * If Module Manager is active, add this section on CT edit page.
  */
-function wpv_ct_editor_module_manager_section_init() {
-    if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
-        add_action( 'wpv_ct_editor_sections', 'wpv_ct_editor_module_manager_section', 50 );
-    }
+if ( defined( 'MODMAN_PLUGIN_NAME' ) ) {
+    add_action( 'wpv_ct_editor_sections', 'wpv_ct_editor_module_manager_section', 50 );
 }
 
 

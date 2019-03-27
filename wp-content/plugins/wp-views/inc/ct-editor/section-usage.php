@@ -1,29 +1,29 @@
 <?php
 
 /**
- * 
+ *
  *
  * @since 2.6.0
  */
 class Wpv_Content_Template_Editor_Section_Usage {
-	
+
 	private $single_pages_assigned_labels = array();
 	private $single_pages_assigned_to_other = array();
 	private $post_archives_assigned_labels = array();
 	private $post_archives_assigned_to_other = array();
 	private $taxonomy_archives_assigned_labels = array();
 	private $taxonomy_archives_assigned_to_other = array();
-	
+
 	public function __construct() {
-		
+
 		add_filter( 'wpv_ct_editor_request_properties', array( $this, 'request_properties' ) );
 		add_filter( 'wpv_ct_editor_localize_script', array( $this, 'localize_script' ) );
 		add_filter( 'wpv_ct_editor_add_custom_properties', array( $this, 'add_properties' ), 10, 2 );
-		
+
 		add_action( 'wpv_ct_editor_sections', array( $this, 'section' ), 40 );
-		
+
 	}
-	
+
 	/**
 	 * Request WPV_Content_Template properties for the JS side
 	 *
@@ -37,7 +37,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 			'dissident_posts'
 		) );
 	}
-	
+
 	/**
 	 * Localize the section in JS
 	 *
@@ -56,8 +56,8 @@ class Wpv_Content_Template_Editor_Section_Usage {
 		);
 		return $l10n_data;
 	}
-	
-	
+
+
 	/**
 	 * Pass custom properties to the JS side
 	 *
@@ -80,7 +80,8 @@ class Wpv_Content_Template_Editor_Section_Usage {
 		$ct_data['usage_bind_nonce'] = wp_create_nonce( "wpv_ct_{$ct->id}_bind_posts_by_{$uid}" );
 
 		$bind_dialog_message_template = sprintf(
-			__( '%s %s use a different Content Template.', 'wpv-views' ),
+			/* translators: Hint on how many items are not using a given Content Template, like: 5 Books use either no Content Template, or a different one. */
+			__( '%s %s use either no Content Template, or a different one.', 'wpv-views' ),
 			'<span class="js-wpv-ct-bind-dialog-post-count"></span>' ,
 			'<span class="js-wpv-ct-bind-dialog-post-type"></span>' );
 
@@ -113,7 +114,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 
 		return $ct_data;
 	}
-	
+
 	/**
 	 * Render section content
 	 *
@@ -169,13 +170,13 @@ class Wpv_Content_Template_Editor_Section_Usage {
 			$assigned_single_post_types = $ct->assigned_single_post_types;
 			$assigned_post_archives = $ct->assigned_post_archives;
 			$assigned_taxonomy_archives = $ct->assigned_taxonomy_archives;
-			
+
 			$has_assignment = (
-				! empty( $assigned_single_post_types ) 
-				|| ! empty( $assigned_post_archives ) 
+				! empty( $assigned_single_post_types )
+				|| ! empty( $assigned_post_archives )
 				|| ! empty( $assigned_taxonomy_archives )
 			);
-			
+
 			// If the CT is assigned, hide the sets of checkboxes and display a summary instead
 			if ( $has_assignment ) {
 				?>
@@ -205,18 +206,11 @@ class Wpv_Content_Template_Editor_Section_Usage {
 			<p class="update-button-wrap">
 				<span class="update-action-wrap">
 					<span class="js-wpv-message-container"></span>
-					<span class="spinner ajax-loader" data-bind="spinnerActive: isUsageSectionUpdating"></span>
 				</span>
-				<button data-bind="
-							enable: isUsageSectionUpdateNeeded,
-							attr: { class: isUsageSectionUpdateNeeded() ? 'button-primary' : 'button-secondary' },
-							click: usageSectionUpdate">
-					<?php _e('Update', 'wpv-views'); ?>
-				</button>
 			</p>
 
 		<?php
-			
+
 			// If the CT is assigned, hide the sets of checkboxes and display a summary instead
 			if ( $has_assignment ) {
 				$assigned_labels= $this->get_assigned_labels();
@@ -252,7 +246,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 			'',
 			array( 'section' => 'usage_section', 'pointer_slug' => 'ptr_section' ) );
 	}
-	
+
 	/**
 	 * Join all the labels for all th usages of the current Content Template
 	 *
@@ -279,7 +273,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 		}
 		return $assigned_labels;
 	}
-	
+
 	/**
 	 * Render subsection for assignment type "single page"
 	 *
@@ -311,7 +305,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 					if( $is_assigned_to_other_ct ) {
 						$this->single_pages_assigned_to_other[] = $post_type['post_type_name'];
 					}
-					
+
 					if ( $post_type['single_ct'] == $ct->id ) {
 						$this->single_pages_assigned_labels[] = $post_type['display_name'];
 					}
@@ -339,10 +333,10 @@ class Wpv_Content_Template_Editor_Section_Usage {
 			printf( $asterisk_explanation, 'assignedSinglePostTypesAccepted', 'single_posts' );
 			?>
 		</div>
-		
+
 	<?php
 	}
-	
+
 	/**
 	 * Render subsection for assignment type "post archive"
 	 *
@@ -376,7 +370,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 						if( $is_assigned_to_other_ct ) {
 							$this->post_archives_assigned_to_other[] = $post_type['post_type_name'];
 						}
-						
+
 						if ( $post_type['ct'] == $ct->id ) {
 							$this->post_archives_assigned_labels[] = sprintf(
 								__( '%s archives', 'wpv-views' ),
@@ -402,7 +396,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 
 	<?php
 	}
-	
+
 	/**
 	 * Render subsection for assignment type "taxonomy archive"
 	 *
@@ -432,7 +426,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 					if( $is_assigned_to_other_ct ) {
 						$this->taxonomy_archives_assigned_to_other[] = $taxonomy_loop['slug'];
 					}
-					
+
 					if ( $taxonomy_loop['ct'] == $ct->id ) {
 						$this->taxonomy_archives_assigned_labels[] = sprintf(
 							__( '%s archives', 'wpv-views' ),
@@ -454,7 +448,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 
 	<?php
 	}
-	
+
 	/**
 	 * Render an item with a checkbox for the Usage settings.
 	 *
@@ -492,7 +486,9 @@ class Wpv_Content_Template_Editor_Section_Usage {
 							$value
 						);
 
-					} else if( is_array( $dissident_posts ) ) {
+					}
+
+					if ( is_array( $dissident_posts ) ) {
 						$post_type = esc_attr( $value );
 						$post_count = count( $dissident_posts );
 
@@ -510,8 +506,12 @@ class Wpv_Content_Template_Editor_Section_Usage {
 							$post_type,
 							$post_type,
 							$post_type,
-							sprintf( __( 'Bind %u %s', 'wpv-views' ), $post_count, $button_post_type_label ),
-							$post_type
+							sprintf(
+								/* translators: The button text for the buttons that binds a Content Template to the posts of the selected post type. */
+								esc_html( __( 'Bind %1$s %2$s', 'wpv-views' ) ),
+								sprintf( '<span data-bind="text: $root.dissidentPostsCountForPostType(\'%s\')"></span>', esc_html( $post_type ) ),
+								esc_html( $button_post_type_label )
+							)
 						);
 
 					}
@@ -520,7 +520,7 @@ class Wpv_Content_Template_Editor_Section_Usage {
 		</li>
 		<?php
 	}
-	
+
 }
 
 new Wpv_Content_Template_Editor_Section_Usage();

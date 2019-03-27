@@ -20,9 +20,6 @@
         _originalCredAutogenerateNicknameScaffold: "",
         _originalCredAutogeneratePasswordScaffold: "",
 
-        getLoader: function () {
-            return jQuery('#cred_ajax_loader_small_id');
-        },
         getFormType: function () {
             return jQuery('input[name="_cred[form][type]"]:checked').val();
         },
@@ -56,7 +53,11 @@
 
                     if (jQuery('#cred_post_status') && jQuery('#cred_post_status').length > 0
                         && jQuery("#cred_post_status option[value='original']").length <= 0) {
-                        jQuery($__my_option).appendTo("#cred_post_status");
+                        jQuery("#cred_post_status option").each(function () {
+                            if ('' === jQuery(this).val()) {
+                                jQuery( $toolsetFormsOriginalStatusOption ).insertAfter( jQuery( this ) );
+                            }
+                        });
                     }
                 }
             }
@@ -79,13 +80,13 @@
         },
         /**
          * Process fields gathered for this content type, and include generic fields in the form content.
-         * 
+         *
          * This will be later used to set notifications available targets.
-         * 
+         *
          * @param fields
-         * 
+         *
          * @return Object
-         * 
+         *
          * @since 2.1
          */
         processFieldsAndAddGeneric: function( fields ) {
@@ -101,7 +102,7 @@
             });
 
             fields.generic = {};
-            
+
             var genericFieldPattern = {
                 rx: /\[cred[\-_]generic[\-_]field\b([^\[\]]*?)\](.+?)\[\/cred[\-_]generic[\-_]field\]/g,
                 atts: 1,
@@ -163,16 +164,16 @@
         },
         /**
          * Gather fields based on their persistent nature by type, to keep the GUI updated.
-         * 
+         *
          * This will be later used to set notifications available targets.
-         * 
+         *
          * @param fields
-         * 
+         *
          * @return Object
-         * 
+         *
          * @since 2.1
          */
-        gatherPersistentFields: function( fields ) {console.log(fields);
+        gatherPersistentFields: function( fields ) {
             var persistentFields = {
                 userId: [],
                 mail: [],
@@ -182,7 +183,7 @@
                 allMetaFields: []
             },
             basicInAllMetaFields = [
-                'post_title', 'post_content', 'post_excerpt', 
+                'post_title', 'post_content', 'post_excerpt',
                 'user_login', 'user_pass', 'user_email', 'nickname', 'first_name', 'last_name', 'description'
             ];
 
@@ -194,7 +195,7 @@
                     if ( ! _.has( fieldItem, 'onForm' ) || ! fieldItem.onForm  ) {
                         return;
                     }
-                    
+
                     // Meta fields have a metaKey with the actual item key
                     var fieldActualKey = ( _.has( fieldItem, 'metaKey' ) ) ? fieldItem.metaKey : fieldKey,
                         formattedOption = { value: fieldActualKey, label: fieldItem.label };
@@ -206,13 +207,13 @@
                     // Some basic fields are also pushe to the allMetaFields entry
                     // so they can be used as conditions for notifications triggered
                     // when a "custom" field is modified.
-                    if ( 
-                        'basic' == fieldsGroupKey 
+                    if (
+                        'basic' == fieldsGroupKey
                         && _.contains( basicInAllMetaFields, fieldKey )
                     ) {
                         persistentFields.allMetaFields.push( formattedOption );
                     }
-                    
+
                     if ( _.has( fieldItem, 'type' ) ) {
                         if ( _.contains( [ 'email', 'mail' ], fieldItem.type ) ) {
                             persistentFields.mail.push( formattedOption );
@@ -228,7 +229,7 @@
                         }
                     }
 
-                    if ( 
+                    if (
                         _.has( fieldItem, 'shortcode')
                         && 'cred_field' == fieldItem.shortcode
                         && _.has( fieldItem, 'attributes' )
@@ -244,7 +245,7 @@
                             persistentFields.text.push( formattedOption );
                         }
                     }
-                    
+
                     if (
                         _.has( fieldItem, 'genericType' )
                         && 'user_id' == fieldItem.genericType
@@ -307,13 +308,11 @@
             var doinit = true,
                 $_post = jQuery('#post');
 
-
             // init model with current form data (one model for all data)
             _credModel = new mvc.Model('_cred', window._credFormData);
             // can use multiple views per same model
             _credView = new mvc.View('cred', _credModel, {
                 init: function () {
-
                     aux.checkCredFormType();
                     jQuery('input[name="_cred[form][type]"]').bind('change', function () {
                         aux.checkCredFormType();
@@ -321,9 +320,9 @@
 
                     /**
                      * Adjust the GUI when the post form is set to create RFG instances.
-                     * 
+                     *
                      * Triggered on document.ready and on optio change.
-                     * 
+                     *
                      * @since 2.0
                      */
                     function maybeAdjustGuiForRfg() {
@@ -362,11 +361,63 @@
                                 .prop( 'disabled', false );
                         }
                     };
+
+                    /**
+                     * Sets init scaffold data
+                     * First it loads the default content, then removes the items from the scaffold that are not included
+                     * in the list, and finally adds the items that are not included by default
+                     *
+                     * @since 2.3
+                     */
+                    function initScaffoldAndEvents() {
+                        if ( ( !! window._credFormData.extra.editor_origin && window._credFormData.extra.editor_origin === 'html' ) ||
+                                ( ! window._credFormData.extra.scaffold && jQuery('#content').val() ) ) {
+							jQuery( '#cred-editor-scaffold' ).hide();
+							jQuery( '#cred-editor-html' ).removeClass( 'hidden' ).show();
+                            jQuery( '#cred-editor-expert-mode-switcher' ).prop( 'checked', true ).removeAttr('disabled');
+                            WPV_Toolset.CodeMirror_instance[ 'content' ].refresh();
+                        } else if ( !! window._credFormData.extra.scaffold ) {
+                            // Data is modified in the model and it produces a JSON parse error
+                            var data = window._credFormData.extra.scaffold;
+                            data = data.replace( /{"value":"([^"]+)","label":"([^"]+)"}/g, '{\\"value\\":\\"$1\\",\\"label\\":\\"$2\\"}' );
+                            var scaffoldData = JSON.parse( data );
+                            var selectedValue = Toolset.hooks.applyFilters( 'cred-filter-get-current-form-target', '' );
+                            if ( '' !== selectedValue ) {
+                                // Loads the fields and then rearrange the items and set the options.
+                                Toolset.hooks.doAction( 'cred_editor_init_scaffold', Toolset.CRED.ScaffoldEditor.setInitialScaffoldItems.bind( null, scaffoldData ) );
+                            }
+						}
+
+						// Listen to form target changes to recreate the scaffold
+						// It is really important to binf this after document.ready,
+						// so we are already done with the MVC binding when loading the form editor;
+						// othrwise, edit user forms with several roles as target will get crazy
+						// and start restarting the form every time a role checkbox is initialized.
+						jQuery( document ).on( 'change', '#cred_post_type, [name="_cred[form][user_role][]"]', function( event ) {
+							// Debounce here: no need to fire this too often when doing fast changes
+							initScaffoldOnTargetChangeDebounced();
+						});
+					};
+
+					// Delay initializing the scaffold on target change by 1 second
+					// so when selecting multipele user roles to edit we do not
+					// overload the server with AJAX calls
+					var initScaffoldOnTargetChangeDebounced = _.debounce( initScaffoldOnTargetChange, 1000 );
+
+					function initScaffoldOnTargetChange() {
+						Toolset.hooks.doAction( 'cred_editor_init_scaffold', function() {
+							var scaffold = new Toolset.CRED.ScaffoldEditor();
+							scaffold.addFieldItemsWrapperAndRow();
+						} );
+					};
+
                     jQuery( document ).on('change', '#cred_post_type', function () {
                         maybeAdjustGuiForRfg();
-                    });
+					});
+
                     jQuery( document ).ready( function() {
                         maybeAdjustGuiForRfg();
+                        initScaffoldAndEvents();
                     });
 
                     var view = this,
@@ -509,12 +560,18 @@
 
                     /**
                      * Refresh the model with fields from the content.
-                     * 
+                     *
                      * @since unknown
                      */
                     function refreshFromFormFields() {
-                        
-                        Toolset.hooks.doAction( 'cred-action-maybe-request-and-operate-on-object-fields', 
+
+						// Refresh the editor content first if on d&d mode
+						var isHTMLSelected = jQuery( '#cred-editor-html' ).is( ':visible' );
+						if ( ! isHTMLSelected ) {
+							Toolset.hooks.doAction( 'cred_editor_insert_scaffold' );
+						}
+
+                        Toolset.hooks.doAction( 'cred-action-maybe-request-and-operate-on-object-fields',
                             function( cachedFields ) {
                                 var extendedFields = $.extend( true, {}, cachedFields );
                                 extendedFields = self.processFieldsAndAddGeneric( extendedFields );
@@ -559,8 +616,15 @@
 
                             if ($this.hasClass('active')) {
                                 $this[0]._pointer && $this[0]._pointer.pointer('close');
+                                $this[0]._pointer = null;
                                 return;
                             }
+
+                            jQuery('.js-cred-tip-link i').each( function() {
+                                if ( this !== $this[0] && !! this._pointer ) {
+                                    this._pointer.pointer( 'close' );
+                                }
+                            } );
 
                             $this.addClass('active');
                             // GUI framework handles pointers now
@@ -611,7 +675,7 @@
                             var notificationIndex = $el.data('notification'),
                                 notificationId = 'credmailbody' + notificationIndex,
                                 notificationBody = Toolset.hooks.applyFilters( 'cred_editor_get_codemirror_content', '', notificationId );
-                            
+
                                 model.set( '[notification][notifications][' + notificationIndex + '][mail][body]', notificationBody, true );
 
                             notification = $.extend(notification, model.get('[notification][notifications][' + notificationIndex + ']'));
@@ -768,66 +832,12 @@
                         return _do_submit();
                     });
 
-                    //remove margins and paddings from the submitbox meta
-
-                    jQuery(".submitbox").parent().addClass("cred-meta-box-no-margins");
-
                     // chain it
                     return this;
                 }
             });
             //cred settings
             settingsPage = cred_settings.settingsurl;
-
-            /*
-             *
-             *  ===================== init layout ================================
-             *
-             */
-
-            // add explain texts for title and content
-            jQuery('#titlediv')
-                .prepend('<p class="cred-explain-text">&nbsp;</p>');
-
-            // reduce FOUC a bit
-            $_post.find('.cred_related').removeClass('hide-if-js');
-
-            // hide some stuff
-            aux.getLoader().hide();
-            if (
-                !jQuery('#postbox-container-1').find('.cred_related').length
-            ) {
-                // if not module manager sidebar meta box exists
-                jQuery('#postbox-container-1').hide();
-                jQuery('#post-body').removeClass('columns-2').addClass('columns-1');
-                jQuery('#poststuff').removeClass('has-right-sidebar');
-                jQuery('#poststuff .inner-sidebar').hide();
-            }
-
-            // for CodeMirror compability with Wordpress 'send_to_editor' function
-            // keep original function as 'cred_send_to_editor' for use if not CodeMirror editor
-            if (undefined === window.cred_send_to_editor) {
-                window.cred_send_to_editor = window.send_to_editor;
-                window.send_to_editor = function (content) {
-                    try {
-                        if (wpActiveEditor) {
-                            var cm = utils.isCodeMirror(jQuery('#' + wpActiveEditor));
-                            if (cm) {
-                                utils.InsertAtCursor(jQuery('#' + wpActiveEditor), content.replace(/%%NL%%/g, NL));
-                                try {
-                                    tb_remove();
-                                } catch (e) {
-                                }
-                                ;
-                                return;
-                            }
-                        }
-                    } catch (e) {
-                    }
-                    // if not used for CodeMirror, execute Wordpress standard function
-                    cred_send_to_editor(content);
-                }
-            }
 
             /*
              *

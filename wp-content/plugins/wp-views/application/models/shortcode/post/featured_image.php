@@ -182,23 +182,18 @@ class WPV_Shortcode_Post_Featured_Image extends WPV_Shortcode_Base {
 					break;
 				case 'url':
 				default:
-					if ( $this->user_atts['size'] == 'full' ) {
-						$new_info = get_post( $post_thumbnail_id );
-						$out = isset( $new_info->guid ) ? $new_info->guid : '';
-					} else {
-						$out_array = wp_get_attachment_image_src( $post_thumbnail_id, $this->user_atts['size'] );
-						$out = $out_array[0];
+					$out_array = wp_get_attachment_image_src( $post_thumbnail_id, $this->user_atts['size'] );
+					$out = $out_array[0];
 
-						if ( 'custom' == $this->user_atts['size'] ) {
-							if ( $this->user_atts['crop'] ) {
-								$crop = array ( $this->user_atts['crop_horizontal'], $this->user_atts['crop_vertical'] );
-							}
+					if ( 'custom' == $this->user_atts['size'] ) {
+						if ( $this->user_atts['crop'] ) {
+							$crop = array ( $this->user_atts['crop_horizontal'], $this->user_atts['crop_vertical'] );
+						}
 
-							$image = $this->resize_image( $out_array[0], $this->user_atts['width'], $this->user_atts['height'], $crop );
+						$image = $this->resize_image( $out_array[0], $this->user_atts['width'], $this->user_atts['height'], $crop );
 
-							if ( ! is_wp_error( $image ) ) {
-								$out = $image;
-							}
+						if ( ! is_wp_error( $image ) ) {
+							$out = $image;
 						}
 					}
 

@@ -151,14 +151,24 @@ class CRED_StaticClass {
 
 		if ( $action == 'encrypt' ) {
 			if ( function_exists( "openssl_encrypt" ) ) {
-				$output = openssl_encrypt( $string, $encrypt_method, $key, 0, $iv );
+				if ( version_compare( PHP_VERSION, '5.3.3' ) >= 0 ) {
+					// @codingStandardsIgnoreLine PHPCompatibility.PHP.NewFunctionParameters.openssl_encrypt_ivFound
+					$output = openssl_encrypt( $string, $encrypt_method, $key, 0, $iv );
+				} else {
+					$output = openssl_encrypt( $string, $encrypt_method, $key );
+				}
 				$output = base64_encode( $output );
 			} else {
 				$output = base64_encode( $string );
 			}
 		} elseif ( $action == 'decrypt' ) {
 			if ( function_exists( "openssl_decrypt" ) ) {
-				$output = openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $iv );
+				if ( version_compare( PHP_VERSION, '5.3.3' ) >= 0 ) {
+					// @codingStandardsIgnoreLine PHPCompatibility.PHP.NewFunctionParameters.openssl_decrypt_ivFound
+					$output = openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $iv );
+				} else {
+					$output = openssl_decrypt( base64_decode( $string ), $encrypt_method, $key );
+				}
 			} else {
 				$output = base64_decode( $string );
 			}

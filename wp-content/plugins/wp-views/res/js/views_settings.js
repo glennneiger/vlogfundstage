@@ -744,51 +744,6 @@ WPViews.ViewsSettingsScreen = function( $ ) {
 	
 	/**
 	* --------------------
-	* Frontend edit links
-	* --------------------
-	*/
-	
-	self.show_edit_view_link_state = ( $( '.js-wpv-show-edit-view-link' ).length > 0 ) ? $( '.js-wpv-show-edit-view-link' ).prop( 'checked' ) : false;
-	
-	$( '.js-wpv-show-edit-view-link' ).on( 'change', function() {
-		self.frontend_links_options_debounce_update();
-	});
-	
-	self.save_frontend_links_options = function() {
-		if ( self.show_edit_view_link_state != $( '.js-wpv-show-edit-view-link' ).prop( 'checked' ) ) {
-			var data = {
-				action: 'wpv_update_show_edit_view_link_status',
-				status: $( '.js-wpv-show-edit-view-link' ).prop( 'checked' ),
-				wpnonce: $('#wpv_show_edit_view_link_nonce').val()
-			};
-			$( document ).trigger( 'js-toolset-event-update-setting-section-triggered' );
-			$.ajax({
-				type: "POST",
-				dataType: "json",
-				url: ajaxurl,
-				data: data,
-				success: function( response ) {
-					if ( response.success ) {
-						self.show_edit_view_link_state = $( '.js-wpv-show-edit-view-link' ).prop( 'checked' );
-						$( document ).trigger( 'js-toolset-event-update-setting-section-completed' );
-					} else {
-						$( document ).trigger( 'js-toolset-event-update-setting-section-failed', [ response.data ] );
-					}
-				},
-				error: function( ajaxContext ) {
-					$( document ).trigger( 'js-toolset-event-update-setting-section-failed' );
-				},
-				complete: function() {
-					
-				}
-			});
-		}
-	};
-	
-	self.frontend_links_options_debounce_update = _.debounce( self.save_frontend_links_options, 1000 );
-	
-	/**
-	* --------------------
 	* Theme debug
 	* --------------------
 	*/

@@ -299,7 +299,39 @@ WPViews.AddonMapsEditor = function( $ ) {
 
 		return tab_toggle;
 	};
-	
+
+	/**
+	 * Hooks initialization events to all inputs of the address editor which can lead to an address being input.
+	 *
+	 * @since 1.7
+	 * @param jQuery $that Address input field to hook initialization events to.
+	 */
+	self.initAddressFieldJIT = function( $that ) {
+		$that.one( 'focus', function() {
+			self.init_address_field( $that, true );
+		} );
+		$that.parent().find( '.js-toolset-google-map-latlon' ).one( 'focus', function() {
+			self.init_address_field( $that, true );
+		} );
+		$that.parent().find( '.js-toolset-google-map-use-visitor-location' ).one( 'click', function() {
+			self.init_address_field( $that, true );
+		} );
+	};
+
+	/**
+	 * Given address input field, answers if its map preview is initialized (as a falsy/truthy int)
+	 *
+	 * @since 1.7
+	 * @param jQuery $that address input field
+	 * @return {int}
+	 */
+	self.isMapPreviewInitialized = function( $that ) {
+		return $that
+			.parents( 'div.js-toolset-google-map-container' )
+			.children( 'div.js-toolset-google-map-preview' )
+			.length
+	};
+
 	/**
 	 * init_address_field
 	 *
@@ -312,7 +344,7 @@ WPViews.AddonMapsEditor = function( $ ) {
 	 * @since 1.4.2 Wait with init inside hidden Bootstrap accordion or tab until shown
 	 */
 
-    self.init_address_field = function( thiz ) {
+    self.init_address_field = function( thiz, jit ) {
 		
         if ( thiz.hasClass( 'js-toolset-google-map-geocomplete-added' ) ) {
             return;
@@ -369,24 +401,38 @@ WPViews.AddonMapsEditor = function( $ ) {
 				draggable: true
 			};
 		}
-		
-		self.recreate_input_structure( thiz_name );
-		
-		$( self.preview_structure )
-			.appendTo( thiz_container );
-		
-		$( self.inputs_structure )
-			.appendTo( thiz_inputs_container );
-		
-		var thiz_val = thiz.val(),
-		this_coordinates = thiz.data( 'coordinates' ),
+
+		if (
+			typeof jit === 'undefined'
+			&& !self.isMapPreviewInitialized( thiz )
+		) {
+			self.recreate_input_structure( thiz_name );
+
+			$( self.preview_structure )
+				.appendTo( thiz_container );
+
+			$( self.inputs_structure )
+				.appendTo( thiz_inputs_container );
+		}
+
+		var thiz_val = thiz.val();
+		// If this address field has no address value yet, wait with initializing preview and hook JIT initialization.
+		if (
+			!thiz_val
+			&& typeof jit === 'undefined'
+		) {
+			self.initAddressFieldJIT( thiz );
+			return;
+		}
+
+		var this_coordinates = thiz.data( 'coordinates' ),
 		this_map_options = {
 			map: $('.js-toolset-google-map-preview', thiz_container),
 			markerOptions: thiz_marker_options,
 			types: []
 		},
 		thiz_init_geocode = false;
-		
+
 		if ( '' != thiz_val ) {
 			thiz_init_geocode = true;
 		}
@@ -429,8 +475,7 @@ WPViews.AddonMapsEditor = function( $ ) {
 				thiz_init_geocode = false;
 			}
 		}
-		
-		
+
 		thiz_map = thiz
 			.geocomplete( this_map_options )
 			.bind( "geocode:result", function( event, result ) {
@@ -459,8 +504,7 @@ WPViews.AddonMapsEditor = function( $ ) {
 		}
 		
 		thiz.addClass( 'js-toolset-google-map-geocomplete-added' );
-		
-    }
+	};
 	
 	/**
 	* ###########################################

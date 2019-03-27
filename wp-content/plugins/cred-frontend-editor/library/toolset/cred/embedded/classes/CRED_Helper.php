@@ -406,33 +406,6 @@ final class CRED_Helper {
 			}
 			wp_enqueue_script( 'cred_settings' );
 		}
-		if ( ( self::$currentPage->isCustomPostEdit || self::$currentPage->isCustomPostNew || self::$currentPage->isCustomAdminPage ) ||
-			( self::$currentUPage->isCustomPostEdit || self::$currentUPage->isCustomPostNew || self::$currentUPage->isCustomAdminPage )
-		) {
-			?>
-            <style type="text/css">
-            /* Toolset Forms plugin ICONS */
-            #icon-CRED_Forms.icon32-posts-cred-form,
-            #icon-edit.icon32-posts-cred-form,
-            #icon-cred-frontend-editor {
-                background: transparent no-repeat 0 0;
-            }
-
-            <?php
-                if ( (self::$currentPage->isCustomPostEdit || self::$currentPage->isCustomPostNew) ||
-                        (self::$currentUPage->isCustomPostEdit || self::$currentUPage->isCustomPostNew) ) {
-                    ?>
-
-            /* reduce FOUC a bit */
-            #screen-meta-links,
-            .postbox:not(.cred_related),
-            #post .postbox:not(.cred_related),
-            .wrap div.error, .wrap div.updated {
-                display: none !important;
-            }
-            <?php } ?>
-            </style><?php
-		}
 	}
 
 	/**
@@ -453,7 +426,7 @@ final class CRED_Helper {
 	 * @param string $post_type
 	 */
 	public static function render_form_creation_notice( $form_type, $post_type ) {
-		
+
 		switch( $form_type ) {
 			case 'edit':
 				$help_link = CRED_CRED::$help['cred_inserting_edit_links']['link'];
@@ -469,16 +442,11 @@ final class CRED_Helper {
 				}
 				break;
 		}
-		
+
 		$message = ( $post_type == 'post' ? __( 'The post form was successfully saved.', 'wp-cred' ) : __( 'The user form was successfully saved.', 'wp-cred' ) );
 		$help_link_html = '<a target="_blank" href="' . $help_link . '">' . $help_text . '</a>';
-		?>
-        <div class="cred-notification cred-success">
-        <p>
-            <i class="fa fa-check"></i>
-			<?php echo $message . '&nbsp;' . $help_link_html; ?>
-        </p>
-        </div><?php
+		$notice = new Toolset_Admin_Notice_Success( 'render_form_creation_notice', $message . '&nbsp;' . $help_link_html );
+		$notice->render();
     }
 
     public static function add_form_valid_notice() {
@@ -656,6 +624,8 @@ final class CRED_Helper {
 								echo 'false';
 							}
 							?>);
+						<?php } else { ?>
+							Toolset.hooks.doAction( 'cred_editor_init_top_bar' );
 						<?php } ?>
                     });
                 })(jQuery);
@@ -734,9 +704,11 @@ final class CRED_Helper {
 	 * @return null|string
 	 */
 	public static function getWPMLCreateTermLang( $term_lang ) {
-		global $sitepress;
-		if ( is_object( $sitepress ) && empty( $term_lang ) ) {
-			$term_lang = $sitepress->get_current_language();
+		if (
+			apply_filters( 'toolset_is_wpml_active_and_configured', false )
+			&& empty( $term_lang )
+		) {
+			$term_lang = apply_filters( 'wpml_current_language', '' );
 		}
 
 		return $term_lang;
@@ -851,8 +823,8 @@ final class CRED_Helper {
 		}
 		// setup cred bypass form submissions
 		if ( defined( 'CRED_DISABLE_SUBMISSION' ) && CRED_DISABLE_SUBMISSION ) {
-			add_filter( 'cred_bypass_save_data', array( __CLASS__, '__true' ), 20 );
-			add_filter( 'cred_bypass_credaction', array( __CLASS__, '__true' ), 20 );
+			add_filter( 'cred_bypass_save_data', array( __CLASS__, '_true' ), 20 );
+			add_filter( 'cred_bypass_credaction', array( __CLASS__, '_true' ), 20 );
 			add_filter( 'cred_data_saved_message', array( __CLASS__, 'disableCREDSubmitMessage' ), 20 );
 			add_filter( 'cred_data_not_saved_message', array( __CLASS__, 'disableCREDSubmitMessage' ), 20 );
 		}
@@ -1381,7 +1353,7 @@ final class CRED_Helper {
 			}
 		}
 
-		$v = "<script type='text/javascript'>     
+		$v = "<script type='text/javascript'>
             function _cred_cred_parse_url(__url__, __params__)
             {
                 var __urlparts__ = __url__.split('?'), __urlparamblocks__, __paramobj__, __p__, __v__, __query_string__ = [], __ii__;
@@ -1439,7 +1411,7 @@ final class CRED_Helper {
 
             function _cred_cred_delete_post_handler(__isFromLink__, __link__, __url__, __result__, __message__, __message_show__)
             {
-            
+
                 var __ltext__ = '';
 
                 /*if (typeof __isFromLink__=='undefined')
@@ -1499,7 +1471,7 @@ final class CRED_Helper {
                             add: {
                                 '_cred_url': current_url[0] + (query_params_to_keep.length > 0 ? '?' + query_params_to_keep.join('&') : '')
                             }
-                        });                        
+                        });
                     }
                     jQuery(document).trigger('cred-post-delete-link-completed');
                     return true;
@@ -1507,7 +1479,7 @@ final class CRED_Helper {
                 else // callback from iframe return function
                 {
                     //console.log(__result__);
-                    
+
                     // success
                     if (__result__ && 101 == __result__)
                     {
@@ -1517,7 +1489,7 @@ final class CRED_Helper {
                         if (__linkel__) {
 
 
-                            //TODO: check WHY????? there is __linkel__.className.indexOf('cred-refresh-after-delete') >= 0                       
+                            //TODO: check WHY????? there is __linkel__.className.indexOf('cred-refresh-after-delete') >= 0
                             if (__url__ && __linkel__.className.indexOf('cred-refresh-after-delete') >= 0)
                             {
                                 document.location = __url__;
@@ -1526,7 +1498,7 @@ final class CRED_Helper {
                     }
                     else
                     {
-                        
+
                         if (404 == __result__)
                             alert('" . esc_js( __( 'No post defined', 'wp-cred' ) ) . "');
                         else if (505 == __result__)
@@ -1826,35 +1798,35 @@ final class CRED_Helper {
 			}
 			return '';
 		}
-		
+
 		$form_id = cred_get_form_id_by_form( $form );
-		
+
 		// Since m2m: support editing RFG items set by URL parameter
 		// Make sure we are indeed getting a RFG object ID by:
 		// - checking that it is indeed in an association, as a child
 		// - checking that this association belongs to a RFG relationship
-		if ( 
-			! $post_id 
-			&& isset( $_GET['cred_action'] ) 
-			&& 'edit_rfg' === $_GET['cred_action'] 
-			&& isset( $_GET['cred_rfg_id'] ) 
+		if (
+			! $post_id
+			&& isset( $_GET['cred_action'] )
+			&& 'edit_rfg' === $_GET['cred_action']
+			&& isset( $_GET['cred_rfg_id'] )
 		) {
 			if ( ! apply_filters( 'toolset_is_m2m_enabled', false ) ) {
 				return '';
 			}
-			
+
 			do_action( 'toolset_do_m2m_full_init' );
 			$cred_rfg_id = (int) $_GET['cred_rfg_id'];
-			
+
 			$association_query = new Toolset_Association_Query_V2();
 			$associations = $association_query
 				->limit( 1 )
 				->add( $association_query->element_id_and_domain( $cred_rfg_id, Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() ) )
 				->get_results();
-				
-			if ( 
-				is_array( $associations ) 
-				&& count( $associations ) 
+
+			if (
+				is_array( $associations )
+				&& count( $associations )
 			) {
 				$association = reset( $associations );
 				$relationship_origin = $association->get_definition()->get_origin();
@@ -1876,7 +1848,30 @@ final class CRED_Helper {
 		remove_shortcode( 'cred-form', array( __CLASS__, 'credFormShortcode' ) );
 		remove_shortcode( 'cred_form', array( __CLASS__, 'credFormShortcode' ) );
 
+		/**
+		 * Track the currently rendering form.
+		 *
+		 * @param \WP_Post $form
+		 * @param array attributes Set of attributes passed to this form shortcode
+		 * @since 2.2.1.1
+		 */
+		do_action(
+			'toolset_forms_frontend_flow_form_start',
+			$form,
+			array(
+				'form' => $form_identifier,
+				'post' => $post_id,
+			)
+		);
+
 		$output = CRED_CRED::get_form_builder()->get_form( $form_id, $post_id );
+
+		/**
+		 * End tracking the currently rendering form.
+		 *
+		 * @since 2.2.1.1
+		 */
+		do_action( 'toolset_forms_frontend_flow_form_end' );
 
 		add_shortcode( 'cred-form', array( __CLASS__, 'credFormShortcode' ) );
 		add_shortcode( 'cred_form', array( __CLASS__, 'credFormShortcode' ) );
@@ -1900,14 +1895,14 @@ final class CRED_Helper {
 		}
 
 		$form = cred_get_object_form( $form_identifier, CRED_USER_FORMS_CUSTOM_POST_NAME );
-		
+
 		if ( ! $form ) {
 			if ( current_user_can( 'manage_options' ) ) {
 				return sprintf( __( "The Toolset User Form %s does not exist", "wp-cred" ), $form_identifier );
 			}
 			return '';
 		}
-		
+
 		$form_id = cred_get_form_id_by_form( $form );
 
 		$fm = CRED_Loader::get( 'MODEL/UserForms' );
@@ -1927,7 +1922,30 @@ final class CRED_Helper {
 		remove_shortcode( 'cred-user-form', array( __CLASS__, 'credUserFormShortcode' ) );
 		remove_shortcode( 'cred_user_form', array( __CLASS__, 'credUserFormShortcode' ) );
 
+		/**
+		 * Track the currently rendering form.
+		 *
+		 * @param \WP_Post $form
+		 * @param array attributes Set of attributes passed to this form shortcode
+		 * @since 2.2.1.1
+		 */
+		do_action(
+			'toolset_forms_frontend_flow_form_start',
+			$form,
+			array(
+				'form' => $form_identifier,
+				'user' => $user_id,
+			)
+		);
+
 		$output = CRED_CRED::get_form_builder()->get_form( $form_id, $user_id );
+
+		/**
+		 * End tracking the currently rendering form.
+		 *
+		 * @since 2.2.1.1
+		 */
+		do_action( 'toolset_forms_frontend_flow_form_end' );
 
 		add_shortcode( 'cred-user-form', array( __CLASS__, 'credUserFormShortcode' ) );
 		add_shortcode( 'cred_user_form', array( __CLASS__, 'credUserFormShortcode' ) );
@@ -1939,12 +1957,12 @@ final class CRED_Helper {
 		// check to see if form preview is required
 		if ( isset( $_REQUEST['cred_user_form_preview'] ) ) {
 			add_filter( 'the_posts', array( __CLASS__, 'preview_user_form' ), 5000 );
-			add_filter( 'user_can_richedit', array( __CLASS__, '__true' ), 100 );
+			add_filter( 'user_can_richedit', array( __CLASS__, '_true' ), 100 );
 		}
 
 		if ( isset( $_REQUEST['cred_form_preview'] ) ) {
 			add_filter( 'the_posts', array( __CLASS__, 'preview_form' ), 5000 );
-			add_filter( 'user_can_richedit', array( __CLASS__, '__true' ), 100 );
+			add_filter( 'user_can_richedit', array( __CLASS__, '_true' ), 100 );
 		}
 
 		// IMPORTANT: add both formats of shortcodes, because the dashes are strange in shortcodes, so use underscores
@@ -2514,13 +2532,13 @@ final class CRED_Helper {
 		do_action( 'toolset_forms_enqueue_frontend_form_assets' );
 		return $out;
 	}
-	
+
 	// auxiliary functions
-	public static function __true() {
+	public static function _true() {
 		return true;
 	}
 
-	public static function __false() {
+	public static function _false() {
 		return false;
 	}
 
@@ -2628,13 +2646,13 @@ final class CRED_Helper {
 		$_current_timestamp = time();
 		if ( ( $_current_timestamp - $_last_run ) >= 43200 ) {
 			global $wpdb;
-			$querystr = $wpdb->prepare( 
-				"SELECT $wpdb->posts.ID, $wpdb->posts.post_modified 
-				FROM $wpdb->posts 
-				WHERE $wpdb->posts.post_status = 'auto-draft' 
-				AND $wpdb->posts.post_title LIKE %s 
-				ORDER by ID desc", 
-				"%CRED Auto Draft%" 
+			$querystr = $wpdb->prepare(
+				"SELECT $wpdb->posts.ID, $wpdb->posts.post_modified
+				FROM $wpdb->posts
+				WHERE $wpdb->posts.post_status = 'auto-draft'
+				AND $wpdb->posts.post_title LIKE %s
+				ORDER by ID desc",
+				"%CRED Auto Draft%"
 			);
 			$_myposts = $wpdb->get_results( $querystr, OBJECT );
 
@@ -2746,13 +2764,12 @@ final class CRED_Helper {
 		if ( ! $form_id ) {
 			return $messages_array;
 		}
-		
+
 		$form_type = get_post_type( $form_id );
-		
+
 		switch ( $form_type ) {
 			case 'cred_rel_form':
 				return get_post_meta( $form_id, 'messages', true );
-				break;
 			default:
 				$forms_model = CRED_Loader::get( 'MODEL/Forms' );
 				$form_post = get_post( $form_id );
@@ -2765,7 +2782,7 @@ final class CRED_Helper {
 				}
 				break;
 		}
-		
+
         return $messages_array;
     }
 

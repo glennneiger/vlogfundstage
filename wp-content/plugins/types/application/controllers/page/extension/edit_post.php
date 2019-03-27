@@ -5,9 +5,8 @@
  *
  * @since 2.0
  */
-final class Types_Page_Extension_Edit_Post {
+class Types_Page_Extension_Edit_Post {
 
-	private static $instance;
 
 	/**
 	 * We need to modifiy the $_POST data for updating RFG items
@@ -17,20 +16,14 @@ final class Types_Page_Extension_Edit_Post {
 	 */
 	private $backup_post_data = array();
 
-	public static function get_instance() {
-		if ( null == self::$instance ) {
-			self::$instance = new self();
-		}
 
-		return self::$instance;
-	}
+	public function initialize() {
 
-	private function __construct() {
 		$post = wpcf_admin_get_edited_post();
 		$post_type = wpcf_admin_get_edited_post_type( $post );
 
 		// if no post or no page
-		if ( $post_type != 'post' && $post_type != 'page' ) {
+		if ( $post_type !== 'post' && $post_type !== 'page' ) {
 			$post_type_option = new Types_Utils_Post_Type_Option();
 			$custom_types = $post_type_option->get_post_types();
 
@@ -39,16 +32,10 @@ final class Types_Page_Extension_Edit_Post {
 				// RFG/PRF saving for third party cpt
 				$this->repeatable_group_save();
 				add_action( 'wpcf_fields_type_post_save', array( $this, 'post_reference_save' ), 10, 3 );
-				return false;
+				return;
 			}
 		}
 
-		$this->prepare();
-	}
-
-	private function __clone() { }
-
-	public function prepare() {
 		// documentation urls
 		Types_Helper_Url::load_documentation_urls();
 
@@ -174,7 +161,9 @@ final class Types_Page_Extension_Edit_Post {
 	 *
 	 * @return mixed
 	 */
-	public function filter_conditional_value_for_rfg( $value, $field_type, $field_slug = null ) {
+	public function filter_conditional_value_for_rfg(
+		$value, /** @noinspection PhpUnusedParameterInspection */ $field_type, $field_slug = null
+	) {
 		if( $field_slug === null ) {
 			// no field_slug given
 			return $value;
@@ -227,6 +216,7 @@ final class Types_Page_Extension_Edit_Post {
 	 * @param WPCF_Field $wpcf_field
 	 *
 	 * @return mixed
+	 * @throws Toolset_Element_Exception_Element_Doesnt_Exist
 	 */
 	public function post_reference_save( $value, $field, $wpcf_field ) {
 		$new_parent_id = $value;

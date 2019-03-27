@@ -131,12 +131,14 @@ class Toolset_Potential_Association_Query_Posts implements IToolset_Potential_As
 			'fields' => 'all',
 
 			'posts_per_page' => $this->get_items_per_page(),
-			'paged' => $this->get_page()
+			'paged' => $this->get_page(),
 		);
 
 		$search_string = $this->get_search_string();
 		if( ! empty( $search_string ) ) {
 			$query_args['s'] = $search_string;
+			$query_args['orderby'] = 'title';
+			$query_args['order'] = 'ASC';
 		}
 
 		$elements_to_exclude = $this->get_exclude_elements();
@@ -181,8 +183,19 @@ class Toolset_Potential_Association_Query_Posts implements IToolset_Potential_As
 			$augment_query_for_cardinality_limits->before_query();
 		}
 
+		// Make sure the order of the results is correct. See the PostResultOrder class for details.
+		$augment_query_orderby = $this->query_factory->post_result_order_adjustments(
+			$this->relationship,
+			$this->target_role,
+			$this->for_element,
+			$join_manager
+		);
+		$augment_query_orderby->before_query();
+
 		$query = $this->query_factory->wp_query( $query_args );
 		$results = $query->get_posts();
+
+		$augment_query_orderby->after_query();
 
 		if( $check_distinct_relationships ) {
 			/** @noinspection PhpUndefinedVariableInspection */

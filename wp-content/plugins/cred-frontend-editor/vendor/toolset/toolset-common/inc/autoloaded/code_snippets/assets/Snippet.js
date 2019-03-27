@@ -36,6 +36,7 @@ Toolset.page.codeSnippets.Snippet = function(modelSource, fieldActions, listingV
     self.runMode = self.createModelProperty(ko.observable, model, 'runMode');
     self.runContexts = self.createModelProperty(ko.observableArray, model, 'runContexts');
     self.lastError = self.createModelProperty(ko.observable, model, 'lastError');
+    self.hasSecurityCheck = self.createModelProperty(ko.observable, model, 'hasSecurityCheck');
 
 
     self.getModel = function() { return model; };
@@ -144,6 +145,10 @@ Toolset.page.codeSnippets.Snippet = function(modelSource, fieldActions, listingV
 
         hasLastError: ko.pureComputed(function() {
             return self.lastError().length > 0;
+        }),
+
+        hasWarning: ko.pureComputed(function() {
+            return ( ! self.display.hasLastError() && ! self.hasSecurityCheck() );
         })
     };
 

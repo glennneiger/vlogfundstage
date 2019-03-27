@@ -58,6 +58,9 @@ class WPV_WPML_Shortcodes_Translation {
 		add_action( 'wpv_action_wpv_after_set_loop_meta_html', array( $this, 'register_shortcode_attributes_to_translate' ), 20, 2 );
 		add_action( 'wpv_action_wpv_after_set_content_raw', array( $this, 'register_wpml_strings' ) );
 		add_action( 'wpv_action_wpv_after_set_content_raw', array( $this, 'register_shortcode_attributes_to_translate' ), 20, 2 );
+
+		add_action( 'save_post', array( $this, 'register_wpml_strings_for_save_post' ), 10, 2 );
+		add_action( 'save_post', array( $this, 'register_shortcode_attributes_to_translate_for_save_post' ), 20, 2 );
 	}
 
 	/**
@@ -80,6 +83,7 @@ class WPV_WPML_Shortcodes_Translation {
 			'wpv-pager-archive-nav-links' => array( $this, 'fake_wpv_pagination_shortcode_to_wpml_register_string' ),
 			'wpv-post-previous-link' => array( $this, 'fake_wpv_post_shortcode_to_wpml_register_string' ),
 			'wpv-post-next-link' => array( $this, 'fake_wpv_post_shortcode_to_wpml_register_string' ),
+			'wpv-post-excerpt' => array( $this, 'fake_wpv_post_shortcode_to_wpml_register_string' ),
 			'toolset-edit-post-link' => array( $this, 'fake_toolset_edit_link_to_wpml_register_string' ),
 			'toolset-edit-user-link' => array( $this, 'fake_toolset_edit_link_to_wpml_register_string' ),
 			'wpv-filter-search-box' => array( $this, 'fake_wpv_filter_search_box_shortcode_to_wpml_register_string' ),
@@ -123,6 +127,24 @@ class WPV_WPML_Shortcodes_Translation {
 			$this->register_shortcodes_to_translate( $content, $fake_shortcodes );
 
 			$this->set_context( '' );
+		}
+	}
+
+	/**
+	 * Register shortcode attributes for translation for the "save_post" hook.
+	 *
+	 * @param int     $id The ID of the post being saved.
+	 * @param WP_Post $post The WP_Post object instance of the post being saved.
+	 *
+	 * @since 2.7.0
+	 */
+	public function register_shortcode_attributes_to_translate_for_save_post( $id, $post ) {
+		if (
+			is_int( $id ) &&
+			$post instanceof WP_Post &&
+			property_exists( $post, 'post_content' )
+		) {
+			$this->register_shortcode_attributes_to_translate( $post->post_content, $id );
 		}
 	}
 
@@ -178,6 +200,23 @@ class WPV_WPML_Shortcodes_Translation {
 			);
 			$this->register_shortcodes_to_translate( $content, $fake_shortcodes );
 
+		}
+	}
+
+	/**
+	 * Register the [wpml-string] shortcodes on WPML for the "save_post" hook.
+	 *
+	 * @param int     $id The ID of the post being saved.
+	 * @param WP_Post $post The WP_Post object instance of the post being saved.
+	 *
+	 * @since 2.7.0
+	 */
+	public function register_wpml_strings_for_save_post( $id, $post ) {
+		if (
+			$post instanceof WP_Post &&
+			property_exists( $post, 'post_content' )
+		) {
+			$this->register_wpml_strings( $post->post_content );
 		}
 	}
 
@@ -517,7 +556,6 @@ class WPV_WPML_Shortcodes_Translation {
 	 * @since 2.5.0 Moved to a new Class, WPV_WPML_Shortcodes_Translation.
 	 */
 	public function fake_wpv_post_shortcode_to_wpml_register_string( $atts, $content, $tag ) {
-
 		if ( ! $this->is_wpml_active_and_configured() ) {
 			return;
 		}
@@ -526,15 +564,22 @@ class WPV_WPML_Shortcodes_Translation {
 			return;
 		}
 
+		$wpml_context = '';
 		$atts_to_names_for_labels = array();
 		switch ( $tag ) {
 			case 'wpv-post-previous-link':
+				$wpml_context = $this->get_wpml_context_attribute( $atts, 'wpv-post-previous-link' );
 				$atts_to_names_for_labels['format'] = 'post_control_for_previous_link_format';
 				$atts_to_names_for_labels['link'] = 'post_control_for_previous_link_text';
 				break;
 			case 'wpv-post-next-link':
+				$wpml_context = $this->get_wpml_context_attribute( $atts, 'wpv-post-next-link' );
 				$atts_to_names_for_labels['format'] = 'post_control_for_next_link_format';
 				$atts_to_names_for_labels['link'] = 'post_control_for_next_link_text';
+				break;
+			case 'wpv-post-excerpt':
+				$wpml_context = $this->get_wpml_context_attribute( $atts, 'wpv-post-excerpt' );
+				$atts_to_names_for_labels['more'] = 'post_control_for_excerpt_more_text';
 				break;
 			default:
 				return;
@@ -545,7 +590,8 @@ class WPV_WPML_Shortcodes_Translation {
 				if ( strpos( $att_key, $att_for_label ) === 0 ) {
 					$att_meta_key = substr( $att_key, strlen( $att_for_label ) );
 					$name = $name_for_label . $att_meta_key . '_' . md5( $att_value );
-					do_action( 'wpml_register_single_string', $this->_context, $name, $att_value );
+					$context = '' !== $wpml_context ? $wpml_context : $this->_context;
+					do_action( 'wpml_register_single_string', $context, $name, $att_value );
 					break;
 				}
 			}
@@ -703,5 +749,19 @@ class WPV_WPML_Shortcodes_Translation {
 				do_action( 'wpml_register_single_string', $this->_context, sprintf( $name, $att_to_translate ), $shortcodes_atts[ $att_to_translate ] );
 			}
 		}
+	}
+
+	/**
+	 * Gets the custom WPML context, if it is defined in the shortcode's arguments.
+	 *
+	 * @param array  $atts
+	 * @param string $default_context
+	 *
+	 * @return string
+	 *
+	 * @since 2.7.0
+	 */
+	private function get_wpml_context_attribute( $atts, $default_context) {
+		return isset( $atts['wpml_context'] ) && '' !== $atts['wpml_context'] ? $atts['wpml_context'] : $default_context;
 	}
 }

@@ -44,7 +44,7 @@ class WPV_Shortcode_Post_Previous_Link_GUI extends WPV_Shortcode_Base_GUI {
 							'type'        => 'text',
 							'label'       => __( 'Format', 'wpv-views' ),
 							'description' => __( 'The link anchor format. Should contain \'%%LINK%%\' in order to display a link, otherwise it will create plain text. Default \'&laquo; %%LINK%%\'.', 'wpv-views' ),
-							'default'     => '%%LINK%% &raquo;',
+							'default'     => '&laquo; %%LINK%%',
 						),
 						'link' => array(
 							'type'        => 'text',
@@ -56,8 +56,18 @@ class WPV_Shortcode_Post_Previous_Link_GUI extends WPV_Shortcode_Base_GUI {
 				),
 			)
 		);
+
+		$default_context = 'wpv-post-previous-link';
+		/**
+		 * Gets the custom WPML context data for the GUI.
+		 *
+		 * @param array   $data
+		 * @param string  $default_context
+		 *
+		 * @since 2.6.4
+		 */
+		$data = apply_filters( 'wpv_filter_wpv_shortcodes_gui_wpml_context_data' , $data, $default_context );
+
 		return $data;
 	}
-	
-	
 }

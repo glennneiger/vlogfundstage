@@ -7,13 +7,13 @@ use OTGS\Toolset\CRED\Model\Field\Generic\Gui as GenericGui;
 
 /**
  * Abstract class to extend for each of the editor toolbars.
- * 
+ *
  * This one is responsible of printing toolbar button and including the assets to make them work.
- * 
+ *
  * @since 2.1
  */
 abstract class Base {
-	
+
 	/**
 	 * Main toolbar script handle and relative path templates.
 	 */
@@ -23,12 +23,12 @@ abstract class Base {
 	const JS_TOOLBAR_I18N_NAME = 'cred_%s_form_%s_editor_toolbar_i18n';
 
 	const CSS_TOOLBAR = 'cred_editor_toolbar';
-	
+
 	/**
 	 * Editor domain: post|user|association
 	 *
 	 * @var string
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $editor_domain;
@@ -37,16 +37,16 @@ abstract class Base {
 	 * Toolbar target: ID of the editor it is attached to.
 	 *
 	 * @var string
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $editor_target;
-	
+
 	/**
 	 * Toolbar required scripts.
 	 *
 	 * @var array
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $scripts = array();
@@ -55,16 +55,16 @@ abstract class Base {
 	 * Toolbar required styles.
 	 *
 	 * @var array
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $styles = array();
-	
+
 	/**
 	 * Toolset_Assets_Manager instance.
 	 *
 	 * @var \Toolset_Assets_Manager
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	public $assets_manager;
@@ -73,7 +73,7 @@ abstract class Base {
 	 * Main toolbar script handle.
 	 *
 	 * @var string
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $js_toolbar_handle;
@@ -82,7 +82,7 @@ abstract class Base {
 	 * Main toolbar script relative path.
 	 *
 	 * @var string
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $js_toolbar_relpath;
@@ -91,24 +91,24 @@ abstract class Base {
 	 * Main toolbar script localization object name.
 	 *
 	 * @var string
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected $js_toolbar_i18n_name;
-	
+
 	public function initialize() {
-		
+
 		$this->assets_manager = \Toolset_Assets_Manager::get_instance();
-		
+
 		$this->js_toolbar_handle = sprintf( self::JS_TOOLBAR_HANDLE, $this->editor_domain, $this->editor_target );
 		$this->js_toolbar_relpath = sprintf( self::JS_TOOLBAR_REL_PATH, $this->editor_domain, $this->editor_target );
 		$this->js_toolbar_i18n_name = sprintf( self::JS_TOOLBAR_I18N_NAME, $this->editor_domain, $this->editor_target );
-		
+
 		$this->add_hooks();
 		$this->init_assets();
 		$this->load_assets();
 	}
-	
+
 	/**
 	 * Register the required hooks.
 	 * - Print toolbar buttons.
@@ -125,7 +125,7 @@ abstract class Base {
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_assets') );
 		add_action( 'admin_footer', array( $this, 'print_templates' ) );
 	}
-	
+
 	/**
 	 * Print the toolbar buttons for the main editor.
 	 * Each subclass will print their own based on their domain.
@@ -137,7 +137,7 @@ abstract class Base {
 	/**
 	 * Print the toolbar buttons for the notification subject input.
 	 * Each subclass will print their own based on their domain.
-	 * 
+	 *
 	 * @param string $editor_id
 	 *
 	 * @since 2.1
@@ -147,7 +147,7 @@ abstract class Base {
 	/**
 	 * Print the toolbar buttons for the notification body editor.
 	 * Each subclass will print their own based on their domain.
-	 * 
+	 *
 	 * @param string $editor_id
 	 *
 	 * @since 2.1
@@ -157,7 +157,7 @@ abstract class Base {
 	/**
 	 * Print the toolbar buttons for the message after submitting the form.
 	 * Each subclass will print their own based on their domain.
-	 * 
+	 *
 	 * @param string $editor_id
 	 *
 	 * @since 2.1
@@ -175,7 +175,7 @@ abstract class Base {
 	 * Print a single toolbar button.
 	 *
 	 * @param array $args
-	 * 
+	 *
 	 * @uses OTGS\Toolset\CRED\Controller\FormEditorToolbar\Button
 	 * @since 2.1
 	 */
@@ -199,13 +199,6 @@ abstract class Base {
 	 * @since 2.1
 	 */
 	protected function print_default_buttons() {
-		$this->print_button(
-			array(
-				'slug' => 'scaffold',
-				'label' => __( 'Auto-generate form content', 'wp-cred' ),
-				'icon' => '<i class="fa fa-lg fa-magic" aria-hidden="true"></i>'
-			)
-		);
 		$this->print_button(
 			array(
 				'slug' => 'fields',
@@ -238,8 +231,21 @@ abstract class Base {
 	}
 
 	/**
+	 * Print third party buttons, including Toolset buttons.
+	 *
+	 * @since 2.2.1
+	 */
+	protected function print_third_party_buttons() {
+		do_action(
+			'wpv_action_wpv_generate_fields_and_views_button',
+			$this->editor_target,
+			array( 'output' => 'button' )
+		);
+	}
+
+	/**
 	 * Print the media button.
-	 * 
+	 *
 	 * @param int $post_id Post to attach media to.
 	 * @param string Optional ID for the target editor, defaults to the main editor.
 	 *
@@ -260,7 +266,7 @@ abstract class Base {
 			)
 		);
 	}
-	
+
 	/**
 	 * Register the toolbar assets:
 	 * - generic prototype for toolbar management.
@@ -272,28 +278,28 @@ abstract class Base {
 	 */
 	protected function init_assets() {
 
-		$this->assets_manager->register_style( 
-			self::CSS_TOOLBAR, 
+		$this->assets_manager->register_style(
+			self::CSS_TOOLBAR,
 			CRED_ABSURL . '/public/form_editor_toolbar/css/editor_toolbar.css',
-			array( 'editor-buttons' ), 
-			CRED_FE_VERSION 
+			array( 'editor-buttons' ),
+			CRED_FE_VERSION
 		);
 
 		$this->assets_manager->register_script(
-			self::JS_TOOLBAR_PROTOTYPE, 
+			self::JS_TOOLBAR_PROTOTYPE,
 			CRED_ABSURL . '/public/form_editor_toolbar/js/prototype.js',
 			array(
-				'jquery', 
-				'jquery-ui-dialog', 
-				'jquery-ui-tabs', 
-				'jquery-ui-sortable', 
-				'shortcode', 
-				'underscore', 
-				'wp-util', 
+				'jquery',
+				'jquery-ui-dialog',
+				'jquery-ui-tabs',
+				'jquery-ui-sortable',
+				'shortcode',
+				'underscore',
+				'wp-util',
 				\Toolset_Assets_Manager::SCRIPT_TOOLSET_SHORTCODE,
 				\Toolset_Assets_Manager::SCRIPT_TOOLSET_MEDIA_MANAGER
 			),
-			CRED_FE_VERSION 
+			CRED_FE_VERSION
 		);
 
 		$this->assets_manager->register_script(
@@ -302,11 +308,11 @@ abstract class Base {
 			array( self::JS_TOOLBAR_PROTOTYPE ),
 			CRED_FE_VERSION
 		);
-		
+
 		// Maybe no need to enqueue the media because it is a native post edit page.
 		// But as we are removing the native editor, it might be needd, so keep it.
 		wp_enqueue_media();
-		
+
 		$this->assets_manager->localize_script(
 			$this->js_toolbar_handle,
 			$this->js_toolbar_i18n_name,
@@ -314,13 +320,13 @@ abstract class Base {
 		);
 
 		$this->scripts[ $this->js_toolbar_handle ] = $this->js_toolbar_handle;
-		
+
 		$this->styles[ \Toolset_Assets_Manager::STYLE_TOOLSET_COMMON ] = \Toolset_Assets_Manager::STYLE_TOOLSET_COMMON;
 		$this->styles[ \Toolset_Assets_Manager::STYLE_TOOLSET_DIALOGS_OVERRIDES ] = \Toolset_Assets_Manager::STYLE_TOOLSET_DIALOGS_OVERRIDES;
 		$this->styles[ \Toolset_Assets_Manager::STYLE_SELECT2_CSS ] = \Toolset_Assets_Manager::STYLE_SELECT2_CSS;
 		$this->styles[ \Toolset_Assets_Manager::STYLE_FONT_AWESOME ] = \Toolset_Assets_Manager::STYLE_FONT_AWESOME;
 		$this->styles[ self::CSS_TOOLBAR ] = self::CSS_TOOLBAR;
-		
+
 		do_action( 'otg_action_otg_enforce_styles' );
 	}
 
@@ -329,18 +335,10 @@ abstract class Base {
 	 * This set gets completed by each subclass for its own script.
 	 *
 	 * @return array
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected function get_shared_script_localization() {
-		$is_WPML = apply_filters( 'toolset_is_wpml_active_and_configured', false );
-		$scaffold_options = array();
-
-		if ( $is_WPML ) {
-			$scaffold_options['wpml'] = array(
-				'label' => __( 'Include WPML localization', 'wp-cred' )
-			);
-		}
 
 		$generic_fields_gui = new GenericGui();
 
@@ -352,11 +350,6 @@ abstract class Base {
 				'back' => __( 'Back', 'wp-cred' )
 			),
 			'dialog' => array(
-				'scaffold' => array(
-					'header' => __( 'Auto-generate form content', 'wp-cred' ),
-					'introduction' => __( 'Drag fields to arrange their position in the form. If fields are not defined as "required" in Types, you can also remove them from the form by clicking on the "eye" icons.', 'wp-cred' ),
-					'options' => $scaffold_options
-				),
 				'fields' => array(
 					'header' => __( 'Add fields to the form', 'wp-cred' )
 				),
@@ -383,7 +376,7 @@ abstract class Base {
 			)
 		);
 	}
-	
+
 	/**
 	 * Enqueue the toolbar registered scripts and styles.
 	 *
@@ -393,12 +386,9 @@ abstract class Base {
 		do_action( 'toolset_enqueue_scripts', $this->scripts );
 		do_action( 'toolset_enqueue_styles', $this->styles );
 	}
-	
+
 	/**
 	 * Print the toolbar templates:
-	 * - Scaffold dialog.
-	 * - Scaffold item.
-	 * - Scaffol item options.
 	 * - Fields dialog.
 	 * - Generic fields dialog.
 	 * - Generic fields options table and row.
@@ -411,25 +401,12 @@ abstract class Base {
 	 * @since 2.1
 	 */
 	public function print_templates() {
-		
+
 		do_action( 'toolset_action_require_shortcodes_templates' );
-		
+
 		$template_repository = \CRED_Output_Template_Repository::get_instance();
 		$renderer = \Toolset_Renderer::get_instance();
-		
-		$renderer->render(
-			$template_repository->get( \CRED_Output_Template_Repository::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_DIALOG ),
-			null
-		);
-		$renderer->render(
-			$template_repository->get( \CRED_Output_Template_Repository::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM ),
-			null
-		);
-		$renderer->render(
-			$template_repository->get( \CRED_Output_Template_Repository::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS ),
-			null
-		);
-		
+
 		$renderer->render(
 			$template_repository->get( \CRED_Output_Template_Repository::CONTENT_EDITOR_TOOLBAR_FIELDS_DIALOG ),
 			null
@@ -468,7 +445,7 @@ abstract class Base {
 			$template_repository->get( \CRED_Output_Template_Repository::NOTIFICATION_EDITOR_TOOLBAR_PLACEHOLDERS_ITEM ),
 			null
 		);
-		
+
 	}
-	
+
 }

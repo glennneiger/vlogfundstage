@@ -113,6 +113,22 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
             add_filter( 'toolset_editor_add_form_buttons', array( $this, 'return_false' ), self::TOOLSET_BUTTONS_FILTER_PRIORITY );
             $editor_classnames[] = 'js-toolset-wysiwyg-skip-toolset';
 		}
+
+	    // When we're disabling a form element, make sure we also submit it.
+	    // See https://onthegosystems.myjetbrains.com/youtrack/issue/types-1784#focus=streamItem-102-308144-0-0
+	    // for a lengthy explanation of why it is needed.
+	    //
+	    // There's no better way than using the_editor filter, unfortunately. wp_editor() doesn't allow adding
+	    // custom attributes to the underlying textarea.
+	    $add_submitanyway = function( $markup ) {
+			$search = '<textarea';
+			$replacement = '<textarea data-submitanyway ';
+			$updated_markup = str_replace( $search, $replacement, $markup );
+
+			return $updated_markup;
+		};
+
+		add_filter( 'the_editor', $add_submitanyway, 100 );
 		
         wp_editor( $this->getValue(), $id, array(
             'wpautop' => true, // use wpautop?
@@ -127,6 +143,9 @@ class WPToolset_Field_Wysiwyg extends WPToolset_Field_Textarea {
             'tinymce' => true, // load TinyMCE, can be used to pass settings directly to TinyMCE using an array()
             'quicktags' => $quicktags // load Quicktags, can be used to pass settings directly to Quicktags using an array(),
         ) );
+
+        remove_filter( 'the_editor', $add_submitanyway, 100 );
+
         $return = ob_get_clean() . "\n\n";
         if (
             isset( $attributes['readonly'] ) && $attributes['readonly'] == 'readonly'

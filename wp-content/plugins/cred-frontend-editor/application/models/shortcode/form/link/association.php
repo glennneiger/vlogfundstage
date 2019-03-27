@@ -7,10 +7,10 @@ namespace OTGS\Toolset\CRED\Model\Shortcode\Form\Link;
  *
  * @since m2m
  */
-class Association 
-	extends Base 
+class Association
+	extends Base
 	implements \CRED_Shortcode_Interface, \CRED_Shortcode_Interface_Conditional {
-	
+
 	const SHORTCODE_NAME = 'cred-relationship-form-link';
 
 	/**
@@ -22,7 +22,7 @@ class Association
      * @var \Toolset_Condition_Plugin_Layouts_Active
      */
     private $layouts_condition;
-    
+
     /**
 	 * @param \Toolset_Shortcode_Attr_Interface $item
      * @param \Toolset_Condition_Plugin_Views_Active $di_views_condition
@@ -41,7 +41,7 @@ class Association
             ? $di_layouts_condition
             : new \Toolset_Condition_Plugin_Layouts_Active();
 	}
-	
+
 	/**
 	 * @var array
 	 */
@@ -56,22 +56,22 @@ class Association
 		'parent_item' => '',
 		'child_item'  => ''
 	);
-	
+
 	/**
 	 * @return bool
 	 *
 	 * @since m2m
 	 */
 	public function condition_is_met() {
-		return ( 
-			apply_filters( 'toolset_is_m2m_enabled', false ) 
+		return (
+			apply_filters( 'toolset_is_m2m_enabled', false )
 			&& (
-				$this->views_condition->is_met() 
-				|| $this->layouts_condition->is_met() 
+				$this->views_condition->is_met()
+				|| $this->layouts_condition->is_met()
 			)
 		);
 	}
-	
+
 	/**
 	* Get the shortcode output value.
 	*
@@ -85,37 +85,37 @@ class Association
 	public function get_value( $atts, $content = null ) {
 		$this->user_atts    = shortcode_atts( $this->shortcode_atts, $atts );
 		$this->user_content = $content;
-		
-		if ( 
+
+		if (
 			(
 				empty( $this->user_atts['content_template_slug'] )
-				&& empty( $this->user_atts['layout_slug'] ) 
+				&& empty( $this->user_atts['layout_slug'] )
 			)
-			|| empty( $this->user_atts['form'] ) 
+			|| empty( $this->user_atts['form'] )
 			|| (
-				empty( $this->user_atts['parent_item'] )  
-				&& empty( $this->user_atts['child_item'] ) 
+				empty( $this->user_atts['parent_item'] )
+				&& empty( $this->user_atts['child_item'] )
 				&& empty( $this->user_atts['role_items'] )
 			)
 		) {
 			// Linking to nothing: no add new X to Y, no edit current association, no CT
 			return '';
 		}
-		
+
 		$link_attributes = array();
 		$link = $this->get_link_href();
-		
+
 		if ( is_wp_error( $link ) ) {
 			if ( current_user_can( 'manage_options' ) ) {
 				return $link->get_error_message();
 			}
 			return '';
 		}
-		
+
 		if ( null === $link ) {
 			return '';
 		}
-		
+
 		if ( ! empty( $this->user_atts['layout_slug'] ) ) {
 			$layout_id = apply_filters( 'ddl-get_layout_id_by_slug', 0, $this->user_atts['layout_slug'] );
 			if ( $layout_id ) {
@@ -131,29 +131,29 @@ class Association
 				return '';
 			}
 		}
-		
+
 		$link = add_query_arg( $link_attributes, $link );
-		
-		$this->classnames = empty( $this->user_atts['class'] ) 
-			? array() 
+
+		$this->classnames = empty( $this->user_atts['class'] )
+			? array()
 			: explode( ' ', $this->user_atts['class'] );
-		
+
 		$this->classnames[] = 'cred-edit-relationship';
-		
+
 		$this->attributes = array(
 			'class' => $this->classnames,
 			'style' => $this->user_atts['style'],
 			'href'  => $link,
 			'target' => in_array( $this->user_atts['target'], array( 'top', 'blank' ) ) ? ( '_' . $this->user_atts['target'] ) : ''
 		);
-		
+
 		if ( empty( $this->attributes['href'] ) ) {
 			return '';
 		}
-		
+
 		return $this->craft_link_output();
 	}
-	
+
 	/**
 	 * Check whether the shortcome points to the current association.
 	 *
@@ -164,7 +164,7 @@ class Association
 	private function can_link_to_current_association() {
 		return ( ! empty( $this->user_atts['role_items'] ) );
 	}
-	
+
 	/**
 	 * Check whether the shortcome points to an association by setting the involved items.
 	 *
@@ -175,7 +175,7 @@ class Association
 	private function can_link_to_association_by_roles() {
 		return ( ! empty( $this->user_atts['parent_item'] ) && ! empty( $this->user_atts['child_item'] ) );
 	}
-	
+
 	/**
 	 * Get the link target basic URL.
 	 *
@@ -187,14 +187,14 @@ class Association
 		if ( $this->can_link_to_current_association() ) {
 			return $this->get_current_association_url();
 		}
-		
+
 		if ( $this->can_link_to_association_by_roles() ) {
 			return $this->get_association_url_by_roles();
 		}
-		
+
 		return $this->get_available_role_url();
 	}
-	
+
 	/**
 	 * Get the current form object.
 	 *
@@ -205,7 +205,7 @@ class Association
 	protected function get_object_form() {
 		return cred_get_object_form( $this->user_atts['form'], \CRED_Association_Form_Main::ASSOCIATION_FORMS_POST_TYPE );
 	}
-	
+
 	/**
 	 * Get the link target basic URL based on the current association.
 	 *
@@ -215,29 +215,29 @@ class Association
 	 */
 	private function get_current_association_url() {
 		$form_object = $this->get_object_form();
-		
+
 		if ( ! $form_object instanceof \WP_Post ) {
 			return new \WP_Error(
 				'missing-relationship-form',
 				__( 'This relationship form no longer exists', 'wp-cred' )
 			);
 		}
-		
+
 		if ( 'publish' != $form_object->post_status ) {
 			return new \WP_Error(
 				'unpublished-relationship-form',
 				__( 'This relationship form is not published', 'wp-cred' )
 			);
 		}
-		
+
 		$relationship_slug = get_post_meta( $form_object->ID, 'relationship', true );
 
 		$related_item_one = $this->get_role_id( '$fromfilter' );
 		$related_item_two = $this->get_role_id( '$current' );
 
-		
-		if ( 
-			empty( $related_item_one ) 
+
+		if (
+			empty( $related_item_one )
 			|| empty( $related_item_two )
 		) {
 			return new \WP_Error(
@@ -248,39 +248,39 @@ class Association
 
 		$relationship_repository = \Toolset_Relationship_Definition_Repository::get_instance();
 		$relationship_definition = $relationship_repository->get_definition( $relationship_slug );
-		
+
 		if ( ! $relationship_definition instanceof \Toolset_Relationship_Definition ) {
 			return new \WP_Error(
 				'missing-relationship',
 				__( 'This relationship form refers to a relationship that no longer exists', 'wp-cred' )
 			);
 		}
-		
+
 		if ( ! $relationship_definition->is_active() ) {
 			return new \WP_Error(
 				'missing-relationship',
 				__( 'This relationship form refers to a relationship that is not active', 'wp-cred' )
 			);
 		}
-		
+
 		$association_query = new \Toolset_Association_Query_V2();
 		$association_query->add( $association_query->relationship_slug( $relationship_slug ) );
-		
+
 		$condition_one = $association_query->do_and(
-			$association_query->element_id_and_domain( $related_item_one, \Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Parent() ), 
-			$association_query->element_id_and_domain( $related_item_two, \Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() )
+			$association_query->element_id_and_domain( $related_item_one, \Toolset_Element_Domain::POSTS, new \Toolset_Relationship_Role_Parent() ),
+			$association_query->element_id_and_domain( $related_item_two, \Toolset_Element_Domain::POSTS, new \Toolset_Relationship_Role_Child() )
 		);
 		$condition_two = $association_query->do_and(
-			$association_query->element_id_and_domain( $related_item_two, \Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Parent() ), 
-			$association_query->element_id_and_domain( $related_item_one, \Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() )
+			$association_query->element_id_and_domain( $related_item_two, \Toolset_Element_Domain::POSTS, new \Toolset_Relationship_Role_Parent() ),
+			$association_query->element_id_and_domain( $related_item_one, \Toolset_Element_Domain::POSTS, new \Toolset_Relationship_Role_Child() )
 		);
-		
+
 		$association_query->add( $association_query->do_or( $condition_one, $condition_two ) );
 		$association_query->limit( 1 );
-		
+
 		$associations = $association_query->get_results();
 
-		
+
 		if ( ! count( $associations ) ) {
 			return new \WP_Error(
 				'missing-associatio',
@@ -288,12 +288,12 @@ class Association
 			);
 		}
 
-		// Link to the association single frontend page with the right CT upon it, and make sure 
+		// Link to the association single frontend page with the right CT upon it, and make sure
 		// we pass the parent and child IDs in URL parameters. It is *needed*
-		
+
 		return $this->craft_association_url( $associations[0] );
 	}
-	
+
 	/**
 	 * Get the link target basic URL based on an association set by the involved items.
 	 *
@@ -304,28 +304,28 @@ class Association
 	private function get_association_url_by_roles() {
 		// Link to the vailable role with the right URL parameter on it
 		$form_object = $this->get_object_form();
-		
+
 		if ( ! $form_object instanceof \WP_Post ) {
 			return new \WP_Error(
 				'missing-relationship-form',
 				__( 'This relationship form no longer exists', 'wp-cred' )
 			);
 		}
-		
+
 		if ( 'publish' != $form_object->post_status ) {
 			return new \WP_Error(
 				'unpublished-relationship-form',
 				__( 'This relationship form is not published', 'wp-cred' )
 			);
 		}
-		
+
 		$relationship_slug = get_post_meta( $form_object->ID, 'relationship', true );
-		
+
 		$related_parent = $this->get_role_id( $this->user_atts['parent_item'] );
 		$related_child = $this->get_role_id( $this->user_atts['child_item'] );
-		
-		if ( 
-			empty( $related_parent ) 
+
+		if (
+			empty( $related_parent )
 			|| empty( $related_child )
 		) {
 			return new \WP_Error(
@@ -333,65 +333,72 @@ class Association
 				__( 'The items in the conection are not well defined', 'wp-cred' )
 			);
 		}
-		
+
 		$relationship_repository = \Toolset_Relationship_Definition_Repository::get_instance();
 		$relationship_definition = $relationship_repository->get_definition( $relationship_slug );
-		
+
 		if ( ! $relationship_definition instanceof \Toolset_Relationship_Definition ) {
 			return new \WP_Error(
 				'missing-relationship',
 				__( 'This relationship form refers to a relationship that no longer exists', 'wp-cred' )
 			);
 		}
-		
+
 		if ( ! $relationship_definition->is_active() ) {
 			return new \WP_Error(
 				'missing-relationship',
 				__( 'This relationship form refers to a relationship that is not active', 'wp-cred' )
 			);
 		}
-		
+
 		$association_query = new \Toolset_Association_Query_V2();
 		$association_query->add( $association_query->relationship_slug( $relationship_slug ) );
-		
+
 		$condition = $association_query->do_and(
-			$association_query->element_id_and_domain( $related_parent, \Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Parent() ), 
+			$association_query->element_id_and_domain( $related_parent, \Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Parent() ),
 			$association_query->element_id_and_domain( $related_child, \Toolset_Element_Domain::POSTS, new Toolset_Relationship_Role_Child() )
 		);
-		
+
 		$association_query->add( $condition );
 		$association_query->limit( 1 );
-		
+
 		$associations = $association_query->get_results();
-		
+
 		if ( ! count( $associations ) ) {
 			return new \WP_Error(
 				'missing-associatio',
 				__( 'The items in the conection are not actually connected', 'wp-cred' )
 			);
 		}
-		
+
 		return $this->craft_association_url( $associations[0] );
 	}
-	
+
 	/**
 	 * Get the link target basic URL based on an association pbject.
 	 *
+	 * @param IToolset_Association $association Current association.
 	 * @return string
 	 *
 	 * @since m2m
 	 */
 	private function craft_association_url( $association ) {
-		$association_id = $association->get_intermediary_id();
-		$association_url = get_permalink( $association_id );
+		$intermediary_post = $association->get_element( new \Toolset_Relationship_Role_Intermediary() );
+		$intermediary_post_type = get_post_type_object( $intermediary_post->get_type() );
+		// Editing Relationship Forms need IPT to be publicly queryable. If don't return an error.
+		if ( ! $intermediary_post_type->publicly_queryable ) {
+			// translators: A relationship has a post type (named intermediary) that has to be public for the users.
+			return new \WP_Error( 'editing_relationship_form_ipt_not_public', __( 'The Relationship\'s Intermediary Post Type must be public in order to edit the association', 'wp-cred' ) );
+		}
+		$association_url = get_permalink( $intermediary_post->get_id() );
 		return add_query_arg(
-			array( 
+			array(
 				\CRED_Shortcode_Association_Helper::ACTION_URL_PARAMETER => \CRED_Shortcode_Association_Helper::ACTION_URL_EDIT
 			),
 			$association_url
 		);
 	}
-	
+
 	/**
 	 * Get the link target basic URL based on an item part of the relationship.
 	 *
@@ -402,39 +409,39 @@ class Association
 	private function get_available_role_url() {
 		// Link to the vailable role with the right URL parameter on it
 		$form_object = $this->get_object_form();
-		
+
 		if ( ! $form_object instanceof \WP_Post ) {
 			return new \WP_Error(
 				'missing-relationship-form',
 				__( 'This relationship form no longer exists', 'wp-cred' )
 			);
 		}
-		
+
 		if ( 'publish' != $form_object->post_status ) {
 			return new \WP_Error(
 				'unpublished-relationship-form',
 				__( 'This relationship form is not published', 'wp-cred' )
 			);
 		}
-		
+
 		$relationship_slug = get_post_meta( $form_object->ID, 'relationship', true );
 		$relationship_repository = \Toolset_Relationship_Definition_Repository::get_instance();
 		$relationship_definition = $relationship_repository->get_definition( $relationship_slug );
-		
+
 		if ( ! $relationship_definition instanceof \Toolset_Relationship_Definition ) {
 			return new \WP_Error(
 				'missing-relationship',
 				__( 'This relationship form refers to a relationship that no longer exists', 'wp-cred' )
 			);
 		}
-		
+
 		if ( ! $relationship_definition->is_active() ) {
 			return new \WP_Error(
 				'missing-relationship',
 				__( 'This relationship form refers to a relationship that is not active', 'wp-cred' )
 			);
 		}
-		
+
 		if ( ! empty( $this->user_atts['parent_item'] ) ) {
 			$role_id = $this->get_role_id( $this->user_atts['parent_item'] );
 			if ( ! $role_id ) {
@@ -445,8 +452,8 @@ class Association
 			}
 			$role_type = get_post_type( $role_id );
 			$relationship_definition_parent = $relationship_definition->get_parent_type()->get_types();
-			if ( 
-				! $role_type 
+			if (
+				! $role_type
 				|| ! in_array( $role_type, $relationship_definition_parent )
 			) {
 				return new \WP_Error(
@@ -456,13 +463,13 @@ class Association
 			}
 			$role_url = get_permalink( $role_id );
 			return add_query_arg(
-				array( 
+				array(
 					\CRED_Shortcode_Association_Helper::ACTION_URL_PARAMETER => \CRED_Shortcode_Association_Helper::ACTION_URL_NEW_CHILD
 				),
 				$role_url
 			);
 		}
-		
+
 		if ( ! empty( $this->user_atts['child_item'] ) ) {
 			$role_id = $this->get_role_id( $this->user_atts['child_item'] );
 			if ( ! $role_id ) {
@@ -473,8 +480,8 @@ class Association
 			}
 			$role_type = get_post_type( $role_id );
 			$relationship_definition_child = $relationship_definition->get_child_type()->get_types();
-			if ( 
-				! $role_type 
+			if (
+				! $role_type
 				|| ! in_array( $role_type, $relationship_definition_child )
 			) {
 				return new \WP_Error(
@@ -484,13 +491,13 @@ class Association
 			}
 			$role_url = get_permalink( $role_id );
 			return add_query_arg(
-				array( 
+				array(
 					\CRED_Shortcode_Association_Helper::ACTION_URL_PARAMETER => \CRED_Shortcode_Association_Helper::ACTION_URL_NEW_PARENT
 				),
 				$role_url
 			);
 		}
-		
+
 		return null;
 	}
 
@@ -507,5 +514,5 @@ class Association
 		$result_value = $this->item->get( array( 'item' => $source ) );
 		return $result_value;
 	}
-	
+
 }

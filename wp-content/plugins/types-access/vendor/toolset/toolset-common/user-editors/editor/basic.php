@@ -11,7 +11,16 @@
 class Toolset_User_Editors_Editor_Basic
 	extends Toolset_User_Editors_Editor_Abstract {
 
-	protected $id = 'basic';
+	const BASIC_SCREEN_ID = 'basic';
+
+	/**
+	 * @var string
+	 */
+	protected $id = self::BASIC_SCREEN_ID;
+
+	/**
+	 * @var string
+	 */
 	protected $name = 'HTML';
 
 	public function initialize() {
@@ -47,11 +56,11 @@ class Toolset_User_Editors_Editor_Basic
 					'_toolset_user_editors_editor_choice', true
 				),
 				array(
-					Toolset_User_Editors_Editor_Screen_Divi_Backend::DIVI_SCREEN_ID,
-					Toolset_User_Editors_Editor_Screen_Avada_Backend::AVADA_SCREEN_ID,
-					Toolset_User_Editors_Editor_Screen_Visual_Composer_Backend::VC_SCREEN_ID,
-					Toolset_User_Editors_Editor_Screen_Native_Backend::NATIVE_SCREEN_ID,
-					Toolset_User_Editors_Editor_Screen_Beaver_Backend::BEAVER_SCREEN_ID,
+					Toolset_User_Editors_Editor_Divi::DIVI_SCREEN_ID,
+					Toolset_User_Editors_Editor_Avada::AVADA_SCREEN_ID,
+					Toolset_User_Editors_Editor_Visual_Composer::VC_SCREEN_ID,
+					Toolset_User_Editors_Editor_Native::NATIVE_SCREEN_ID,
+					Toolset_User_Editors_Editor_Beaver::BEAVER_SCREEN_ID,
 				)
 			)
 		) {

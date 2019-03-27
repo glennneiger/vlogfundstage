@@ -69,6 +69,9 @@ Toolset.CRED.AssociationFormsListing.viewmodels.ListingViewModel = function( ite
         var clonedFormModel = {
             'post_title' : data.post_object.post_title,
             'relationship_slug' : formDefinition.relationshipName(),
+            'relationship_label' : formDefinition.relationshipLabel(),
+            'post_modified' : formDefinition.lastModified(),
+            'post_modified_visible' : formDefinition.lastModifiedVisible(),
             'type' : '',
             'ID' : data.post_object.ID,
             'slug' : data.post_object.post_name

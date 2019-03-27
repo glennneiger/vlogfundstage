@@ -10,36 +10,29 @@
 class Toolset_User_Editors_Editor_Divi
 	extends Toolset_User_Editors_Editor_Abstract {
 
+	const DIVI_SCREEN_ID = 'divi';
 	const DIVI_BUILDER_OPTION_NAME = '_et_pb_use_builder';
 	const DIVI_BUILDER_OPTION_VALUE = 'on';
 
 	/**
-	 * @var Toolset_Constants
+	 * @var string
 	 */
-	private $constants;
+	protected $id = self::DIVI_SCREEN_ID;
 
 	/**
-	 * @var Toolset_Common_Bootstrap
+	 * @var string
 	 */
-	private $tc_bootstrap;
-
-	protected $id = 'divi';
 	protected $name = 'Divi Builder';
+
+	/**
+	 * @var string
+	 */
 	protected $option_name = '_toolset_user_editors_divi_template';
 
+	/**
+	 * @var string
+	 */
 	protected $logo_class = 'toolset-divi-logo-for-ct-button';
-
-	public function __construct( Toolset_User_Editors_Medium_Interface $medium, Toolset_Common_Bootstrap $tc_bootstrap = null, Toolset_Constants $constants = null ) {
-		parent::__construct( $medium );
-
-		$this->constants = $constants
-			? $constants
-			: new Toolset_Constants();
-
-		$this->tc_bootstrap = $tc_bootstrap
-			? $tc_bootstrap
-			: Toolset_Common_Bootstrap::get_instance();
-	}
 
 	public function initialize() {
 		if ( apply_filters( 'wpv_filter_is_native_editor_for_cts', false ) ) {

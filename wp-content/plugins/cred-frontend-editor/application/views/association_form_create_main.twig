@@ -5,7 +5,7 @@
 <div class="wrap">
 
     {% block title %}
-        <h1><span class="wp-core-ui" data-bind="text: pageTitle">{{ strings.misc.currentPageTitle }}</span></h1>
+        <h1 class="wp-heading-inline"><span class="wp-core-ui" data-bind="text: pageTitle">{{ strings.misc.currentPageTitle }}</span></h1>
     {% endblock %}
 
     <div id="message" data-bind="threeModeVisibility: messageVisibilityMode, attr: { class: 'notice is-dismissible ' + messageNagClass() }">

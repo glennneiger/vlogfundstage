@@ -8,19 +8,17 @@ require_once 'class.textfield.php';
 
 class WPToolset_Field_Skype extends WPToolset_Field_Textfield {
 
-	protected $_defaults = array(
-		'skypename' => '',
-		'action' => 'chat',
-		'color' => 'blue',
-		'size' => 32,
-	);
-
 	public function init() {
 		$this->set_placeholder_as_attribute();
 	}
 
 	public function metaform() {
-		$value = wp_parse_args( $this->getValue(), $this->_defaults );
+		$maybe_legacy_value = $value = $this->getValue();
+
+		if( is_array( $maybe_legacy_value ) && isset( $maybe_legacy_value['skypename'] ) ) {
+			$value = $maybe_legacy_value['skypename'];
+		}
+
 		$attributes = $this->getAttr();
 		$shortcode_class = array_key_exists( 'class', $attributes ) ? $attributes['class'] : "";
 		$attributes['class'] = "js-wpt-skypename js-wpt-cond-trigger regular-text {$shortcode_class}"; // What is this js-wpt-cond-trigger classname for?
@@ -32,43 +30,13 @@ class WPToolset_Field_Skype extends WPToolset_Field_Textfield {
 			'#type' => 'textfield',
 			'#title' => $this->getTitle(),
 			'#description' => $this->getDescription(),
-			'#name' => $this->getName() . "[skypename]",
+			'#name' => $this->getName(),
 			'#attributes' => array(),
-			'#value' => $value['skypename'],
+			'#value' => $value,
 			'#validate' => $this->getValidationData(),
 			'#attributes' => $attributes,
 			'#repetitive' => $this->isRepetitive(),
 			'wpml_action' => $wpml_action,
-		);
-
-		/**
-		 * action
-		 */
-		$form[] = array(
-			'#type' => 'hidden',
-			'#value' => $value['action'],
-			'#name' => $this->getName() . '[action]',
-			'#attributes' => array( 'class' => 'js-wpt-skype-action' ),
-		);
-
-		/**
-		 * color
-		 */
-		$form[] = array(
-			'#type' => 'hidden',
-			'#value' => $value['color'],
-			'#name' => $this->getName() . '[color]',
-			'#attributes' => array( 'class' => 'js-wpt-skype-color' ),
-		);
-
-		/**
-		 * size
-		 */
-		$form[] = array(
-			'#type' => 'hidden',
-			'#value' => $value['size'],
-			'#name' => $this->getName() . '[size]',
-			'#attributes' => array( 'class' => 'js-wpt-skype-size' ),
 		);
 
 		if ( ! Toolset_Utils::is_real_admin() ) {
@@ -82,17 +50,6 @@ class WPToolset_Field_Skype extends WPToolset_Field_Textfield {
 			! wpcf_wpml_post_is_original() &&
 			wpcf_wpml_have_original();
 
-		if (
-			Toolset_Utils::is_real_admin() &&
-			$wpcf_wpml_condition
-		) {
-			$button_element['#attributes']['disabled'] = 'disabled';
-		}
-
-		foreach ( $value as $key => $val ) {
-			$button_element['#attributes'][ 'data-' . esc_attr( $key ) ] = $val;
-		}
-		$form[] = $button_element;
 
 		return $form;
 	}

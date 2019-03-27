@@ -8,8 +8,10 @@
     font-size: 20px;
     font-weight: 400;
 }
+.cred-wizard-buttons {
+    padding-top: 60px;
+}
 .wp-core-ui .button-wizard {
-    margin-top: 60px;
     height: 43px;
     font-size: 15px;
     padding: 0 15px;
@@ -128,4 +130,29 @@
 }
 .wizard-content.active {
     display: block;
+}
+
+.cred-wizard-step-wrapper-title #title-prompt-text {
+	display: none;
+}
+.cred-top-bar .cred-wizard-header {
+	display: none;
+}
+#poststuff .cred-wizard-step-wrapper-title h2 {
+	margin: 1em 0;
+}
+.cred-top-bar .cred-wizard-step-wrapper-title {
+    display: inline;
+}
+.cred-top-bar .cred-wizard-step-wrapper-title tr td:first-child {
+    display: none;
+}
+.cred-top-bar .cred-wizard-step-wrapper-title table {
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: inline;
+}
+.cred-top-bar .cred-wizard-step-wrapper-title table td {
+	padding: 0;
 }

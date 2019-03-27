@@ -59,11 +59,11 @@ abstract class Toolset_Field_Group_Factory {
 	 */
 	public static function get_factory_by_domain( $domain ) {
 		switch( $domain ) {
-			case Toolset_Field_Utils::DOMAIN_POSTS:
+			case Toolset_Element_Domain::POSTS:
 				return Toolset_Field_Group_Post_Factory::get_instance();
-			case Toolset_Field_Utils::DOMAIN_USERS:
+			case Toolset_Element_Domain::USERS:
 				return Toolset_Field_Group_User_Factory::get_instance();
-			case Toolset_Field_Utils::DOMAIN_TERMS:
+			case Toolset_Element_Domain::TERMS:
 				return Toolset_Field_Group_Term_Factory::get_instance();
 			default:
 				throw new InvalidArgumentException( 'Invalid field domain.' );
@@ -431,5 +431,16 @@ abstract class Toolset_Field_Group_Factory {
 		}
 		return $group_names;
 	}
+
+
+	/**
+	 * Retrieve groups that should be displayed with a certain element, taking all possible conditions into account.
+	 *
+	 * @param IToolset_Element $element Element of the domain matching the field group.
+	 * @return Toolset_Field_Group[]
+	 * @throws InvalidArgumentException On invalid input (e.g. if the element's domain doesn't match the factory domain).
+	 * @since Types 3.3
+	 */
+	abstract public function get_groups_for_element( IToolset_Element $element );
 
 }

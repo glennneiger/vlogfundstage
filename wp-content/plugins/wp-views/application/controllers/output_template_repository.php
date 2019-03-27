@@ -8,7 +8,7 @@
  * @since m2m
  */
 class WPV_Output_Template_Repository extends Toolset_Output_Template_Repository_Abstract {
-	
+
 	const VIEWS_LISTING_PAGE_HELP = '/admin/help/views-listing-page-help.phtml';
 	const VIEWS_EDIT_PAGE_HELP = '/admin/help/views-edit-page-help.phtml';
 	const CONTENT_TEMPLATES_LISTING_PAGE_HELP = '/admin/help/content-templates-listing-page-help.phtml';
@@ -18,12 +18,24 @@ class WPV_Output_Template_Repository extends Toolset_Output_Template_Repository_
 
 	const ADMIN_FILTERS_POST_RELATIONSHIP_ANCESTOR_NODE = '/admin/filters/post/relationship/ancestor_node.phtml';
 
+	const EDITOR_SECTION_SHARED_TOP_BAR_TITLE = '/admin/editor/shared/top_bar_titlediv.phtml';
+	const EDITOR_SECTION_SHARED_TOP_BAR_SAVE_FORM_ACTIONS = '/admin/editor/shared/top_bar_save_form_actions.phtml';
+	const EDITOR_SECTION_SHARED_TOP_BAR_DESCRIBE_ACTIONS = '/admin/editor/shared/top_bar_describe_actions.phtml';
+
 	const VIEWS_EDITOR_VIEW_WRAPPER_SECTION = '/admin/views-editor/sections/view-wrapper.phtml';
 
 	const VIEWS_EDITOR_VIEW_WRAPPER_DISABLE_FOR_SEPARATORS_LIST = '/admin/views-editor/pointers/view-wrapper-disable-for-separators-list.phtml';
 
 	// Views Settings
 	const VIEWS_SETTINGS_PAGE_BUILDER_OPTIONS = '/admin/settings/page-builder-options.phtml';
+
+	const MCE_VIEW_WPV_POST_BODY = '/mce/wpv-post-body.phtml';
+	const MCE_VIEW_WPV_VIEW = '/mce/wpv-view.phtml';
+
+	const SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_IF = '/shortcode-gui/wpv-conditional/if.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_IF_ROW = '/shortcode-gui/wpv-conditional/if-row.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_SHORTCODES = '/shortcode-gui/wpv-conditional/shortcodes.phtml';
+	const SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_FUNCTIONS = '/shortcode-gui/wpv-conditional/functions.phtml';
 
 	/**
 	 * @var array|null Template definition cache.
@@ -82,21 +94,48 @@ class WPV_Output_Template_Repository extends Toolset_Output_Template_Repository_
 				self::WORDPRESS_ARCHIVES_EDIT_PAGE_HELP => array(
 					'namespaces' => array()
 				),
-				
+
 				self::ADMIN_FILTERS_POST_RELATIONSHIP_ANCESTOR_NODE => array(
 					'namespaces' => array()
+				),
+
+				self::EDITOR_SECTION_SHARED_TOP_BAR_TITLE => array(
+					'namespaces' => array(),
+				),
+				self::EDITOR_SECTION_SHARED_TOP_BAR_SAVE_FORM_ACTIONS => array(
+					'namespaces' => array(),
+				),
+				self::EDITOR_SECTION_SHARED_TOP_BAR_DESCRIBE_ACTIONS => array(
+					'namespaces' => array(),
 				),
 
 				self::VIEWS_EDITOR_VIEW_WRAPPER_SECTION => array(
 					'namespaces' => array(),
 				),
-
 				self::VIEWS_EDITOR_VIEW_WRAPPER_DISABLE_FOR_SEPARATORS_LIST => array(
 					'namespaces' => array(),
 				),
 
 				// Views Settings
 				self::VIEWS_SETTINGS_PAGE_BUILDER_OPTIONS => array(
+					'namespaces' => array(),
+				),
+				self::MCE_VIEW_WPV_POST_BODY => array(
+					'namespaces' => array(),
+				),
+				self::MCE_VIEW_WPV_VIEW => array(
+					'namespaces' => array(),
+				),
+				self::SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_IF => array(
+					'namespaces' => array(),
+				),
+				self::SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_IF_ROW => array(
+					'namespaces' => array(),
+				),
+				self::SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_SHORTCODES => array(
+					'namespaces' => array(),
+				),
+				self::SHORTCODE_GUI_ATTRIBUTE_CONDITIONAL_FUNCTIONS => array(
 					'namespaces' => array(),
 				),
 			);

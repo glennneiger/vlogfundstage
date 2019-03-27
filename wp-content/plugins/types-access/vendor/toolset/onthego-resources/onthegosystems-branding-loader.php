@@ -1,13 +1,14 @@
 <?php
 
-if( class_exists('OnTheGoSystemsStyles_Class') ) {
-    return;
-};
+if ( defined('ON_THE_GO_SYSTEMS_BRANDING_VERSION') ) return;
+
+if( !defined('ON_THE_GO_SYSTEMS_BRANDING_VERSION') ){
+	define( 'ON_THE_GO_SYSTEMS_BRANDING_VERSION', '2.1' );
+}
 
 if( !defined('ON_THE_GO_SYSTEMS_BRANDING_ABS_PATH') ){
     define( 'ON_THE_GO_SYSTEMS_BRANDING_ABS_PATH', dirname(__FILE__) );
 }
-
 
 if( !defined('ON_THE_GO_SYSTEMS_BRANDING_CLASSES_PATH') ){
     define( 'ON_THE_GO_SYSTEMS_BRANDING_CLASSES_PATH', dirname(__FILE__) . '/classes/' );

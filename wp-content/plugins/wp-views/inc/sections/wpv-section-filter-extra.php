@@ -3,7 +3,7 @@
 WPV_Editor_Filter_Editor::on_load();
 
 class WPV_Editor_Filter_Editor {
-	
+
 	static function on_load() {
 		// Register the section in the screen options of the editor pages
 		add_filter( 'wpv_screen_options_editor_section_filter',		array( 'WPV_Editor_Filter_Editor', 'wpv_screen_options_filter_editor' ), 20 );
@@ -17,7 +17,7 @@ class WPV_Editor_Filter_Editor {
 
 		add_action( 'wp_ajax_wpv_custom_search_define_query_filter',				array( 'WPV_Editor_Filter_Editor', 'wpv_custom_search_define_query_filter' ) );
 	}
-	
+
 	static function wpv_screen_options_filter_editor( $sections ) {
 		$sections['filter-extra'] = array(
 			'name'		=> __( 'Search and Pagination', 'wpv-views' ),
@@ -28,7 +28,7 @@ class WPV_Editor_Filter_Editor {
 
 	static function wpv_editor_section_filter_editor( $view_settings, $view_id ) {
 		$is_section_hidden = false;
-		if ( 
+		if (
 			isset( $view_settings['sections-show-hide'] )
 			&& isset( $view_settings['sections-show-hide']['filter-extra'] )
 			&& 'off' == $view_settings['sections-show-hide']['filter-extra'] )
@@ -48,10 +48,10 @@ class WPV_Editor_Filter_Editor {
 		 *
 		 * In case you need to select this particular element in JS, please use the "js-wpv-filter-extra-section" class,
 		 * which is unique.
-		 */ 
-		
+		 */
+
 		$section_help_pointer = WPV_Admin_Messages::edit_section_help_pointer( 'filters_html_css_js' );
-		
+
 		$view_settings['filter_meta_html'] = ( isset( $view_settings['filter_meta_html'] ) && ! empty( $view_settings['filter_meta_html'] ) ) ? $view_settings['filter_meta_html'] : "[wpv-filter-start hide=\"false\"]\n[wpv-filter-controls][/wpv-filter-controls]\n[wpv-filter-end]";
 		?>
 		<div class="wpv-setting-container wpv-setting-container-horizontal wpv-settings-filter-markup js-wpv-settings-filter-extra js-wpv-filter-extra-section <?php echo $hidden_class; ?>">
@@ -59,32 +59,36 @@ class WPV_Editor_Filter_Editor {
 			<div class="wpv-settings-header">
 				<h2>
 					<?php _e( 'Search and Pagination', 'wpv-views' ) ?>
-					<i class="icon-question-sign fa fa-question-circle js-display-tooltip" 
-						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>" 
+					<i class="icon-question-sign fa fa-question-circle js-display-tooltip"
+						data-header="<?php echo esc_attr( $section_help_pointer['title'] ); ?>"
 						data-content="<?php echo esc_attr( $section_help_pointer['content'] ); ?>">
 					</i>
+					<span class="js-wpv-update-button-wrap">
+						<span class="js-wpv-message-container"></span>
+						<input type="hidden" data-success="<?php echo esc_attr( __( 'Updated', 'wpv-views' ) ); ?>" data-unsaved="<?php echo esc_attr( __( 'Not saved', 'wpv-views' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'wpv_view_filter_extra_nonce' ) ); ?>" class="js-wpv-filter-extra-update" />
+					</span>
 				</h2>
 			</div>
 			<?php
 			$listing	= 'posts';
 			$purpose	= 'full';
 			$mode		= ( isset( $view_settings['view-query-mode'] ) && $view_settings['view-query-mode'] != 'normal' ) ? 'archive' : 'normal';
-			
-			if ( 
-				$mode == 'normal' 
-				&& isset( $view_settings['query_type'][0] ) 
+
+			if (
+				$mode == 'normal'
+				&& isset( $view_settings['query_type'][0] )
 			) {
 				$listing = $view_settings['query_type'][0];
 			}
 			if ( isset( $view_settings['view_purpose'] ) ) {
 				$purpose = $view_settings['view_purpose'];
 			}
-			
+
 			$controls_per_kind = wpv_count_filter_controls( $view_settings );
-			if ( 
-				isset( $controls_per_kind['missing'] ) 
-				&& is_array( $controls_per_kind['missing'] ) 
-				&& ! empty( $controls_per_kind['missing'] ) 
+			if (
+				isset( $controls_per_kind['missing'] )
+				&& is_array( $controls_per_kind['missing'] )
+				&& ! empty( $controls_per_kind['missing'] )
 			) {
 			?>
 			<div class="toolset-help js-wpv-missing-filter-container"<?php echo $listing == 'posts' ? '' : ' style="display:none"'; ?>>
@@ -198,7 +202,7 @@ class WPV_Editor_Filter_Editor {
 						</ul>
 					</div>
 					<textarea cols="30" rows="10" id="wpv_filter_meta_html_content" autocomplete="off" name="_wpv_settings[filter_meta_html]"><?php echo ( isset( $view_settings['filter_meta_html'] ) ) ? esc_textarea( $view_settings['filter_meta_html'] ) : ''; ?></textarea>
-					<?php 
+					<?php
 					$filter_extra_css	= isset( $view_settings['filter_meta_html_css'] ) ? $view_settings['filter_meta_html_css'] : '';
 					$filter_extra_js	= isset( $view_settings['filter_meta_html_js'] ) ? $view_settings['filter_meta_html_js'] : '';
 					?>
@@ -212,7 +216,7 @@ class WPV_Editor_Filter_Editor {
 					<div id="wpv-assets-filter-css-editor" class="wpv-assets-editor hidden js-wpv-assets-filter-css-editor">
 						<textarea cols="30" rows="10" id="wpv_filter_meta_html_css" autocomplete="off" name="_wpv_settings[filter_meta_html_css]"><?php echo esc_textarea( $filter_extra_css ); ?></textarea>
 					</div>
-					
+
 					<div class="wpv-editor-metadata-toggle js-wpv-editor-metadata-toggle js-wpv-assets-editor-toggle" data-instance="filter-js-editor" data-target="js-wpv-assets-filter-js-editor" data-type="js">
 						<span class="wpv-toggle-toggler-icon js-wpv-toggle-toggler-icon">
 							<i class="fa fa-caret-down icon-large fa-lg"></i>
@@ -237,16 +241,12 @@ class WPV_Editor_Filter_Editor {
 					wpv_formatting_help_filter();
 					?>
 				</div>
-				<p class="update-button-wrap js-wpv-update-button-wrap">
-					<span class="js-wpv-message-container"></span>
-					<button data-success="<?php echo esc_attr( __('Updated', 'wpv-views') ); ?>" data-unsaved="<?php echo esc_attr( __('Not saved', 'wpv-views') ); ?>" data-nonce="<?php echo wp_create_nonce( 'wpv_view_filter_extra_nonce' ); ?>" class="js-wpv-filter-extra-update button-secondary" disabled="disabled"><?php _e('Update', 'wpv-views'); ?></button>
-				</p>
 			</div>
 
 		</div>
 	<?php
 	}
-	
+
 	static function wpv_get_parametric_search_hints() {
 		// Authentication
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -256,9 +256,9 @@ class WPV_Editor_Filter_Editor {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filters_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filters_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -269,7 +269,7 @@ class WPV_Editor_Filter_Editor {
 		if (
 			! isset( $_POST['id'] )
 			|| ! is_numeric( $_POST['id'] )
-			|| intval( $_POST['id'] ) < 1 
+			|| intval( $_POST['id'] ) < 1
 		) {
 			$data = array(
 				'type' => 'id',
@@ -287,7 +287,7 @@ class WPV_Editor_Filter_Editor {
 		);
 		wp_send_json_success( $data );
 	}
-	
+
 	static function wpv_remove_filter_missing_callback() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
@@ -296,9 +296,9 @@ class WPV_Editor_Filter_Editor {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filters_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filters_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -309,7 +309,7 @@ class WPV_Editor_Filter_Editor {
 		if (
 			! isset( $_POST['id'] )
 			|| ! is_numeric( $_POST['id'] )
-			|| intval( $_POST['id'] ) < 1 
+			|| intval( $_POST['id'] ) < 1
 		) {
 			$data = array(
 				'type' => 'id',
@@ -319,15 +319,15 @@ class WPV_Editor_Filter_Editor {
 		}
 		$view_id = (int) $_POST['id'];
 		$view_array = get_post_meta( $view_id, '_wpv_settings', true );
-		
+
 		$filters_to_delete = array();
 		if (
-			isset( $_POST['filters'] ) 
+			isset( $_POST['filters'] )
 			&& is_array( $_POST['filters'] )
 		) {
 			$filters_to_delete = $_POST['filters'];
 		};
-		
+
 		$field_filters_to_delete = isset( $filters_to_delete['cf'] ) ? $filters_to_delete['cf'] : array();
 		if ( is_array( $field_filters_to_delete ) ) {
 			foreach ( $field_filters_to_delete as $field ) {
@@ -345,7 +345,7 @@ class WPV_Editor_Filter_Editor {
 				}
 			}
 		}
-		
+
 		$tax_filters_to_delete = isset( $filters_to_delete['tax'] ) ? $filters_to_delete['tax'] : array();
 		if ( is_array( $tax_filters_to_delete ) ) {
 			////// Ported from wpv-filter-category.php's wpv_filter_taxonomy_delete_callback
@@ -358,7 +358,7 @@ class WPV_Editor_Filter_Editor {
 					'taxonomy-' . $taxonomy . '-attribute-url-format',
 					'taxonomy-' . $taxonomy . '-attribute-operator',
 					'taxonomy-' . $taxonomy . '-framework',
-					// Backwards compatibility: 
+					// Backwards compatibility:
 					// those entries existed in the View settings up until 2.3.2
 					'filter_controls_field_name',
 					'filter_controls_mode',
@@ -380,11 +380,11 @@ class WPV_Editor_Filter_Editor {
 				}
 			}
 		}
-		
+
 		$rel_filters_to_delete = isset( $filters_to_delete['rel'] ) ? $filters_to_delete['rel'] : array();
-		if ( 
-			is_array( $rel_filters_to_delete ) 
-			&& ! empty( $rel_filters_to_delete ) 
+		if (
+			is_array( $rel_filters_to_delete )
+			&& ! empty( $rel_filters_to_delete )
 		) {
 			$to_delete = array(
 				'post_relationship_mode',
@@ -400,11 +400,11 @@ class WPV_Editor_Filter_Editor {
 				}
 			}
 		}
-		
+
 		$search_filters_to_delete = isset( $filters_to_delete['search'] ) ? $filters_to_delete['search'] : array();
-		if ( 
-			is_array( $search_filters_to_delete ) 
-			&& ! empty( $search_filters_to_delete ) 
+		if (
+			is_array( $search_filters_to_delete )
+			&& ! empty( $search_filters_to_delete )
 		) {
 			$to_delete = array(
 				'search_mode',
@@ -424,9 +424,9 @@ class WPV_Editor_Filter_Editor {
 		wpv_display_filters_list( $view_array );
 		$filters_list = ob_get_contents();
 		ob_end_clean();
-		
+
 		$parametric_search_hints = wpv_get_parametric_search_hints_data( $view_id );
-		
+
 		$data = array(
 			'id'					=> $view_id,
 			'updated_filters_list'	=> $filters_list,
@@ -438,7 +438,7 @@ class WPV_Editor_Filter_Editor {
 
 
 
-	
+
 	static function wpv_custom_search_define_query_filter() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
@@ -448,9 +448,9 @@ class WPV_Editor_Filter_Editor {
 			wp_send_json_error( $data );
 		}
 		/*
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filter_post_author_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filter_post_author_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -462,7 +462,7 @@ class WPV_Editor_Filter_Editor {
 		if (
 			! isset( $_POST["id"] )
 			|| ! is_numeric( $_POST["id"] )
-			|| intval( $_POST['id'] ) < 1 
+			|| intval( $_POST['id'] ) < 1
 		) {
 			$data = array(
 				'type' => 'id',
@@ -470,17 +470,17 @@ class WPV_Editor_Filter_Editor {
 			);
 			wp_send_json_error( $data );
 		}
-		
+
 		$view_id	= (int) $_POST['id'];
 		$shortcode	= isset( $_POST['shortcode'] ) ? sanitize_text_field( $_POST['shortcode'] ) : '';
 		$attributes	= ( isset( $_POST['attributes'] ) && is_array( $_POST['attributes'] ) ) ? array_map( 'sanitize_text_field', $_POST['attributes'] ) : array();
 		$attributes_raw	= ( isset( $_POST['attributes_raw'] ) && is_array( $_POST['attributes_raw'] ) ) ? array_map( 'sanitize_text_field', $_POST['attributes_raw'] ) : array();
-		
+
 		$expected_shortcodes = apply_filters( 'wpv_filter_wpv_get_form_filters_shortcodes', array() );
-		
+
 		if (
-			isset( $expected_shortcodes[ $shortcode ] ) 
-			&& isset( $expected_shortcodes[ $shortcode ]['query_filter_define_callback'] ) 
+			isset( $expected_shortcodes[ $shortcode ] )
+			&& isset( $expected_shortcodes[ $shortcode ]['query_filter_define_callback'] )
 			&& is_callable( $expected_shortcodes[ $shortcode ]['query_filter_define_callback'] )
 		) {
 			call_user_func( $expected_shortcodes[ $shortcode ]['query_filter_define_callback'], $view_id, $shortcode, $attributes, $attributes_raw );
@@ -490,7 +490,7 @@ class WPV_Editor_Filter_Editor {
 			wpv_display_filters_list( $view_array );
 			$filters_list = ob_get_contents();
 			ob_end_clean();
-			
+
 			$data = array(
 				'id'			=> $view_id,
 				'message'		=> __( 'Query filter saved', 'wpv-views' ),
@@ -520,9 +520,9 @@ function wpv_filter_update_dps_settings() {
 		);
 		wp_send_json_error( $data );
 	}
-	if ( 
+	if (
 		! isset( $_POST["wpnonce"] )
-		|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filter_dps_nonce' ) 
+		|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filter_dps_nonce' )
 	) {
 		$data = array(
 			'type' => 'nonce',
@@ -546,18 +546,18 @@ function wpv_filter_update_dps_settings() {
 	if ( isset( $_POST['dpsdata'] ) ) {
 		$passed_data = wp_parse_args( $_POST['dpsdata'] );
 		// Helper mode
-		if ( 
-			isset( $passed_data['wpv-dps-mode-helper'] ) 
-			&& in_array( $passed_data['wpv-dps-mode-helper'], array( 'fullrefreshonsubmit', 'ajaxrefreshonsubmit', 'ajaxrefreshonchange', 'custom' ) ) 
+		if (
+			isset( $passed_data['wpv-dps-mode-helper'] )
+			&& in_array( $passed_data['wpv-dps-mode-helper'], array( 'fullrefreshonsubmit', 'ajaxrefreshonsubmit', 'ajaxrefreshonchange', 'custom' ) )
 		) {
 			$view_array['dps']['mode_helper'] = $passed_data['wpv-dps-mode-helper'];
 		} else {
 			$view_array['dps']['mode_helper'] = '';
 		}
 		// AJAX update View results
-		if ( 
-			isset( $passed_data['wpv-dps-ajax-results'] ) 
-			&& $passed_data['wpv-dps-ajax-results'] == 'enable' 
+		if (
+			isset( $passed_data['wpv-dps-ajax-results'] )
+			&& $passed_data['wpv-dps-ajax-results'] == 'enable'
 		) {
 			$view_array['dps']['ajax_results'] = 'enable';
 		} else {
@@ -578,58 +578,58 @@ function wpv_filter_update_dps_settings() {
 		} else {
 			$view_array['dps']['ajax_results_after'] = '';
 		}
-		if ( 
-			isset( $passed_data['wpv-dps-ajax-results-submit'] ) 
-			&& in_array( $passed_data['wpv-dps-ajax-results-submit'], array( 'ajaxed', 'reload' ) ) 
+		if (
+			isset( $passed_data['wpv-dps-ajax-results-submit'] )
+			&& in_array( $passed_data['wpv-dps-ajax-results-submit'], array( 'ajaxed', 'reload' ) )
 		) {
 			$view_array['dps']['ajax_results_submit'] = $passed_data['wpv-dps-ajax-results-submit'];
 		} else {
 			$view_array['dps']['ajax_results_submit'] = 'reload';
 		}
 		// Enable dependency and input defaults
-		if ( 
-			isset( $passed_data['wpv-dps-enable'] ) 
-			&& $passed_data['wpv-dps-enable'] == 'disable' 
+		if (
+			isset( $passed_data['wpv-dps-enable'] )
+			&& $passed_data['wpv-dps-enable'] == 'disable'
 		) {
 			$view_array['dps']['enable_dependency'] = 'disable';
 		} else {
 			$view_array['dps']['enable_dependency'] = 'enable';
 		}
-		if ( 
-			isset( $passed_data['wpv-dps-history'] ) 
-			&& $passed_data['wpv-dps-history'] == 'disable' 
+		if (
+			isset( $passed_data['wpv-dps-history'] )
+			&& $passed_data['wpv-dps-history'] == 'disable'
 		) {
 			$view_array['dps']['enable_history'] = 'disable';
 		} else {
 			$view_array['dps']['enable_history'] = 'enable';
 		}
-		if ( 
-			isset( $passed_data['wpv-dps-empty-select'] ) 
-			&& $passed_data['wpv-dps-empty-select'] == 'disable' 
+		if (
+			isset( $passed_data['wpv-dps-empty-select'] )
+			&& $passed_data['wpv-dps-empty-select'] == 'disable'
 		) {
 			$view_array['dps']['empty_select'] = 'disable';
 		} else {
 			$view_array['dps']['empty_select'] = 'hide';
 		}
-		if ( 
-			isset( $passed_data['wpv-dps-empty-multi-select'] ) 
-			&& $passed_data['wpv-dps-empty-multi-select'] == 'disable' 
+		if (
+			isset( $passed_data['wpv-dps-empty-multi-select'] )
+			&& $passed_data['wpv-dps-empty-multi-select'] == 'disable'
 		) {
 			$view_array['dps']['empty_multi_select'] = 'disable';
 		} else {
 			$view_array['dps']['empty_multi_select'] = 'hide';
 		}
-		if ( 
-			isset( $passed_data['wpv-dps-empty-radios'] ) 
-			&& $passed_data['wpv-dps-empty-radios'] == 'disable' 
+		if (
+			isset( $passed_data['wpv-dps-empty-radios'] )
+			&& $passed_data['wpv-dps-empty-radios'] == 'disable'
 		) {
 			$view_array['dps']['empty_radios'] = 'disable';
 		} else {
 			$view_array['dps']['empty_radios'] = 'hide';
 		}
-		if ( 
-			isset( $passed_data['wpv-dps-empty-checkboxes'] ) 
-			&& $passed_data['wpv-dps-empty-checkboxes'] == 'disable' 
+		if (
+			isset( $passed_data['wpv-dps-empty-checkboxes'] )
+			&& $passed_data['wpv-dps-empty-checkboxes'] == 'disable'
 		) {
 			$view_array['dps']['empty_checkboxes'] = 'disable';
 		} else {
@@ -642,7 +642,7 @@ function wpv_filter_update_dps_settings() {
 		$view_array['dps']['spinner_image'] = '';
 		*/
 	} else {
-		
+
 	}
 	update_post_meta( $view_id, '_wpv_settings', $view_array );
 	do_action( 'wpv_action_wpv_save_item', $view_id );
@@ -651,100 +651,6 @@ function wpv_filter_update_dps_settings() {
 		'message' => __( 'Parametric Search Settings saved', 'wpv-views' )
 	);
 	wp_send_json_success( $data );
-}
-
-// @todo add proper wp_send_json_error/wp_send_json_success management here
-
-add_action( 'wp_ajax_wpv_get_dps_related', 'wpv_get_dps_related' );
-
-function wpv_get_dps_related() {
-	if ( ! current_user_can( 'manage_options' ) ) {
-		die( "Security check" );
-	}
-	if ( ! wp_verify_nonce( $_POST["nonce"], 'wpv_view_edit_general_nonce' ) ) {
-		die( "Security check" );
-	}
-	$return_result = array(
-		'existence'		=> '',
-		'intersection'	=> '',
-		'missing'		=> ''
-	);
-	if ( isset( $_POST['id'] ) ) {
-		global $WP_Views;
-		$view_id = (int) $_POST['id'];
-		$view_settings = $WP_Views->get_view_settings( $view_id );
-		$controls_per_kind = wpv_count_filter_controls( $view_settings );
-		$controls_count = $controls_per_kind['cf'] + $controls_per_kind['tax'] + $controls_per_kind['pr'] + $controls_per_kind['search'];
-		$no_intersection = array();				
-		if ( 
-			isset( $controls_per_kind['cf'] ) 
-			&& $controls_per_kind['cf'] > 1 
-			&& (
-				! isset( $view_settings['custom_fields_relationship'] ) 
-				|| $view_settings['custom_fields_relationship'] != 'AND' 
-			) 
-		) {
-			$no_intersection[] = __( 'custom field', 'wpv-views' );
-		}
-		if ( 
-			isset( $controls_per_kind['tax'] ) 
-			&& $controls_per_kind['tax'] > 1 && ( 
-				! isset( $view_settings['taxonomy_relationship'] ) 
-				|| $view_settings['taxonomy_relationship'] != 'AND' 
-			) 
-		) {
-			$no_intersection[] = __( 'taxonomy', 'wpv-views' );
-		}
-		// Existence
-		if ( $controls_count == 0 ) {
-			$return_result['existence'] = '<p>' . __('Remember to add filters here. Right now, this custom search has no filter items.', 'wpv-views') . '</p>';
-		}
-		// Intersection
-		if ( count( $no_intersection ) > 0 ) {
-			$glue = __( ' and ', 'wpv-views' );
-			$no_intersection_text = implode( $glue , $no_intersection );
-			$return_result['intersection'] = sprintf( __( 'Your %s filters are using an internal "OR" kind of relationship, and dependant custom search for those filters needs "AND" relationships.', 'wpv-views' ), $no_intersection_text );
-			$return_result['intersection'] .= '<br /><br />';
-			$return_result['intersection'] .= '<button class="button-secondary js-make-intersection-filters" data-nonce="' . wp_create_nonce( 'wpv_view_make_intersection_filters' ) .'"';
-			if ( in_array( 'cf', $no_intersection ) ) {
-				$return_result['intersection'] .= ' data-cf="true"';
-			} else {
-				$return_result['intersection'] .= ' data-cf="false"';
-			}
-			if ( in_array( 'tax', $no_intersection ) ) {
-				$return_result['intersection'] .= ' data-tax="true"';
-			} else {
-				$return_result['intersection'] .= ' data-tax="false"';
-			}
-			$return_result['intersection'] .= '>';
-				$return_result['intersection'] .= __('Fix filters relationship', 'wpv-views');
-			$return_result['intersection'] .= '</button>';
-		}
-		// Missing
-		if ( 
-			isset( $controls_per_kind['missing'] ) 
-			&& is_array( $controls_per_kind['missing'] ) 
-			&& ! empty( $controls_per_kind['missing'] ) 
-		) {
-			$return_result['missing'] = '<div class="toolset-help-content">';
-			$return_result['missing'] .= __( 'This View has some query filters that are missing from the form. Maybe you have removed them:', 'wpv-views' );
-			$return_result['missing'] .= '<ul class="js-wpv-filter-missing">';
-			foreach ( $controls_per_kind['missing'] as $missed ) {
-				$return_result['missing'] .= '<li class="js-wpv-missing-filter" data-type="' . $missed['type'] . '" data-name="' . $missed['name'] . '">';
-				$return_result['missing'] .= sprintf( __( 'Filter by <strong>%s</strong>', 'wpv-views' ), $missed['name'] );
-				$return_result['missing'] .= '</li>';
-			}
-			$return_result['missing'] .= '</ul>';
-			$return_result['missing'] .= __( 'Can they also be removed from the query filtering?', 'wpv-views' );
-			$return_result['missing'] .= '<p>';
-				$return_result['missing'] .= '<button class="button button-primary js-wpv-filter-missing-delete">' . __( 'Yes (recommended)', 'wpv-views' ) . '</button> <button class="button-secondary js-wpv-filter-missing-close">' . __( 'No', 'wpv-views' ) . '</button>';
-			$return_result['missing'] .= '</p>';
-			$return_result['missing'] .= '</div>';
-			$return_result['missing'] .= '<div class="toolset-help-sidebar"><div class="toolset-help-sidebar-ico"></div></div>';
-		}
-	}
-	echo json_encode( $return_result );
-	die();
 }
 
 function wpv_get_parametric_search_hints_data( $view_id ) {
@@ -756,30 +662,30 @@ function wpv_get_parametric_search_hints_data( $view_id ) {
 	$view_settings		= apply_filters( 'wpv_filter_wpv_get_object_settings', array(), $view_id );
 	$controls_per_kind	= wpv_count_filter_controls( $view_settings );
 	$controls_count		= $controls_per_kind['cf'] + $controls_per_kind['tax'] + $controls_per_kind['pr'] + $controls_per_kind['search'];
-	$no_intersection	= array();		
-	
+	$no_intersection	= array();
+
 	// Existence
 	if ( $controls_count == 0 ) {
 		$return_result['existence'] = '<p>' . __('Remember to add filters here. Right now, this custom search has no filter items.', 'wpv-views') . '</p>';
 	}
-	
+
 	// Intersection
-	if ( 
-		isset( $controls_per_kind['cf'] ) 
-		&& $controls_per_kind['cf'] > 1 
+	if (
+		isset( $controls_per_kind['cf'] )
+		&& $controls_per_kind['cf'] > 1
 		&& (
-			! isset( $view_settings['custom_fields_relationship'] ) 
-			|| $view_settings['custom_fields_relationship'] != 'AND' 
-		) 
+			! isset( $view_settings['custom_fields_relationship'] )
+			|| $view_settings['custom_fields_relationship'] != 'AND'
+		)
 	) {
 		$no_intersection[] = __( 'custom field', 'wpv-views' );
 	}
-	if ( 
-		isset( $controls_per_kind['tax'] ) 
-		&& $controls_per_kind['tax'] > 1 && ( 
-			! isset( $view_settings['taxonomy_relationship'] ) 
-			|| $view_settings['taxonomy_relationship'] != 'AND' 
-		) 
+	if (
+		isset( $controls_per_kind['tax'] )
+		&& $controls_per_kind['tax'] > 1 && (
+			! isset( $view_settings['taxonomy_relationship'] )
+			|| $view_settings['taxonomy_relationship'] != 'AND'
+		)
 	) {
 		$no_intersection[] = __( 'taxonomy', 'wpv-views' );
 	}
@@ -803,12 +709,12 @@ function wpv_get_parametric_search_hints_data( $view_id ) {
 			$return_result['intersection'] .= __('Fix filters relationship', 'wpv-views');
 		$return_result['intersection'] .= '</button>';
 	}
-	
+
 	// Missing
-	if ( 
-		isset( $controls_per_kind['missing'] ) 
-		&& is_array( $controls_per_kind['missing'] ) 
-		&& ! empty( $controls_per_kind['missing'] ) 
+	if (
+		isset( $controls_per_kind['missing'] )
+		&& is_array( $controls_per_kind['missing'] )
+		&& ! empty( $controls_per_kind['missing'] )
 	) {
 		$return_result['missing'] = '<div class="toolset-help-content">';
 		$return_result['missing'] .= __( 'This View has some query filters that are missing from the form. Maybe you have removed them:', 'wpv-views' );
@@ -826,7 +732,7 @@ function wpv_get_parametric_search_hints_data( $view_id ) {
 		$return_result['missing'] .= '</div>';
 		$return_result['missing'] .= '<div class="toolset-help-sidebar"><div class="toolset-help-sidebar-ico"></div></div>';
 	}
-		
+
 	return $return_result;
 }
 
@@ -843,9 +749,9 @@ function wpv_update_filter_extra_callback() {
 		);
 		wp_send_json_error( $data );
 	}
-	if ( 
+	if (
 		! isset( $_POST["wpnonce"] )
-		|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filter_extra_nonce' ) 
+		|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_filter_extra_nonce' )
 	) {
 		$data = array(
 			'type' => 'nonce',
@@ -884,7 +790,7 @@ function wpv_update_filter_extra_callback() {
     } catch ( Exception $e ) {
         wp_send_json_error( array( 'type' => '', 'message' => __( 'An unexpected error ocurred.', 'wpv-views' ) ) );
     }
-	
+
 	$parametric_search_hints = wpv_get_parametric_search_hints_data( $view_id );
 
     // Indicate success.

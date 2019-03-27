@@ -42,6 +42,14 @@ var wptValidation = (function ($) {
         });
 
         /**
+		 * Added mock "mime_type" validator method because it is presents in wpt-data-validate
+		 * on file-related fields. Just in case!
+		 */
+		$.validator.addMethod("mime_type", function (value, element, param) {
+			return true;
+		});
+
+        /**
          * add equalto method
          */
         $.validator.addMethod("equalto", function (value, element, param) {

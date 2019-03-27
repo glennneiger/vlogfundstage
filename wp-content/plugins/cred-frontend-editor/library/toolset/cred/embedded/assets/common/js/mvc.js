@@ -17,10 +17,10 @@ CRED.suggest_cache = false;
      *   ( depends on jQuery )
      *
      *   Uses concepts from various MV* frameworks like:
-     *       knockoutjs, 
+     *       knockoutjs,
      *       agility.js,
      *       angular.js
-     *       and backbone.js 
+     *       and backbone.js
      *
      */
 
@@ -405,7 +405,7 @@ CRED.suggest_cache = false;
         // These characters only have special meaning inside of brackets
         // they do not need to be escaped, but they MAY be escaped
         // without any adverse effects (to the best of my knowledge and casual testing)
-        // : ! , = 
+        // : ! , =
         // my test "~!@#$%^&*(){}[]`/=?+\|-_;:'\",<.>".match(/[\#]/g)
 
         return str.replace(_escapeRegexp, "\\$&");
@@ -1262,7 +1262,8 @@ CRED.suggest_cache = false;
                             view.clearCaches();
                             model.trigger('change', {key: key, value: {}, triggerer: 'addItem'});   // trigger events
                             view.sync(item);  // synchronize the view
-                            item.fadeIn('slow');    // show new item with effect
+							item.fadeIn('slow');    // show new item with effect
+							container.trigger( 'toolset:forms:editor:afterAddItem' );
                             check_cred_form_type_for_notification();
                         }
                     },
@@ -1816,7 +1817,10 @@ CRED.suggest_cache = false;
                                     return;  // nothing to do here
 
                                 // call default action (eg: live update)
-                                view._actions['bind'].call(view, $el, {key: key, value: value});
+								view._actions['bind'].call(view, $el, {key: key, value: value});
+
+								// Trigger an event to broadcast the binding
+								$el.trigger( 'toolset:forms:editor:autobinded' );
                             });
                         }
                     },

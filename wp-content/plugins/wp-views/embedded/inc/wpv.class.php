@@ -7,7 +7,7 @@ require WPV_PATH_EMBEDDED . '/inc/listing/listing.php';
 class WP_Views {
 
 	function __construct() {
-		
+
 		$this->view_ids								= array();
 		$this->current_view							= null;
 		$this->CCK_types 							= array();// @deprecated maybe
@@ -34,105 +34,95 @@ class WP_Views {
 
 		$this->force_disable_dependant_parametric_search	= false;
 		$this->returned_ids_for_parametric_search			= array();
-		
-		$this->wpv_editor_addon						= null;
-		
+
 		add_action( 'after_setup_theme',								array( $this, 'before_init' ), 999 );
-		add_filter( 'wpv_filter_wpv_get_editor_addon',					array( $this, 'get_editor_addon' ) );
-		
+
 		add_action( 'init',												array( $this, 'init' ) );
 		add_action( 'widgets_init',										array( $this, 'widgets_init' ) );
-		
+
 		add_action( 'init',												array( $this, 'wpv_register_assets' ) );
-		
+
 		// API
 		add_filter( 'wpv_filter_wpv_get_current_view',					array( $this, 'wpv_get_current_view' ) );
 		add_filter( 'wpv_filter_wpv_get_current_views_tree',			array( $this, 'wpv_get_current_views_tree' ) );
 		add_action( 'wpv_action_wpv_set_current_view',					array( $this, 'wpv_set_current_view' ) );
 		add_action( 'wpv_action_wpv_reset_current_view',				array( $this, 'wpv_reset_current_view' ) );
-		
+
 		// @todo move tis to a proper API file...
 		add_filter( 'wpv_filter_wpv_get_object_unique_hash',			array( $this, 'wpv_get_object_unique_hash' ), 10, 2 );
 		add_filter( 'wpv_filter_wpv_get_view_unique_hash',				array( $this, 'wpv_get_view_unique_hash' ) );
-		
+
 		// @todo move tis to a proper API file...
 		add_filter( 'wpv_filter_wpv_get_object_settings',				array( $this, 'wpv_get_view_settings' ), 10, 3 );
 		add_filter( 'wpv_filter_wpv_get_view_settings',					array( $this, 'wpv_get_view_settings' ), 10, 3 );
 		add_filter( 'wpv_filter_wpv_get_object_layout_settings',		array( $this, 'wpv_get_view_layout_settings' ), 10, 2 );
 		add_filter( 'wpv_filter_wpv_get_view_layout_settings',			array( $this, 'wpv_get_view_layout_settings' ), 10, 2 );
-		
+
 		add_filter( 'wpv_filter_wpv_get_query_type',					array( $this, 'wpv_get_query_type' ), 10, 2 );
-		
+
 		add_filter( 'wpv_filter_wpv_get_view_shortcodes_attributes',	array( $this, 'wpv_get_view_shortcodes_attributes' ) );
 		add_action( 'wpv_action_wpv_set_view_shortcodes_attributes',	array( $this, 'set_view_shortcode_attributes' ) );
 		add_action( 'wpv_action_wpv_reset_view_shortcodes_attributes',	array( $this, 'reset_view_shortcode_attributes' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_max_pages',						array( $this, 'wpv_get_max_pages' ) );
 		add_filter( 'wpv_filter_wpv_get_current_page_number',			array( $this, 'wpv_get_current_page_number' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_top_current_post',				array( $this, 'wpv_get_top_current_post' ) );
 		add_action( 'wpv_action_wpv_set_top_current_post',				array( $this, 'wpv_set_top_current_post' ) );
-			
+
 		/**
 		 * Get the top current page for using it on the id="$current_page" shortcode attribute.
 		 *
 		 * @since 2.3.0
 		 */
 		add_filter( 'toolset_filter_get_top_current_post',				array( $this, 'wpv_get_top_current_post' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_current_post',					array( $this, 'wpv_get_current_post' ) );
 		add_action( 'wpv_action_wpv_set_current_post',					array( $this, 'wpv_set_current_post' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_parent_view_taxonomy',			array( $this, 'wpv_get_parent_view_taxonomy' ) );
 		add_action( 'wpv_action_wpv_set_parent_view_taxonomy',			array( $this, 'wpv_set_parent_view_taxonomy' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_parent_view_user',				array( $this, 'wpv_get_parent_view_user' ) );
 		add_action( 'wpv_action_wpv_set_parent_view_user',				array( $this, 'wpv_set_parent_view_user' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_widget_view_id',				array( $this, 'wpv_get_widget_view_id' ) );
 		add_action( 'wpv_action_wpv_set_widget_view_id',				array( $this, 'wpv_set_widget_view_id' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_force_disable_dps',				array( $this, 'wpv_get_force_disable_dps' ) );
 		add_action( 'wpv_action_wpv_force_disable_dps',					array( $this, 'wpv_force_disable_dps' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_postmeta_keys',					array( $this, 'wpv_get_postmeta_keys' ), 10, 2 );
 		add_filter( 'wpv_filter_wpv_get_termmeta_keys',					array( $this, 'wpv_get_termmeta_keys' ), 10, 2 );
 		add_filter( 'wpv_filter_wpv_get_usermeta_keys',					array( $this, 'wpv_get_usermeta_keys' ), 10, 2 );
-		
+
 		add_filter( 'wpv_filter_wpv_get_rendered_views_ids',			array( $this, 'wpv_get_rendered_views_ids' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_post_query',					array( $this, 'wpv_get_post_query' ) );
 		add_filter( 'wpv_filter_wpv_get_taxonomy_query',				array( $this, 'wpv_get_taxonomy_query' ) );
 		add_filter( 'wpv_filter_wpv_get_user_query',					array( $this, 'wpv_get_user_query' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_get_taxonomy_found_count',			array( $this, 'wpv_get_taxonomy_found_count' ) );
 		add_filter( 'wpv_filter_wpv_get_users_found_count',				array( $this, 'wpv_get_users_found_count' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_is_rendering_form_view',			array( $this, 'wpv_is_rendering_form_view' ) );
-		
+
 		// PUBLIC API
 		add_filter( 'wpv_filter_public_wpv_get_view_shortcodes_attributes',		array( $this, 'wpv_get_view_shortcodes_attributes' ) );
-        
+
 	}
 
 
 	function __destruct() { }
-	
+
 	// This happens on after_setup_theme:999
 	function before_init() {
-		
+
+		// TODO Remove the call to load 'toolset_visual_editor'
 		$toolset_common_bootstrap = Toolset_Common_Bootstrap::getInstance();
 		$toolset_common_sections = array( 'toolset_visual_editor', 'toolset_user_editor', 'toolset_blocks' );
 		$toolset_common_bootstrap->load_sections( $toolset_common_sections );
-		
-		$this->wpv_editor_addon	= new WPV_Editor_addon(
-			'wpv-views',
-			__( 'Insert Views Shortcodes', 'wpv-views' ),
-			WPV_URL . '/res/js/views_editor_plugin.js',
-			'',
-			true,
-			'icon-views-logo fa fa-wpv-custom ont-icon-18 ont-color-gray' 
-		);
+
 		/**
 		 * Exclude filters.
 		 * They need to be in place as soon as posible, since they are used by the Fields and Views dialog generation.
@@ -144,28 +134,16 @@ class WP_Views {
         // Include some post types from different pieces of the GUI
         add_filter( 'wpv_admin_include_post_type_slugs', 'wpv_admin_include_post_type_slugs' );
 	}
-	
-	/**
-	 * get_editor_addon
-	 *
-	 * @usage apply_filters( 'wpv_filter_wpv_get_editor_addon', null );
-	 *
-	 * @since 2.3.0 Deprecated, but still used in the Loop Wizard :-/
-	 */
-	
-	function get_editor_addon( $editor_addon = null ) {
-		return $this->wpv_editor_addon;
-	}
 
 	function init() {
 
 		
 
 		$this->wpv_register_type_view();
-		
+
 		add_filter( 'toolset_filter_register_menu_pages',				array( $this, 'register_views_pages_in_menu' ), 40 );
 		add_filter( 'toolset_filter_register_export_import_section',	array( $this, 'register_export_import_section' ), 20 );
-		
+
 		/*
 		* ----------------------------
 		* Assets
@@ -173,7 +151,7 @@ class WP_Views {
 		*/
 		add_action( 'admin_enqueue_scripts', array( $this,'wpv_admin_enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'wpv_frontend_enqueue_scripts' ) );
-		
+
 		/*
 		* ----------------------------
 		* AJAX calls for date filters
@@ -182,7 +160,7 @@ class WP_Views {
 		*/
 		add_action('wp_ajax_wpv_format_date', array( $this, 'wpv_format_date' ) );
 		add_action('wp_ajax_nopriv_wpv_format_date', array( $this, 'wpv_format_date' ) );
-		
+
 		/*
 		* ----------------------------
 		* Basic fallback values for get_view_settings and get_view_layout_settings
@@ -190,46 +168,43 @@ class WP_Views {
 		*/
 		add_filter( 'wpv_view_settings', array( $this, 'wpv_view_settings_set_fallbacks' ), 5, 2 );
 		add_filter( 'wpv_view_layout_settings', array( $this, 'wpv_view_layout_settings_set_fallbacks' ), 5, 2 );
-		
+
 		/*
 		*
 		* Extra loop wpv-item index management
 		*
 		*/
 		add_filter( 'wpv_filter_wpv_item_loop_selected_index', array( $this, 'wpv_filter_wpv_item_loop_selected_index' ), 10, 2 );
-		
+
 		/*
 		* ----------------------------
 		* Workflows actions
 		* ----------------------------
 		*/
-		
+
 		// List the default spinners available for pagination and parametric search
 		add_filter( 'wpv_admin_available_spinners', 'wpv_admin_available_spinners', 5 );
-		
+
 		// Delete the current user data after using it on a View listing users loop
 		add_action( 'wpv-after-display-user', array( $this, 'clean_current_loop_user' ), 99 );
-		
+
 		// Manage the _toolset_edit_last postmeta on Views objects
 		add_action( 'wpv_action_wpv_save_item', array( $this, 'after_save_item' ) );
 		add_action( 'wpv_action_wpv_import_item', array( $this, 'after_import_item' ) );
-		
-		// Edit post links
-		add_filter( 'edit_post_link', array( $this, 'edit_post_link' ), 10, 2 );
-		
+
 		// Set priority lower than 20, so we load the CSS before the footer scripts and avoid the bottleneck
 		add_action( 'wp_footer', array( $this, 'wpv_meta_html_extra_css' ), 5 );
 		// Set priority higher than 20, when all the footer scripts are loaded
 		add_action( 'wp_footer', array( $this, 'wpv_meta_html_extra_js' ), 25 );
 		// Set priority higher than 20, when all footer scripts are loaded, but before 25, when custom javascript is added
 		add_action( 'wp_footer', array( $this, 'wpv_additional_js_files' ), 21 );
-		
+
 		/*
 		* ----------------------------
 		* Compatibility
 		* ----------------------------
 		*/
-		
+
 		// WooCommerce
 		add_filter( 'woocommerce_product_add_to_cart_url', array( $this, 'wpv_woocommerce_product_add_to_cart_url' ), 10, 2 );
 		// Gravity Forms
@@ -242,13 +217,13 @@ class WP_Views {
 		*/
 		add_shortcode( 'wpv-view', array( $this, 'short_tag_wpv_view' ) );
 		add_shortcode( 'wpv-form-view', array( $this, 'short_tag_wpv_view_form' ) );
-		
+
 		add_filter( 'wpv_filter_wpv_view_shortcode_output', array( $this, 'remove_html_comments_from_shortcode_output' ) );
 		add_filter( 'wpv_filter_wpv_view_shortcode_output', array( $this, 'trim_empty_characters_from_shortcode_output' ), 10, 2 );
-		
+
 		// Clear the WPV_Settings nstance when switching to another blog
 		add_action( 'switch_blog', array( $this, 'wpv_clear_settings_instance' ) );
-        
+
 	}
 
 
@@ -293,23 +268,23 @@ class WP_Views {
 	function language_options() {
 		// not needed for theme version.
 	}
-	
+
 	/*
 	* ----------------------------
 	* Clear the WPV_Settings instance when switching to another blog
 	* ----------------------------
 	*/
-	
+
 	function wpv_clear_settings_instance() {
 		WPV_Settings::clear_instance();
 	}
-	
+
 	/*
 	* ----------------------------
 	* Compatibility
 	* ----------------------------
 	*/
-	
+
 	/**
 	* WooCommerce
 	*
@@ -318,12 +293,12 @@ class WP_Views {
 	* @see https://icanlocalize.basecamphq.com/projects/11629195-toolset-peripheral-work/todo_items/186738278/comments
 	*/
 	function wpv_woocommerce_product_add_to_cart_url( $add_to_cart_url, $wc_prod_object ) {
-		if ( 
+		if (
 			defined( 'DOING_AJAX' )
 			&& DOING_AJAX
 			&& isset( $_REQUEST['action'] )
 			&& (
-				$_REQUEST['action'] == 'wpv_get_view_query_results' 
+				$_REQUEST['action'] == 'wpv_get_view_query_results'
 				|| $_REQUEST['action'] == 'wpv_get_archive_query_results'
 			)
 		) {
@@ -361,7 +336,7 @@ class WP_Views {
 		}
 		return $add_to_cart_url;
 	}
-	
+
 	/**
 	* Gravity Forms
 	*
@@ -371,16 +346,16 @@ class WP_Views {
 	*
 	* @since 1.10
 	*/
-	
+
 	function wpv_gravityforms_fix_form_action_on_ajax( $form_tag, $form ) {
 		if ( preg_match( "|action='(.*?)'|", $form_tag, $matches ) ) {
 			$form_action = $matches[1];
-			if ( 
+			if (
 				defined( 'DOING_AJAX' )
 				&& DOING_AJAX
 				&& isset( $_REQUEST['action'] )
 				&& (
-					$_REQUEST['action'] == 'wpv_get_view_query_results' 
+					$_REQUEST['action'] == 'wpv_get_view_query_results'
 					|| $_REQUEST['action'] == 'wpv_get_archive_query_results'
 				)
 			) {
@@ -410,7 +385,7 @@ class WP_Views {
 	function can_include_type($type) {
 		return !in_array( $type, $this->CCK_types );
 	}
-	
+
 	function register_views_pages_in_menu( $pages ) {
 		if ( $this->is_embedded() ) {
 			$page = wpv_getget( 'page' );
@@ -462,7 +437,7 @@ class WP_Views {
 		}
 		return $pages;
 	}
-	
+
 	function register_export_import_section( $sections ) {
 		$promo_link_args = array(
 			'query'		=> array(
@@ -470,7 +445,7 @@ class WP_Views {
 				'utm_campaign'	=> 'views',
 				'utm_medium'	=> 'embedded-view-export-import-page',
 				'utm_term'		=> 'Get Views'
-				
+
 			),
 			'anchor'	=> 'views'
 		);
@@ -482,8 +457,8 @@ class WP_Views {
 			'items'		=> array(
 				'mixed'	=> array(
 								'title'		=> __( 'Export and Import Views data', 'wpv-views' ),
-								'content'	=> '<p>' 
-											. __( 'You need the full Toolset Views plugin to export and import data.', 'wpv-views' ) 
+								'content'	=> '<p>'
+											. __( 'You need the full Toolset Views plugin to export and import data.', 'wpv-views' )
 											. WPV_MESSAGE_SPACE_CHAR
 											. '<a href="' . $promo_link . '" title="" class="button button-primary-toolset" target="_blank">'
 											. __( 'Get Views', 'wpv-views' )
@@ -510,18 +485,18 @@ class WP_Views {
 				'<link rel="stylesheet" href="%s" type="text/css" media="all" />',
 				esc_url( add_query_arg( array( 'v' => WPV_VERSION ), WPV_URL . '/res/css/wpv-views.css' ) ) );
 	}
-	
+
 	/*
 	* after_save_item
 	* after_import_item
 	*
 	* Manage the _toolset_edit_last postmeta on Views objects
 	*/
-	
+
 	function after_save_item( $item_id ) {
 		// do nothing in the embedded version
 	}
-	
+
 	function after_import_item( $item_id ) {
 		if (
 			! is_numeric( $item_id )
@@ -539,44 +514,44 @@ class WP_Views {
      */
 	function get_view_id( $atts ) {
 		global $wpdb;
-		extract( 
+		extract(
 			shortcode_atts(
 				array(
 					'id'	=> false,
-					'name'  => false 
+					'name'  => false
 				),
-				$atts 
-			) 
+				$atts
+			)
 		);
 
-		if ( 
-			empty( $id ) 
-			&& ! empty( $name ) 
+		if (
+			empty( $id )
+			&& ! empty( $name )
 		) {
 			// lookup by post title first
-			$id = $wpdb->get_var( 
-				$wpdb->prepare( 
-					"SELECT ID FROM {$wpdb->posts} 
-					WHERE post_type = 'view' 
-					AND post_title = %s 
+			$id = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT ID FROM {$wpdb->posts}
+					WHERE post_type = 'view'
+					AND post_title = %s
 					LIMIT 1",
-					$name 
-				) 
+					$name
+				)
 			);
 			if ( ! $id ) {
 				// try the post name
-				$id = $wpdb->get_var( 
-					$wpdb->prepare( 
-						"SELECT ID FROM {$wpdb->posts} 
-						WHERE post_type = 'view' 
-						AND post_name = %s 
+				$id = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT ID FROM {$wpdb->posts}
+						WHERE post_type = 'view'
+						AND post_name = %s
 						LIMIT 1",
-						$name 
-					) 
+						$name
+					)
 				);
 			}
 		}
-        
+
 		return $id;
 	}
 
@@ -600,20 +575,20 @@ class WP_Views {
 		}
 
 		$this->view_used_ids[] = $id;
-		
+
         array_push( $this->view_shortcode_attributes, $atts );
 
         // Shall we look up in the cache?
         $is_cacheable = $this->is_cacheable( $id );
         $cache_id = $this->get_cache_id( $id );
         if ( $is_cacheable ) {
-            
+
             // Is it cached?
             $cached_output_index = get_option( 'wpv_transient_view_index', array() );
             $is_cached = isset( $cached_output_index[$cache_id] ) && $cached_output_index[$cache_id];
-            
+
             if( $is_cached ) {
-                
+
                 $trasient = 'wpv_transient_view_'.$cache_id; // strlen() <= 45
                 $cached_output = get_transient( $trasient );
                 if( $cached_output !== false ) {
@@ -623,20 +598,20 @@ class WP_Views {
                 // We should not reach this line if everything is working fine
                 // But if not, let's continue
             }
-            
+
         }
-        
+
 		$out = $this->render_view_ex( $id, md5( serialize( $atts ) ) );
-		
+
 		array_pop( $this->view_shortcode_attributes );
-        
+
         // Update Views cache if applicable
         if ( $is_cacheable ) {
-            
+
             // Update Views Loop Content Cache
             $trasient = 'wpv_transient_view_'.$cache_id;
             $is_stored = set_transient( $trasient, $out, DAY_IN_SECONDS );
-            
+
             // Update Views Loop Index
             if( $is_stored === true ) {
                 $cached_output_index = get_option( 'wpv_transient_view_index', array() );
@@ -644,7 +619,7 @@ class WP_Views {
                 update_option( 'wpv_transient_view_index', $cached_output_index );
             }
         }
-		
+
 		$out = apply_filters( 'wpv_filter_wpv_view_shortcode_output', $out, $id );
 
 		return $out;
@@ -672,7 +647,7 @@ class WP_Views {
 					'name' => false,
 					'target_id' => 'self'
 			),
-			$atts ) 
+			$atts )
 		);
 
 		$id = $this->get_view_id( $atts );
@@ -681,9 +656,9 @@ class WP_Views {
 			return sprintf( '<!- %s ->', __( 'View not found', 'wpv-views' ) );
 		}
 
-		if ( 
-			empty( $target_id ) 
-			|| $target_id == 'self' 
+		if (
+			empty( $target_id )
+			|| $target_id == 'self'
 		) {
 			$target_id = 'self';
 			$url = $_SERVER['REQUEST_URI'];
@@ -693,12 +668,12 @@ class WP_Views {
 			* $pagination_permalinks	= apply_filters( 'wpv_filter_wpv_get_pagination_permalinks', array(), $view_settings, $view_id );
 			* $url						= $pagination_permalinks['first'];
 			*/
-			if ( 
+			if (
 				defined('DOING_AJAX')
 				&& DOING_AJAX
 				&& isset( $_REQUEST['action'] )
 				&& (
-					$_REQUEST['action'] == 'wpv_get_view_query_results' 
+					$_REQUEST['action'] == 'wpv_get_view_query_results'
 					|| $_REQUEST['action'] == 'wpv_get_archive_query_results'
 				)
 			) {
@@ -723,21 +698,21 @@ class WP_Views {
 		}
 
 		$this->view_used_ids[] = $id;
-		
+
         array_push( $this->view_shortcode_attributes, $atts );
-        
+
         // Shall we look up in the cache? Is this a Parametric Search View?
         $is_cacheable = $this->is_cacheable( $id ) && $this->does_view_have_form_controls( $id );
         $cache_id = $this->get_cache_id( $id );
         $target_id = isset( $atts['target_id'] ) ? $atts['target_id'] : 'self';
         if( $is_cacheable ) {
-            
+
             // Is it cached?
             $cached_filter_index = get_option( 'wpv_transient_viewform_index', array() );
             $is_cached = isset( $cached_filter_index[$cache_id] ) && $cached_filter_index[$cache_id];
-            
+
             if ( $is_cached ) {
-                
+
                 $trasient = 'wpv_transient_viewform_'.$cache_id.'_'.$target_id; // strlen() <= 45
                 $cached_filter = get_transient( $trasient );
                 if( $cached_filter !== false ) {
@@ -747,16 +722,16 @@ class WP_Views {
                 // We should not reach this line if everything is working fine
                 // But if not, let's continue
             }
-            
+
         }
-        
+
 		$this->rendering_views_form_in_progress = true;
 
 		$out = '';
-        
+
 		$view_settings = $this->get_view_settings( $id );
 		if ( isset( $view_settings['filter_meta_html'] ) ) {
-            
+
             $this->view_depth++;
 			array_push( $this->view_ids, $this->current_view );
 			$this->current_view = $id;
@@ -865,7 +840,7 @@ class WP_Views {
 			if( isset( $sitepress ) ) {
 				// Dirty hack to be able to use the wpml_content_fix_links_to_translated_content() function
 				// It will take a string, parse its links based on <a> tag and return the translated link
-				
+
 				// @todo this is not needed anymore, we already translate the $url above
 				// on the only case it is a permalink to a given post ID
 				$url = '<a href="' . esc_url( $url ) . '"></a>';
@@ -880,57 +855,57 @@ class WP_Views {
                 $query_args_remove,
                 $url
             );
-			
+
 			$view_attrs = $atts;
-			
+
 			$sort_orderby		= '';
 			$sort_order			= '';
 			$sort_orderby_as	= '';
 			$sort_orderby_second	= '';
 			$sort_order_second		= '';
-			
+
 			if (
-				isset( $_GET['wpv_view_count'] ) 
+				isset( $_GET['wpv_view_count'] )
 				&& esc_attr( $_GET['wpv_view_count'] ) == $this->get_view_count()
 			) {
 				if (
-					isset( $_GET['wpv_sort_orderby'] ) 
-					&& esc_attr( $_GET['wpv_sort_orderby'] ) != '' 
+					isset( $_GET['wpv_sort_orderby'] )
+					&& esc_attr( $_GET['wpv_sort_orderby'] ) != ''
 				) {
 					$sort_orderby = esc_attr( $_GET['wpv_sort_orderby'] );
 				}
 				if (
-					isset( $_GET['wpv_sort_order'] ) 
-					&& esc_attr( $_GET['wpv_sort_order'] ) != '' 
+					isset( $_GET['wpv_sort_order'] )
+					&& esc_attr( $_GET['wpv_sort_order'] ) != ''
 				) {
 					$sort_order = esc_attr( $_GET['wpv_sort_order'] );
 				}
 				if (
-					isset( $_GET['wpv_sort_orderby_as'] ) 
-					&& esc_attr( $_GET['wpv_sort_orderby_as'] ) != '' 
+					isset( $_GET['wpv_sort_orderby_as'] )
+					&& esc_attr( $_GET['wpv_sort_orderby_as'] ) != ''
 				) {
 					$sort_orderby_as = esc_attr( $_GET['wpv_sort_orderby_as'] );
 				}
 				// Secondary sorting
 				if (
-					isset( $_GET['wpv_sort_order_second'] ) 
+					isset( $_GET['wpv_sort_order_second'] )
 					&& in_array( strtoupper( esc_attr( $_GET['wpv_sort_order_second'] ) ), array( 'ASC', 'DESC' ) )
 				) {
 					$sort_order_second = strtoupper( esc_attr( $_GET['wpv_sort_order_second'] ) );
 				}
 				if (
-					isset( $_GET['wpv_sort_orderby_second'] ) 
-					&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != 'undefined' 
-					&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != '' 
+					isset( $_GET['wpv_sort_orderby_second'] )
+					&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != 'undefined'
+					&& esc_attr( $_GET['wpv_sort_orderby_second'] ) != ''
 					&& in_array( $_GET['wpv_sort_orderby_second'], array( 'post_date', 'post_title', 'ID', 'modified', 'menu_order', 'rand' ) )
 				) {
 					$sort_orderby_second = esc_attr( $_GET['wpv_sort_orderby_second'] );
 				}
 			}
-			
+
 			// @todo Switch .js-wpv-filter-data-for-this-form into a form data attribute that we can init on document.ready and refresh when neeeded
 			// @note Mind that this could be served from cache, so we better have a caching cleaering mechanism that runs only once...
-			
+
 			$parametric_data = array(
 				'query'				=> 'normal',
 				'id'				=> $id,
@@ -957,7 +932,7 @@ class WP_Views {
 				'before'			=> $ajax_before,
 				'after'				=> $ajax_after
 			);
-			
+
 			$view_attrs_to_keep = $view_attrs;
 			if ( isset( $view_attrs_to_keep['name'] ) ) {
 				unset( $view_attrs_to_keep['name'] );
@@ -965,16 +940,16 @@ class WP_Views {
 			if ( isset( $view_attrs_to_keep['target_id'] ) ) {
 				unset( $view_attrs_to_keep['target_id'] );
 			}
-			
+
 			$parametric_data['attributes'] = $view_attrs_to_keep;
-			
+
 			$view_auxiliar_requires = array(
 				'current_post_id'	=> 0,
 				'parent_post_id'	=> 0,
 				'parent_term_id'	=> 0,
 				'parent_user_id'	=> 0
 			);
-			
+
 			/**
 			* wpv_filter_requires_current_page
 			*
@@ -986,19 +961,19 @@ class WP_Views {
 			* @since unknown
 			*/
 			$requires_current_page = apply_filters('wpv_filter_requires_current_page', false, $view_settings);
-			if ( 
-				$requires_current_page 
+			if (
+				$requires_current_page
 				|| $target_id == 'self'
 			) {
 				$current_post = $this->get_top_current_page();
 				if (
-					$current_post 
-					&& isset( $current_post->ID ) 
+					$current_post
+					&& isset( $current_post->ID )
 				) {
 					$view_auxiliar_requires['current_post_id'] = $current_post->ID;
 				}
 			}
-			
+
 			/**
 			* wpv_filter_requires_parent_post
 			*
@@ -1013,13 +988,13 @@ class WP_Views {
 			if ( $requires_parent_post ) {
 				$current_post = $this->get_current_page();
 				if (
-					$current_post 
-					&& isset( $current_post->ID ) 
+					$current_post
+					&& isset( $current_post->ID )
 				) {
 					$view_auxiliar_requires['parent_post_id'] = $current_post->ID;
 				}
 			}
-			
+
 			/**
 			* wpv_filter_requires_parent_term
 			*
@@ -1037,7 +1012,7 @@ class WP_Views {
 					$view_auxiliar_requires['parent_term_id'] = $parent_term_id;
 				}
 			}
-			
+
 			/**
 			* wpv_filter_requires_parent_user
 			*
@@ -1055,16 +1030,16 @@ class WP_Views {
 					$view_auxiliar_requires['parent_user_id'] = $parent_user_id;
 				}
 			}
-			
+
 			$archive_environment = apply_filters( 'wpv_filter_wpv_get_current_archive_loop', array() );
 			$view_auxiliar_requires['archive'] = array(
 				'type'	=> $archive_environment['type'],
 				'name'	=> $archive_environment['name'],
 				'data'	=> $archive_environment['data'],
 			);
-			
+
 			$parametric_data['environment'] = $view_auxiliar_requires;
-			
+
 			$parametric_data = apply_filters( 'wpv_filter_wpv_get_parametric_settings', $parametric_data, $view_settings );
 
 			$out .= '<form'
@@ -1108,10 +1083,10 @@ class WP_Views {
 					if ( strpos( $url_key, 'wpv_' ) !== 0 ) {
 						if ( is_array( $url_value ) ) {
 							foreach ( $url_value as $url_value_counter => $url_value_item ) {
-								$out .= '<input id="wpv_param_' . esc_attr( $url_key . '_' . $url_value_counter ) . '" type="hidden" name="' . esc_attr( $url_key ) . '[]" value="' . esc_attr( $url_value_item ) . '" />';
+								$out .= '<input class="js-wpv-extra-url-param" id="wpv_param_' . esc_attr( $url_key . '_' . $url_value_counter ) . '" type="hidden" name="' . esc_attr( $url_key ) . '[]" value="' . esc_attr( $url_value_item ) . '" />';
 							}
 						} else if ( is_string( $url_value ) ) {
-							$out .= '<input id="wpv_param_' . esc_attr( $url_key ) . '" type="hidden" name="' . esc_attr( $url_key ) . '" value="' . esc_attr( $url_value ) . '" />';
+							$out .= '<input class="js-wpv-extra-url-param" id="wpv_param_' . esc_attr( $url_key ) . '" type="hidden" name="' . esc_attr( $url_key ) . '" value="' . esc_attr( $url_value ) . '" />';
 						}
 					}
 				}
@@ -1179,7 +1154,7 @@ class WP_Views {
 
 			$form_closure = apply_filters( 'wpv_filter_end_filter_form', $form_closure, $view_settings, $view_id, $is_required );
 
-			
+
 			$out .= $form_closure;
 
 			$this->current_view = array_pop( $this->view_ids );
@@ -1200,7 +1175,7 @@ class WP_Views {
                     update_option( 'wpv_transient_viewform_index', $cached_filter_index );
                 }
             }
-            
+
 		}
 
 		array_pop( $this->view_shortcode_attributes );
@@ -1209,7 +1184,7 @@ class WP_Views {
 
 		return $out;
 	}
-	
+
 	function remove_html_comments_from_shortcode_output( $out ) {
 		$out = str_replace('<!-- wpv-loop-start -->', '', $out);
 		$out = str_replace('<!-- wpv-loop-end -->', '', $out);
@@ -1251,26 +1226,26 @@ class WP_Views {
 
 		return $out;
 	}
-   
+
     /**
      * Can we use cache for this View?
      * @param int $view_id View ID
      * @return boolean
      */
     function is_cacheable( $view_id ) {
-        
+
         global $WPV_settings, $WPVDebug, $sitepress;
-        
+
         // For the sake of performance, we should check lightest issues first
-        
+
         /* Rule 0: Only the default first page can be cached, and only when it is not modified by core URL parameters */
 		$wpv_core_url_parameter_modifiers = array(
 			// Table sorting: do not cache if manually modified column orderby or order
-			'wpv_column_sort_id', 'wpv_column_sort_dir', 
+			'wpv_column_sort_id', 'wpv_column_sort_dir',
 			// Frontend sorting controls: do not cache if orderby or order are enforced
 			'wpv_sort_orderby', 'wpv_sort_order', 'wpv_sort_orderby_as', 'wpv_sort_orderby_second', 'wpv_sort_order_second',
 			// Paged and frontend search parameters
-			'wpv_paged', 'wpv_view_count', 'wpv_post_search', 'wpv_taxonomy_search' 
+			'wpv_paged', 'wpv_view_count', 'wpv_post_search', 'wpv_taxonomy_search'
 		);
 		foreach ( $wpv_core_url_parameter_modifiers as $modifier ) {
 		    if ( isset( $_GET[ $modifier ] ) ) {
@@ -1280,7 +1255,7 @@ class WP_Views {
 
         /* Rule 1: Cache cannot be used while the user is debugging Views */
         $is_debug_mode_on = isset( $WPV_settings->wpv_debug_mode ) && ! empty( $WPV_settings->wpv_debug_mode );
-        $current_user_can_debug = $WPVDebug->user_can_debug();       
+        $current_user_can_debug = $WPVDebug->user_can_debug();
         if( $is_debug_mode_on && $current_user_can_debug ) {
             return false;
         }
@@ -1311,9 +1286,9 @@ class WP_Views {
 		if ( ! empty( $view_attributes ) ) {
 			return false;
 		}
-        
+
         $view_settings = $this->get_view_settings( $view_id );
-        
+
         /* Rule 3: Random-sorted Views cannot be cached, obviously */
         if( isset( $view_settings['orderby'] ) && 'rand' === $view_settings['orderby'] ) {
             return false;
@@ -1321,7 +1296,7 @@ class WP_Views {
 		if( isset( $view_settings['orderby_second'] ) && 'rand' === $view_settings['orderby_second'] ) {
             return false;
         }
-        
+
         /* Rule 4: Environment-bound Views cannot be cached (at this time) */
         $requirement_list = array(
             'wpv_filter_requires_current_page', // Depends on the current page (bound by Page ID)?
@@ -1338,20 +1313,20 @@ class WP_Views {
                 return false;
             }
         }
-        
-        /* Rule 5: Themes that modify the query disallow caching */ 
+
+        /* Rule 5: Themes that modify the query disallow caching */
         //$view_settings_no_override = $this->get_view_settings( $view_id, null, array( 'override_view_settings' => false ) );
 	    $view_settings_no_override = apply_filters( 'wpv_filter_wpv_get_view_settings', array(), $view_id, array( 'override_view_settings' => false )  );
         $requirement_result = apply_filters( 'wpv_filter_requires_framework_values', false, $view_settings_no_override );
         if( $requirement_result ) {
             return false;
         }
-        
+
         /* Rule 6: Manually-disabled caching. View explicitly demanded not to be cached */
         if( isset( $view_settings['disable_caching'] ) && true === $view_settings['disable_caching'] ) {
             return false;
         }
-        
+
         /* Rule 7: Filter-dependent caching. Apply filter on $view_id, settings($view_id), attributes($view_id) */
         $view_attributes = $this->get_view_shortcodes_attributes();
         /**
@@ -1369,12 +1344,12 @@ class WP_Views {
         if( $requirement_result ) {
             return false;
         }
-        
+
         /* Rule 8: WPML is active */
         if( is_object( $sitepress ) ) {
             return false;
         }
-        
+
         /* Rule 9: Views that retrieve values through URL parameters (Non-Parametric Search Views) */
 	    // TODO: Define methods
 	    $attributes = get_view_allowed_url_parameters( $view_id );
@@ -1393,27 +1368,27 @@ class WP_Views {
 		) {
 			return false;
 		}
-        
+
         /* Rule N: Guess caching can be allow at this point */
         return true;
     }
-    
+
     /**
      * Generates an unique ID for the cache
      * @param type $id
      * @return string | strlen(string) <= 20
      */
     function get_cache_id( $id ) {
-        // FIXME: Instead of using $id, we could use a hash function 
+        // FIXME: Instead of using $id, we could use a hash function
         // and take into account parameters and other environmental variables
-        
+
         return $id;
     }
-	
+
 	function wpv_is_rendering_form_view( $false ) {
 		return $this->rendering_views_form();
 	}
-    
+
 	function rendering_views_form() {
 		return $this->rendering_views_form_in_progress;
 	}
@@ -1423,7 +1398,7 @@ class WP_Views {
 		$aux_array = $this->current_page;
 		return end( $aux_array );
 	}
-	
+
 	function wpv_get_current_post( $current_post = null ) {
 		$maybe_current_post = $this->get_current_page();
 		if ( $maybe_current_post ) {
@@ -1431,14 +1406,14 @@ class WP_Views {
 		}
 		return $current_post;
 	}
-	
+
 	function wpv_set_current_post( $current_post ) {
 		$post_exists = ( isset( $current_post ) && $current_post instanceof WP_Post );
 		if (
-			isset( $current_post ) 
+			isset( $current_post )
 			&& $current_post instanceof WP_Post
 		) {
-			
+
 		}
 		array_push( $this->current_page, clone $current_post );
 	}
@@ -1455,7 +1430,7 @@ class WP_Views {
 		$aux_array = $this->view_shortcode_attributes;
 		return end( $aux_array );
 	}
-	
+
 	/**
 	* set_view_shortcode_attributes
 	*
@@ -1469,13 +1444,13 @@ class WP_Views {
 	*
 	* This method is useful when doing AJAX cals, where you know that no View is being loaded, but you need to fake the View shortcode attributes to calculate its hash.
 	*/
-	
+
 	function set_view_shortcode_attributes( $attributes ) {
 		array_push( $this->view_shortcode_attributes, $attributes );
 	}
-	
+
 	/**
-	 * Helper method/API to reset the shortcode attributes for current View, 
+	 * Helper method/API to reset the shortcode attributes for current View,
 	 * for API functions that need to get View results based on their ID.
 	 *
 	 * @since 2.3.0
@@ -1486,7 +1461,7 @@ class WP_Views {
 
 
 	function get_top_current_page() {
-		if ( isset( $_GET['wpv_aux_current_post_id'] ) ) { 
+		if ( isset( $_GET['wpv_aux_current_post_id'] ) ) {
 			// In AJAX pagination is_single() and is_page() do not work as expected, but it seems they return TRUE here anyway
 			$top_post_id = esc_attr( $_GET['wpv_aux_current_post_id'] );
 			$top_post = get_post( $top_post_id );
@@ -1505,12 +1480,12 @@ class WP_Views {
 			return $this->top_current_page;
 		}
 	}
-	
+
 	function wpv_get_top_current_post( $top_current_post = null ) {
 		$top_current_post = $this->get_top_current_page();
 		return $top_current_post;
 	}
-	
+
 	function wpv_set_top_current_post( $top_current_post ) {
 		$this->top_current_page = $top_current_post;
 	}
@@ -1519,16 +1494,16 @@ class WP_Views {
 		$current_view = $this->get_current_view();
 		return $current_view;
 	}
-	
+
 	/**
 	 * Get the tree of currently nested Views displayed on the page.
 	 *
-	 * Returns an array of currently looped Views, in order of appearance, 
+	 * Returns an array of currently looped Views, in order of appearance,
 	 * or an empty array otherwise.
 	 *
 	 * @dince 2.3.0
 	 */
-	
+
 	function wpv_get_current_views_tree( $current_views_tree = array() ) {
 		$current_views_tree = $this->view_ids;
 		return $current_views_tree;
@@ -1540,7 +1515,7 @@ class WP_Views {
 	function get_current_view() {
 		return $this->current_view;
 	}
-	
+
 	/**
 	 * Helper method/API to set the current View, for API functions that need to get View results based on their ID.
 	 *
@@ -1552,7 +1527,7 @@ class WP_Views {
 		array_push( $this->view_ids, $this->current_view );
 		$this->current_view = $view_id;
 	}
-	
+
 	/**
 	 * Helper method/API to reset the current View, for API functions that need to get View results based on their ID.
 	 *
@@ -1566,7 +1541,7 @@ class WP_Views {
 			$this->current_view = $view_id_fallback;
 		}
 	}
-	
+
 	function wpv_get_object_unique_hash( $hash = '', $view_settings = array() ) {
 		$view_settings['view-query-mode'] = isset( $view_settings['view-query-mode'] ) ? $view_settings['view-query-mode']  : 'normal';
 		switch ( $view_settings['view-query-mode'] ) {
@@ -1581,7 +1556,7 @@ class WP_Views {
 		}
 		return $hash;
 	}
-	
+
 
 	function wpv_get_view_unique_hash( $view_unique_hash = '' ) {
 		$view_unique_hash = $this->get_view_count();
@@ -1619,7 +1594,7 @@ class WP_Views {
 			ksort( $attr );
 			$attr_attr = 'CATTR' . md5( serialize( $attr ) );
 		}
-		
+
 		$view_settings = $this->get_view_settings();
 		$attr_top_current_post = '';
 		$requires_top_current_post = false;
@@ -1637,7 +1612,7 @@ class WP_Views {
 			if ( $requires_top_current_post ) {
 			$top_current_post = $this->get_top_current_page();
 			if (
-				$top_current_post 
+				$top_current_post
 				&& isset( $top_current_post->ID )
 			) {
 				$attr_top_current_post = 'TCPID' . intval( $top_current_post->ID );
@@ -1659,7 +1634,7 @@ class WP_Views {
 		if ( $requires_current_post ) {
 			$current_post = $this->get_current_page();
 			if (
-				$current_post 
+				$current_post
 				&& isset( $current_post->ID )
 			) {
 				$attr_current_post = 'CPID' . intval( $current_post->ID );
@@ -1701,12 +1676,12 @@ class WP_Views {
 				$attr_user = 'CUID' . intval( $this->get_parent_view_user() );
 			}
 		}
-		
+
 		$attr_suffix = $attr_attr . $attr_top_current_post . $attr_current_post . $attr_term . $attr_user;
 		if ( ! empty( $attr_suffix ) ) {
 			$attr_suffix = '-' . $attr_suffix;
 		}
-		
+
 		$return = $this->current_view . $attr_suffix;
 
 		return (string) $return;
@@ -1734,7 +1709,7 @@ class WP_Views {
 	 *	 postmeta of given View. Please refer to wpv_prepare_view_listing_query() to understand why it is necessary
 	 *	- usually because we already got the _wpv_settings postmeta for the View and just want to normalize  and filter the output
 	 * @param array $options_array (array) Unserialized array with options
-     * 
+     *
 	 * @return array View's settings.
 	 *
 	 * @since unknown
@@ -1742,7 +1717,7 @@ class WP_Views {
 	 * boolean (former '$disable_override' boolean argument), the 'extend_view_settings' boolean which decides if the resulting $view_settings
 	 * array will be extended and the 'original_view_settings' array which contains the original metadata before the filters are applied.
 	 */
-	 
+
 	function get_view_settings( $view_id = null, $post_meta = null, $options_array = array( 'override_view_settings' => true, 'extend_view_settings' => true, 'public_view_settings' => true, 'original_view_settings' => null ) ) {
 		if ( is_null( $view_id ) ) {
 			$view_id = $this->get_current_view();
@@ -1760,7 +1735,7 @@ class WP_Views {
             'original_view_settings' => null
         );
         $options_array = wp_parse_args( $options_array, $options_array_defaults );
-		
+
 		/**
 		* wpv_view_settings
 		*
@@ -1814,7 +1789,7 @@ class WP_Views {
         }
 
 		if( $options_array['public_view_settings'] ) {
-			
+
 			/**
 			 * wpv_filter_public_wpv_view_settings
 			 *
@@ -1873,7 +1848,7 @@ class WP_Views {
 	 *
 	 * @since unknown
 	 */
-	 
+
 	function get_view_layout_settings( $view_id = null, $post_meta = null ) {
 		if ( is_null( $view_id ) ) {
 			$view_id = $this->get_current_view();
@@ -1882,7 +1857,7 @@ class WP_Views {
 		if ( null == $post_meta ) {
 			$post_meta = (array) get_post_meta( $view_id, '_wpv_layout_settings', true );
 		}
-		
+
 		/**
 		* wpv_view_layout_settings
 		*
@@ -1897,9 +1872,9 @@ class WP_Views {
 		*
 		* @since 1.8.0
 		*/
-		
+
 		$view_layout_settings = apply_filters( 'wpv_view_layout_settings', $post_meta, $view_id );
-		
+
 		/**
 		* wpv_filter_override_view_layout_settings
 		*
@@ -1912,12 +1887,12 @@ class WP_Views {
 		*
 		* @since 1.8.0
 		*/
-		
+
 		$view_layout_settings = apply_filters( 'wpv_filter_override_view_layout_settings', $view_layout_settings, $view_id );
-		
+
 		return $view_layout_settings;
 	}
-	
+
 	/**
 	* wpv_view_layout_settings_set_fallbacks
 	*
@@ -1931,14 +1906,14 @@ class WP_Views {
 	*
 	* @since 1.8.1
 	*/
-	
+
 	function wpv_view_layout_settings_set_fallbacks( $view_layout_settings, $view_id ) {
 		if ( ! is_array( $view_layout_settings ) ) {
 			$view_layout_settings = array();
 		}
 		return $view_layout_settings;
 	}
-	
+
 	/**
 	* clean_current_loop_user
 	*
@@ -1974,7 +1949,7 @@ class WP_Views {
 		array_push( $this->current_page, $post_exists ? clone $post : null );
 
 		array_push( $this->view_ids, $this->current_view );
-		
+
 		// Adjust for WPML support
 		// Although Views are not translatable anymore, keep for backwards compatibility
 		$id = apply_filters( 'translate_object_id', $id, 'view', true, null );
@@ -1989,9 +1964,9 @@ class WP_Views {
 			$this->parent_taxonomy = $this->taxonomy_data['term']->term_id;
 		} else {
 			if (
-				$this->parent_taxonomy 
-				&& isset( $_GET['wpv_aux_parent_term_id'] ) 
-				&& is_numeric( $_GET['wpv_aux_parent_term_id'] ) 
+				$this->parent_taxonomy
+				&& isset( $_GET['wpv_aux_parent_term_id'] )
+				&& is_numeric( $_GET['wpv_aux_parent_term_id'] )
 				&& $_GET['wpv_aux_parent_term_id'] == $this->parent_taxonomy
 			) {
 				$this->parent_taxonomy = intval( $_GET['wpv_aux_parent_term_id'] );
@@ -2007,8 +1982,8 @@ class WP_Views {
 			$this->parent_user = $this->users_data['term']->ID;
 		} else {
 			if (
-				$this->parent_user 
-				&& isset( $_GET['wpv_aux_parent_user_id'] ) 
+				$this->parent_user
+				&& isset( $_GET['wpv_aux_parent_user_id'] )
 				&& is_numeric( $_GET['wpv_aux_parent_user_id'] )
 				&& $_GET['wpv_aux_parent_user_id'] == $this->parent_user
 			) {
@@ -2042,26 +2017,26 @@ class WP_Views {
 			* 					The wpv-post-body shortcode stops rendering when the curent post has a post_type of 'view' or 'view-template'
 			* 					Let's use a dummy value here, as this will only affect this little piece and we should be more or less covered.
 			*/
-			
+
 			$registered_post_types = get_post_types( array(), 'names' );
 			$dummy_post_type_counter = 0;
 			$dummy_post_type_base = 'view-dummy';
 			$dummy_post_type = 'view-dummy';
-			
+
 			while ( in_array( $dummy_post_type, $registered_post_types ) ) {
 				$dummy_post_type_counter = $dummy_post_type_counter + 1;
 				$dummy_post_type = $dummy_post_type_base . '-' . $dummy_post_type_counter;
 			}
-			
+
 			$temp_post = $post;
 			$post->ID = $id;
 			$post->post_type = $dummy_post_type;
 			$post->post_parent = 0;
 		}
-		
-		
+
+
 		$out = wpv_do_shortcode( $out );
-		
+
 		if (
 			$post_exists
 			&& $this->is_archive_view( $id )
@@ -2163,7 +2138,7 @@ class WP_Views {
 					// Get templates for items (differentiated by their indices, see [wpv-item] documentation).
 					$tmpl = $matches[2];
 					$item_indexes = $this->_get_item_indexes( $tmpl );
-					
+
 					$query_type = apply_filters( 'wpv_filter_wpv_get_query_type', 'posts', $view_id );
 
 					if ( $query_type == 'posts' ) {
@@ -2219,6 +2194,22 @@ class WP_Views {
 
 					// The actual loop - render all items
 					$loop = '';
+
+					/**
+					 * Execute an action before the View loop.
+					 *
+					 * @param string $query_type The type of query for the current loop: 'posts', 'taxonomy', or 'users'
+					 * @param int $view_id    The ID of the View being looped
+					 * @param array $args {
+					 *     Loop arguments, if any, used when items are wrapped into rows.
+					 *
+					 *     @type int $wrap Optional. Number of items that each row sould include. If not set, all items will go into a single symbolic row.
+					 *     @type bool $pad Optional. Whether the loop should include ghost items to complete a row, in case the items in a page do not cover the last row.
+					 * }
+					 * @since 2.7.3
+					 */
+					do_action( 'wpv_action_wpv_loop_before', $view_id, $query_type, $args );
+
 					for( $i = 0; $i < $items_count; $i++) {
 						$WPVDebug->set_index();
 						$index = $i;
@@ -2230,7 +2221,7 @@ class WP_Views {
 						// [wpv-item index=xx] uses base 1
 						$index++;
 						$index = strval( $index );
-						
+
 						/**
 						 * Execute an action before each of the View loop items is being rendered.
 						 *
@@ -2241,7 +2232,7 @@ class WP_Views {
 						 * @since 2.4.0
 						 */
 						do_action( 'wpv_action_wpv_loop_before_display_item', $items[ $i ], $query_type, $view_id );
-						
+
 						switch ( $query_type ) {
 							case 'posts':
 								$post = clone $items[ $i ];
@@ -2263,7 +2254,7 @@ class WP_Views {
 								do_action( 'wpv-before-display-user', $items[ $i ], $view_id );
 								break;
 						}
-						
+
 						$WPVDebug->add_log( $query_type , $items[ $i ] );
 
 						// first output the "all" index.
@@ -2296,10 +2287,10 @@ class WP_Views {
 							);
 							$selected_index = apply_filters( 'wpv_filter_wpv_item_loop_selected_index', $selected_index, $index_data );
 						}
-						
+
 						// Finally there is an index 'other' and we did not set a valid template before, apply it
 						if (
-							null == $selected_index 
+							null == $selected_index
 							&& isset( $item_indexes['other'] )
 						) {
 							$selected_index = 'other';
@@ -2312,7 +2303,7 @@ class WP_Views {
 							$WPVDebug->add_log_item( 'shortcodes', $item_indexes[ $selected_index ] );
 							$WPVDebug->add_log_item( 'output', $shortcodes_output );
 						}
-						
+
 						/**
 						 * Execute an action after each of the View loop items is rendered.
 						 *
@@ -2340,18 +2331,53 @@ class WP_Views {
 					}
 
 					// see if we should pad the remaining items.
-					if ( isset( $args['wrap'] ) && isset( $args['pad'] ) ) {
-						while ( ( $i % $args['wrap'] ) && $args['pad'] ) {
+					if ( isset( $args['wrap'] ) && $args['pad'] ) {
+						while ( $i % $args['wrap'] ) {
 							$index = $i;
 							$index %= $args['wrap'];
-
 							if ( $index == $args['wrap'] - 1 ) {
 								if ( isset( $item_indexes['pad-last'] ) ) {
+									/**
+									 * Execute an action before each of the View loop ghost pad indexes is rendered.
+									 *
+									 * @param string $query_type The type of query for the current loop: 'posts', 'taxonomy', or 'users'
+									 * @param int $view_id The ID of the View being looped
+									 * @since 2.7.3
+									 */
+									do_action( 'wpv_action_wpv_loop_before_display_pad_item', $query_type, $view_id );
+									/**
+									 * Execute an action before each of the View loop ghost last pad index is rendered.
+									 *
+									 * @param string $query_type The type of query for the current loop: 'posts', 'taxonomy', or 'users'
+									 * @param int $view_id The ID of the View being looped
+									 * @since 2.7.3
+									 */
+									do_action( 'wpv_action_wpv_loop_before_display_pad_last_item', $query_type, $view_id );
 									$loop .= wpv_do_shortcode( $item_indexes['pad-last'] );
+									/**
+									 * Execute an action after each of the View loop ghost pad indexes is rendered.
+									 *
+									 * @param string $query_type The type of query for the current loop: 'posts', 'taxonomy', or 'users'
+									 * @param int $view_id The ID of the View being looped
+									 * @since 2.7.3
+									 */
+									do_action( 'wpv_action_wpv_loop_after_display_pad_item', $query_type, $view_id );
+									/**
+									 * Execute an action after each of the View loop ghost last pad index is rendered.
+									 *
+									 * @param string $query_type The type of query for the current loop: 'posts', 'taxonomy', or 'users'
+									 * @param int $view_id The ID of the View being looped
+									 * @since 2.7.3
+									 */
+									do_action( 'wpv_action_wpv_loop_after_display_pad_last_item', $query_type, $view_id );
 								}
 							} else {
 								if ( isset( $item_indexes['pad'] ) ) {
+									/** This action is documented above */
+									do_action( 'wpv_action_wpv_loop_before_display_pad_item', $query_type, $view_id );
 									$loop .= wpv_do_shortcode( $item_indexes['pad'] );
+									/** This action is documented above */
+									do_action( 'wpv_action_wpv_loop_after_display_pad_item', $query_type, $view_id );
 								}
 							}
 
@@ -2359,8 +2385,23 @@ class WP_Views {
 						}
 					}
 
+					/**
+					 * Execute an action after the View loop.
+					 *
+					 * @param string $query_type The type of query for the current loop: 'posts', 'taxonomy', or 'users'
+					 * @param int $view_id The ID of the View being looped
+					 * @param array $args {
+					 *     Loop arguments, if any, used when items are wrapped into rows.
+					 *
+					 *     @type int $wrap Optional. Number of items that each row sould include. If not set, all items will go into a single symbolic row.
+					 *     @type bool $pad Optional. Whether the loop should include ghost items to complete a row, in case the items in a page do not cover the last row.
+					 * }
+					 * @since 2.7.3
+					 */
+					do_action( 'wpv_action_wpv_loop_after', $view_id, $query_type, $args );
+
 					$WPVDebug->clean_index();
-					
+
 					$pagination_data = apply_filters( 'wpv_filter_wpv_get_pagination_settings', array(), $view_settings );
 					if ( $pagination_data['effect'] == 'infinite' ) {
 						$loop = '<!-- WPV_Infinite_Scroll --><!-- WPV_Infinite_Scroll_Insert -->' . $loop . '<!-- WPV_Infinite_Scroll -->';
@@ -2515,17 +2556,17 @@ class WP_Views {
 
         // No split* index was selected, check the rest.
 		if (
-			isset( $avail_indexes['odd'] ) 
-			&& ( $item_index % 2 == 1 ) 
+			isset( $avail_indexes['odd'] )
+			&& ( $item_index % 2 == 1 )
 		) {
 			$selected_index = 'odd';
-		} elseif ( 
-			isset( $avail_indexes['even'] ) 
-			&& ( $item_index % 2 == 0 ) 
+		} elseif (
+			isset( $avail_indexes['even'] )
+			&& ( $item_index % 2 == 0 )
 		) {
 			$selected_index = 'even';
 		}
-		
+
 		return $selected_index;
 	}
 
@@ -2574,7 +2615,7 @@ class WP_Views {
 		}
 		return $views_available;
 	}
-	
+
 	function wpv_get_postmeta_keys( $keys, $limit = 512 ) {
 		$keys = $this->get_meta_keys( $limit );
 		return $keys;
@@ -2588,11 +2629,11 @@ class WP_Views {
 	* @since unknown
 	*/
     function get_meta_keys( $cf_keys_limit = 512 ) {
-        
+
         return $this->_get_meta_keys_internal( true, $cf_keys_limit );
-        
+
     }
-    
+
     /**
 	* Get hidden custom field keys from database and Types
 	*
@@ -2601,11 +2642,11 @@ class WP_Views {
 	* @since 1.10
 	*/
     function get_hidden_meta_keys( $cf_keys_limit = 512 ) {
-        
+
         return $this->_get_meta_keys_internal( false, $cf_keys_limit );
-        
+
     }
-    
+
     /**
 	* Is this custom field visible?
 	*
@@ -2616,20 +2657,20 @@ class WP_Views {
 	* @since 1.10
 	*/
     private function custom_field_is_visible( $custom_field_key ) {
-        
+
         static $cf_hidden_declared_visible = array();
-        
+
         if( empty( $cf_hidden_declared_visible ) ) {
-         
+
             global $WPV_settings;
             if( isset( $WPV_settings->wpv_show_hidden_fields ) && is_string( $WPV_settings->wpv_show_hidden_fields ) ) {
                 $cf_hidden_declared_visible = explode( ',', $WPV_settings->wpv_show_hidden_fields );
             }
         }
-        
+
         return substr( $custom_field_key, 0, 1 ) != '_' || in_array( $custom_field_key, $cf_hidden_declared_visible );
     }
-    
+
     /**
 	* Is this custom field hidden?
 	*
@@ -2642,7 +2683,7 @@ class WP_Views {
     private function custom_field_is_hidden( $custom_field_key ) {
         return substr( $custom_field_key, 0, 1 ) == '_';
     }
-    
+
     /**
 	* Retrieve custom fields.
 	*
@@ -2655,7 +2696,7 @@ class WP_Views {
 	* @since 1.10
 	*/
     private function _get_meta_keys_internal( $is_visible = true, $cf_keys_limit = 512 ) {
-        
+
         if ( $is_visible ) {
             $predicate_function_name = 'custom_field_is_visible';
             $wpv_filter_keys_limit = 'wpv_filter_wpv_get_postmeta_keys_limit';
@@ -2665,22 +2706,22 @@ class WP_Views {
             $wpv_filter_keys_limit = 'wpv_filter_wpv_get_hidden_postmeta_keys_limit';
             $wpv_filter_keys_result = 'wpv_filter_wpv_get_hidden_postmeta_keys_result';
         }
-        
+
         $cf_keys = array();
-        
+
         // Filter limit. Allow 3rd parties increase or decrease the limit.
         $cf_keys_limit = apply_filters( $wpv_filter_keys_limit, $cf_keys_limit );
-        
+
         // Verify it is still a number or revert to default
         if( ! is_int( $cf_keys_limit ) || $cf_keys_limit <= 0 ) {
             $cf_keys_limit = 512;
         }
-        
+
         // Cache var
         // f(request_signature:string):array = request:array
         static $cf_keys_request_cache = array();
         $cf_request_signature = ( $is_visible ? 'visible' : 'hidden' ) . $cf_keys_limit;
-		
+
 
 		// We hard-cache default limit for visible and hidden fields
 		if ( $cf_keys_limit == 512 ) {
@@ -2691,34 +2732,34 @@ class WP_Views {
 		}
 
         // Retrieve from db if keys request cache is empty or contains zero elements
-        if ( 
-			empty( $cf_keys_request_cache ) 
-			|| ! isset( $cf_keys_request_cache[$cf_request_signature] ) 
-			|| count( $cf_keys_request_cache[$cf_request_signature] ) == 0 
+        if (
+			empty( $cf_keys_request_cache )
+			|| ! isset( $cf_keys_request_cache[$cf_request_signature] )
+			|| count( $cf_keys_request_cache[$cf_request_signature] ) == 0
 		) {
-            
+
             // Retrieve keys from postmeta (unsorted)
             // If meta_key starts with underscore, it is a hidden field
-            // It's limited because DISTINCT queries are slow            
+            // It's limited because DISTINCT queries are slow
             global $wpdb, $WPV_settings;
-            $cf_keys_request = $wpdb->get_col( 
-                    $is_visible 
+            $cf_keys_request = $wpdb->get_col(
+                    $is_visible
                     ?
                             /* visible keys and hidden ones declared as such */
                             $wpdb->prepare(
                                 "SELECT DISTINCT meta_key
                                 FROM {$wpdb->postmeta}
                                 WHERE "
-                                .(isset( $WPV_settings->wpv_show_hidden_fields ) 
-                                        && is_string( $WPV_settings->wpv_show_hidden_fields ) 
+                                .(isset( $WPV_settings->wpv_show_hidden_fields )
+                                        && is_string( $WPV_settings->wpv_show_hidden_fields )
                                         && strlen( $WPV_settings->wpv_show_hidden_fields ) > 0
                                         ? "meta_key IN ('" . implode( "','", explode( ',', $WPV_settings->wpv_show_hidden_fields ) ) . "') OR " : "" ).
                                 " /* hidden declared as visible */
                                 LEFT(meta_key, 1) <> '_' /* visible */
                                 LIMIT %d",
-                                $cf_keys_limit 
+                                $cf_keys_limit
                             )
-                                
+
                     :
                             /* hidden keys only */
                             $wpdb->prepare(
@@ -2726,20 +2767,20 @@ class WP_Views {
                                 FROM {$wpdb->postmeta}
                                 WHERE LEFT(meta_key, 1) = '_' /* hidden */
                                 LIMIT %d",
-                                $cf_keys_limit 
+                                $cf_keys_limit
                             )
 			);
 
             // Retrieve keys from Types (unsorted)
             if ( function_exists( 'wpcf_get_post_meta_field_names' ) ) {
-                
+
 				$types_fields = wpcf_get_post_meta_field_names();
                 $types_fields_filtered = array_filter( $types_fields, array( $this, $predicate_function_name ) );
                 $cf_keys_from_types = array_unique( $types_fields_filtered );
                 $cf_keys_request = array_merge( $cf_keys_request, $cf_keys_from_types );
-                
+
             }
-            
+
             // Exclude there keys
             $cf_keys_exceptions = array(
                 '_edit_last', '_edit_lock', '_wp_page_template', '_wp_attachment_metadata', '_icl_translator_note', '_alp_processed',
@@ -2751,38 +2792,38 @@ class WP_Views {
 				'_wpv_view_template_mode',
                 'dd_layouts_settings' );
 			$cf_keys_request = array_diff( $cf_keys_request, $cf_keys_exceptions );
-            
+
             // Update cache
 			if ( $cf_keys_limit == 512 ) {
 				set_transient( 'wpv_transient_meta_keys_' . $cf_request_signature, $cf_keys_request, WEEK_IN_SECONDS );
 			}
             $cf_keys_request_cache[$cf_request_signature] = $cf_keys_request;
-            
+
         } else {
-            
+
             $cf_keys_request = $cf_keys_request_cache[$cf_request_signature];
-            
+
         }
-        
+
         // Filter result. Allow third-party developers add or remove elements.
         $cf_keys = apply_filters( $wpv_filter_keys_result, $cf_keys_request );
-        
+
         // Remove duplicates and sort result naturally.
         $cf_keys = array_unique( $cf_keys );
         // FIXME: Why is sorting done inside the method? (Legacy)
         if ( $cf_keys && is_array( $cf_keys ) ) {
             natcasesort( $cf_keys );
         }
-        
+
         return $cf_keys;
-        
+
     }
-	
+
 	function wpv_get_usermeta_keys( $keys, $limit = 512 ) {
 		$keys = $this->get_usermeta_keys( $limit );
 		return $keys;
 	}
-	
+
 	/**
 	* Get visible usermeta field keys
 	*
@@ -2791,11 +2832,11 @@ class WP_Views {
 	* @since unknown
 	*/
     function get_usermeta_keys( $usermeta_keys_limit = 512 ) {
-        
+
         return $this->_get_usermeta_keys_internal( true, $usermeta_keys_limit );
-        
+
     }
-    
+
     /**
 	* Get hidden usermeta field keys
 	*
@@ -2804,11 +2845,11 @@ class WP_Views {
 	* @since 1.10
 	*/
     function get_hidden_usermeta_keys( $usermeta_keys_limit = 512 ) {
-        
+
         return $this->_get_usermeta_keys_internal( false, $usermeta_keys_limit );
-        
+
     }
-	
+
 	/**
 	* Is this custom field visible?
 	*
@@ -2821,7 +2862,7 @@ class WP_Views {
     private function usermeta_field_is_visible( $usermeta_field_key ) {
         return substr( $usermeta_field_key, 0, 1 ) != '_';
     }
-    
+
     /**
 	* Is this custom field hidden?
 	*
@@ -2834,7 +2875,7 @@ class WP_Views {
     private function usermeta_field_is_hidden( $usermeta_field_key ) {
         return substr( $usermeta_field_key, 0, 1 ) == '_';
     }
-	
+
 	/**
 	* Is this custom field hidden?
 	*
@@ -2863,10 +2904,10 @@ class WP_Views {
 		if ( in_array( $usermeta_field_key, $hidden_usermeta ) ) {
 			$return = false;
 		}
-		
+
         return $return;
     }
-	
+
 	/**
 	* Retrieve custom fields.
 	*
@@ -2879,7 +2920,7 @@ class WP_Views {
 	* @since 1.10
 	*/
     private function _get_usermeta_keys_internal( $is_visible = true, $usermeta_keys_limit = 512 ) {
-        
+
         if ( $is_visible ) {
             $predicate_function_name = 'usermeta_field_is_visible';
             $wpv_filter_keys_limit = 'wpv_filter_wpv_get_usermeta_keys_limit';
@@ -2889,22 +2930,22 @@ class WP_Views {
             $wpv_filter_keys_limit = 'wpv_filter_wpv_get_hidden_usermeta_keys_limit';
             $wpv_filter_keys_result = 'wpv_filter_wpv_get_hidden_usermeta_keys_result';
         }
-        
+
         $cf_keys = array();
-        
+
         // Filter limit. Allow 3rd parties increase or decrease the limit.
         $usermeta_keys_limit = apply_filters( $wpv_filter_keys_limit, $usermeta_keys_limit );
-        
+
         // Verify it is still a number or revert to default
         if( ! is_int( $usermeta_keys_limit ) || $usermeta_keys_limit <= 0 ) {
             $usermeta_keys_limit = 512;
         }
-        
+
         // Cache var
         // f(request_signature:string):array = request:array
         static $usermeta_keys_request_cache = array();
         $usermeta_request_signature = ( $is_visible ? 'visible' : 'hidden' ) . $usermeta_keys_limit;
-		
+
 
 		// We hard-cache default limit for visible and hidden fields
 		if ( $usermeta_keys_limit == 512 ) {
@@ -2915,15 +2956,15 @@ class WP_Views {
 		}
 
         // Retrieve from db if keys request cache is empty or contains zero elements
-        if ( 
-			empty( $usermeta_keys_request_cache ) 
-			|| ! isset( $usermeta_keys_request_cache[$usermeta_request_signature] ) 
-			|| count( $usermeta_keys_request_cache[$usermeta_request_signature] ) == 0 
+        if (
+			empty( $usermeta_keys_request_cache )
+			|| ! isset( $usermeta_keys_request_cache[$usermeta_request_signature] )
+			|| count( $usermeta_keys_request_cache[$usermeta_request_signature] ) == 0
 		) {
-            
+
             // Retrieve keys from usermeta (unsorted)
             // If meta_key starts with underscore, it is a hidden field
-            // It's limited because DISTINCT queries are slow            
+            // It's limited because DISTINCT queries are slow
             global $wpdb;
 			$values_to_prepare = array();
 			$umf_mulsitise_string = "";
@@ -2933,12 +2974,12 @@ class WP_Views {
 				$values_to_prepare[] = $blog_id;
 			}
 			$values_to_prepare[] = $usermeta_keys_limit;
-			$usermeta_keys = $wpdb->get_col( 
-					$is_visible 
+			$usermeta_keys = $wpdb->get_col(
+					$is_visible
                     ?
 						$wpdb->prepare(
-							"SELECT DISTINCT meta_key 
-							FROM {$wpdb->usermeta} 
+							"SELECT DISTINCT meta_key
+							FROM {$wpdb->usermeta}
 							WHERE LEFT(meta_key, 1) <> '_' /* visible */
 							{$umf_mulsitise_string}
 							LIMIT %d",
@@ -2946,7 +2987,7 @@ class WP_Views {
 						)
 					:
 						$wpdb->prepare(
-							"SELECT DISTINCT meta_key FROM {$wpdb->usermeta} 
+							"SELECT DISTINCT meta_key FROM {$wpdb->usermeta}
 							WHERE LEFT(meta_key, 1) == '_' /* hidden */
 							{$umf_mulsitise_string}
 							LIMIT %d",
@@ -2957,48 +2998,48 @@ class WP_Views {
             // Retrieve keys from Types (unsorted) @todo
 			/*
             if ( function_exists( 'wpcf_get_post_meta_field_names' ) ) {
-                
+
 				$types_fields = wpcf_get_post_meta_field_names();
                 $types_fields_filtered = array_filter( $types_fields, array( $this, $predicate_function_name ) );
                 $cf_keys_from_types = array_unique( $types_fields_filtered );
                 $cf_keys_request = array_merge( $cf_keys_request, $cf_keys_from_types );
-                
+
             }
 			*/
-			
+
 			$usermeta_keys = array_filter( $usermeta_keys, array( $this, 'usermeta_field_is_skipped' ) );
-            
+
             // Update cache
 			if ( $usermeta_keys_limit == 512 ) {
 				set_transient( 'wpv_transient_usermeta_keys_' . $usermeta_request_signature, $usermeta_keys, WEEK_IN_SECONDS );
 			}
             $usermeta_keys_request_cache[$usermeta_request_signature] = $usermeta_keys;
-            
+
         } else {
-            
+
             $usermeta_keys = $usermeta_keys_request_cache[$usermeta_request_signature];
-            
+
         }
-        
+
         // Filter result. Allow third-party developers add or remove elements.
         $um_keys = apply_filters( $wpv_filter_keys_result, $usermeta_keys );
-        
+
         // Remove duplicates and sort result naturally.
         $um_keys = array_unique( $um_keys );
         // FIXME: Why is sorting done inside the method? (Legacy)
         if ( $um_keys && is_array( $um_keys ) ) {
             natcasesort( $um_keys );
         }
-        
+
         return $um_keys;
-        
+
     }
-	
+
 	function wpv_get_termmeta_keys( $keys, $limit = 512 ) {
 		$keys = $this->get_termmeta_keys( $limit );
 		return $keys;
 	}
-	
+
 	/**
 	* Get visible termmeta field keys and hidden termmeta field keys declared as such
 	*
@@ -3007,11 +3048,11 @@ class WP_Views {
 	* @since 1.12
 	*/
     function get_termmeta_keys( $termmeta_keys_limit = 512 ) {
-        
+
         return $this->_get_termmeta_keys_internal( true, $termmeta_keys_limit );
-        
+
     }
-    
+
     /**
 	* Get hidden termmeta field keys from database and Types
 	*
@@ -3020,11 +3061,11 @@ class WP_Views {
 	* @since 1.12
 	*/
     function get_hidden_termmeta_keys( $termmeta_keys_limit = 512 ) {
-        
+
         return $this->_get_termmeta_keys_internal( false, $termmeta_keys_limit );
-        
+
     }
-    
+
     /**
 	* Is this termmeta field visible?
 	*
@@ -3035,12 +3076,12 @@ class WP_Views {
 	* @since 1.12
 	*/
     private function termmeta_field_is_visible( $termmeta_field_key ) {
-        
+
         static $termmeta_hidden_declared_visible = array();
-        
+
         return substr( $termmeta_field_key, 0, 1 ) != '_' || in_array( $termmeta_field_key, $termmeta_hidden_declared_visible );
     }
-    
+
     /**
 	* Is this termmeta field hidden?
 	*
@@ -3053,7 +3094,7 @@ class WP_Views {
     private function termmeta_field_is_hidden( $termmeta_field_key ) {
         return substr( $termmeta_field_key, 0, 1 ) == '_';
     }
-    
+
     /**
 	* Retrieve termmeta fields.
 	*
@@ -3066,12 +3107,12 @@ class WP_Views {
 	* @since 1.12
 	*/
     private function _get_termmeta_keys_internal( $is_visible = true, $termmeta_keys_limit = 512 ) {
-		
+
 		global $wp_version;
 		if ( version_compare( $wp_version, '4.4' ) < 0 ) {
 			return array();
 		}
-        
+
         if ( $is_visible ) {
             $predicate_function_name = 'termmeta_field_is_visible';
             $wpv_filter_keys_limit = 'wpv_filter_wpv_get_termmeta_keys_limit';
@@ -3081,22 +3122,22 @@ class WP_Views {
             $wpv_filter_keys_limit = 'wpv_filter_wpv_get_hidden_termmeta_keys_limit';
             $wpv_filter_keys_result = 'wpv_filter_wpv_get_hidden_termmeta_keys_result';
         }
-        
+
         $termmeta_keys = array();
-        
+
         // Filter limit. Allow 3rd parties increase or decrease the limit.
         $termmeta_keys_limit = apply_filters( $wpv_filter_keys_limit, $termmeta_keys_limit );
-        
+
         // Verify it is still a number or revert to default
         if( ! is_int( $termmeta_keys_limit ) || $termmeta_keys_limit <= 0 ) {
             $termmeta_keys_limit = 512;
         }
-        
+
         // Cache var
         // f(request_signature:string):array = request:array
         static $termmeta_keys_request_cache = array();
         $termmeta_request_signature = ( $is_visible ? 'visible' : 'hidden' ) . $termmeta_keys_limit;
-		
+
 
 		// We hard-cache default limit for visible and hidden fields
 		if ( $termmeta_keys_limit == 512 ) {
@@ -3107,15 +3148,15 @@ class WP_Views {
 		}
 
         // Retrieve from db if keys request cache is empty or contains zero elements
-        if ( 
-			empty( $termmeta_keys_request_cache ) 
-			|| ! isset( $termmeta_keys_request_cache[$termmeta_request_signature] ) 
-			|| count( $termmeta_keys_request_cache[$termmeta_request_signature] ) == 0 
+        if (
+			empty( $termmeta_keys_request_cache )
+			|| ! isset( $termmeta_keys_request_cache[$termmeta_request_signature] )
+			|| count( $termmeta_keys_request_cache[$termmeta_request_signature] ) == 0
 		) {
-            
+
             // Retrieve keys from postmeta (unsorted)
             // If meta_key starts with underscore, it is a hidden field
-            // It's limited because DISTINCT queries are slow            
+            // It's limited because DISTINCT queries are slow
             global $wpdb;
 			$values_to_prepare = array();
 			$tmf_mulsitise_string = "";
@@ -3126,22 +3167,22 @@ class WP_Views {
 			}
 			$values_to_prepare[] = $termmeta_keys_limit;
             $termmeta_keys_request = array();
-			
-			$termmeta_keys_request = $wpdb->get_col( 
-					$is_visible 
+
+			$termmeta_keys_request = $wpdb->get_col(
+					$is_visible
                     ?
 						$wpdb->prepare(
-							"SELECT DISTINCT meta_key 
-							FROM {$wpdb->termmeta} 
-							WHERE LEFT(meta_key, 1) <> '_' 
+							"SELECT DISTINCT meta_key
+							FROM {$wpdb->termmeta}
+							WHERE LEFT(meta_key, 1) <> '_'
 							{$tmf_mulsitise_string}
 							LIMIT %d",
 							$values_to_prepare
 						)
 					:
 						$wpdb->prepare(
-							"SELECT DISTINCT meta_key FROM {$wpdb->termmeta} 
-							WHERE LEFT(meta_key, 1) == '_' 
+							"SELECT DISTINCT meta_key FROM {$wpdb->termmeta}
+							WHERE LEFT(meta_key, 1) == '_'
 							{$tmf_mulsitise_string}
 							LIMIT %d",
 							$values_to_prepare
@@ -3151,15 +3192,15 @@ class WP_Views {
             // Retrieve keys from Types (unsorted)
 			/*
             if ( function_exists( 'wpcf_get_post_meta_field_names' ) ) {
-                
+
 				$types_fields = wpcf_get_post_meta_field_names();
                 $types_fields_filtered = array_filter( $types_fields, array( $this, $predicate_function_name ) );
                 $termmeta_keys_from_types = array_unique( $types_fields_filtered );
                 $termmeta_keys_request = array_merge( $termmeta_keys_request, $termmeta_keys_from_types );
-                
+
             }
 			*/
-            
+
             // Exclude there keys
 			/*
             $termmeta_keys_exceptions = array(
@@ -3173,41 +3214,32 @@ class WP_Views {
                 'dd_layouts_settings' );
 			$termmeta_keys_request = array_diff( $termmeta_keys_request, $termmeta_keys_exceptions );
 			*/
-            
+
             // Update cache
 			if ( $termmeta_keys_limit == 512 ) {
 				set_transient( 'wpv_transient_termmeta_keys_' . $termmeta_request_signature, $termmeta_keys_request, WEEK_IN_SECONDS );
 			}
             $termmeta_keys_request_cache[$termmeta_request_signature] = $termmeta_keys_request;
-            
+
         } else {
-            
+
             $termmeta_keys_request = $termmeta_keys_request_cache[$termmeta_request_signature];
-            
+
         }
-        
+
         // Filter result. Allow third-party developers add or remove elements.
         $termmeta_keys = apply_filters( $wpv_filter_keys_result, $termmeta_keys_request );
-        
+
         // Remove duplicates and sort result naturally.
         $termmeta_keys = array_unique( $termmeta_keys );
         // FIXME: Why is sorting done inside the method? (Legacy)
         if ( $termmeta_keys && is_array( $termmeta_keys ) ) {
             natcasesort( $termmeta_keys );
         }
-        
-        return $termmeta_keys;
-        
-    }
-    
-	/**
-	 * If the post has a view, add an view edit link to post.
-	 */
-	function edit_post_link( $link, $post_id ) {
-		// do nothing for theme version.
-		return $link;
-	}
 
+        return $termmeta_keys;
+
+    }
 
     /**
      * Retrieve $WPV_Settings_Screen (array-like)
@@ -3247,20 +3279,21 @@ class WP_Views {
 
 	function taxonomy_query( $view_settings ) {
 		$items = get_taxonomy_query( $view_settings );
-		
+
 		$this->taxonomy_data['item_count'] = sizeof( $items );
-		
+
 		if ( $view_settings['pagination']['type'] == 'disabled' ) {
 			$this->taxonomy_data['max_num_pages'] = 1;
 			$this->taxonomy_data['item_count_this_page'] = $this->taxonomy_data['item_count'];
 		} else {
 			$posts_per_page = $view_settings['pagination']['posts_per_page'];
+			$this->taxonomy_data['items_per_page'] = $posts_per_page;
 			$this->taxonomy_data['max_num_pages'] = ceil( $this->taxonomy_data['item_count'] / $posts_per_page );
 			if ( $this->taxonomy_data['item_count'] > $posts_per_page ) {
 				$page = 1;
 				if (
-					isset( $_GET['wpv_paged'] ) 
-					&& isset( $_GET['wpv_view_count'] ) 
+					isset( $_GET['wpv_paged'] )
+					&& isset( $_GET['wpv_view_count'] )
 					&& esc_attr( $_GET['wpv_view_count'] ) == apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings )
 				) {
 					// @todo check this against the View hash too!
@@ -3270,7 +3303,7 @@ class WP_Views {
 				$items = array_slice( $items, ($page - 1) * $posts_per_page, $posts_per_page );
 			}
 		}
-		
+
 		$this->taxonomy_data['item_count_this_page'] = sizeof( $items );
 		return $items;
 	}
@@ -3281,20 +3314,21 @@ class WP_Views {
 	 */
 	function users_query( $view_settings ) {
 		$items = get_users_query( $view_settings );
-		
+
 		$this->users_data['item_count'] = sizeof( $items );
-		
+
 		if ( $view_settings['pagination']['type'] == 'disabled' ) {
 			$this->users_data['item_count_this_page'] = $this->users_data['item_count'];
 			$this->users_data['max_num_pages'] = 1;
 		} else {
 			$posts_per_page = $view_settings['pagination']['posts_per_page'];
+			$this->users_data['items_per_page'] = $posts_per_page;
 			$this->users_data['max_num_pages'] = ceil( $this->users_data['item_count'] / $posts_per_page );
 			if ( $this->users_data['item_count'] > $posts_per_page ) {
 				$page = 1;
 				if (
-					isset( $_GET['wpv_paged'] ) 
-					&& isset( $_GET['wpv_view_count'] ) 
+					isset( $_GET['wpv_paged'] )
+					&& isset( $_GET['wpv_view_count'] )
 					&& esc_attr( $_GET['wpv_view_count'] ) == apply_filters( 'wpv_filter_wpv_get_object_unique_hash', '', $view_settings )
 				) {
 					$page = (int) $_GET['wpv_paged'];
@@ -3303,7 +3337,7 @@ class WP_Views {
 				$items = array_slice( $items, ($page - 1) * $posts_per_page, $posts_per_page );
 			}
 		}
-		
+
 		$this->users_data['item_count_this_page'] = sizeof( $items );
 		return $items;
 	}
@@ -3334,8 +3368,8 @@ class WP_Views {
 		}
 		return $view->query_type;
 	}
-	
-	
+
+
 	function wpv_get_current_page_number( $page = 1 ) {
 		$page = $this->get_current_page_number();
 		return $page;
@@ -3346,13 +3380,13 @@ class WP_Views {
 		$query_type = $this->get_query_type();
 		if (
 			$query_type == 'taxonomy'
-			&& isset( $this->taxonomy_data ) 
+			&& isset( $this->taxonomy_data )
 			&& isset( $this->taxonomy_data['page_number'] )
 		) {
 			return $this->taxonomy_data['page_number'];
 		} else if (
 			$query_type == 'users'
-			&& isset( $this->users_data ) 
+			&& isset( $this->users_data )
 			&& isset( $this->users_data['page_number'] )
 		) {
 			return $this->users_data['page_number'];
@@ -3376,13 +3410,13 @@ class WP_Views {
 		$query_type = $this->get_query_type();
 		if (
 			$query_type == 'taxonomy'
-			&& isset( $this->taxonomy_data ) 
+			&& isset( $this->taxonomy_data )
 			&& isset( $this->taxonomy_data['max_num_pages'] )
 		) {
 			return $this->taxonomy_data['max_num_pages'];
 		} else if (
 			$query_type == 'users'
-			&& isset( $this->users_data ) 
+			&& isset( $this->users_data )
 			&& isset( $this->users_data['max_num_pages'] )
 		) {
 			return $this->users_data['max_num_pages'];
@@ -3409,7 +3443,7 @@ class WP_Views {
 			return 0;
 		}
 	}
-	
+
 	function wpv_get_users_found_count( $count = 0 ) {
 		$count = $this->get_users_found_count();
 		return $count;
@@ -3428,7 +3462,7 @@ class WP_Views {
 	function get_parent_view_taxonomy() {
 		return $this->parent_taxonomy;
 	}
-	
+
 	function wpv_get_parent_view_taxonomy( $parent_taxonomy = null ) {
 		$maybe_parent_taxonomy = $this->get_parent_view_taxonomy();
 		if ( $maybe_parent_taxonomy ) {
@@ -3436,7 +3470,7 @@ class WP_Views {
 		}
 		return $parent_taxonomy;
 	}
-	
+
 	function wpv_set_parent_view_taxonomy( $parent_taxonomy ) {
 		$this->parent_taxonomy = $parent_taxonomy;
 	}
@@ -3444,7 +3478,7 @@ class WP_Views {
 	function get_parent_view_user() {
 		return $this->parent_user;
 	}
-	
+
 	function wpv_get_parent_view_user( $parent_user = null ) {
 		$maybe_parent_user = $this->get_parent_view_user();
 		if ( $maybe_parent_user ) {
@@ -3452,18 +3486,18 @@ class WP_Views {
 		}
 		return $parent_user;
 	}
-	
+
 	function wpv_set_parent_view_user( $parent_user ) {
 		$this->parent_user = $parent_user;
 	}
 
-	
+
 
 	function wpv_get_widget_view_id( $widget_view_id = 0 ) {
 		$widget_view_id = $this->get_widget_view_id();
 		return $widget_view_id;
 	}
-	
+
 	function wpv_set_widget_view_id( $widget_view_id ) {
 		$this->widget_view_id = $widget_view_id;
 	}
@@ -3471,7 +3505,7 @@ class WP_Views {
 	function get_widget_view_id() {
 		return $this->widget_view_id;
 	}
-	
+
 	function set_widget_view_id( $widget_view_id ) {
 		$this->widget_view_id = $widget_view_id;
 	}
@@ -3578,7 +3612,7 @@ class WP_Views {
 			$view_settings['view-query-mode'] = 'normal';
 		}
 		$archive_query_modes = array( 'archive', 'layouts-loop' );
-		
+
 		/**
 		* wpv_filter_allowed_archive_query_modes
 		*
@@ -3588,7 +3622,7 @@ class WP_Views {
 		*
 		* @since 1.7
 		*/
-		
+
 		$archive_query_modes = apply_filters( 'wpv_filter_allowed_archive_query_modes', $archive_query_modes );
 		return ( in_array( $view_settings['view-query-mode'], $archive_query_modes ) );
 	}
@@ -3626,33 +3660,37 @@ class WP_Views {
 			$meta = $this->get_view_settings( $view_id );
 			$is_wpa = $this->is_archive_view( $view_id );
 			$cssout_item = '';
-			if ( 
-				isset( $meta['filter_meta_html_css'] ) 
+			if (
+				isset( $meta['filter_meta_html_css'] )
 				&& '' != $meta['filter_meta_html_css']
 			) {
 				$cssout_item .= $meta["filter_meta_html_css"] . "\n";
 			}
-			if ( 
-				isset( $meta['layout_meta_html_css'] ) 
+			if (
+				isset( $meta['layout_meta_html_css'] )
 				&& '' != $meta['layout_meta_html_css']
 			) {
 				$cssout_item .= $meta["layout_meta_html_css"] . "\n";
 			}
 			if ( '' != $cssout_item ) {
-				$cssout_item_title = get_the_title( $view_id );
+				$cssout_item_title = get_post_field( 'post_name', get_post( $view_id ) );
 				$cssout .= "/* ----------------------------------------- */\n";
 				if ( $is_wpa ) {
-					$cssout .= "/* " . sprintf( __( 'WordPress Archive: %s - start', 'wpv-views' ), $cssout_item_title ) . " */\n";
+					/* translators: Text for the opening comment block for the Custom CSS of a WordPress Archive. */
+					$cssout .= '/* ' . esc_html( sprintf( __( 'WordPress Archive slug: %s - start', 'wpv-views' ), $cssout_item_title ) ) . " */\n";
 				} else {
-					$cssout .= "/* " . sprintf( __( 'View: %s - start', 'wpv-views' ), $cssout_item_title ) . " */\n";
+					/* translators: Text for the opening comment block for the Custom CSS of a View. */
+					$cssout .= '/* ' . esc_html( sprintf( __( 'View slug: %s - start', 'wpv-views' ), $cssout_item_title ) ) . " */\n";
 				}
 				$cssout .= "/* ----------------------------------------- */\n";
 				$cssout .= $cssout_item;
 				$cssout .= "/* ----------------------------------------- */\n";
 				if ( $is_wpa ) {
-					$cssout .= "/* " . sprintf( __( 'WordPress Archive: %s - end', 'wpv-views' ), $cssout_item_title ) . " */\n";
+					/* translators: Text for the closing comment block for the Custom CSS of a WordPress Archive. */
+					$cssout .= '/* ' . esc_html( sprintf( __( 'WordPress Archive slug: %s - end', 'wpv-views' ), $cssout_item_title ) ) . " */\n";
 				} else {
-					$cssout .= "/* " . sprintf( __( 'View: %s - end', 'wpv-views' ), $cssout_item_title ) . " */\n";
+					/* translators: Text for the closing comment block for the Custom CSS of a View. */
+					$cssout .= '/* ' . esc_html( sprintf( __( 'View slug: %s - end', 'wpv-views' ), $cssout_item_title ) ) . " */\n";
 				}
 				$cssout .= "/* ----------------------------------------- */\n";
 			}
@@ -3688,33 +3726,37 @@ class WP_Views {
 			$meta = $this->get_view_settings( $view_id );
 			$is_wpa = $this->is_archive_view( $view_id );
 			$jsout_item = '';
-			if ( 
-				isset( $meta['filter_meta_html_js'] ) 
+			if (
+				isset( $meta['filter_meta_html_js'] )
 				&& '' != $meta['filter_meta_html_js']
 			) {
 				$jsout_item .= $meta["filter_meta_html_js"] . "\n";
 			}
-			if ( 
-				isset( $meta['layout_meta_html_js'] ) 
+			if (
+				isset( $meta['layout_meta_html_js'] )
 				&& '' != $meta['layout_meta_html_js']
 			) {
 				$jsout_item .= $meta["layout_meta_html_js"] . "\n";
 			}
 			if ( '' != $jsout_item ) {
-				$jsout_item_title = get_the_title( $view_id );
+				$jsout_item_title = get_post_field( 'post_name', get_post( $view_id ) );
 				$jsout .= "//-----------------------------------------\n";
 				if ( $is_wpa ) {
-					$jsout .= "// " . sprintf( __( 'WordPress Archive: %s - start', 'wpv-views' ), $jsout_item_title ) . "\n";
+					/* translators: Text for the opening comment block for the Custom JS of a WordPress Archive. */
+					$jsout .= '// ' . esc_html( sprintf( __( 'WordPress Archive slug: %s - start', 'wpv-views' ), $jsout_item_title ) ) . "\n";
 				} else {
-					$jsout .= "// " . sprintf( __( 'View: %s - start', 'wpv-views' ), $jsout_item_title ) . "\n";
+					/* translators: Text for the opening comment block for the Custom JS of a View. */
+					$jsout .= '// ' . esc_html( sprintf( __( 'View slug: %s - start', 'wpv-views' ), $jsout_item_title ) ) . "\n";
 				}
 				$jsout .= "//-----------------------------------------\n";
 				$jsout .= $jsout_item;
 				$jsout .= "//-----------------------------------------\n";
 				if ( $is_wpa ) {
-					$jsout .= "// " . sprintf( __( 'WordPress Archive: %s - end', 'wpv-views' ), $jsout_item_title ) . "\n";
+					/* translators: Text for the closing comment block for the Custom JS of a WordPress Archive. */
+					$jsout .= '// ' . esc_html( sprintf( __( 'WordPress Archive slug: %s - end', 'wpv-views' ), $jsout_item_title ) ) . "\n";
 				} else {
-					$jsout .= "// " . sprintf( __( 'View: %s - end', 'wpv-views' ), $jsout_item_title ) . "\n";
+					/* translators: Text for the closing comment block for the Custom JS of a View. */
+					$jsout .= '// ' . esc_html( sprintf( __( 'View slug: %s - end', 'wpv-views' ), $jsout_item_title ) ) . "\n";
 				}
 				$jsout .= "//-----------------------------------------\n";
 			}
@@ -3723,7 +3765,7 @@ class WP_Views {
 			echo "\n<script type=\"text/javascript\">\n" . $jsout . "</script>\n";
 		}
 	}
-	
+
 	/**
 	* wpv_additional_js_files
 	*
@@ -3731,13 +3773,13 @@ class WP_Views {
 	*
 	* @since 1.8.0
 	*/
-	
+
 	function wpv_additional_js_files() {
 		$view_ids = array_unique( $this->view_used_ids );
 		foreach ( $view_ids as $view_id ) {
 			$meta = $this->get_view_layout_settings( $view_id );
 			if (
-				isset( $meta['additional_js'] ) 
+				isset( $meta['additional_js'] )
 				&& ! empty( $meta['additional_js'] )
 			) {
 				$scripts = explode( ',', $meta['additional_js'] );
@@ -3754,15 +3796,16 @@ class WP_Views {
 			}
 		}
 	}
-	
+
 	function wpv_register_assets() {
-		
+
 		$views_global_settings = WPV_Settings::get_instance();
+		$wpv_ajax = WPV_Ajax::get_instance();
 
 		/* ---------------------------- /*
 		/* BACKEND SCRIPTS
 		/* ---------------------------- */
-		
+
         // URI.js
         // @todo move to common
         if( ! wp_script_is( 'toolset-uri-js', 'registered' ) ) {
@@ -3773,29 +3816,29 @@ class WP_Views {
         }
 
 		// CodeMirror
-		wp_register_script( 
-			'views-codemirror-conf-script', 
-			WPV_URL_EMBEDDED . '/res/js/views_codemirror_conf.js', 
-			array( 
-				'jquery', 
+		wp_register_script(
+			'views-codemirror-conf-script',
+			WPV_URL_EMBEDDED . '/res/js/views_codemirror_conf.js',
+			array(
+				'jquery',
 				'toolset-event-manager',
-				'toolset-codemirror-script', 
-				'toolset-meta-html-codemirror-overlay-script', 
-				'toolset-meta-html-codemirror-xml-script', 
-				'toolset-meta-html-codemirror-css-script', 
-				'toolset-meta-html-codemirror-js-script', 
-				'toolset-meta-html-codemirror-utils-search-cursor', 
-				'toolset-meta-html-codemirror-utils-panel' 
-			), 
-			WPV_VERSION, 
+				'toolset-codemirror-script',
+				'toolset-meta-html-codemirror-overlay-script',
+				'toolset-meta-html-codemirror-xml-script',
+				'toolset-meta-html-codemirror-css-script',
+				'toolset-meta-html-codemirror-js-script',
+				'toolset-meta-html-codemirror-utils-search-cursor',
+				'toolset-meta-html-codemirror-utils-panel'
+			),
+			WPV_VERSION,
 			false
 		);
-		
+
 		// DEPRECATED
 		// Keep views-select2-script because the installed version of other plugin might be using it - just register, never enqueue
 		// TO DEPRECATE
 		wp_register_script( 'views-select2-script', TOOLSET_COMMON_PATH . '/res/lib/select2/select2.min.js', array( 'jquery' ), WPV_VERSION );
-			
+
 		// Views utils script
 		wp_register_script( 'views-utils-script', WPV_URL_EMBEDDED . '/res/js/lib/utils.js', array( 'jquery', 'toolset_select2', 'toolset-utils' ), WPV_VERSION );
 		$help_box_translations = array(
@@ -3805,13 +3848,34 @@ class WP_Views {
 
 		// Shortcodes GUI script
 		global $pagenow, $post;
-		wp_register_script( 
-			'views-shortcodes-gui-script', 
-			WPV_URL_EMBEDDED . '/res/js/views_shortcodes_gui.js', 
-			array( 'views-utils-script', 'quicktags', 'toolset-shortcode' ), 
-			WPV_VERSION 
+		wp_register_script(
+			'views-shortcodes-gui-script',
+			WPV_URL_EMBEDDED . '/res/js/views_shortcodes_gui.js',
+			array( 'views-utils-script', 'quicktags', 'toolset-shortcode' ),
+			WPV_VERSION
 		);
 		$shortcodes_gui_translations = array(
+			'mce' => array(
+				'views' => array(
+					'button' => __( 'Fields and Views', 'wpv-views' ),
+					'canEdit' => current_user_can( 'manage_options' ),
+					'editViewLink' => admin_url( 'admin.php?page=views-editor' ),
+					'editViewLabel' => __( 'Edit this View', 'wpv-views' ),
+					'editTemplateLink' => admin_url( 'admin.php?page=ct-editor' ),
+					'editTemplateLabel' => __( 'Edit this Content Template', 'wpv-views' ),
+					'removeLabel' => __( 'Remove this item', 'wpv-views' ),
+					'missingObject' => __( 'This item does not exist anymore', 'wpv-views' ),
+				),
+				'conditional' => array(
+					'button' =>  __( 'Conditional output', 'wpv-views' ),
+				),
+			),
+			'ajax' => array(
+				'getConditionalOutputDialogData' => array(
+					'action' => $wpv_ajax->get_action_js_name( WPV_Ajax::CALLBACK_GET_CONDITIONAL_OUTPUT_DIALOG_DATA ),
+					'nonce' => wp_create_nonce( WPV_Ajax::CALLBACK_GET_CONDITIONAL_OUTPUT_DIALOG_DATA ),
+				),
+			),
 			'wpv_insert_shortcode'						=> __( 'Insert shortcode', 'wpv-views'),
 			'wpv_create_shortcode'						=> __( 'Create shortcode', 'wpv-views' ),
 			'wpv_update_shortcode'						=> __( 'Update shortcode', 'wpv-views' ),
@@ -3839,63 +3903,62 @@ class WP_Views {
 			'attr_dayofweek_invalid'					=> __( 'Please enter a valid day of the week (1-7)', 'wpv-views' ),
 			'attr_url_invalid'							=> __( 'Please enter a valid URL', 'wpv-views' ),
 			'attr_empty'								=> __( 'This option is mandatory ', 'wpv-views' ),
-            'wpv_conditional_button'					=> __( 'conditional output', 'wpv-views' ),
+            'wpv_conditional_button'					=> __( 'Conditional output', 'wpv-views' ),
 			'conditional_enter_conditions_manually'		=> __( 'Edit conditions manually', 'wpv-views' ),
 			'conditional_enter_conditions_gui'			=> __( 'Edit conditions using the GUI', 'wpv-views' ),
 			'conditional_switch_alert'					=> __( 'Your custom conditions will be lost if you switch back to GUI editing.', 'wpv-views' ),
-			'integrated_inputs'							=> array(),
             'wpv_editor_callback_nonce'        			=> wp_create_nonce('wpv_editor_callback'),
 			'ajaxurl'									=> wpv_get_views_ajaxurl(),
 			'pagenow'									=> $pagenow,
-			'get_page' => toolset_getget( 'page' )
+			'get_page' => toolset_getget( 'page' ),
 		);
-		
+
 		$views_shortcodes_gui_data = apply_filters( 'wpv_filter_wpv_shortcodes_gui_data', array() );
 		$shortcodes_gui_translations['shortcodes_with_gui'] = array_keys( $views_shortcodes_gui_data );
-		
+
 		$shortcodes_gui_translations['post_id'] = 0;
-		if ( 
-			in_array( $pagenow, array( 'post.php' ) ) 
-			&& isset( $_GET["post"] ) 
+		if (
+			in_array( $pagenow, array( 'post.php' ) )
+			&& isset( $_GET["post"] )
 		) {
 			$shortcodes_gui_translations['post_id'] = (int) $_GET["post"];
 		} else {
 			if (
-				isset( $post ) 
+				isset( $post )
 				&& is_object( $post )
-				&& isset( $post->ID ) 
+				&& isset( $post->ID )
 			) {
 				$shortcodes_gui_translations['post_id'] = $post->ID;
 			}
 		}
-		
+
 		/**
 		 * Filter the i18n data for the views-shortcodes-gui-script script.
 		 *
 		 * @since 2.3.0
 		 */
-		
+
         $shortcodes_gui_translations = apply_filters( 'wpv_filter_wpv_shortcodes_gui_localize_script', $shortcodes_gui_translations );
-		
+
 		wp_localize_script( 'views-shortcodes-gui-script', 'wpv_shortcodes_gui_texts', $shortcodes_gui_translations );
-			
+
 		// Views widget script
 		wp_register_script( 'views-widgets-gui-script', WPV_URL_EMBEDDED . '/res/js/views_widgets_gui.js', array( 'jquery', 'suggest' ), WPV_VERSION );
-		
+
 		$widgets_gui_translations = array(
 			'ajaxurl'									=> wpv_get_views_ajaxurl()
 		);
-		
+
 		wp_localize_script( 'views-widgets-gui-script', 'wpv_widgets_gui_texts', $widgets_gui_translations );
 
 		// Views embedded script
 		wp_register_script( 'views-embedded-listing-pages-script', WPV_URL_EMBEDDED . '/res/js/listing_pages.js', array( 'jquery' ), WPV_VERSION, true );
 		wp_register_script( 'views-embedded-script', WPV_URL_EMBEDDED . '/res/js/views_embedded.js', array( 'jquery', 'wp-pointer', 'views-codemirror-conf-script' ), WPV_VERSION, true );
-			
+
 		/* ---------------------------- /*
 		/* BACKEND STYLES
 		/* ---------------------------- */
-			
+
 		// Dialogs styles
 		// @todo maybe move to common too
 		// Depends on:
@@ -3908,31 +3971,30 @@ class WP_Views {
 		// 		- font-awesome
 		// 		- toolset-colorbox
 		// 		- views-admin-dialogs-css
-		// @todo make this also dependant of the common 'editor_addon_menu' and 'editor_addon_menu_scroll'
-		wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array( 
-			'wp-pointer', 'font-awesome', 
-			'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css', 
+		wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array(
+			'wp-pointer', 'font-awesome',
+			'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css',
 			Toolset_Assets_Manager::STYLE_NOTIFICATIONS,
-			'views-admin-dialogs-css' 
+			'views-admin-dialogs-css'
 		), WPV_VERSION );
-			
+
 		/* ---------------------------- /*
 		/* FRONTEND SCRIPTS
 		/* ---------------------------- */
-		
+
 		/**
 		 * Datepicker localization
 		 * Depends on:
 		 * 		- jquery
 		 * 		- jquery-ui-core
 		 * 		- jquery-ui-datepicker
-		 * 
-		 * @note Since WordPress 4.6.0 the jQuery datepicker localization is added automatically 
+		 *
+		 * @note Since WordPress 4.6.0 the jQuery datepicker localization is added automatically
 		 *     as an inline script for jquery-ui-datepicker.
 		 */
 		global $wp_version;
 		if ( version_compare( $wp_version, '4.6' ) < 0 ) {
-			
+
 			$lang = get_locale();
 			$lang = str_replace( '_', '-', $lang );
 			if ( file_exists( WPV_PATH_EMBEDDED . '/res/js/i18n/jquery.ui.datepicker-' . $lang . '.js' ) ) {
@@ -3943,9 +4005,9 @@ class WP_Views {
 					wp_register_script( 'jquery-ui-datepicker-local', WPV_URL_EMBEDDED_FRONTEND . '/res/js/i18n/jquery.ui.datepicker-' . $lang . '.js', array( 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker' ), WPV_VERSION, true );
 				}
 			}
-			
+
 		}
-		
+
 		// Pagination script and style
 		// Depends on:
 		// 		- jquery
@@ -3953,7 +4015,7 @@ class WP_Views {
 		// 		- wp-mediaelement
 		// 		- wp-playlist
 		wp_register_script( 'views-pagination-script', WPV_URL_EMBEDDED_FRONTEND . '/res/js/wpv-pagination-embedded.js', array( 'jquery', 'jquery-ui-datepicker', 'wp-mediaelement', 'wp-playlist', 'underscore' ), WPV_VERSION, true );
-		
+
 		$calendar_image = WPV_URL_EMBEDDED_FRONTEND . '/res/img/calendar.gif';
 		$calendar_image = apply_filters( 'wpv_filter_wpv_calendar_image', $calendar_image );
 		$calendar_image = apply_filters( 'wptoolset_filter_wptoolset_calendar_image', $calendar_image );
@@ -3982,16 +4044,17 @@ class WP_Views {
 			'datepicker_min_date'		=> $datepicker_min_date,
 			'datepicker_max_date'		=> $datepicker_max_date,
 			'resize_debounce_tolerance'	=> $resize_debounce_tolerance,
-			'datepicker_style_url'		=> TOOLSET_COMMON_FRONTEND_URL . '/toolset-forms/css/wpt-jquery-ui/jquery-ui-1.11.4.custom.css'
+			'datepicker_style_url'		=> TOOLSET_COMMON_FRONTEND_URL . '/toolset-forms/css/wpt-jquery-ui/jquery-ui-1.11.4.custom.css',
+			'wpmlLang' => apply_filters( 'wpml_current_language', false ),
 		);
 		wp_localize_script( 'views-pagination-script', 'wpv_pagination_local', $wpv_pagination_localization );
-		
+
 		// Map script
 		// Depends on google-maps
 		// For compatibility reasons, we are not registering this unless the Views legacy Maps plugin is enabled.
-		if ( 
-			isset( $views_global_settings->wpv_map_plugin ) 
-			&& true == (bool) $views_global_settings->wpv_map_plugin 
+		if (
+			isset( $views_global_settings->wpv_map_plugin )
+			&& true == (bool) $views_global_settings->wpv_map_plugin
 		) {
 			if ( ! wp_script_is( 'google-maps', 'registered' ) ) {
 				if ( is_ssl() ) {
@@ -4003,27 +4066,27 @@ class WP_Views {
 			}
 			wp_register_script( 'views-map-script', WPV_URL_EMBEDDED_FRONTEND . '/res/js/jquery.wpvmap.js', array( 'google-maps', 'jquery' ), WPV_VERSION, true );
 		}
-			
+
 		/* ---------------------------- /*
 		/* FRONTEND STYLES
 		/* ---------------------------- */
-			
+
 		// Pagination styles - includes table styles
 		// Depends on:
 		// 		- mediaelement
 		// 		- wp-mediaelement
 		wp_register_style( 'views-pagination-style', WPV_URL_EMBEDDED_FRONTEND . '/res/css/wpv-pagination.css', array( 'mediaelement', 'wp-mediaelement' ), WPV_VERSION );
-			
+
 		// We need to add the WordPress playlist templates on the frontend
 		// Just in case there is a playlist on responses of AJAXed related events
 		add_action( 'wp_footer', 'wp_underscore_playlist_templates', 0 );
 	}
-	
+
 	/**
 	 * Add the frontend styles and scripts.
 	 */
 	function wpv_frontend_enqueue_scripts() {
-		
+
 		$views_global_settings = WPV_Settings::get_instance();
 
 		// Pagination
@@ -4059,30 +4122,30 @@ class WP_Views {
 					. ( isset( $style_option_data['background-color-current'] ) ? ( 'background-color: ' . $style_option_data['background-color-current']  . ';' ) : '' )
 					. '}'
 					. '';
-					
+
 			}
 			wp_add_inline_style( 'views-pagination-style', $css_options_for_list_controls );
 		}
 
 		// Maps
-		if ( 
-			isset( $views_global_settings->wpv_map_plugin ) 
-			&& true == (bool) $views_global_settings->wpv_map_plugin 
+		if (
+			isset( $views_global_settings->wpv_map_plugin )
+			&& true == (bool) $views_global_settings->wpv_map_plugin
 		) {
 			wp_enqueue_script( 'views-map-script' );
 		}
 	}
 
 	function wpv_admin_enqueue_scripts( $hook ) {
-		
+
 		$page = wpv_getget( 'page' );
-		
+
 		// Assets for the shortcodes GUI
 		$force_load_shortcodes_gui_assets = array( 'dd_layouts_edit' );
 		$force_load_shortcodes_gui_assets = apply_filters( 'wpv_filter_wpv_force_load_shortcodes_gui_assets', $force_load_shortcodes_gui_assets );
-		if ( 
-			$hook == 'post.php' 
-			|| $hook == 'post-new.php' 
+		if (
+			$hook == 'post.php'
+			|| $hook == 'post-new.php'
 			|| in_array( $page, $force_load_shortcodes_gui_assets )
 		) {
 			if ( ! wp_script_is( 'views-shortcodes-gui-script' ) ) {
@@ -4095,7 +4158,7 @@ class WP_Views {
 				wp_enqueue_style( 'views-admin-css' );
 			}
 		}
-		
+
 		if ( $page == 'dd_layouts_edit' ) {
 			if ( ! wp_script_is( 'views-codemirror-conf-script' ) ) {
 				wp_enqueue_script( 'views-codemirror-conf-script' );
@@ -4133,7 +4196,7 @@ class WP_Views {
 				wp_enqueue_style( 'views-admin-css' );
 			}
 		}
-		
+
 		// Assets for the Widgets page
 		if ( $hook == 'widgets.php' ) {
 			if ( ! wp_script_is( 'views-widgets-gui-script' ) ) {
@@ -4145,7 +4208,7 @@ class WP_Views {
 		}
 
 	}
-	
+
 	function wpv_get_force_disable_dps( $status = false ) {
 		return $this->get_force_disable_dependant_parametric_search();
 	}
@@ -4196,7 +4259,7 @@ class WP_Views {
 		$this->set_force_disable_dependant_parametric_search( $force_disable );
 		return $force_disable;
 	}
-	
+
 	function wpv_force_disable_dps( $state = false ) {
 		$this->set_force_disable_dependant_parametric_search( $state );
 	}
@@ -4213,19 +4276,19 @@ class WP_Views {
 		$view_settings = $this->get_view_settings( $view_id );
 
 	}
-	
+
 	function wpv_get_rendered_views_ids( $used_ids = array() ) {
 		return $this->view_used_ids;
 	}
-	
+
 	function wpv_get_post_query( $query = null ) {
 		return $this->post_query;
 	}
-	
+
 	function wpv_get_taxonomy_query( $query = array() ) {
 		return $this->taxonomy_data;
 	}
-	
+
 	function wpv_get_user_query( $query = array() ) {
 		return $this->users_data;
 	}
@@ -4241,13 +4304,13 @@ function wpv_views_plugin_action_links( $links, $plugin_file ) {
 	if ( $plugin_file == $this_plugin ) {
 		$links[] = sprintf(
 				'<a href="%s">%s</a>',
-				esc_url( 
+				esc_url(
 					add_query_arg(
 						array( 'page' => basename( WPV_PATH ) . '/menu/help.php' ),
-						admin_url( 'admin.php' ) 
-					) 
+						admin_url( 'admin.php' )
+					)
 				),
-				__( 'Getting started', 'wpv-views' ) 
+				__( 'Getting started', 'wpv-views' )
 			);
 	}
 	return $links;
@@ -4261,14 +4324,14 @@ function wpv_views_plugin_plugin_row_meta( $plugin_meta, $plugin_file, $plugin_d
 	    if( wpv_is_views_lite() ){
 		    $plugin_meta[] = sprintf(
 			    '<a href="%s" target="_blank">%s</a>',
-			    'https://wpml.org/version/views-lite-2-6-4-2/',
-			    __( 'Views Lite 2.6.4.2 release notes', 'wpv-views' )
+			    'https://wpml.org/version/views-lite-2-7-5/',
+			    __( 'Views Lite 2.7.5 release notes', 'wpv-views' )
 		    );
         } else {
 		    $plugin_meta[] = sprintf(
 			    '<a href="%s" target="_blank">%s</a>',
-			    'https://toolset.com/version/views-2-6-4-2/?utm_source=viewsplugin&utm_campaign=views&utm_medium=release-notes-plugin-row&utm_term=Views 2.6.4.1 release notes',
-			    __( 'Views 2.6.4.2 release notes', 'wpv-views' )
+			    'https://toolset.com/version/views-2-7-5/?utm_source=viewsplugin&utm_campaign=views&utm_medium=release-notes-plugin-row&utm_term=Views 2.7.4 release notes',
+			    __( 'Views 2.7.5 release notes', 'wpv-views' )
 		    );
         }
 
@@ -4478,8 +4541,8 @@ function get_view_allowed_attributes( $view_id ) {
 	}
 	global $WP_Views;
 	$view_settings = $WP_Views->get_view_settings( $view_id );
-	if ( 
-		is_array( $view_settings ) 
+	if (
+		is_array( $view_settings )
 		&& isset( $view_settings['view-query-mode'] )
 		&& $view_settings['view-query-mode'] == 'normal'
 		&& isset( $view_settings['query_type'][0] )
@@ -4490,9 +4553,9 @@ function get_view_allowed_attributes( $view_id ) {
 		if ( $view_settings['query_type'][0] == 'posts' ) {
 			foreach ( $view_settings as $key => $value ) {
 				// Taxonomy
-				if ( 
-					preg_match( "/tax_(.*)_relationship/", $key, $res ) 
-					&& $value == 'FROM ATTRIBUTE' 
+				if (
+					preg_match( "/tax_(.*)_relationship/", $key, $res )
+					&& $value == 'FROM ATTRIBUTE'
 				) {
 					$taxonomy = $res[1];
 					if ( taxonomy_exists( $taxonomy ) ) {
@@ -4509,9 +4572,9 @@ function get_view_allowed_attributes( $view_id ) {
 					}
 				}
 				// Custom fields
-				if ( 
+				if (
 					preg_match( "/custom-field-(.*)_value/", $key, $res )
-					&& preg_match( "/VIEW_PARAM\(([^\)]+)\)/", $value, $shortcode ) 
+					&& preg_match( "/VIEW_PARAM\(([^\)]+)\)/", $value, $shortcode )
 				) {
 					$expected_input_data_type = in_array( $view_settings[ 'custom-field-' . $res[1] . '_type' ], array( 'NUMERIC', 'DATE', 'DATETIME', 'TIME' ) )
 							? 'integer'
@@ -4529,14 +4592,14 @@ function get_view_allowed_attributes( $view_id ) {
 				}
 			}
 		}
-		
+
 		// User View
 		if ( $view_settings['query_type'][0] == 'taxonomy' ) {
 			foreach ( $view_settings as $key => $value ) {
 				// Termmeta fields
-				if ( 
+				if (
 					preg_match( "/termmeta-field-(.*)_value/", $key, $res )
-					&& preg_match( "/VIEW_PARAM\(([^\)]+)\)/", $value, $shortcode ) 
+					&& preg_match( "/VIEW_PARAM\(([^\)]+)\)/", $value, $shortcode )
 				) {
 					$expected_input_data_type = in_array( $view_settings[ 'termmeta-field-' . $res[1] . '_type' ], array('NUMERIC','DATE','DATETIME','TIME') )
 							? 'integer'
@@ -4559,9 +4622,9 @@ function get_view_allowed_attributes( $view_id ) {
 		if ( $view_settings['query_type'][0] == 'users' ) {
 			foreach ( $view_settings as $key => $value ) {
 				// Usermeta fields
-				if ( 
+				if (
 					preg_match( "/usermeta-field-(.*)_value/", $key, $res )
-					&& preg_match( "/VIEW_PARAM\(([^\)]+)\)/", $value, $shortcode ) 
+					&& preg_match( "/VIEW_PARAM\(([^\)]+)\)/", $value, $shortcode )
 				) {
 					$expected_input_data_type = in_array( $view_settings[ 'usermeta-field-' . $res[1] . '_type' ], array('NUMERIC','DATE','DATETIME','TIME') )
 							? 'integer'
@@ -4610,9 +4673,9 @@ function get_view_allowed_url_parameters( $view_id ) {
 	global $WP_Views;
 	$view_settings = $WP_Views->get_view_settings( $view_id );
 	$query_type = '';
-	
+
 	if (
-		is_array( $view_settings ) 
+		is_array( $view_settings )
 		&& isset( $view_settings['view-query-mode'] )
 	) {
 		switch ( $view_settings['view-query-mode'] ) {
@@ -4626,17 +4689,17 @@ function get_view_allowed_url_parameters( $view_id ) {
 				break;
 		}
 	}
-	
+
 	$attributes = apply_filters( 'wpv_filter_register_url_parameters_for_' . $query_type, $attributes, $view_settings );
 	$meta_value_pattern = '/URL_PARAM\(([^(]*?)\)/siU';
-	
+
 	switch ( $query_type ) {
 		case 'posts':
 			foreach ( $view_settings as $key => $value ) {
 				// Taxonomy
-				if ( 
-					preg_match( "/tax_(.*)_relationship/", $key, $res ) 
-					&& $value == 'FROM URL' 
+				if (
+					preg_match( "/tax_(.*)_relationship/", $key, $res )
+					&& $value == 'FROM URL'
 				) {
 					$taxonomy = $res[1];
 					if ( taxonomy_exists( $taxonomy ) ) {
@@ -4653,7 +4716,7 @@ function get_view_allowed_url_parameters( $view_id ) {
 					}
 				}
 				// Custom fields
-				if ( 
+				if (
 					preg_match( "/custom-field-(.*)_value/", $key, $res )
 					&& preg_match_all( $meta_value_pattern, $value, $matches_postmeta, PREG_SET_ORDER )
 				) {
@@ -4678,7 +4741,7 @@ function get_view_allowed_url_parameters( $view_id ) {
 		case 'taxonomy':
 			foreach ( $view_settings as $key => $value ) {
 				// Termmeta fields
-				if ( 
+				if (
 					preg_match( "/termmeta-field-(.*)_value/", $key, $res )
 					&& preg_match_all( $meta_value_pattern, $value, $matches_termmeta, PREG_SET_ORDER )
 				) {
@@ -4703,7 +4766,7 @@ function get_view_allowed_url_parameters( $view_id ) {
 		case 'users':
 			foreach ( $view_settings as $key => $value ) {
 				// Usermeta fields
-				if ( 
+				if (
 					preg_match( "/usermeta-field-(.*)_value/", $key, $res )
 					&& preg_match_all( $meta_value_pattern, $value, $matches_usermeta, PREG_SET_ORDER )
 				) {

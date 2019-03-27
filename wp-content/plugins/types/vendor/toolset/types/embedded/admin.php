@@ -780,7 +780,7 @@ function wpcf_admin_get_current_edited_post( $current_post = null ) {
 /**
  * Gets post type.
  *
- * @param type $post
+ * @param WP_Post $post
  * @return boolean
  */
 function wpcf_admin_get_edited_post_type( $post = null ) {

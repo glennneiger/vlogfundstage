@@ -6,7 +6,7 @@
  * @since 2.5.0
  */
 class WPV_Shortcode_Post_Body_GUI extends WPV_Shortcode_Base_GUI {
-	
+
 	/**
 	 * Register the wpv-post-body shortcode in the GUI API.
 	 *
@@ -22,7 +22,7 @@ class WPV_Shortcode_Post_Body_GUI extends WPV_Shortcode_Base_GUI {
 		);
 		return $views_shortcodes;
 	}
-	
+
 	/*
 	 * Get the wpv-post-body shortcode attributes data.
 	 *
@@ -88,29 +88,29 @@ class WPV_Shortcode_Post_Body_GUI extends WPV_Shortcode_Base_GUI {
 		);
 		return $data;
 	}
-	
+
 	private function get_view_template_options() {
 		global $wpdb, $sitepress;
 		$custom_combo_settings = array(
 			'label'    => __( 'Display using a Content Template:', 'wpv-views' ),
 			'required' => true
 		);
-		
+
 		$values_to_prepare = array();
 		$wpml_join = $wpml_where = "";
 		if (
-			isset( $sitepress ) 
+			isset( $sitepress )
 			&& function_exists( 'icl_object_id' )
 		) {
 			$content_templates_translatable = $sitepress->is_translated_post_type( 'view-template' );
 			if ( $content_templates_translatable ) {
 				$wpml_current_language = $sitepress->get_current_language();
-				$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-				$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
+				$wpml_join = " JOIN {$wpdb->prefix}icl_translations icl_t ";
+				$wpml_where = " AND p.ID = icl_t.element_id AND icl_t.language_code = %s AND icl_t.element_type LIKE 'post_%' ";
 				$values_to_prepare[] = $wpml_current_language;
 			}
 		}
-		
+
 		$exclude_loop_templates = '';
 		$exclude_loop_templates_ids = wpv_get_loop_content_template_ids();
 		// Be sure not to include the current CT when editing one
@@ -127,7 +127,7 @@ class WPV_Shortcode_Post_Body_GUI extends WPV_Shortcode_Base_GUI {
 		}
 		if (
 			isset( $_GET['page'] )
-			&& 'ct-editor' == $_GET['page'] 
+			&& 'ct-editor' == $_GET['page']
 			&& isset( $_GET['ct_id'] )
 		) {
 			$exclude_loop_templates_ids[] = $_GET['ct_id'];
@@ -145,13 +145,13 @@ class WPV_Shortcode_Post_Body_GUI extends WPV_Shortcode_Base_GUI {
 		$values_to_prepare[] = 'view-template';
 		$view_tempates_available = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT p.ID, p.post_name, p.post_title 
-				FROM {$wpdb->posts} p {$wpml_join} 
-				WHERE p.post_status = 'publish' 
-				{$wpml_where} 
-				AND p.post_type = %s 
+				"SELECT p.ID, p.post_name, p.post_title
+				FROM {$wpdb->posts} p {$wpml_join}
+				WHERE p.post_status = 'publish'
+				{$wpml_where}
+				AND p.post_type = %s
 				{$exclude_loop_templates}
-				ORDER BY p.post_title 
+				ORDER BY p.post_title
 				LIMIT 16",
 				$values_to_prepare
 			)
@@ -173,6 +173,6 @@ class WPV_Shortcode_Post_Body_GUI extends WPV_Shortcode_Base_GUI {
 		}
 		return $custom_combo_settings;
 	}
-	
-	
+
+
 }

@@ -55,7 +55,7 @@ class CRED_Main {
 
 		do_action( 'toolset_register_classmap', $classmap );
 	}
-	
+
 	public function init_api() {
 		CRED_Api::initialize();
 	}
@@ -114,13 +114,13 @@ class CRED_Main {
 		$dic = apply_filters( 'toolset_dic', false );
 
 		/**
-		 *  @var \OTGS\Toolset\CRED\Controller\Cache $cred_cache 
+		 *  @var \OTGS\Toolset\CRED\Controller\Cache $cred_cache
 		 */
 		$cred_cache = $dic->make( '\OTGS\Toolset\CRED\Controller\Cache' );
 		$cred_cache->initialize();
-		
+
 		/**
-		 *  @var \OTGS\Toolset\CRED\Controller\Upgrade $cred_upgrade 
+		 *  @var \OTGS\Toolset\CRED\Controller\Upgrade $cred_upgrade
 		 */
 		$cred_upgrade = $dic->make( '\OTGS\Toolset\CRED\Controller\Upgrade' );
 		$cred_upgrade->initialize();
@@ -156,6 +156,15 @@ class CRED_Main {
 
 		$cred_permissions = new \OTGS\Toolset\CRED\Controller\Permissions();
 		$cred_permissions->initialize();
+
+		$cred_compatibility = new \OTGS\Toolset\CRED\Controller\Compatibility();
+		$cred_compatibility->initialize();
+
+		/**
+		 * @var \OTGS\Toolset\CRED\Controller\ExpirationManager $cred_expiration_manager
+		 */
+		$cred_expiration_manager = $dic->make( '\OTGS\Toolset\CRED\Controller\ExpirationManager' );
+		$cred_expiration_manager->initialize();
 	}
 
 	public function init_cred_association_forms(){

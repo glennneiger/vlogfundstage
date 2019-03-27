@@ -33,9 +33,19 @@ if ( !defined( 'EDITOR_ADDON_RELPATH' ) ) {
 	define( 'EDITOR_ADDON_RELPATH', WPCF_EMBEDDED_TOOLSET_RELPATH . '/toolset-common/visual-editor' );
 }
 
+// Load OTGS/UI
+require_once TYPES_ABSPATH . '/vendor/otgs/ui/loader.php';
+otgs_ui_initialize( TYPES_ABSPATH . '/vendor/otgs/ui', TYPES_RELPATH . '/vendor/otgs/ui' );
+
 // installer
 $installer = TYPES_ABSPATH . '/vendor/otgs/installer/loader.php';
 if ( file_exists( $installer ) ) {
+
+	// This is a required dependency for Installer, but we cannot use neither the composer autoloader
+	// (because of how Toolset Common is being loaded) nor our own autoloader (because this file doesn't contain
+	// a class).
+	require_once TYPES_ABSPATH . '/vendor/jakeasmith/http_build_url/src/http_build_url.php';
+
 	/** @noinspection PhpIncludeInspection */
 	include_once $installer;
 	if ( function_exists( 'WP_Installer_Setup' ) ) {
@@ -124,3 +134,25 @@ add_action( 'init', function() {
 		$field_group_edit_page();
 	}
 } );
+
+/**
+ * Gutenberg Compatiblity
+ *
+ * @since 3.2
+ */
+function types_bootstrap_gutenberg_compatibility() {
+	// load DIC
+	$dic = apply_filters( 'toolset_dic', false );
+
+	/** @var \OTGS\Toolset\Types\Controller\Compatibility\Gutenberg $gutenberg */
+	$gutenberg = $dic->make( '\OTGS\Toolset\Types\Controller\Compatibility\Gutenberg' );
+	$gutenberg->initialize();
+
+	if ( $gutenberg->is_active_for_current_post_type() ) {
+		$dic->execute( array( $gutenberg, 'post_edit_screen' ) );
+	}
+}
+
+// load compatibililty on new post and edit post screen
+add_action( 'load-post.php', 'types_bootstrap_gutenberg_compatibility' );
+add_action( 'load-post-new.php', 'types_bootstrap_gutenberg_compatibility' );

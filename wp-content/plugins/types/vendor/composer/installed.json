@@ -122,15 +122,50 @@
         ]
     },
     {
+        "name": "jakeasmith/http_build_url",
+        "version": "1.0.1",
+        "version_normalized": "1.0.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/jakeasmith/http_build_url.git",
+            "reference": "93c273e77cb1edead0cf8bcf8cd2003428e74e37"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/jakeasmith/http_build_url/zipball/93c273e77cb1edead0cf8bcf8cd2003428e74e37",
+            "reference": "93c273e77cb1edead0cf8bcf8cd2003428e74e37",
+            "shasum": ""
+        },
+        "time": "2017-05-01T15:36:40+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "src/http_build_url.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jake A. Smith",
+                "email": "theman@jakeasmith.com"
+            }
+        ],
+        "description": "Provides functionality for http_build_url() to environments without pecl_http."
+    },
+    {
         "name": "otgs/icons",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
         "source": {
             "type": "git",
             "url": "https://git.onthegosystems.com/otgs-public/otgs-icons.git",
-            "reference": "622ab3c0549b70c87fa20de1c302ffcc07ea8f9c"
+            "reference": "cbf47e946987a43eb57cc17f8252809c66426908"
         },
-        "time": "2018-04-06T08:47:19+00:00",
+        "time": "2018-11-21T11:53:40+00:00",
         "type": "library",
         "installation-source": "source",
         "notification-url": "https://packagist.org/downloads/",
@@ -141,50 +176,53 @@
     },
     {
         "name": "otgs/installer",
-        "version": "1.8.25",
-        "version_normalized": "1.8.25.0",
+        "version": "1.9.2",
+        "version_normalized": "1.9.2.0",
         "source": {
             "type": "git",
             "url": "ssh://git@git.onthegosystems.com:10022/installer/installer.git",
-            "reference": "612bbc5045b6cd60145fc1f3f909981fde70ec3b"
+            "reference": "cbf9278161775e90d19567182d8295307eedcd8a"
         },
         "require": {
             "composer/installers": "~1.0",
-            "otgs/icons": "dev-master",
+            "jakeasmith/http_build_url": "^1.0",
+            "otgs/icons": "~1.0",
             "php": ">=5.2.0",
-            "roave/security-advisories": "dev-master",
             "twig/twig": "~1.32.0",
             "xrstf/composer-php52": "1.*"
         },
         "require-dev": {
             "otgs/build-tools": "~0.1",
-            "otgs/build-tools-ci": "~0.7",
+            "otgs/build-tools-ci": "~0.10",
             "otgs/unit-tests-framework": "~1.2.0",
+            "roave/security-advisories": "dev-master",
             "sebastian/phpcpd": "^3.0"
         },
-        "time": "2018-07-13T10:51:21+00:00",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.8.x-dev",
-                "dev-develop": "1.8.x-dev"
-            }
+        "suggest": {
+            "otgs/ui": "Some elements will have nicer styling, e.g. switcher instead of checkbox"
         },
+        "time": "2019-02-19T14:23:40+00:00",
+        "type": "library",
         "installation-source": "source",
         "scripts": {
+            "make": [
+                "make githooks"
+            ],
+            "php52-autoloader": [
+                "xrstf\\Composer52\\Generator::onPostInstallCmd"
+            ],
             "test": [
                 "phpunit"
             ],
             "post-install-cmd": [
-                "xrstf\\Composer52\\Generator::onPostInstallCmd",
-                "OTGS\\Composer\\Scripts\\Install::PHPCSStandards"
+                "@make",
+                "@php52-autoloader"
             ],
             "post-update-cmd": [
-                "xrstf\\Composer52\\Generator::onPostInstallCmd",
-                "OTGS\\Composer\\Scripts\\Install::PHPCSStandards"
+                "@php52-autoloader"
             ],
             "post-autoload-dump": [
-                "xrstf\\Composer52\\Generator::onPostInstallCmd"
+                "@php52-autoloader"
             ]
         },
         "license": [
@@ -192,9 +230,54 @@
         ],
         "authors": [
             {
-                "name": "Mihai Grigori",
-                "email": "mihai@wpml.org",
-                "homepage": "http://www.wp-types.com"
+                "email": "adriano.f@onthegosystems.com",
+                "name": "Adriano Ferreira",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "ana.c@onthegosystems.com",
+                "name": "Ana Couto",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "andrea.s@onthegosystems.com",
+                "name": "Andrea Sciamanna",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "andreas.p@onthegosystems.com",
+                "name": "Andreas Panagiotopoulos",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "bruce@onthegosystems.com",
+                "name": "Bruce Pearson",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "dimitris.m@onthegosystems.com",
+                "name": "Dimitris Mitsis",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "igor.g@onthegosystems.com",
+                "name": "Igor Gergel",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "jakub.b@onthegosystems.com",
+                "name": "Jakub Bis",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "kasia.j@onthegosystems.com",
+                "name": "Kasia Janoska",
+                "homepage": "http://www.wpml.org"
+            },
+            {
+                "email": "pierre.s@onthegosystems.com",
+                "name": "Pierre SYLVESTRE",
+                "homepage": "http://www.wpml.org"
             }
         ],
         "description": "Installs and updates WPML and Toolset dependencies automatically",
@@ -207,20 +290,63 @@
         ]
     },
     {
-        "name": "roave/security-advisories",
+        "name": "otgs/ui",
         "version": "dev-master",
         "version_normalized": "9999999-dev",
         "source": {
             "type": "git",
-            "url": "https://github.com/Roave/SecurityAdvisories.git",
-            "reference": "d3268ea60c79284f9a8db7b78eb48cc99cc5d471"
+            "url": "https://git.onthegosystems.com/otgs-public/otgs-ui.git",
+            "reference": "c9a1416449048e6ce51a2677863cc1ad55f1e989"
         },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/d3268ea60c79284f9a8db7b78eb48cc99cc5d471",
-            "reference": "d3268ea60c79284f9a8db7b78eb48cc99cc5d471",
-            "shasum": ""
+        "require": {
+            "roave/security-advisories": "dev-master"
         },
+        "require-dev": {
+            "dealerdirect/phpcodesniffer-composer-installer": "*",
+            "otgs/unit-tests-framework": "~1.2.0",
+            "phpcompatibility/php-compatibility": "*",
+            "phpunit/phpunit": "~5.7",
+            "sebastian/phpcpd": "^3.0",
+            "squizlabs/php_codesniffer": "~3",
+            "wp-coding-standards/wpcs": "^0"
+        },
+        "suggest": {
+            "otgs/icons": "Needed for displaying Company's glyphs and icons,"
+        },
+        "time": "2019-02-18T12:49:47+00:00",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "classmap": [
+                "src/php/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "Andrea Sciamanna",
+                "email": "andrea.s@onthegosystems.com",
+                "homepage": "https://onthegosystems.com"
+            },
+            {
+                "name": "Kasia Janoska",
+                "email": "kasia.j@onthegosystems.com",
+                "homepage": "https://onthegosystems.com"
+            }
+        ],
+        "description": "UI library from OnTheGoSystems",
+        "homepage": "https://git.onthegosystems.com/otgs-public/otgs-ui",
+        "keywords": [
+            "ui"
+        ]
+    },
+    {
+        "name": "roave/security-advisories",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
         "conflict": {
             "3f/pygmentize": "<1.2",
             "adodb/adodb-php": "<5.20.12",
@@ -377,7 +503,7 @@
         "source": {
             "type": "git",
             "url": "ssh://git@git.onthegosystems.com:10022/toolset/onthego-resources.git",
-            "reference": "4fefeb0e6f90d7014bbed3dacc58bf276e1e57a6"
+            "reference": "21646e02d48bfb41fe18f92186e3722962d0532c"
         },
         "require": {
             "php": ">=5.2.0"
@@ -385,7 +511,7 @@
         "require-dev": {
             "phpunit/phpunit": "~4.5"
         },
-        "time": "2017-04-21T07:22:59+00:00",
+        "time": "2019-01-28T14:16:09+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -420,12 +546,12 @@
     },
     {
         "name": "toolset/toolset-common",
-        "version": "3.2.3",
-        "version_normalized": "3.2.3.0",
+        "version": "3.3.7",
+        "version_normalized": "3.3.7.0",
         "source": {
             "type": "git",
             "url": "ssh://git@git.onthegosystems.com:10022/toolset/toolset-common.git",
-            "reference": "2b09def96009c2deaa1724b4f407d4bba277f611"
+            "reference": "e7f9f484d87ecaf662a445038558ca37efaf943b"
         },
         "require": {
             "php": ">=5.2.0"
@@ -437,7 +563,7 @@
             "phpunit/php-token-stream": "<2.0",
             "sebastian/phpcpd": "^3.0"
         },
-        "time": "2018-10-09T10:05:00+00:00",
+        "time": "2019-02-25T11:21:59+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {

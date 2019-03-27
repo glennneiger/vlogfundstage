@@ -76,8 +76,8 @@ class CRED_Field_Utils {
 			&& $is_wpml_active_and_configured
 			&& ! is_admin()
 		) {
-			$sql_join .= " JOIN {$wpdb->prefix}icl_translations t ";
-			$sql_where .= " AND p.ID = t.element_id AND t.language_code = %s ";
+			$sql_join .= " JOIN {$wpdb->prefix}icl_translations icl_t ";
+			$sql_where .= " AND p.ID = icl_t.element_id AND icl_t.language_code = %s ";
 			$values_to_prepare[] = $lang;
 		}
 
@@ -158,7 +158,7 @@ class CRED_Field_Utils {
 		if (!empty($query)) {
 			$args[ 's' ] = $query;
 		}
-		
+
 		$maybe_forced_args = array( 'orderby', 'order', 'author', 'post__in' );
 		foreach ( $maybe_forced_args as $maybe_arg ) {
 			if ( isset( $forced_args[ $maybe_arg ] ) ) {
@@ -230,35 +230,4 @@ class CRED_Field_Utils {
 		return $posts;
 	}
 
-	/**
-	 * Callback related to posts_where filter in order to force search to post_title only
-	 *
-	 * @param $search
-	 * @param $wp_query
-	 *
-	 * @return array|string
-	 */
-	public function __search_by_title_only( $search, &$wp_query ) {
-		if ( ! empty( $search )
-			&& ! empty( $wp_query->query_vars[ 'search_terms' ] )
-		) {
-			global $wpdb;
-
-			$query = $wp_query->query_vars;
-			$char = ! empty( $query[ 'exact' ] ) ? '' : '%';
-			$search = array();
-
-			foreach ( ( array ) $query[ 'search_terms' ] as $term ) {
-				$search[] = $wpdb->prepare( "$wpdb->posts.post_title LIKE %s", $char . cred_wrap_esc_like( $term ) . $char );
-			}
-
-			if ( ! is_user_logged_in() ) {
-				$search[] = "$wpdb->posts.post_password = ''";
-			}
-
-			$search = ' AND ' . implode( ' AND ', $search );
-		}
-
-		return $search;
-	}
 }

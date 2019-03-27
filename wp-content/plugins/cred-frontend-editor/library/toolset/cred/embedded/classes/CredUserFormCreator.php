@@ -145,6 +145,7 @@ if ( ! class_exists( "CredUserFormCreator", false ) ) {
 				$fields['extra'] = new stdClass;
 				$fields['extra']->css = '';
 				$fields['extra']->js = '';
+				$fields['extra']->scaffold = '';
 
 				$fields['extra']->messages = $model->getDefaultMessages();
 

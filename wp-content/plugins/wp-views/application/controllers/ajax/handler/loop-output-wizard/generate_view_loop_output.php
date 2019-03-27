@@ -70,7 +70,8 @@ class WPV_Ajax_Handler_Generate_View_Loop_Output extends Toolset_Ajax_Handler_Ab
 		$ajax_manager = $this->get_ajax_manager();
 
 		$ajax_manager->ajax_begin( array(
-			'nonce' => self::NONCE,
+			'nonce' => WPV_Ajax::CALLBACK_GENERATE_VIEW_LOOP_OUTPUT,
+			'public' => false,
 		) );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -114,7 +115,7 @@ class WPV_Ajax_Handler_Generate_View_Loop_Output extends Toolset_Ajax_Handler_Ab
 			//      as the fields are saved in the database as part of a serialized array.
 			$skip_sanitization_for_fields = array( 'list_separator' );
 			foreach ( $args as $key => $arg ) {
-				$args[ $key ] = ! in_array( $key, $skip_sanitization_for_fields, true ) ? sanitize_text_field( $arg ) : $arg;
+				$args[ $key ] = ! in_array( $key, $skip_sanitization_for_fields, true ) ? sanitize_text_field( (string) $arg ) : $arg;
 			}
 		} else {
 			$args = array();

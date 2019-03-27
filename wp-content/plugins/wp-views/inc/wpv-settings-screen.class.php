@@ -19,15 +19,15 @@ class WPV_Settings_Screen {
         add_action( 'init',						array( $this, 'init' ) );
 		add_action( 'toolset_menu_admin_enqueue_scripts',	array( $this, 'toolset_menu_admin_enqueue_scripts' ) );
     }
-	
-    function init() {		
+
+    function init() {
 		/**
 		* General section
 		*/
 		// Codemirror options
 		add_filter( 'toolset_filter_toolset_register_settings_general_section',				array( $this, 'wpv_codemirror_options' ), 20 );
 		add_action( 'wp_ajax_wpv_update_codemirror_status',									array( $this, 'wpv_update_codemirror_status' ) );
-		
+
 		/**
 		* Front End Content section
 		*/
@@ -48,9 +48,6 @@ class WPV_Settings_Screen {
 		// Custom conditional functions options
 		add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section',	array( $this, 'wpv_custom_conditional_functions' ), 50 );
 		add_action( 'wp_ajax_wpv_update_custom_conditional_functions',						array( $this, 'wpv_update_custom_conditional_functions' ) );
-		// Frontend links options
-		add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section',	array( $this, 'wpv_edit_view_frontend_links_options' ), 60 );
-		add_action( 'wp_ajax_wpv_update_show_edit_view_link_status',						array( $this, 'wpv_update_show_edit_view_link_status' ) );
 		// Theme support options
 		add_filter( 'toolset_filter_toolset_register_settings_front-end-content_section',	array( $this, 'wpv_content_templates_theme_support_options' ), 70 );
 		add_action( 'wp_ajax_wpv_update_content_templates_theme_support_settings',			array( $this, 'wpv_update_content_templates_theme_support_settings' ) );
@@ -71,7 +68,7 @@ class WPV_Settings_Screen {
 		// Legacy maps options
 		add_filter( 'toolset_filter_toolset_register_settings_maps_section',				array( $this, 'wpv_map_plugin_options' ), 40 );
 		add_action( 'wp_ajax_wpv_update_map_plugin_status',									array( $this, 'wpv_update_map_plugin_status' ) );
-        
+
         /**
         * WPML section
 		*/
@@ -81,11 +78,11 @@ class WPV_Settings_Screen {
         add_action( 'wp_ajax_wpv_update_wpml_settings',										array( $this, 'wpv_update_wpml_settings' ) );
 
         // Register Settings CSS
-        wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array( 
-			'wp-pointer', 'font-awesome', 
-			'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css', 
+        wp_register_style( 'views-admin-css', WPV_URL_EMBEDDED . '/res/css/views-admin.css', array(
+			'wp-pointer', 'font-awesome',
+			'toolset-colorbox', 'toolset-select2-css', 'toolset-select2-overrides-css',
 			Toolset_Assets_Manager::STYLE_NOTIFICATIONS,
-			'views-admin-dialogs-css' 
+			'views-admin-dialogs-css'
 		), WPV_VERSION );
 
 	    $wpv_ajax = WPV_Ajax::get_instance();
@@ -115,16 +112,16 @@ class WPV_Settings_Screen {
 		);
 
 		wp_localize_script( 'views-settings-js', 'wpv_settings_texts', array_merge( $settings_script_texts, $settings_ajax_info ) );
-		
+
 		/**
 		* API filters to get Views settings
 		*
 		* @todo move this out to a proper API class...
 		*/
-		
+
 		add_filter( 'wpv_filter_wpv_codemirror_autoresize',									array( $this, 'wpv_filter_wpv_codemirror_autoresize' ) );
     }
-	
+
 	function toolset_menu_admin_enqueue_scripts( $current_page ) {
 		switch ( $current_page ) {
 			case 'toolset-settings':
@@ -134,7 +131,7 @@ class WPV_Settings_Screen {
 		// @todo move the dialogs styles to common and use those classnames instead
 		wp_enqueue_style( 'views-admin-css' );
 	}
-	
+
 	function register_settings_front_end_content_section( $sections ) {
 		$sections['front-end-content'] = array(
 			'slug'	=> 'front-end-content',
@@ -142,15 +139,19 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
 	}
-	
+
 	function register_settings_maps_section( $sections ) {
+		// Do not register the legady maps version tab if on Views Lite.
+		if ( wpv_is_views_lite() ) {
+			return $sections;
+		}
 		$sections['maps'] = array(
 			'slug'	=> 'maps',
 			'title'	=> __( 'Maps', 'wpv-views' )
 		);
 		return $sections;
 	}
-	
+
 	function register_wpml_section( $sections ) {
 		$wpml_installed = apply_filters( 'wpml_setting', false, 'setup_complete' );
 		if ( $wpml_installed ) {
@@ -161,11 +162,11 @@ class WPV_Settings_Screen {
 		}
 		return $sections;
 	}
-	
+
 	/**
 	* Codemirror - settings and saving
 	*/
-	
+
 	function wpv_codemirror_options( $sections ) {
 		$settings = WPV_Settings::get_instance();
 		$section_content = '';
@@ -186,7 +187,7 @@ class WPV_Settings_Screen {
 		?>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['codemirror-settings'] = array(
 			'slug'		=> 'codemirror-settings',
 			'title'		=> __( 'Text editors options', 'wpv-views' ),
@@ -194,7 +195,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	function wpv_update_codemirror_status() {
 		$settings = WPV_Settings::get_instance();
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -204,9 +205,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_codemirror_options_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_codemirror_options_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -219,16 +220,16 @@ class WPV_Settings_Screen {
 		$settings->save();
 		wp_send_json_success();
 	}
-	
+
 	/**
 	* Hidden custom fields - settings, getter and setter
 	*/
 
     function wpv_show_hidden_custom_fields_options( $sections ) {
         $settings = WPV_Settings::get_instance();
-        if ( 
-			isset( $settings->wpv_show_hidden_fields ) 
-			&& $settings->wpv_show_hidden_fields != '' 
+        if (
+			isset( $settings->wpv_show_hidden_fields )
+			&& $settings->wpv_show_hidden_fields != ''
 		) {
             $selected_fields = explode( ',', $settings->wpv_show_hidden_fields );
         } else {
@@ -269,7 +270,7 @@ class WPV_Settings_Screen {
 		<?php wp_nonce_field( 'wpv_show_hidden_custom_fields_nonce', 'wpv_show_hidden_custom_fields_nonce' ); ?>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['hidden-custom-fields-settings'] = array(
 			'slug'		=> 'hidden-custom-fields-settings',
 			'title'		=> __( 'Hidden custom fields', 'wpv-views' ),
@@ -277,11 +278,11 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	function wpv_get_hidden_custom_fields() {
-		if ( 
+		if (
 			! isset( $_GET["wpnonce"] )
-			|| ! wp_verify_nonce( $_GET["wpnonce"], 'wpv_show_hidden_custom_fields_nonce' ) 
+			|| ! wp_verify_nonce( $_GET["wpnonce"], 'wpv_show_hidden_custom_fields_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -292,9 +293,9 @@ class WPV_Settings_Screen {
 		global $WP_Views;
 		$meta_keys = $WP_Views->get_hidden_meta_keys();
 		$settings = WPV_Settings::get_instance();
-        if ( 
-			isset( $settings->wpv_show_hidden_fields ) 
-			&& $settings->wpv_show_hidden_fields != '' 
+        if (
+			isset( $settings->wpv_show_hidden_fields )
+			&& $settings->wpv_show_hidden_fields != ''
 		) {
             $defaults = explode( ',', $settings->wpv_show_hidden_fields );
         } else {
@@ -305,8 +306,8 @@ class WPV_Settings_Screen {
 		ob_start();
 		?>
 		<div class="wpv-dialog">
-			<?php 
-			if ( $meta_keys_count > 0 ) { 
+			<?php
+			if ( $meta_keys_count > 0 ) {
 			?>
 			<ul class="cf-list toolset-mightlong-list js-wpv-hidden-custom-fields-all-list">
 				<?php foreach ( $meta_keys as $key => $field ) { ?>
@@ -318,14 +319,14 @@ class WPV_Settings_Screen {
 					<?php } ?>
 				<?php } ?>
 			</ul>
-			<?php 
-			} else { 
+			<?php
+			} else {
 			?>
 			<p class="toolset-alert toolset-alert-info">
 				<?php _e( 'There are no hidden custom fields on your site.', 'wpv-views' ); ?>
 			</p>
-			<?php 
-			} 
+			<?php
+			}
 			?>
 		</div>
 		<?php
@@ -336,7 +337,7 @@ class WPV_Settings_Screen {
 		);
 		wp_send_json_success( $data );
 	}
-	
+
 	function wpv_set_hidden_custom_fields() {
 		$settings = WPV_Settings::get_instance();
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -346,9 +347,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_show_hidden_custom_fields_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_show_hidden_custom_fields_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -414,7 +415,7 @@ class WPV_Settings_Screen {
 		</div>
 		<?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['wpv-support-spaces-in-meta-filters'] = array(
 			'slug'		=> 'wpv-support-spaces-in-meta-filters',
 			'title'		=> __( 'Query filters', 'wpv-views' ),
@@ -432,9 +433,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_settings_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_settings_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -447,11 +448,11 @@ class WPV_Settings_Screen {
 		$settings->save();
 		wp_send_json_success();
 	}
-	
+
 	/**
 	* History management - settings and saving
 	*/
-	
+
 	function wpv_frontend_history_management_options( $sections ) {
 		$settings = WPV_Settings::get_instance();
 		ob_start();
@@ -482,7 +483,7 @@ class WPV_Settings_Screen {
 		</div>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['wpv-browser-history-settings'] = array(
 			'slug'		=> 'wpv-browser-history-settings',
 			'title'		=> __( 'Browser history management', 'wpv-views' ),
@@ -490,7 +491,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
 	}
-	
+
 	function wpv_update_pagination_options() {
 		$settings = WPV_Settings::get_instance();
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -500,9 +501,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_settings_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_settings_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -518,7 +519,7 @@ class WPV_Settings_Screen {
 		wp_send_json_success();
 	}
 
-	
+
 	/**
 	* Custom inner shortcodes - settings, saving and deleting
 	*/
@@ -558,7 +559,7 @@ class WPV_Settings_Screen {
 					?>
 				</ul>
 					<?php
-					} 
+					}
 				?>
 				<h3><?php _e('Shortcodes registered manually', 'wpv-views'); ?></h3>
 				<p>
@@ -591,7 +592,7 @@ class WPV_Settings_Screen {
 				<?php _e( 'For example, to support <code>[wpv-post-title id="[my-custom-shortcode]"]</code> add <strong>my-custom-shortcode</strong> as a third-party shortcode argument below.', 'wpv-views' ); ?>
 			</p>
 			<p>
-				<?php 
+				<?php
 				$documentation_link_args = array(
 					'query'		=> array(
 						'utm_source'	=> 'viewsplugin',
@@ -600,8 +601,8 @@ class WPV_Settings_Screen {
 						'utm_term'		=> 'documentation page'
 					)
 				);
-				echo sprintf( 
-					__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ), 
+				echo sprintf(
+					__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ),
 					WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/shortcodes-within-shortcodes/' ),
 					esc_attr( __( 'Documentation on the third-party shortcode arguments', 'wpv-views' ) )
 				);
@@ -611,7 +612,7 @@ class WPV_Settings_Screen {
 		</div>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['custom-inner-shortcodes-settings'] = array(
 			'slug'		=> 'custom-inner-shortcodes-settings',
 			'title'		=> __( 'Third-party shortcode arguments', 'wpv-views' ),
@@ -619,7 +620,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	function wpv_update_custom_inner_shortcodes() {
     	$settings = WPV_Settings::get_instance();
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -629,10 +630,10 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
 			|| ! (
-				wp_verify_nonce( $_POST["wpnonce"], 'wpv_custom_inner_shortcodes_nonce' ) 
+				wp_verify_nonce( $_POST["wpnonce"], 'wpv_custom_inner_shortcodes_nonce' )
 				|| wp_verify_nonce( $_POST['wpnonce'], 'wpv_custom_conditional_extra_settings' )
 			)
 		) {
@@ -642,7 +643,7 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			isset( $settings->wpv_custom_inner_shortcodes )
 			&& is_array( $settings->wpv_custom_inner_shortcodes )
 		) {
@@ -672,7 +673,7 @@ class WPV_Settings_Screen {
 			wp_send_json_error();
 		}
     }
-	
+
 	/**
 	* Custom conditional functions - settings, saving and deleting
 	*/
@@ -722,7 +723,7 @@ class WPV_Settings_Screen {
 				<?php _e( 'For example, to support <em>my-function()</em> add <strong>my-function</strong> as a function name below. For class methods, use the syntax <strong>Class::method</strong>.', 'wpv-views' ); ?>
 			</p>
 			<p>
-				<?php 
+				<?php
 				$documentation_link_args = array(
 					'query'		=> array(
 						'utm_source'	=> 'viewsplugin',
@@ -732,8 +733,8 @@ class WPV_Settings_Screen {
 					),
 					'anchor'	=> 'using-custom-functions'
 				);
-				echo sprintf( 
-					__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ), 
+				echo sprintf(
+					__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ),
 					WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/conditional-html-output-in-views/' ),
 					esc_attr( __( 'Documentation on functions inside conditional evaluations', 'wpv-views' ) )
 				);
@@ -743,7 +744,7 @@ class WPV_Settings_Screen {
 		</div>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['custom-conditional-functions-settings'] = array(
 			'slug'		=> 'custom-conditional-functions-settings',
 			'title'		=> __( 'Functions inside conditional evaluations', 'wpv-views' ),
@@ -751,7 +752,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	 function wpv_update_custom_conditional_functions() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
@@ -760,10 +761,10 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
 			|| ! (
-				wp_verify_nonce( $_POST["wpnonce"], 'wpv_custom_conditional_functions_nonce' ) 
+				wp_verify_nonce( $_POST["wpnonce"], 'wpv_custom_conditional_functions_nonce' )
 				|| wp_verify_nonce( $_POST['wpnonce'], 'wpv_custom_conditional_extra_settings' )
 			)
 		) {
@@ -794,7 +795,7 @@ class WPV_Settings_Screen {
 					}
 					break;
 			}
-			
+
 			$settings->wpv_custom_conditional_functions = $functions;
 			$settings->save();
 			wp_send_json_success();
@@ -802,69 +803,11 @@ class WPV_Settings_Screen {
 			wp_send_json_error();
 		}
     }
-	
-	/**
-	* Frontend edit links - settings and saving
-	*/
-	
-	function wpv_edit_view_frontend_links_options( $sections ) {
-    	$settings = WPV_Settings::get_instance();
-		ob_start();
-        ?>
-		<ul class="js-bootstrap-version-form">
-			<li>
-				<label>
-					<input type="checkbox" name="wpv-show-edit-view-link" class="js-wpv-show-edit-view-link" value="1" <?php checked( $settings->wpv_show_edit_view_link == 1 ); ?> autocomplete="off" />
-					<?php _e( "Enable edit links on the frontend", 'wpv-views' ); ?>
-				</label>
-			</li>
-		</ul>
-		<p>
-			<?php _e( "You can enable/disable the edit links on the frontend for Views, Content Templates and WordPress Archives. Remember that the frontend edit links are only visible to administrators.", 'wpv-views' ); ?>
-		</p>
-		<?php
-		wp_nonce_field( 'wpv_show_edit_view_link_nonce', 'wpv_show_edit_view_link_nonce' );
-		?>
-        <?php
-		$section_content = ob_get_clean();
-			
-		$sections['frontend-links-settings'] = array(
-			'slug'		=> 'frontend-links-settings',
-			'title'		=> __( 'Frontend Edit Links', 'wpv-views' ),
-			'content'	=> $section_content
-		);
-		return $sections;
-    }
 
-    function wpv_update_show_edit_view_link_status() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			$data = array(
-				'type' => 'capability',
-				'message' => __( 'You do not have permissions for that.', 'wpv-views' )
-			);
-			wp_send_json_error( $data );
-		}
-		if ( 
-			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_show_edit_view_link_nonce' ) 
-		) {
-			$data = array(
-				'type' => 'nonce',
-				'message' => __( 'Your security credentials have expired. Please reload the page to get new ones.', 'wpv-views' )
-			);
-			wp_send_json_error( $data );
-		}
-		$settings = WPV_Settings::get_instance();
-		$status = ( isset( $_POST['status'] ) ) ? sanitize_text_field( $_POST['status'] ) : 'true';
-		$settings->wpv_show_edit_view_link = ( $status == 'true' ) ? 1 : 0;
-		$settings->save();
-		wp_send_json_success();
-    }
-	
 	/**
 	* Content Templates theme support - settings and saving
 	*/
-	
+
 	function wpv_content_templates_theme_support_options( $sections ) {
         $settings = WPV_Settings::get_instance();
 		/*
@@ -896,7 +839,7 @@ class WPV_Settings_Screen {
 			<input type="text" id="wpv-content-templates-theme-support-function" class="js-wpv-content-templates-theme-support-function" name="wpv-content-templates-theme-support-function" value="<?php echo $settings->wpv_theme_function; ?>" autocomplete="off" />
 			<button class="button-secondary js-wpv-content-templates-theme-support-function-save" disabled="disabled"><?php echo esc_html( __( 'Apply', 'wpv-views' ) ); ?></button>
 			<p>
-				<?php 
+				<?php
 				echo __( "Don't know the name of your theme function?", 'wpv-views' )
 					. WPV_MESSAGE_SPACE_CHAR
 					. __( "Enable debugging and go to a page that should display a Content Template and Views will display the call function name.", 'wpv-views' );
@@ -919,7 +862,7 @@ class WPV_Settings_Screen {
 		?>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['content-templates-theme-support-settings'] = array(
 			'slug'		=> 'content-templates-theme-support-settings',
 			'title'		=> __( 'Theme support for Content Templates', 'wpv-views' ),
@@ -927,7 +870,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	function wpv_update_content_templates_theme_support_settings() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
@@ -936,9 +879,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_templates_theme_support' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_view_templates_theme_support' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -963,11 +906,11 @@ class WPV_Settings_Screen {
 		}
 		wp_send_json_success();
 	}
-	
+
 	/**
 	* Views debug - settings and saving
 	*/
-	
+
 	function wpv_views_debug_options( $sections ) {
     	$settings = WPV_Settings::get_instance();
 		ob_start();
@@ -983,7 +926,7 @@ class WPV_Settings_Screen {
 			<?php _e( 'There are two modes: compact and full. Compact mode will give you an overview of the elements rendered. The full mode will display a complete report with all the object involved on the page.', 'wpv-views' ); ?>
 		</p>
 		<p>
-			<?php 
+			<?php
 			$documentation_link_args = array(
 				'query'		=> array(
 					'utm_source'	=> 'viewsplugin',
@@ -992,8 +935,8 @@ class WPV_Settings_Screen {
 					'utm_term'		=> 'documentation page'
 				)
 			);
-			echo sprintf( 
-				__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ), 
+			echo sprintf(
+				__( 'Get more details in the <a href="%1$s" title="%2$s">documentation page</a>.', 'wpv-views' ),
 				WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/debugging-types-and-views/' ),
 				esc_attr( __( 'Documentation on the Views debug modes', 'wpv-views' ) )
 			);
@@ -1020,15 +963,15 @@ class WPV_Settings_Screen {
 					</li>
 				</ul>
 				<p>
-				<?php 
+				<?php
 				echo __( 'Views debugger will need to open a popup window, but your browser may block it.', 'wpv-views' )
 					. WPV_MESSAGE_SPACE_CHAR
 					. __( 'Please refer to the following links for documentation related to the most used browsers:' )
 					. WPV_MESSAGE_SPACE_CHAR
 				?>
-					<a href="http://mzl.la/MyNqBe" target="_blank">Mozilla Firefox</a> &bull; 
-					<a href="http://windows.microsoft.com/en-us/internet-explorer/ie-security-privacy-settings" target="_blank">Internet Explorer</a> &bull; 
-					<a href="https://support.google.com/chrome/answer/95472" target="_blank">Google Chrome</a> &bull; 
+					<a href="http://mzl.la/MyNqBe" target="_blank">Mozilla Firefox</a> &bull;
+					<a href="http://windows.microsoft.com/en-us/internet-explorer/ie-security-privacy-settings" target="_blank">Internet Explorer</a> &bull;
+					<a href="https://support.google.com/chrome/answer/95472" target="_blank">Google Chrome</a> &bull;
 					<a href="http://www.opera.com/help/tutorials/personalize/content/#siteprefs" target="_blank">Opera</a>
 				</p>
 			</div><!-- close .js-wpv-views-debug-additional-options -->
@@ -1038,7 +981,7 @@ class WPV_Settings_Screen {
 		?>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['views-debug-settings'] = array(
 			'slug'		=> 'views-debug-settings',
 			'title'		=> __( 'Debug mode', 'wpv-views' ),
@@ -1046,7 +989,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	function wpv_update_views_debug_status() {
 		$settings = WPV_Settings::get_instance();
 		$settings_defaults = $settings->get_defaults();
@@ -1057,9 +1000,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_views_debug_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_views_debug_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -1067,10 +1010,10 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		
+
         $status = ( isset( $_POST['debug_status'] ) && in_array( $_POST['debug_status'], array( '0', '1' ) ) ) ? (int) $_POST['debug_status'] : null;
 		$mode_type = ( isset( $_POST['debug_mode_type'] ) && in_array( $_POST['debug_mode_type'], array( 'compact', 'full' ) ) ) ? $_POST['debug_mode_type'] : $settings_defaults[ WPV_Settings::DEBUG_MODE_TYPE ];
-		
+
 		if ( ! is_null( $status ) ) {
 			$settings->wpv_debug_mode = $status;
 			if ( ! is_null ( $mode_type ) ) {
@@ -1260,7 +1203,7 @@ class WPV_Settings_Screen {
 	/**
 	* Maps (legacy) - settings and saving
 	*/
-	
+
 	function wpv_map_plugin_options( $sections ) {
     	$settings				= WPV_Settings::get_instance();
 		$toolset_maps_installed	= apply_filters( 'toolset_is_maps_available', false );
@@ -1268,7 +1211,7 @@ class WPV_Settings_Screen {
 		if ( $toolset_maps_installed ) {
 			?>
 		<p>
-			<?php 
+			<?php
 			echo __( "You can enable the legacy Views Maps plugin if you already use in your site.", 'wpv-views' );
 			?>
 		</p>
@@ -1276,22 +1219,22 @@ class WPV_Settings_Screen {
 		} else {
 			?>
 		<p>
-			<?php 
+			<?php
 			echo __( "Enabling the legacy Views Maps plugin will add the Google Maps API and the Views Maps plugin to your site.", 'wpv-views' )
-				. WPV_MESSAGE_SPACE_CHAR 
+				. WPV_MESSAGE_SPACE_CHAR
 				. __( 'This will let you create maps on your site and use Views to plot WordPress posts on a Google Map.', 'wpv-views' );
 			?>
 		</p>
 		<p>
 			<?php
-			echo __( 'Please consider updating to the new Toolset Maps plugin for extended fetures and better compatibility.', 'wpv-views' );
+			echo __( 'Please consider updating to the new Toolset Maps plugin for extended features and better compatibility.', 'wpv-views' );
 			?>
 		</p>
 			<?php
 		}
         ?>
 		<p>
-			<?php 
+			<?php
 			$documentation_link_args = array(
 				'query'		=> array(
 					'utm_source'	=> 'viewsplugin',
@@ -1300,7 +1243,7 @@ class WPV_Settings_Screen {
 					'utm_term'		=> 'documentation page'
 				)
 			);
-			echo sprintf( 
+			echo sprintf(
 				__( 'Get more details about the new Toolset Maps plugin in the <a href="%1$s" title="%2$s" target="_blank">documentation page</a>.', 'wpv-views' ),
 				WPV_Admin_Messages::get_documentation_promotional_link( $documentation_link_args, 'https://toolset.com/documentation/user-guides/map-wordpress-posts/' ),
 				esc_attr( __( 'Documentation on the Toolset Maps plugin', 'wpv-views' ) )
@@ -1314,14 +1257,14 @@ class WPV_Settings_Screen {
 					<?php echo __( "Enable the legacy Views Map plugin", 'wpv-views' ); ?>
 				</label>
 			</p>
-			
+
 		</div>
 		<?php
 		wp_nonce_field( 'wpv_map_plugin_nonce', 'wpv_map_plugin_nonce' );
 		?>
         <?php
 		$section_content = ob_get_clean();
-			
+
 		$sections['maps-legacy'] = array(
 			'slug'		=> 'maps-legacy',
 			'title'		=> __( 'Map plugin (legacy)', 'wpv-views' ),
@@ -1329,7 +1272,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	function wpv_update_map_plugin_status() {
     	$settings = WPV_Settings::get_instance();
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -1339,9 +1282,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_map_plugin_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_map_plugin_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -1359,7 +1302,7 @@ class WPV_Settings_Screen {
 	* WPML - settings and saving
 	* @todo WE might also want to check for WPML-TM existence since CT are now translated there
 	*/
-	
+
     function wpv_wpml_translation_options( $sections ) {
 		$wpml_installed = apply_filters( 'wpml_setting', false, 'setup_complete' );
 		ob_start();
@@ -1367,15 +1310,15 @@ class WPV_Settings_Screen {
 			?>
 			<?php
 			$translatable_docs_data = apply_filters( 'wpml_translatable_documents', array() );
-			$translatable_docs = array_keys( $translatable_docs_data ); 
+			$translatable_docs = array_keys( $translatable_docs_data );
 			?>
 			<ul class="js-wpv-wpml-settings-form">
 				<li>
-					<input type="radio" id="wpv-content-template-translation-off" class="js-wpv-content-template-translation" name="wpv-content-template-translation" value="0" autocomplete="off" <?php checked( ! in_array( 'view-template', $translatable_docs ) ); ?> /> 
+					<input type="radio" id="wpv-content-template-translation-off" class="js-wpv-content-template-translation" name="wpv-content-template-translation" value="0" autocomplete="off" <?php checked( ! in_array( 'view-template', $translatable_docs ) ); ?> />
 					<label for="wpv-content-template-translation-off"><?php _e( 'Use the same Content Templates for all languages', 'wpv-views' ); ?></label>
 				</li>
 				<li>
-					<input type="radio" id="wpv-content-template-translation-on" class="js-wpv-content-template-translation" name="wpv-content-template-translation" value="1" autocomplete="off" <?php checked( in_array( 'view-template', $translatable_docs ) ); ?> /> 
+					<input type="radio" id="wpv-content-template-translation-on" class="js-wpv-content-template-translation" name="wpv-content-template-translation" value="1" autocomplete="off" <?php checked( in_array( 'view-template', $translatable_docs ) ); ?> />
 					<label for="wpv-content-template-translation-on"><?php _e( 'Create different Content Templates for each language', 'wpv-views' ); ?></label>
 					<p class="description" style="margin-left:25px"><?php _e( 'Using this option for new designs is not recommended.', 'wpv-views' ); ?></p>
 				</li>
@@ -1385,7 +1328,7 @@ class WPV_Settings_Screen {
 				<p><?php _e( 'To translate static texts, wrap them in <code>[wpml-string][/wpml-string]</code> shortcodes.', 'wpv-views' ); ?></p>
 			<?php } else { ?>
 				<p>
-				<?php 
+				<?php
 				echo __( 'You are running Views and WPML, but missing the String Translation module.', 'wpv-views' )
 					. WPV_MESSAGE_SPACE_CHAR
 					. sprintf(
@@ -1403,7 +1346,7 @@ class WPV_Settings_Screen {
 			<?php
 		}
 		$section_content = ob_get_clean();
-			
+
 		$sections['wpml-views'] = array(
 			'slug'		=> 'wpml-views',
 			'title'		=> __( 'Views and WPML integration', 'wpv-views' ),
@@ -1411,7 +1354,7 @@ class WPV_Settings_Screen {
 		);
 		return $sections;
     }
-	
+
 	function wpv_update_wpml_settings() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			$data = array(
@@ -1420,9 +1363,9 @@ class WPV_Settings_Screen {
 			);
 			wp_send_json_error( $data );
 		}
-		if ( 
+		if (
 			! isset( $_POST["wpnonce"] )
-			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_wpml_settings_nonce' ) 
+			|| ! wp_verify_nonce( $_POST["wpnonce"], 'wpv_wpml_settings_nonce' )
 		) {
 			$data = array(
 				'type' => 'nonce',
@@ -1432,7 +1375,7 @@ class WPV_Settings_Screen {
 		}
 
 		$status = ( isset( $_POST['status'] ) && in_array( $_POST['status'], array( '0', '1' ) ) ) ? intval( $_POST['status'] ) : null;
-		
+
 		if ( ! is_null( $status ) ) {
 			global $sitepress;
 			$iclsettings['custom_posts_sync_option']['view-template'] = $status;
@@ -1451,7 +1394,7 @@ class WPV_Settings_Screen {
     /**
 	* API filters to get some Views settings data
 	*/
-	
+
 	function wpv_filter_wpv_codemirror_autoresize( $status ) {
 		$settings = WPV_Settings::get_instance();
 		if ( $settings->wpv_codemirror_autoresize ) {

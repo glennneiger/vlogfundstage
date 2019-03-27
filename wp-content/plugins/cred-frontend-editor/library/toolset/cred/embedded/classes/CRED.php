@@ -103,10 +103,6 @@ final class CRED_CRED {
                 'nopriv' => true,
                 'callback' => array(__CLASS__, 'cred_skype_ajax')
             ),
-            /* 'cred-ajax-tag-search' => array(
-              'nopriv' => true,
-              'callback' => array(__CLASS__, 'cred_ajax_tag_search')
-              ), */
             'cred-ajax-delete-post' => array(
                 'nopriv' => true,
                 'callback' => array(__CLASS__, 'cred_ajax_delete_post')
@@ -178,82 +174,6 @@ final class CRED_CRED {
             $url = str_replace( "http", "https", $url );
         }
         return $url;
-    }
-
-    /**
-     * @deprecated since version 1.3.4
-     * @global type $wpdb
-     * @global type $sitepress
-     * @global type $wp_version
-     */
-    // duplicated from wp ajax function
-    public static function cred_ajax_tag_search() {
-        global $wpdb;
-
-        if ( isset( $_GET['tax'] ) ) {
-            $taxonomy = sanitize_key( $_GET['tax'] );
-            $tax = get_taxonomy( $taxonomy );
-            if ( !$tax )
-                wp_die( 0 );
-            // possible issue here, anyway bypass for now
-            /* if ( ! current_user_can( $tax->cap->assign_terms ) )
-              wp_die( -1); */
-        } else {
-            wp_die( 0 );
-        }
-
-        $s = stripslashes( $_GET['q'] );
-
-        $comma = _x( ',', 'tag delimiter', 'wp-cred' );
-        if ( ',' !== $comma )
-            $s = str_replace( $comma, ',', $s );
-        if ( false !== strpos( $s, ',' ) ) {
-            $s = explode( ',', $s );
-            $s = $s[count( $s ) - 1];
-        }
-        $s = trim( $s );
-        if ( strlen( $s ) < 2 )
-            wp_die(); // require 2 chars for matching
-
-        global $sitepress, $wp_version;
-        $post_id = intval( $_GET['post_id'] );
-        if ( isset( $sitepress ) && isset( $post_id ) ) {
-            $post_type = get_post_type( $post_id );
-            $post_language = $sitepress->get_element_language_details( $post_id, 'post_' . $post_type );
-            $lang = $post_language->language_code;
-            $current_language = $sitepress->get_current_language();
-            //$sitepress->switch_lang($post_language->language_code, false);            
-            //https://icanlocalize.basecamphq.com/projects/7393061-toolset/todo_items/187413931/comments
-            $results = $wpdb->get_col( 
-				$wpdb->prepare( 
-					"SELECT t.name 
-					FROM $wpdb->term_taxonomy AS tt 
-					INNER JOIN $wpdb->terms AS t ON tt.term_id = t.term_id 
-					JOIN {$wpdb->prefix}icl_translations tr ON tt.term_taxonomy_id = tr.element_id 
-					WHERE tt.taxonomy = %s 
-					AND tr.language_code = %s 
-					AND tr.element_type = %s 
-					AND t.name LIKE %s", 
-					array( $taxonomy, $lang, 'tax_' . $taxonomy, '%' . cred_wrap_esc_like( $s ) . '%' )
-				) 
-			);
-            //$sitepress->switch_lang($current_language);
-        } else {
-            //https://icanlocalize.basecamphq.com/projects/7393061-toolset/todo_items/187413931/comments
-            $results = $wpdb->get_col( 
-				$wpdb->prepare( 
-					"SELECT t.name 
-					FROM $wpdb->term_taxonomy AS tt 
-					INNER JOIN $wpdb->terms AS t ON tt.term_id = t.term_id 
-					WHERE tt.taxonomy = %s 
-					AND t.name LIKE %s", 
-					array( $taxonomy, '%' . cred_wrap_esc_like( $s ) . '%' )
-				) 
-			);
-        }
-
-        echo join( $results, "\n" );
-        wp_die();
     }
 
     public static function cred_ajax_delete_post() {

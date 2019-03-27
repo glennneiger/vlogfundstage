@@ -27,7 +27,7 @@ Types.page.customFields.viewmodels.CustomFieldViewModel = function(model, fieldA
 	self.display = {
 		// Returns the text for the Activate/Deactivate single action
 		isActiveGroup: ko.pureComputed(function() {
-			return self.isActive() === 'Yes' ?
+			return self.isActive() ?
 				Types.page.customFields.strings.rowAction.deactivate :
 				Types.page.customFields.strings.rowAction.activate;
 		}),
@@ -63,7 +63,7 @@ Types.page.customFields.viewmodels.CustomFieldViewModel = function(model, fieldA
 	 * @since 2.3
 	 */
 	self.trClass = ko.computed(function() {
-		return self.isActive() === 'Yes' ? '' : 'status-inactive';
+		return self.isActive() ? '' : 'status-inactive';
 	});
 
 

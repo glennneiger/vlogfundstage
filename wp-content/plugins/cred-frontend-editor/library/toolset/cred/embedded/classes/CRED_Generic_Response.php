@@ -128,7 +128,6 @@ class CRED_Generic_Response {
 						'result' => $this->result,
 						'is_ajax' => $this->is_ajax,
 						'output' => "<p>" . __( 'Please Wait. You are being redirected...', 'wp-cred' ) . "</p>" . $this->do_redirect( $this->output, $this->delay, true ),
-						//($this->delay > 0) ? $this->form_helper->redirectDelayedFromAjax($this->output, $this->delay) : $this->form_helper->redirectFromAjax($this->output),
 						'formtype' => $this->form_type,
 					);
 					if ( defined( 'CRED_DEBUG' ) && CRED_DEBUG ) {
@@ -139,21 +138,8 @@ class CRED_Generic_Response {
 					echo wp_json_encode( $data );
 					die;
 				} else {
-					if ( $this->delay > 0 ) {
-						remove_shortcode( 'cred-form' );
-						remove_shortcode( 'cred_form' );
-						remove_shortcode( 'cred-user-form' );
-						remove_shortcode( 'cred_user_form' );
-
-						add_shortcode( 'cred-form', array( $this, 'print_delayed_message' ) );
-						add_shortcode( 'cred_form', array( $this, 'print_delayed_message' ) );
-						add_shortcode( 'cred-user-form', array( $this, 'print_delayed_message' ) );
-						add_shortcode( 'cred_user_form', array( $this, 'print_delayed_message' ) );
-					} else {
-						$this->print_delayed_message();
-					}
-
-					return true;
+					// Replace the form content with a message and execute the redirection
+					return $this->print_delayed_message();
 				}
 				break;
 		}

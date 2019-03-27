@@ -37,6 +37,8 @@ class Toolset_Field_Group_Term_Factory extends Toolset_Field_Group_Factory {
 		//   instead of Toolset_Field_Group_Term_Factory like the original get_called_class() function does
 		// ends in an error because of parents (abstract) $var = new self();
 		$factory = Toolset_Field_Group_Term_Factory::get_instance();
+
+		/** @noinspection PhpIncompatibleReturnTypeInspection */
 		return $factory->load_field_group( $field_group );
 	}
 
@@ -148,5 +150,25 @@ class Toolset_Field_Group_Term_Factory extends Toolset_Field_Group_Factory {
 	}
 
 
+	/**
+	 * Retrieve groups that should be displayed with a certain element, taking all possible conditions into account.
+	 *
+	 * @param IToolset_Element $element Element of the domain matching the field group.
+	 *
+	 * @throws RuntimeException Until the method is implemented for this domain.
+	 */
+	public function get_groups_for_element( IToolset_Element $element ) {
+		throw new RuntimeException( 'Not implemented.' );
+	}
+
+
+	/**
+	 * @inheritdoc
+	 * @return string
+	 * @since 3.4
+	 */
+	public function get_domain() {
+		return Toolset_Element_Domain::TERMS;
+	}
 
 }

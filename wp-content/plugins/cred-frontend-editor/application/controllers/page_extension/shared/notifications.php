@@ -2,31 +2,44 @@
 
 namespace OTGS\Toolset\CRED\Controller\Forms\Shared\PageExtension;
 
+use OTGS\Toolset\CRED\Controller\Forms\Post\Main as PostMain;
 use OTGS\Toolset\CRED\Controller\LinksManager;
+use OTGS\Toolset\CRED\Model\Wordpress\Status;
 
 /**
  * Form Notifications metabox extension.
- * 
+ *
  * @since 2.1
- * 
+ *
  * @todo Evaluate the tip texts, they do not belong here.
  */
 class Notifications {
+
+	/**
+	 * @var Status
+	 */
+	private $status_model = null;
+
+	public function __construct( Status $status_model_di = null ) {
+		$this->status_model = ( null === $status_model_di )
+			? Status::get_instance()
+			: $status_model_di;
+	}
 
     /**
      * Generate the section for the Access integration information.
      *
      * @param object $form
      * @param array $callback_args
-     * 
+     *
      * @since 2.1
      */
     public function print_metabox_content( $form, $callback_args = array() ) {
         $form = $form->filter( 'raw' );
         $form_type = $form->post_type;
         $notifications_object = toolset_getnest( $callback_args, array( 'args', 'notification' ), array() );
-        $notifications = isset( $notifications_object->notifications ) 
-            ? (array) $notifications_object->notifications 
+        $notifications = isset( $notifications_object->notifications )
+            ? (array) $notifications_object->notifications
             : array();
         $enableTestMail = ! \CRED_Helper::$currentPage->isCustomPostNew;
 
@@ -35,8 +48,20 @@ class Notifications {
         $templates_data = array(
             'enableTestMail' => $enableTestMail,
             'form_type' => $form_type,
-            'form' => $form
-        );
+			'form' => $form,
+		);
+
+		if ( PostMain::POST_TYPE === $form_type ) {
+			$templates_data['stati'] = array(
+				'basic' => $this->status_model->get_basic_stati(),
+				'native' => $this->status_model->get_native_stati(),
+				'custom' => $this->status_model->get_custom_stati(),
+			);
+			$templates_data['stati_label'] = array(
+				'native' => $this->status_model->get_native_stati_group_label(),
+				'custom' => $this->status_model->get_custom_stati_group_label(),
+			);
+		}
 
         $links_manager = new LinksManager();
 
@@ -107,8 +132,8 @@ class Notifications {
                     ?>
                 </p>
 
-                <a id='cred-notification-add-button' 
-                    class='button button-secondary alignright cred-notification-add-button' 
+                <a id='cred-notification-add-button'
+                    class='button button-secondary alignright cred-notification-add-button'
                     data-cred-bind="{
                         event: 'click',
                         action: 'addItem',

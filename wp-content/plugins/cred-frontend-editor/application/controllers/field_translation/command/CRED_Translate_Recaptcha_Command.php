@@ -15,9 +15,6 @@ class CRED_Translate_Recaptcha_Command extends CRED_Translate_Field_Command_Base
 			$this->field_attributes['public_key'] = $globals['RECAPTCHA']['public_key'];
 			$this->field_attributes['private_key'] = $globals['RECAPTCHA']['private_key'];
 		}
-		if ( 1 === CRED_Form_Count_Handler::get_instance()->get_main_count() ) {
-			$this->field_attributes['open'] = true;
-		}
 
 		// used to load additional js script
 		CRED_StaticClass::$out['has_recaptcha'] = true;

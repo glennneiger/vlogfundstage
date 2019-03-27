@@ -173,11 +173,15 @@ class Toolset_Wp_Query_Adjustments_Table_Join_Manager extends Toolset_Wpdb_User 
 				true
 			);
 
+		// join the icl_translations table independently from WPML's 't'
+		// because that one may not be joined at all time, but we
+		// need it always - this is safer than trying to reuse the 't' one
+		// AND
+		// join the association row if either the post ID matches the
+		// proper column in the associations table or if the ID of the default
+		// language version of the post matches it
 		$clause = $this->wpdb->prepare(
 			"
-			# join the icl_translations table independently from WPML's 't'
-			# because that one may not be joined at all time, but we 
-			# need it always - this is safer than trying to reuse the 't' one
 			LEFT JOIN {$this->wpml_service->icl_translations_table_name()} AS {$alias_translation} ON (
 				{$this->wpdb->posts}.ID = {$alias_translation}.element_id
 				AND {$alias_translation}.element_type = CONCAT('post_', {$this->wpdb->posts}.post_type)
@@ -186,9 +190,6 @@ class Toolset_Wp_Query_Adjustments_Table_Join_Manager extends Toolset_Wpdb_User 
 			    AND {$alias_default_lang}.language_code = %s
 			) JOIN {$this->table_name->association_table()} AS {$associations_table_alias} ON (
 				(
-					# join the association row if either the post ID matches the
-					# proper column in the associations table or if the ID of the default
-					# language version of the post matches it
 					{$this->wpdb->posts}.ID = {$associations_table_alias}.{$role_to_return_column}
 					OR {$alias_default_lang}.element_id = {$associations_table_alias}.{$role_to_return_column}
 				)

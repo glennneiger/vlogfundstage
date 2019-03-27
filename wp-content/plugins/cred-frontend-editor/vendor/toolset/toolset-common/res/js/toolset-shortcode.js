@@ -14,22 +14,22 @@ var Toolset = Toolset || {};
  */
 
 Toolset.shortcodeManager = function( $ ) {
-	
+
 	var self = this;
-	
+
 	/**
 	 * Shortcodes GUI API version.
 	 *
 	 * Access to it using the API methods, from inside this object:
 	 * - self.getShortcodeGuiApiVersion
-	 * 
+	 *
 	 * Access to it using the API hooks, from the outside world:
 	 * - toolset-filter-get-shortcode-gui-api-version
 	 *
 	 * @since 2.5.4
 	 */
 	self.apiVersion = 254000;
-	
+
 	/**
 	 * Get the current shortcodes GUI API version.
 	 *
@@ -73,7 +73,39 @@ Toolset.shortcodeManager = function( $ ) {
 	self.setShortcodeGuiSelectorToAppendShortcode = function( selector ) {
 		self.selectorToAppendShortcode = selector;
 	};
-	
+
+	/**
+	 * The character to use to wrap shortcode attributes.
+	 *
+	 * @since Views 2.7.3
+	 */
+	self.attributesQuoteCharacter = '\'';
+
+	/**
+	 * Set the character to use to wrap shortcode attributes.
+	 *
+	 * @param string quote
+	 * @since Views 2.7.3
+	 */
+	self.setAttributesQuoteCharacter = function( quote ) {
+		if (
+			'"' == quote
+			|| "'" == quote
+		) {
+			self.attributesQuoteCharacter = quote;
+		}
+	};
+
+	/**
+	 * Get the character to use to wrap shortcode attributes.
+	 *
+	 * @return string
+	 * @since Views 2.7.3
+	 */
+	self.getAttributesQuoteCharacter = function() {
+		return self.attributesQuoteCharacter;
+	}
+
 	/**
 	 * Dialog rendering helpers, mainly size calculators.
 	 *
@@ -81,19 +113,19 @@ Toolset.shortcodeManager = function( $ ) {
 	 */
 	self.dialogMinWidth = 870;
 	self.calculateDialogMaxWidth = function() {
-		return ( $( window ).width() - 200 );
+		return ( $( window ).width() - 60 );
 	};
 	self.calculateDialogMaxHeight = function() {
-		return ( $( window ).height() - 100 );
+		return ( $( window ).height() - 60 );
 	};
-	
+
 	/**
 	 * The current GUI API action to be performed. Can be 'insert', 'create', 'save', 'append', 'edit', 'skip'.
 	 *
 	 * Access to it using the API methods, from inside this object:
 	 * - self.getShortcodeGuiAction
 	 * - self.setShortcodeGuiAction
-	 * 
+	 *
 	 * Access to it using the API hooks, from the outside world:
 	 * - toolset-filter-get-shortcode-gui-action
 	 * - toolset-action-set-shortcode-gui-action
@@ -102,7 +134,22 @@ Toolset.shortcodeManager = function( $ ) {
 	 */
 	self.action			= 'insert';
 	self.validActions	= [ 'insert', 'create', 'save', 'append', 'edit', 'skip' ];
-	
+
+	/**
+	 * Repository collect callbacks for shortcode attributes with non-standard needs.
+	 * Each shortcode attribute should include two callbacks, which will be defaulted to null if missing:
+	 * - a callback to render the attribute GUI
+	 * - a callback to collect the attribute value JIT
+	 *
+	 * @since 3.3.5
+	 * @since Views 2.7.2
+	 */
+	self.shortcodeAttributeCallbacks = {};
+
+	self.justReturn = function() {
+		return;
+	};
+
 	/**
 	 * Get the current shortcodes GUI action.
 	 *
@@ -113,7 +160,7 @@ Toolset.shortcodeManager = function( $ ) {
 	self.getShortcodeGuiAction = function( action ) {
 		return self.action;
 	};
-	
+
 	/**
 	 * Set the current shortcodes GUI action.
 	 *
@@ -126,7 +173,7 @@ Toolset.shortcodeManager = function( $ ) {
 			self.action = action;
 		}
 	};
-	
+
 	/**
 	 * Register the canonical Toolset hooks, both API filters and actions.
 	 *
@@ -135,41 +182,41 @@ Toolset.shortcodeManager = function( $ ) {
 	 * @since 2.5.4
 	 */
 	self.initHooks = function() {
-		
+
 		/*
 		 * ###############################
 		 * API filters
 		 * ###############################
 		 */
-		
+
 		/**
 		 * Return the current shortcodes GUI API version.
 		 *
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-gui-api-version', self.getShortcodeGuiApiVersion );
-		
+
 		/**
 		 * Return the current shortcode GUI action: 'insert', 'create', 'save', 'append', 'edit', 'skip'.
 		 *
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-gui-action', self.getShortcodeGuiAction );
-		
+
 		/**
 		 * Validate a shortcode attributes container.
 		 *
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addFilter( 'toolset-filter-is-shortcode-attributes-container-valid', self.isShortcodeAttributesContainerValid, 10 );
-		
+
 		/**
 		 * Return the shortcode GUI templates.
 		 *
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-gui-templates', self.getShortcodeTemplates );
-		
+
 		/**
 		 * Return the postSelector/termSeletor/userSelector attributes data.
 		 *
@@ -178,7 +225,7 @@ Toolset.shortcodeManager = function( $ ) {
 		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-gui-postSelector-attributes', self.getPostSelectorAttributes );
 		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-gui-termSelector-attributes', self.getTermSelectorAttributes );
 		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-gui-userSelector-attributes', self.getUserSelectorAttributes );
-		
+
 		/**
 		 * Return the current crafted shortcode with the current dialog GUI attrbutes.
 		 *
@@ -192,7 +239,7 @@ Toolset.shortcodeManager = function( $ ) {
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addFilter( 'toolset-filter-get-crafted-shortcode', self.secureShortcodeFromSanitizationIfNeeded, 11 );
-		
+
 		/**
 		 * Return the current crafted shortcode with the current dialog GUI attrbutes.
 		 *
@@ -213,27 +260,59 @@ Toolset.shortcodeManager = function( $ ) {
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addFilter( 'wpv-filter-wpv-shortcodes-transform-format', self.secureShortcodeFromSanitizationIfNeeded );
-		
+
+		/**
+		 * Get the selector after which to append the created shortcode.
+		 *
+		 * @since unknown
+		 * @since Types 3.0.8
+		 */
+		Toolset.hooks.addFilter( 'toolset-action-get-selector-to-append-shortcode', self.getShortcodeGuiSelectorToAppendShortcode, 10, 0 );
+
+		/**
+		 * Register callbacks to render and collect values from shortcode attributes with non-standard needs.
+		 *
+		 * @since 3.3.5
+		 * @since Views 2.7.2
+		 */
+		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-gui-attribute-callback-gui', self.getGuiForShortcodeAttributeCallback, 1 );
+
+		/**
+		 * Get the shortcodes attributes quote character.
+		 *
+		 * @since unknown
+		 * @since Views 2.7.3
+		 */
+		Toolset.hooks.addFilter( 'toolset-filter-get-shortcode-attributes-quote-character', self.getAttributesQuoteCharacter );
+
 		/*
 		 * ###############################
 		 * API actions
 		 * ###############################
 		 */
-		
+
 		/**
 		 * Register a new template.
 		 *
 		 * @since m2m
 		 */
 		Toolset.hooks.addAction( 'toolset-filter-register-shortcode-gui-attribute-template', self.registerShortcodeAttributeTemplate, 1 );
-		
+
+		/**
+		 * Register callbacks to render and collect values from shortcode attributes with non-standard needs.
+		 *
+		 * @since 3.3.5
+		 * @since Views 2.7.2
+		 */
+		Toolset.hooks.addAction( 'toolset-register-shortcode-gui-attribute-callbacks', self.registerShortcodeAttributeCallbacks, 1 );
+
 		/**
 		 * Set the current shortcodes GUI action: 'insert', 'create', 'save', 'append', 'edit', 'skip'.
 		 *
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addAction( 'toolset-action-set-shortcode-gui-action', self.setShortcodeGuiAction );
-		
+
 		/**
 		 * Act upon the generated shortcode according to the current shortcodes GUI action: 'insert', 'create', 'save', 'append', 'edit', 'skip'.
 		 *
@@ -246,21 +325,21 @@ Toolset.shortcodeManager = function( $ ) {
 		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-insert', self.doActionInsert, 1 );
 		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-save', self.doActionSave, 1 );
 		Toolset.hooks.addAction( 'toolset-action-do-shortcode-gui-action-append', self.doActionAppend, 1 );
-		
+
 		/**
 		 * Init select2 instances on shortcode dialogs once they are completely opened.
 		 *
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addAction( 'toolset-action-shortcode-dialog-loaded', self.initSelect2 );
-		
+
 		/**
 		 * Init the post selectors and reference field selectors once the shortcode dialog is completely opened.
 		 *
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.addAction( 'toolset-action-shortcode-dialog-loaded', self.initPostSelector );
-		
+
 		/**
 		 * Init a wizard dialog, set the options width, and set the right value as selected.
 		 *
@@ -271,21 +350,23 @@ Toolset.shortcodeManager = function( $ ) {
 		/**
 		 * Set the selector after which to append the created shortcode.
 		 *
-		 * @since 3.0.8
+		 * @since unknown
+		 * @since Types 3.0.8
 		 */
 		Toolset.hooks.addAction( 'toolset-action-set-selector-to-append-shortcode', self.setShortcodeGuiSelectorToAppendShortcode, 10, 1 );
 
 		/**
-		 * Get the selector after which to append the created shortcode.
-		 
-		 * @since 3.0.8
+		 * Set the shortcodes attributes quote character.
+		 *
+		 * @since unknown
+		 * @since Views 2.7.3
 		 */
-		Toolset.hooks.addFilter( 'toolset-action-get-selector-to-append-shortcode', self.getShortcodeGuiSelectorToAppendShortcode, 10, 0 );
-		
+		Toolset.hooks.addAction( 'toolset-action-set-shortcode-attributes-quote-character', self.setAttributesQuoteCharacter );
+
 		return self;
-		
+
 	};
-	
+
 	/**
 	 * Init GUI templates.
 	 *
@@ -302,11 +383,13 @@ Toolset.shortcodeManager = function( $ ) {
 			content: wp.template( 'toolset-shortcode-content' ),
 			information: wp.template( 'toolset-shortcode-attribute-information' ),
 			text: wp.template( 'toolset-shortcode-attribute-text' ),
+			number: wp.template( 'toolset-shortcode-attribute-number' ),
 			textarea: wp.template( 'toolset-shortcode-attribute-textarea' ),
 			radio: wp.template( 'toolset-shortcode-attribute-radio' ),
 			select: wp.template( 'toolset-shortcode-attribute-select' ),
 			select2: wp.template( 'toolset-shortcode-attribute-select2' ),
 			ajaxSelect2: wp.template( 'toolset-shortcode-attribute-ajaxSelect2' ),
+			callback: wp.template( 'toolset-shortcode-attribute-callback' ),
 			postSelector: wp.template( 'toolset-shortcode-attribute-postSelector' ),
 			userSelector: wp.template( 'toolset-shortcode-attribute-userSelector' ),
 			// CRED selectors templates
@@ -315,7 +398,7 @@ Toolset.shortcodeManager = function( $ ) {
 		};
 		return self;
 	}
-	
+
 	/**
 	 * Get all registered templates.
 	 *
@@ -328,7 +411,7 @@ Toolset.shortcodeManager = function( $ ) {
 	self.getShortcodeTemplates = function( templates ) {
 		return self.templates;
 	};
-	
+
 	/**
 	 * Register a wp.template for an attribute type and make it available globally.
 	 *
@@ -342,7 +425,60 @@ Toolset.shortcodeManager = function( $ ) {
 			self.templates.attributes[ templateName ] = template;
 		}
 	}
-	
+
+	/**
+	 * Register callbacks for shortcode attributes with non-standard needs.
+	 *
+	 * @param object shortcodeData
+	 *     @type string $shortcode
+	 *     @type string $attribute
+	 *     @type object $callbacks {
+	 *         @type callable $render The callback to render the attribute
+	 *         @type callable $collect The callback to collect the attribute value
+	 *     }
+	 * }
+	 * @since 3.3.5
+	 * @since Views 2.7.2
+	 */
+	self.registerShortcodeAttributeCallbacks = function( shortcodeData ) {
+		var shortcode = _.has( shortcodeData, 'shortcode' ) ? shortcodeData['shortcode'] : '';
+		var attribute = _.has( shortcodeData, 'attribute' ) ? shortcodeData['attribute'] : '';
+		var callbacks = _.has( shortcodeData, 'callbacks' ) ? shortcodeData['callbacks'] : '';
+
+		if ( '' === shortcode || '' === attribute ) {
+			return;
+		}
+
+		if ( ! _.has( self.shortcodeAttributeCallbacks, shortcode ) ) {
+			self.shortcodeAttributeCallbacks[ shortcode ] = {};
+		}
+		if ( ! _.has( self.shortcodeAttributeCallbacks[ shortcode ], attribute ) ) {
+			var callbacksSafe = _.defaults( callbacks, { getGui: self.justReturn, getValue: self.justReturn } );
+			self.shortcodeAttributeCallbacks[ shortcode ][ attribute ] = callbacksSafe;
+		}
+	}
+
+	/**
+	 * Get the GUUI section for attributes that registerd a callback.
+	 * The callback gets executed and should return a string that the template will print.
+	 *
+	 * @param string gui
+	 * @param string shortcode
+	 * @param string attribute
+	 * @since 3.3.5
+	 * @since Views 2.7.2
+	 */
+	self.getGuiForShortcodeAttributeCallback = function( gui, shortcode, attribute ) {
+		if ( ! _.has( self.shortcodeAttributeCallbacks, shortcode ) ) {
+			return;
+		}
+		if ( ! _.has( self.shortcodeAttributeCallbacks[ shortcode ], attribute ) ) {
+			return;
+		}
+		gui = self.shortcodeAttributeCallbacks[ shortcode ][ attribute ]['getGui']();
+		return gui;
+	};
+
 	/**
 	 * Get the canonical post|term|user selectors attributes to append them before generating the shortcode dialog.
 	 *
@@ -362,7 +498,7 @@ Toolset.shortcodeManager = function( $ ) {
 	self.getUserSelectorAttributes = function( $attributes ) {
 		return { userSelector: toolset_shortcode_i18n.selectorGroups.userSelector };
 	};
-	
+
 	/**
 	 * Init GUI dialogs.
 	 *
@@ -371,7 +507,7 @@ Toolset.shortcodeManager = function( $ ) {
 	 */
 	self.dialogs = {};
 	self.dialogs.target = null;
-	
+
 	self.shortcodeDialogSpinnerContent = $(
 		'<div style="min-height: 150px;">' +
 		'<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; ">' +
@@ -380,9 +516,9 @@ Toolset.shortcodeManager = function( $ ) {
 		'</div>' +
 		'</div>'
 	);
-	
+
 	self.initDialogs = function() {
-		
+
 		/**
 		 * Canonical dialog to generate Toolset shortcodes.
 		 *
@@ -418,10 +554,10 @@ Toolset.shortcodeManager = function( $ ) {
 				$( this ).dialog( 'close' );
 			}
 		});
-		
+
 		return self;
 	};
-	
+
 	/**
 	 * Control the item selector behavior for options that have further settings.
 	 *
@@ -438,7 +574,7 @@ Toolset.shortcodeManager = function( $ ) {
 			}
 		});
 	});
-	
+
 	/**
 	 * Init select2 attributes controls.
 	 *
@@ -448,14 +584,14 @@ Toolset.shortcodeManager = function( $ ) {
 		$( '.js-toolset-shortcode-gui-dialog-container .js-toolset-shortcode-gui-field-select2:not(.js-toolset-shortcode-gui-field-select2-inited)' ).each( function() {
 			var selector = $( this ),
 				selectorParent = selector.closest( '.js-toolset-shortcode-gui-dialog-container' );
-			
+
 			selector
 				.addClass( 'js-toolset-shortcode-gui-field-select2-inited' )
 				.css( { width: '100%' } )
 				.toolset_select2(
-					{ 
+					{
 						width:				'resolve',
-						dropdownAutoWidth:	true, 
+						dropdownAutoWidth:	true,
 						dropdownParent:		selectorParent,
 						placeholder:		selector.data( 'placeholder' )
 					}
@@ -465,7 +601,7 @@ Toolset.shortcodeManager = function( $ ) {
 						.addClass( 'toolset_select2-dropdown-in-dialog' );
 		});
 	};
-	
+
 	/**
 	 * Init the ajaxSelect2 attributes action.
 	 *
@@ -477,9 +613,9 @@ Toolset.shortcodeManager = function( $ ) {
 				.addClass( 'js-toolset-shortcode-gui-field-select2-inited' )
 				.css( { width: '100%' } )
 				.toolset_select2(
-					{ 
+					{
 						width:				'resolve',
-						dropdownAutoWidth:	true, 
+						dropdownAutoWidth:	true,
 						dropdownParent:		selectorParent,
 						placeholder:		selector.data( 'placeholder' ),
 						minimumInputLength:	2,
@@ -516,7 +652,7 @@ Toolset.shortcodeManager = function( $ ) {
 					.$dropdown
 						.addClass( 'toolset_select2-dropdown-in-dialog' );
 	};
-	
+
 	/**
 	 * Init ajaxSelect2 attributes controls.
 	 * Get the prefill label for any existing value.
@@ -526,9 +662,9 @@ Toolset.shortcodeManager = function( $ ) {
 	self.initSelect2AjaxAttributes = function() {
 		$( '.js-toolset-shortcode-gui-dialog-container .js-toolset-shortcode-gui-field-ajax-select2:not(.js-toolset-shortcode-gui-field-select2-inited)' ).each( function() {
 			var selector = $( this );
-			
-			if ( 
-				selector.val() 
+
+			if (
+				selector.val()
 				&& selector.data( 'prefill' )
 			) {
 				var prefillData = {
@@ -563,10 +699,10 @@ Toolset.shortcodeManager = function( $ ) {
 			} else {
 				self.initSelect2AjaxAction( selector );
 			}
-			
+
 		});
 	};
-	
+
 	/**
 	 * Init select2 and ajaxSelect2 attributes controls.
 	 *
@@ -576,7 +712,7 @@ Toolset.shortcodeManager = function( $ ) {
 		self.initSelect2Attributes();
 		self.initSelect2AjaxAttributes();
 	};
-	
+
 	/**
 	 * Set the first post selector and post reference selector as checked, if any.
 	 *
@@ -586,12 +722,12 @@ Toolset.shortcodeManager = function( $ ) {
 		$( 'input[name="related_object"]:not(:disabled)', '.js-toolset-shortcode-gui-dialog-container' )
 			.first()
 				.prop( 'checked', true );
-		
+
 		$( 'input[name="referenced_object"]:not(:disabled)', '.js-toolset-shortcode-gui-dialog-container' )
 			.first()
 				.prop( 'checked', true );
 	};
-	
+
 	/**
 	 * Initialize the wizard GUI for a shortcode.
 	 *
@@ -603,7 +739,7 @@ Toolset.shortcodeManager = function( $ ) {
 		var $optionsContainer = $( '.js-toolset-shortcode-gui-wizard-options-container', '.js-toolset-shortcode-gui-wizard-container' ),
 			$options = $( '.js-toolset-shortcode-gui-wizard-option', $optionsContainer ),
 			optionsLength = $options.length;
-		
+
 		$( '.toolset-shortcode-gui-wizard-option-selected', $optionsContainer ).removeClass( 'toolset-shortcode-gui-wizard-option-selected' );
 		$optionsContainer.find( 'input[value=' + value + ']' )
 			.prop( 'checked', true )
@@ -611,17 +747,17 @@ Toolset.shortcodeManager = function( $ ) {
 				.closest( '.js-toolset-shortcode-gui-wizard-option' )
 					.addClass( 'toolset-shortcode-gui-wizard-option-selected' );
 	};
-	
+
 	$( document ).on( 'change', '.js-toolset-shortcode-gui-wizard-option input[type=radio]', function() {
 		var $optionsContainer = $( '.js-toolset-shortcode-gui-wizard-options-container', '.js-toolset-shortcode-gui-wizard-container' );
-		
+
 		$( '.toolset-shortcode-gui-wizard-option-selected', $optionsContainer ).removeClass( 'toolset-shortcode-gui-wizard-option-selected' );
-		
+
 		$( 'input[type=radio].toolset-shortcode-gui-wizard-option-hidden:checked', $optionsContainer )
 			.closest( '.js-toolset-shortcode-gui-wizard-option' )
 				.addClass( 'toolset-shortcode-gui-wizard-option-selected' );
 	});
-	
+
 	/**
 	 * Clean validation errors on input change.
 	 *
@@ -637,7 +773,7 @@ Toolset.shortcodeManager = function( $ ) {
 							.removeClass( 'toolset-shortcode-gui-invalid-attr js-toolset-shortcode-gui-invalid-attr' );
 		}
 	});
-	
+
 	/**
 	 * Control the toolsetCombo attribute value behavior for options that combine a set of valus plus free input.
 	 *
@@ -647,18 +783,18 @@ Toolset.shortcodeManager = function( $ ) {
 		var checkedValue = $( this ).val(),
 			attribute = $( this ).closest( '.js-toolset-shortcode-gui-attribute-wrapper' ).data( 'attribute' ),
 			comboAttributeWrapper = $( '.js-toolset-shortcode-gui-attribute-wrapper-for-toolsetCombo\\:' + attribute );
-		
+
 		if ( comboAttributeWrapper.length == 0 ) {
 			return;
 		}
-		
+
 		if ( 'toolsetCombo' == checkedValue ) {
 			comboAttributeWrapper.slideDown( 'fast' );
 		} else {
 			comboAttributeWrapper.slideUp( 'fast' );
 		}
 	});
-	
+
 	/**
 	 * Validation patterns.
 	 *
@@ -669,9 +805,9 @@ Toolset.shortcodeManager = function( $ ) {
 		numberList: /^\d+(?:,\d+)*$/,
 		numberExtended: /^(-1|[0-9]+)$/,
 		url: /^(https?):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i,
-		
+
 	};
-	
+
 	/**
 	 * Check whether a container for attributes is valid, including required and validation tests.
 	 *
@@ -685,7 +821,7 @@ Toolset.shortcodeManager = function( $ ) {
 	self.isShortcodeAttributesContainerValid = function( status, container ) {
 		return self.validateShortcodeAttributes( container );
 	}
-	
+
 	/**
 	 * Check required shortcode attributes while crafting the shortcode.
 	 *
@@ -697,19 +833,19 @@ Toolset.shortcodeManager = function( $ ) {
 	 */
 	self.requireShortcodeAttributes = function( evaluatedContainer ) {
 		var valid = true;
-		
+
 		evaluatedContainer.find( '.js-shortcode-gui-field.js-toolset-shortcode-gui-required' ).each( function() {
 			var requiredAttribute = $( this ),
 				requiredAttributeIsValid = true;
-	
+
 			// Here we are checking for empty text inputs and selects with the default empty option selected.
-			if ( 
-				null === requiredAttribute.val() 
-				|| '' == requiredAttribute.val() 
+			if (
+				null === requiredAttribute.val()
+				|| '' == requiredAttribute.val()
 			) {
 				requiredAttribute.addClass( 'toolset-shortcode-gui-invalid-attr js-toolset-shortcode-gui-invalid-attr' );
 				requiredAttributeIsValid = false;
-				
+
 				if ( requiredAttribute.hasClass( 'toolset_select2-hidden-accessible' ) ) {
 					requiredAttribute
 						.toolset_select2()
@@ -717,7 +853,7 @@ Toolset.shortcodeManager = function( $ ) {
 								.$selection
 									.addClass( 'toolset-shortcode-gui-invalid-attr js-toolset-shortcode-gui-invalid-attr' );
 				}
-				
+
 			}
 			if ( ! requiredAttributeIsValid ) {
 				valid = false;
@@ -736,20 +872,20 @@ Toolset.shortcodeManager = function( $ ) {
 				*/
 			}
 		});
-		
+
 		evaluatedContainer.find( 'input.js-shortcode-gui-field:radio:checked' ).each( function() {
 			var checkedValue = $( this ).val(),
 				attribute = $( this ).closest( '.js-toolset-shortcode-gui-attribute-wrapper' ).data( 'attribute' ),
 				comboAttributeWrapper = $( '.js-toolset-shortcode-gui-attribute-wrapper-for-toolsetCombo\\:' + attribute );
-				
+
 			if (
-				'toolsetCombo' == checkedValue 
-				&& comboAttributeWrapper.length > 0 
+				'toolsetCombo' == checkedValue
+				&& comboAttributeWrapper.length > 0
 			) {
 				var comboAttributeActualSelector = comboAttributeWrapper.find( '.js-shortcode-gui-field' );
 				if (
-					null == comboAttributeActualSelector.val() 
-					|| '' == comboAttributeActualSelector.val()  
+					null == comboAttributeActualSelector.val()
+					|| '' == comboAttributeActualSelector.val()
 				) {
 					comboAttributeActualSelector.addClass( 'toolset-shortcode-gui-invalid-attr js-toolset-shortcode-gui-invalid-attr' );
 					if ( comboAttributeActualSelector.hasClass( 'toolset_select2-hidden-accessible' ) ) {
@@ -763,10 +899,10 @@ Toolset.shortcodeManager = function( $ ) {
 				}
 			}
 		});
-		
+
 		return valid;
 	};
-	
+
 	/**
 	 * Validate shortcode attributes before crafting the final shortcode.
 	 *
@@ -779,7 +915,7 @@ Toolset.shortcodeManager = function( $ ) {
 	 */
 	self.validateShortcodeAttributes = function( evaluatedContainer ) {
 		var valid = true;
-		
+
 		valid = self.requireShortcodeAttributes( evaluatedContainer );
 		if ( ! valid ) {
 			return false;
@@ -987,7 +1123,7 @@ Toolset.shortcodeManager = function( $ ) {
 		}
 		return valid;
 	};
-	
+
 	/**
 	 * Get the shortcode crafted with the current dialog shortcode attributes.
 	 *
@@ -997,7 +1133,7 @@ Toolset.shortcodeManager = function( $ ) {
 	 * @return string
 	 *
 	 * @since m2m
-	 */ 
+	 */
 	self.getCraftedShortcode = function( defaultValue, $dialog ) {
 		if ( $dialog == null ) {
 			// Backwards compatibility: before m2m we did not force a dialog to craft the shortcode from
@@ -1005,7 +1141,7 @@ Toolset.shortcodeManager = function( $ ) {
 		}
 		return self.craftShortcode( $dialog );
 	}
-	
+
 	/**
 	 * Craft a shortcode given the attributes in the currently open dialog.
 	 *
@@ -1024,11 +1160,11 @@ Toolset.shortcodeManager = function( $ ) {
 			shortcodeContent = '',
 			shortcodeToInsert = '',
 			shortcodeIsValid = self.validateShortcodeAttributes( $dialog );
-		
+
 		if ( ! shortcodeIsValid ) {
 			return;
 		}
-		
+
 		$( '.js-toolset-shortcode-gui-attribute-wrapper', $dialog ).each( function() {
 			var attributeWrapper = $( this ),
 				shortcodeAttributeKey = attributeWrapper.data( 'attribute' ),
@@ -1082,6 +1218,16 @@ Toolset.shortcodeManager = function( $ ) {
 				case 'textarea':
 					shortcodeAttributeValue = $('textarea', attributeWrapper ).val();
 					break;
+				case 'callback':
+					if (
+						_.has( self.shortcodeAttributeCallbacks, shortcodeName )
+						&& _.has( self.shortcodeAttributeCallbacks[ shortcodeName ], shortcodeAttributeKey )
+					) {
+						shortcodeAttributeValue = self.shortcodeAttributeCallbacks[ shortcodeName ][ shortcodeAttributeKey ]['getValue']();
+					} else {
+						shortcodeAttributeValue = false;
+					}
+					break;
 				default:
 					shortcodeAttributeValue = $('input', attributeWrapper ).val();
 			}
@@ -1090,10 +1236,10 @@ Toolset.shortcodeManager = function( $ ) {
 			if ( 'boolean' == typeof shortcodeAttributeDefaultValue ) {
 				shortcodeAttributeDefaultValue = shortcodeAttributeDefaultValue ? 'true' :'false';
 			}
-			
+
 			// Add to the shortcodeRawAttributeValues collection
 			shortcodeRawAttributeValues[ shortcodeAttributeKey ] = shortcodeAttributeValue;
-			
+
 			/**
 			 * Filter each shortcode attribute value separatedly, using two different filters:
 			 * - toolset-filter-shortcode-gui-attribute-value
@@ -1101,16 +1247,16 @@ Toolset.shortcodeManager = function( $ ) {
 			 *
 			 * @param shortcodeAttributeValue string
 			 * @param object
-			 *     { 
-			 *         shortcode: shortcodeName, 
-			 *         attribute: shortcodeAttributeKey 
+			 *     {
+			 *         shortcode: shortcodeName,
+			 *         attribute: shortcodeAttributeKey
 			 *     }
 			 *
 			 * @since 2.5.4
 			 */
 			shortcodeAttributeValue = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-attribute-value', shortcodeAttributeValue, { shortcode: shortcodeName, attribute: shortcodeAttributeKey } );
-			shortcodeAttributeValue = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-' + shortcodeName + '-attribute-' + shortcodeAttributeKey + '-value', shortcodeAttributeValue, { shortcode: shortcodeName, attribute: shortcodeAttributeKey } );
-			
+			shortcodeAttributeValue = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-' + shortcodeName + '-attribute-' + shortcodeAttributeKey + '-value', shortcodeAttributeValue, { shortcode: shortcodeName, attribute: shortcodeAttributeKey, container: $dialog } );
+
 			// Add to the shortcodeAttributeValues collection
 			// only if it does not match the default value
 			// and is not a helper attribute
@@ -1122,7 +1268,7 @@ Toolset.shortcodeManager = function( $ ) {
 				shortcodeAttributeValues[ shortcodeAttributeKey ] = shortcodeAttributeValue;
 			}
 		});
-		
+
 		/**
 		 * Filter all shortcode attribute values, using two different filters:
 		 * - toolset-filter-shortcode-gui-computed-attribute-values
@@ -1130,8 +1276,8 @@ Toolset.shortcodeManager = function( $ ) {
 		 *
 		 * @param shortcodeAttributeValues object
 		 * @param object
-		 *     { 
-		 *         shortcode:     shortcodeName, 
+		 *     {
+		 *         shortcode:     shortcodeName,
 		 *         rawAttributes: shortcodeRawAttributeValues
 		 *     }
 		 *
@@ -1139,24 +1285,24 @@ Toolset.shortcodeManager = function( $ ) {
 		 */
 		shortcodeAttributeValues = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-computed-attribute-values', shortcodeAttributeValues, { shortcode: shortcodeName, rawAttributes: shortcodeRawAttributeValues } );
 		shortcodeAttributeValues = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-' + shortcodeName + '-computed-attribute-values', shortcodeAttributeValues, { shortcode: shortcodeName, rawAttributes: shortcodeRawAttributeValues } );
-		
+
 		// Compose the shortcodeAttributeString string
 		_.each( shortcodeAttributeValues, function( value, key ) {
 			if ( value ) {
-				shortcodeAttributeString += " " + key + "='" + value + "'";
+				shortcodeAttributeString += " " + key + "=" + self.attributesQuoteCharacter + value + self.attributesQuoteCharacter;
 			}
 		});
-		
+
 		// Compose the shortcodeToInsert string
 		shortcodeToInsert = '[' + shortcodeName + shortcodeAttributeString + ']';
-		
+
 		// Shortcodes with content: add it plus the closing shortode tag
 		if ( $( '.js-toolset-shortcode-gui-content', $dialog ).length > 0 ) {
 			shortcodeContent = $( '.js-toolset-shortcode-gui-content', $dialog ).val();
 			shortcodeToInsert += shortcodeContent;
 			shortcodeToInsert += '[/' + shortcodeName + ']';
 		}
-		
+
 		/**
 		 * Filter the crafted shortcode string, using two different filters:
 		 * - toolset-filter-shortcode-gui-crafted-shortcode
@@ -1164,8 +1310,8 @@ Toolset.shortcodeManager = function( $ ) {
 		 *
 		 * @param shortcodeToInsert string
 		 * @param object
-		 *     { 
-		 *         shortcode:     shortcodeName, 
+		 *     {
+		 *         shortcode:     shortcodeName,
 		 *         attributes:    shortcodeAttributeValues
 		 *         rawAttributes: shortcodeRawAttributeValues
 		 *     }
@@ -1173,12 +1319,12 @@ Toolset.shortcodeManager = function( $ ) {
 		 * @since m2m
 		 */
 		shortcodeToInsert = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-crafted-shortcode', shortcodeToInsert, { shortcode: shortcodeName, attributs: shortcodeAttributeValues, rawAttributes: shortcodeRawAttributeValues } );
-		shortcodeToInsert = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-' + shortcodeName + '-crafted-shortcode', shortcodeToInsert, { shortcode: shortcodeName, attributes: shortcodeAttributeValues, rawAttributes: shortcodeRawAttributeValues } );
-		
+		shortcodeToInsert = Toolset.hooks.applyFilters( 'toolset-filter-shortcode-gui-' + shortcodeName + '-crafted-shortcode', shortcodeToInsert, { shortcode: shortcodeName, attributes: shortcodeAttributeValues, rawAttributes: shortcodeRawAttributeValues, container: $dialog } );
+
 		return shortcodeToInsert;
-		
+
 	};
-	
+
 	/**
 	 * Resolve toolsetCombo attribute values, getting the actual value from the combo attribute.
 	 *
@@ -1202,7 +1348,7 @@ Toolset.shortcodeManager = function( $ ) {
 		});
 		return resolvedAttributes;
 	};
-	
+
 	/**
 	 * Do the final action upon the crafted shortcode.
 	 *
@@ -1213,9 +1359,9 @@ Toolset.shortcodeManager = function( $ ) {
 	 * @since 2.5.4
 	 */
 	self.doAction = function( shortcode ) {
-		
+
 		var action = self.action;
-		
+
 		/**
 		 * Custom action executed before performing the GUI action.
 		 *
@@ -1225,7 +1371,7 @@ Toolset.shortcodeManager = function( $ ) {
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.doAction( 'toolset-action-before-do-shortcode-gui-action', shortcode, action );
-		
+
 		/**
 		 * Final filter over the shortcode string before executing the GUI action.
 		 *
@@ -1235,7 +1381,7 @@ Toolset.shortcodeManager = function( $ ) {
 		 * @since 2.5.4
 		 */
 		shortcode = Toolset.hooks.applyFilters( 'toolset-filter-before-do-shortcode-gui-action', shortcode, action );
-		
+
 		switch ( action ) {
 			case 'skip':
 			case 'create':
@@ -1263,7 +1409,7 @@ Toolset.shortcodeManager = function( $ ) {
 				Toolset.hooks.doAction( 'toolset-action-do-shortcode-gui-action-insert', shortcode );
 				break;
 		}
-		
+
 		/**
 		 * Custom action executed after performing the GUI action.
 		 *
@@ -1273,11 +1419,11 @@ Toolset.shortcodeManager = function( $ ) {
 		 * @since 2.5.4
 		 */
 		Toolset.hooks.doAction( 'toolset-action-after-do-shortcode-gui-action', shortcode, action );
-		
+
 		// Set the shortcodes GUI action to its default 'insert'
 		self.setShortcodeGuiAction( 'insert' );
 	};
-	
+
 	/**
 	 * Do the GUI create action. Opens the target dialog and inserts the shortcode into it.
 	 *
@@ -1292,14 +1438,14 @@ Toolset.shortcodeManager = function( $ ) {
 				maxHeight:	self.calculateDialogMaxHeight(),
 				maxWidth:	self.calculateDialogMaxWidth(),
 				position:	{
-					my:			"center top+50",
+					my:			"center top+30",
 					at:			"center top",
 					of:			window,
 					collision:	"none"
 				}
 		});
 	};
-	
+
 	/**
 	 * Do the GUI insert action.
 	 *
@@ -1312,7 +1458,7 @@ Toolset.shortcodeManager = function( $ ) {
 	self.doActionInsert = function( shortcode ) {
 		window.icl_editor.insert( shortcode );
 	};
-	
+
 	/**
 	 * Do the GUI save action. Base64-encode the shortcode and adds it as the value of an option in the Views loop wizard dialog.
 	 *
@@ -1342,7 +1488,7 @@ Toolset.shortcodeManager = function( $ ) {
 		}
 
 	};
-	
+
 	/**
 	 * Shortcodes GUI pointer management.
 	 *
@@ -1499,7 +1645,7 @@ Toolset.shortcodeManager = function( $ ) {
 				});
 		});
 	};
-	
+
 	/**
 	 * Init main method:
 	 * - Init templates
@@ -1509,7 +1655,7 @@ Toolset.shortcodeManager = function( $ ) {
 	 * @since 2.5.4
 	 */
 	self.init = function() {
-		
+
 		self.initTemplates()
 			.initDialogs()
 			.initHooks()
@@ -1517,7 +1663,7 @@ Toolset.shortcodeManager = function( $ ) {
 	};
 
 	self.init();
-	
+
 }
 
 jQuery( document ).ready( function( $ ) {

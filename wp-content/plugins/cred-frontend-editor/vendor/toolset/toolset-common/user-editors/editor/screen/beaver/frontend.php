@@ -141,10 +141,18 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend
 				// set the Content Template in the $wp_the_query (which they use) and then put the old post in its place
 				// after the content is rendered.
 				global $wp_the_query;
+				global $post;
+
 				if ( null !== $wp_the_query->post ) {
 					$wp_the_query_post = $wp_the_query->post;
 					if ( (int) $template_selected !== $wp_the_query_post->ID ) {
 						$ct_post            = get_post( $template_selected );
+						$wp_the_query->post = $ct_post;
+					}
+				} elseif ( isset( $post ) ) {
+					$wp_the_query_post = $post;
+					if ( (int) $template_selected !== $wp_the_query_post->ID ) {
+						$ct_post = get_post( $template_selected );
 						$wp_the_query->post = $ct_post;
 					}
 				}

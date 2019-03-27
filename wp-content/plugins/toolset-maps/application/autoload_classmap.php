@@ -7,6 +7,9 @@ $baseDir = $vendorDir;
 
 return array(
     'OTGS\\Toolset\\Maps\\Bootstrap' => $baseDir . '/application/Bootstrap.php',
+    'OTGS\\Toolset\\Maps\\Controller\\Compatibility\\MapBlock' => $baseDir . '/application/controllers/compatibility/gutenberg/editor-blocks/blocks/map/mapBlock.php',
+    'OTGS\\Toolset\\Maps\\Controller\\Compatibility\\MapsEditorBlockFactory' => $baseDir . '/application/controllers/compatibility/gutenberg/editor-blocks/blocks/factory.php',
+    'OTGS\\Toolset\\Maps\\Controller\\Compatibility\\MapsEditorBlocks' => $baseDir . '/application/controllers/compatibility/gutenberg/editor-blocks/editor-blocks.php',
     'OTGS\\Toolset\\Maps\\Model\\Distance\\Calculator' => $baseDir . '/application/models/Distance/Calculator.php',
     'OTGS\\Toolset\\Maps\\Model\\Shortcode\\Distance\\ConditionalDisplay' => $baseDir . '/application/models/Shortcode/Distance/ConditionalDisplay.php',
     'OTGS\\Toolset\\Maps\\Model\\Shortcode\\Distance\\Value' => $baseDir . '/application/models/Shortcode/Distance/Value.php',

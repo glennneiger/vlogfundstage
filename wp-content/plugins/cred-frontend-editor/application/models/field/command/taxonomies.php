@@ -8,6 +8,10 @@
 class CRED_Field_Command_Taxonomies extends CRED_Field_Command_Base {
 
 	public function execute() {
+		if ( ! taxonomy_exists( $this->field_name ) ) {
+			// Avoid errors when trying to display a field about a non existing taxonomy
+			return false;
+		}
 		$field = CRED_StaticClass::$out[ 'fields' ][ 'taxonomies' ][ $this->field_name ];
 		// check which fields are actually used in form
 		$field[ 'form_html_id' ] = $this->translate_field_factory->get_html_form_field_id( $field );

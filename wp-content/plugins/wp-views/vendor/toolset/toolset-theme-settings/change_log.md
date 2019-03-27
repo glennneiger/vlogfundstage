@@ -1,3 +1,6 @@
+Version 1.3.2
+- Fixed selector bug when fetching selected values in Layouts editor page
+
 Version 1.3.1
 - Fixed bug with displaying theme settings on layout assigned to post type without any posts
 

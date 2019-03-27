@@ -17,15 +17,6 @@ class Types_Viewmodel_Related_Content_Post extends Types_Viewmodel_Related_Conte
 	private $rows_found;
 
 
-	/**
-	 * Stores the arguments of get_related_content() in order to use them in the filters
-	 *
-	 * @var array
-	 * @see get_related_content
-	 * @since m2m
-	 */
-	private $get_related_content_arguments;
-
 
 	/**
 	 * Returns the related posts
@@ -72,6 +63,9 @@ class Types_Viewmodel_Related_Content_Post extends Types_Viewmodel_Related_Conte
 			) )
 			->limit( $items_per_page );
 
+		// in this context, editing a post, the status of the post shouldn't matter to show the related items
+		$query->element_status( 'any' );
+
 		if ( $sort ) {
 			$query->order( $sort );
 		}
@@ -89,6 +83,10 @@ class Types_Viewmodel_Related_Content_Post extends Types_Viewmodel_Related_Conte
 					);
 					break;
 				case 'relationship':
+					if( $sort_by == 'intermediary-title' ) {
+						$query->order_by_title( new \Toolset_Relationship_Role_Intermediary() );
+						break;
+					}
 					$query->order_by_field_value(
 						$field_definition_factory->load_field_definition( $sort_by ),
 						new Toolset_Relationship_Role_Intermediary()
@@ -133,8 +131,7 @@ class Types_Viewmodel_Related_Content_Post extends Types_Viewmodel_Related_Conte
 
 				continue;
 			}
-			$association_query = $this->get_association_query();
-			$association_is_enabled = new Types_Page_Extension_Related_Content_Direct_Edit_Status( $uid, null, $association_query );
+			$association_is_enabled = $this->direct_edit_status_factory->create( $uid, null );
 			$intermediary_id = $association->get_intermediary_id();
 			$related_posts[] = array(
 				'uid' => $uid,
@@ -172,8 +169,9 @@ class Types_Viewmodel_Related_Content_Post extends Types_Viewmodel_Related_Conte
 	 */
 	public function get_related_content_from_uid( $association_uid ) {
 		$association_query = $this->get_association_query();
-		$association_query->add( $association_query->association_id( $association_uid ) );
-		$association = $association_query->get_results();
+		$association = $association_query->add( $association_query->association_id( $association_uid ) )
+			->add( $association_query->element_status( Toolset_Association_Query_Condition_Element_Status::STATUS_ANY ) )
+			->get_results();
 		return $this->get_related_content_data( $association );
 	}
 
@@ -312,6 +310,22 @@ class Types_Viewmodel_Related_Content_Post extends Types_Viewmodel_Related_Conte
 				}
 			}
 		}
+		// Intermediary post
+		if( $intermediary_type = $this->relationship->get_element_type( new \Toolset_Relationship_Role_Intermediary() ) ) {
+			$intermediary_post_type = $intermediary_type->get_types();
+			if( ! empty( $intermediary_post_type ) ) {
+				$intermediary_post_type = reset( $intermediary_post_type );
+				if( $intermediary_post_type_object = get_post_type_object( $intermediary_post_type ) ) {
+					if( $intermediary_post_type_object->show_ui ) {
+						$columns['relationship'][] = array(
+							'slug' => 'intermediary-title',
+							'displayName' => __( 'Intermediary Title', 'wpcf' ),
+						);
+					}
+				}
+			}
+		}
+
 		// Relationship fields.
 		$fields = $this->relationship->get_association_field_definitions();
 		foreach ( $fields as $field ) {

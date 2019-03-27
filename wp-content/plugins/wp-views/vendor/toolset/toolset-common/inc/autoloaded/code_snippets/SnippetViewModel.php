@@ -89,7 +89,8 @@ class SnippetViewModel {
 			'code' => $this->snippet->get_code(),
 			'runMode' => $this->snippet->get_run_mode(),
 			'runContexts' => $this->snippet->get_run_contexts(),
-			'lastError' => nl2br( esc_textarea( $this->snippet->get_last_error() ) )
+			'lastError' => nl2br( esc_textarea( $this->snippet->get_last_error() ) ),
+			'hasSecurityCheck' => $this->snippet->has_security_check(),
 		);
 
 		// This is needed if the slug has been changed, so that the client side (JS) is able to recognize the old

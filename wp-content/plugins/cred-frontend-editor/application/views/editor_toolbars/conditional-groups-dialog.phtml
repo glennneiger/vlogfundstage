@@ -7,9 +7,7 @@
 ?>
 <script type="text/html" id="tmpl-cred-editor-conditional-groups-dialog">
     <p class="toolset-alert toolset-alert-info" style="margin-top:0">
-    <?php 
-    _e( 'Tip: Make a selection in the editor and the conditional group will wrap around it when inserted.', 'wp-cred' );
-    echo CRED_STRING_SPACE;
+    <?php
     $documentation_link_args = array(
         'utm_source'	=> 'credplugin',
         'utm_campaign'	=> 'cred',
@@ -29,8 +27,8 @@
     <div class="cred-editor-conditional-groups-general-container js-cred-editor-conditional-groups-general-container">
         <div class="cred-editor-conditional-groups-options-container">
             <h3><?php _e( 'Options', 'wp-cred' ); ?></h3>
-            <ul>
-                <li>
+            <div>
+                <div>
                     <label>
                         <?php _e( 'Effect to show or hide the group:', 'wp-cred' ); ?>
                         <select class="cred-editor-conditional-groups-options-effect js-cred-editor-conditional-groups-options-effect">
@@ -40,11 +38,11 @@
                             <option value="none"><?php _e( 'No effect, just show or hide', 'wp-cred' ); ?></option>
                         </select>
                     </label>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
         <div class="cred-editor-conditional-groups-conditions-container js-cred-editor-conditional-groups-conditions-container">
-            <h3><?php _e( 'Conditions to evaluate', 'wp-cred' ); ?></h3>    
+            <h3><?php _e( 'Conditions to evaluate', 'wp-cred' ); ?></h3>
             <table id="js-cred-editor-conditional-groups-conditions" class="cred-editor-editable-list cred-editor-conditional-groups-conditions">
                 <thead>
                     <tr>

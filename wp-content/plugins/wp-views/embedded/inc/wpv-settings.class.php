@@ -114,15 +114,6 @@ class WPV_Settings implements ArrayAccess {
 	 */
 	const DEBUG_MODE_TYPE = 'wpv_debug_mode_type';
 
-
-	/**
-	 * Indicates whether Edit links for Views, WPAs and CTs should be displayed on the frontend.
-	 *
-	 * Numeric value, 0 or 1.
-	 */
-	const SHOW_FRONTEND_EDIT_LINKS = 'wpv_show_edit_view_link';
-
-
 	/**
 	 * Array of fields (meta keys) that should be displayed on Views GUI,
 	 * even though they would be hidden by default. List of meta keys separated by ','.
@@ -246,7 +237,6 @@ class WPV_Settings implements ArrayAccess {
 		WPV_Settings::IS_DEBUG_MODE								=> '',
 		WPV_Settings::DEBUG_MODE_TYPE							=> 'compact',
 		WPV_Settings::IS_LEGACY_MAP_ADDON_ENABLED				=> 0,
-		WPV_Settings::SHOW_FRONTEND_EDIT_LINKS					=> 1,
 		WPV_Settings::SHOWN_HIDDEN_CUSTOM_FIELDS				=> '',
 		WPV_Settings::SAVED_AUTODETECTED_FRAMEWORK				=> '',
 		WPV_Settings::CODEMIRROR_AUTORESIZE						=> '',
@@ -593,21 +583,6 @@ class WPV_Settings implements ArrayAccess {
 			$this->settings[ WPV_Settings::DEBUG_MODE_TYPE ] = $value;
 		}
 	}
-
-
-	protected function _get_wpv_show_edit_view_link() {
-		$value = (int) $this->get_raw_value( WPV_Settings::SHOW_FRONTEND_EDIT_LINKS );
-		return ( in_array( $value, array( 0, 1 ) ) ? $value : (int) WPV_Settings::$defaults[ WPV_Settings::SHOW_FRONTEND_EDIT_LINKS ] );
-	}
-
-
-	protected function _set_wpv_show_edit_view_link( $value ) {
-		$value = (int) $value;
-		if( in_array( $value, array( 0, 1 ) ) ) {
-			$this->settings[ WPV_Settings::SHOW_FRONTEND_EDIT_LINKS ] = $value;
-		}
-	}
-
 
 	protected function _get_wpv_codemirror_autoresize() {
 		$value = (int) $this->get_raw_value( WPV_Settings::CODEMIRROR_AUTORESIZE );

@@ -612,13 +612,14 @@ public static function otg_access_get_permission_table_for_third_party( $current
 		
 		foreach ( $groups as $group ) {
 			$is_section_opened = false;
-			if ( isset($section_statuses[$group['id']]) && $section_statuses[$group['id']] == 1 ){
+			$group_div_id = str_replace( '%', '', $group['id'] );
+			if ( isset($section_statuses[ $group_div_id ]) && $section_statuses[ $group_div_id ] == 1 ){
 				$is_section_opened = true;
 			}
 
 			$output .= '<div class="otg-access-settings-section-item is-enabled js-otg-access-settings-section-item wpcf-access-type-item js-wpcf-access-type-item">';
-			$output .= '<h4 class="otg-access-settings-section-item-toggle js-otg-access-settings-section-item-toggle" data-target="' . esc_attr( $group['id'] ) .'">' . $group['name'] . '</h4>';
-			$output .= '<div class="otg-access-settings-section-item-content js-otg-access-settings-section-item-content wpcf-access-mode js-otg-access-settings-section-item-toggle-target-' . esc_attr( $group['id'] ) . '" style="display:'. ( !$is_section_opened?'none':'block') .'">';
+			$output .= '<h4 class="otg-access-settings-section-item-toggle js-otg-access-settings-section-item-toggle" data-target="' . esc_attr( $group_div_id ) .'">' . $group['name'] . '</h4>';
+			$output .= '<div class="otg-access-settings-section-item-content js-otg-access-settings-section-item-content wpcf-access-mode js-otg-access-settings-section-item-toggle-target-' . esc_attr( $group_div_id ) . '" style="display:'. ( !$is_section_opened?'none':'block') .'">';
 
 			$caps = array();
 			$caps_filter = apply_filters( 'types-access-cap', array(), $area['id'], $group['id'] );

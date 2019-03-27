@@ -117,6 +117,7 @@ class CRED_Association_Form_Listing_Page extends CRED_Page_Manager_Abstract{
 			'column' => array(
 				'form_name' => __( 'Form Name', 'wp-cred' ),
 				'relationship' => __( 'Relationship', 'wp-cred' ),
+				'date' => __( 'Modified', 'wp-cred' ),
 				'form_type' => __( 'Form Type', 'wp-cred' ),
 			),
 

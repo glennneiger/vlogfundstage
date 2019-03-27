@@ -17,9 +17,9 @@ class View_layout_field { // NOT SURE IF DEPRECATED
     protected $prefix;
     protected $suffix;
     protected $edittext;
-    
+
     function __construct($type, $prefix = "", $suffix = "", $row_title = "", $edittext = "", $types_field_name = "", $types_field_data = ""){
-        
+
         $this->type = $type;
         $this->prefix = $prefix;
         $this->suffix = $suffix;
@@ -28,14 +28,14 @@ class View_layout_field { // NOT SURE IF DEPRECATED
         $this->types_field_name = $types_field_name;
         $this->types_field_data = $types_field_data;
     }
-    
+
     function render_to_table($index) {
         global $wpv_shortcodes, $WPV_templates, $WP_Views;
-        
+
         $view_template = null;
         $view = null;
         $view_type = null;
-        
+
         if (strpos($this->type, 'wpv-post-field - ') === 0) {
             $name = substr($this->type, strlen('wpv-post-field - '));
             $title = $name;
@@ -76,7 +76,7 @@ class View_layout_field { // NOT SURE IF DEPRECATED
             $name = $wpv_shortcodes[$this->type][1];
             $title = $name;
         }
-        
+
         ?>
         <td width="120px"><input class="wpv_field_prefix" id="wpv_field_prefix_<?php echo $index; ?>" type="text" value="<?php echo htmlspecialchars($this->prefix); ?>" name="_wpv_layout_settings[fields][prefix_<?php echo $index; ?>]" /></td>
         <td width="120px">
@@ -92,9 +92,9 @@ class View_layout_field { // NOT SURE IF DEPRECATED
         <td width="120px"><input class="wpv_field_suffix"  id="wpv_field_suffix_<?php echo $index; ?>" type="text" value="<?php echo htmlspecialchars($this->suffix); ?>" name="_wpv_layout_settings[fields][suffix_<?php echo $index; ?>]" /></td>
         <?php
     }
-    
+
     function render_table_row_attributes($view_settings) {
-        
+
         if (strpos($this->type, 'wpv-taxonomy-') === 0 || strpos($this->type, WPV_TAXONOMY_VIEW) === 0) {
             // taxonomy type.
             $output = 'class="wpv-taxonomy-field"';
@@ -108,11 +108,11 @@ class View_layout_field { // NOT SURE IF DEPRECATED
                 $output .= ' style="display:none"';
             }
         }
-        
+
         return $output;
-        
+
     }
-    
+
     function get_body_template() {
         if (strpos($this->type, 'wpv-post-body ') === 0) {
             $parts = explode(' ', $this->type);
@@ -121,7 +121,7 @@ class View_layout_field { // NOT SURE IF DEPRECATED
             return -1;
         }
     }
-    
+
 }
 
 $link_layout_number = 0;
@@ -139,7 +139,7 @@ function view_layout_fields_to_classes($fields) {
         								  isset($fields["edittext_{$i}"]) ? $fields["edittext_{$i}"] : '',
                                           isset($fields["types_field_name_{$i}"]) ? $fields["types_field_name_{$i}"] : '',
                                           isset($fields["types_field_data_{$i}"]) ? $fields["types_field_data_{$i}"] : '');
-        
+
     }
     return $output;
 }
@@ -166,7 +166,7 @@ function view_layout_fields($post, $view_layout_settings) {
         <p id="view_layout_fields_to_include"><strong><?php echo __('Fields to include:', 'wpv-views'); ?></strong></p>
         <p id="view_layout_add_field_message_1"><?php echo __("Click on <strong>Add field</strong> to insert additional fields. Drag them to reorder, or delete fields that you don't need.", 'wpv-views'); ?></p>
         <p id="view_layout_add_field_message_2" style="display:none"><?php echo __("Click on <strong>Add field</strong> to insert fields to this View.", 'wpv-views'); ?></p>
-        
+
         <table id="view_layout_fields_table" class="widefat fixed">
             <thead>
                 <tr>
@@ -178,26 +178,26 @@ function view_layout_fields($post, $view_layout_settings) {
                     <th></th><th></th><th></th><th class="row-title hidden"></th><th></th><th></th>
                 </tr>
             </tfoot>
-            
+
             <tbody>
                 <?php
                 $count = sizeof($view_layout_settings['fields']);
                 foreach($view_layout_settings['fields'] as $index => $field) {
                     ?>
                     <tr id="wpv_field_row_<?php echo $index; ?>" <?php echo $field->render_table_row_attributes($view_settings); ?>>
-                    
+
                         <td width="20px"><img src="<?php echo WPV_URL . '/res/img/delete.png'; ?>" onclick="on_delete_wpv(<?php echo $index; ?>)" style="cursor: pointer" /></td><?php $field->render_to_table($index); ?><td width="16px"><img src="<?php echo WPV_URL; ?>/res/img/move.png" class="move" style="cursor: move;" /></td>
-                    
+
                     </tr>
                     <?php
                 }
                 ?>
             </tbody>
-        
+
         </table>
         <br />
     </div>
-    
+
     <?php
         $show = $view_settings['query_type'][0] == 'posts';
     ?>
@@ -209,14 +209,14 @@ function view_layout_fields($post, $view_layout_settings) {
         $link_layout_number = 0;
 		// @todo Views 2.3.0, commented out since this will not be a $WP_Views object property anymore
         // $WP_Views->editor_addon->add_form_button('', 'wpv_layout_meta_html_content', false);
-        
+
         ?>
 
-    </div>  
+    </div>
 
 	<?php // echo $WP_Views->editor_addon->add_form_button('', '#wpv_layout_meta_html_content', false); ?>
     <?php // Add a popup for taxonomy fields ?>
-    
+
     <div id="add_taxonomy_field_popup" style="display:none">
 
         <table id="wpv_taxonomy_field_popup_table" width="100%">
@@ -228,7 +228,7 @@ function view_layout_fields($post, $view_layout_settings) {
         </tr>
         </table>
 
-    </div>  
+    </div>
 
     <script type="text/javascript">
 		jQuery('.wpv_add_fields_button').click(function(){
@@ -243,18 +243,18 @@ function view_layout_fields($post, $view_layout_settings) {
         ?>
         wpv_shortcodes[<?php echo $current_index++; ?>] = new Array('Taxonomy View', '<?php echo WPV_TAXONOMY_VIEW; ?>');
         wpv_shortcodes[<?php echo $current_index++; ?>] = new Array('Post View', '<?php echo WPV_POST_VIEW; ?>');
-        <?php 
+        <?php
         if (defined('WPV_WOOCOMERCE_VIEWS_SHORTCODE')) {
         ?>
         wpv_shortcodes[<?php echo $current_index; ?>] = new Array('Add to cart button', '<?php echo WPV_WOOCOMERCE_VIEWS_SHORTCODE; ?>');
-        <?php 
+        <?php
         }
         ?>
-        <?php 
+        <?php
         if (defined('WPV_WOOCOMERCEBOX_VIEWS_SHORTCODE')) {
         ?>
         wpv_shortcodes[<?php echo $current_index++; ?>] = new Array('Add to cart box', '<?php echo WPV_WOOCOMERCEBOX_VIEWS_SHORTCODE; ?>');
-        <?php 
+        <?php
         }
         ?>
         var wpv_view_template_text = "<?php echo esc_js(__('Content template', 'wpv-views')); ?>";
@@ -267,7 +267,7 @@ function view_layout_fields($post, $view_layout_settings) {
         $show = $view_settings['query_type'][0] == 'taxonomy';
     ?>
     <input alt="#TB_inline?inlineId=add_taxonomy_field_popup" class="thickbox button-secondary wpv_add_taxonomy_fields_button" type="button" value="<?php echo __('Add field', 'wpv-views'); ?>" name="Add a taxonomy field" <?php if($show) {echo '';} else {echo ' style="display:none"';} ?> />
-    
+
     <?php
         $show = $view_settings['query_type'][0] == 'posts' ? '' : 'style="display:none"';
     ?>
@@ -292,7 +292,7 @@ function view_layout_fields($post, $view_layout_settings) {
         }
     ?>
 
-    
+
     <?php
 }
 function view_layout_javascript() {
@@ -348,7 +348,7 @@ function short_code_taxonomy_menu_callback($index, $cf_key, $function_name, $men
         if ($link_layout_number != 0) {
             echo '</tr><tr>' ;
         }
-        
+
     }
     echo '<td><a style="cursor: pointer" onclick="on_add_field_wpv(\''. $menu . '\', \'' . esc_js($cf_key) . '\', \'' . base64_encode($cf_key . $suffix) . '\')">';
     echo $cf_key;
@@ -397,10 +397,10 @@ function wpv_pagination_spinner_media_admin_head() { // DEPRECATED
 
 /**
  * Adds 'Spinner' column to media item table.
- * 
+ *
  * @param type $form_fields
  * @param type $post
- * @return type 
+ * @return type
  */
 function wpv_pagination_spinner_attachment_fields_to_edit_filter($form_fields, $post) {// DEPRECATED
     $type = (strpos($post->post_mime_type, 'image/') !== false) ? 'image' : 'file';
@@ -418,9 +418,9 @@ function wpv_pagination_spinner_attachment_fields_to_edit_filter($form_fields, $
 
 /**
  * Filters media TABs.
- * 
+ *
  * @param type $tabs
- * @return type 
+ * @return type
  */
 function wpv_pagination_spinner_media_upload_tabs_filter($tabs) { // DEPRECATED
     unset($tabs['type_url']);
@@ -456,10 +456,10 @@ function get_user_meta_keys( $include_hidden = false ) {
 	}
 	$where = " WHERE {$umf_mulsitise_string} AND {$umf_hidden} ";
 	$values_to_prepare[] = 100;
-	$usermeta_keys = $wpdb->get_col( 
+	$usermeta_keys = $wpdb->get_col(
 		$wpdb->prepare(
-			"SELECT DISTINCT meta_key FROM {$wpdb->usermeta} 
-			{$where} 
+			"SELECT DISTINCT meta_key FROM {$wpdb->usermeta}
+			{$where}
 			LIMIT 0, %d",
 			$values_to_prepare
 		)
@@ -495,4 +495,18 @@ function _wpv_deprecated_remove_admin_bar_toolset() {
 	if ( $toolset_admin_bar_menu_remove ) {
 		remove_action( 'admin_bar_menu', array( $toolset_admin_bar_menu, 'admin_bar_menu' ), 99 );
 	}
+}
+
+add_action( 'wp_ajax_set_view_template', 'wpv_deprecated_set_view_template_callback' );
+
+/**
+ * Ajax function to set the current content template to posts of a type set in $_POST['type'].
+ *
+ * @since unknown
+ * @deprecated 2.8
+ * @delete 3.0
+ */
+function wpv_deprecated_set_view_template_callback() {
+	_deprecated_hook( 'wp_ajax_set_view_template', 'Toolset Views 2.8' );
+	wp_send_json_error();
 }

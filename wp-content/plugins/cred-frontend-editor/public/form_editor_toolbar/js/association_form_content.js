@@ -1,6 +1,6 @@
 /**
  * Manage the association form editor toolbar.
- * 
+ *
  * @see Toolset.CRED.EditorToolbarPrototype
  *
  * @since m2m
@@ -18,12 +18,22 @@ Toolset.CRED.AssociationFormsContentEditorToolbar = function( $ ) {
 
 	/**
 	 * Initialize localization strings.
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	self.initI18n = function() {
-		this.i18n = cred_association_form_content_editor_toolbar_i18n;
-		return this;
+		self.i18n = cred_association_form_content_editor_toolbar_i18n;
+		return self;
+	};
+
+	/**
+	 * Init cache. Maybe populate it with fields for the currenty selected object key.
+	 *
+	 * @since 2.3.1
+	 */
+	self.initCache = function() {
+		self.fieldsCache = _.has( self.i18n, 'initialCache' ) ? self.i18n.initialCache : {};
+		return self;
 	};
 
 	/**
@@ -36,14 +46,26 @@ Toolset.CRED.AssociationFormsContentEditorToolbar = function( $ ) {
 		self.constructor.prototype.initHooks.call( self );
 		Toolset.hooks.addAction( 'cred-action-toolbar-scaffold-dialog-loaded', self.manageScaffoldSettings, 10 );
 		Toolset.hooks.addAction( 'cred-action-toolbar-shortcode-dialog-loaded', self.manageCancelFieldSettings, 10 );
+
+		Toolset.hooks.addFilter( 'toolset-filter-shortcode-gui-cred-relationship-role-computed-attribute-values', self.adjustAttributes, 10 );
+		Toolset.hooks.addFilter( 'toolset-filter-shortcode-gui-cred-relationship-field-computed-attribute-values', self.adjustAttributes, 10 );
 		return self;
 	};
 
 	/**
-	 * Get the object key to manipulate fields for.
-	 * 
-	 * Should be overriden by implementation objects.
+	 * Get the current form slug.
 	 *
+	 * @return string
+	 * @since 2.2.1
+	 */
+	self.getFormSlug = function() {
+		return $( '#slug' ).val();
+	};
+
+	/**
+	 * Get the object key to manipulate fields for.
+	 *
+	 * @return string
 	 * @since 2.1
 	 */
 	self.getObjectKey = function() {
@@ -61,6 +83,20 @@ Toolset.CRED.AssociationFormsContentEditorToolbar = function( $ ) {
 		}
 		var $context = $( '.js-cred-editor-shortcode-dialog-container');
 		self.manageCancelField( $context );
+	};
+
+	/**
+	 * Adjust the form shortcode attributes when generated as an individual field.
+	 *
+	 * @param {object} attributes
+	 * @param {object} data
+	 * @return {object}
+	 * @since 2.3.2
+	 */
+	self.adjustAttributes = function( attributes, data ) {
+		attributes.scaffold_field_id = false;
+
+		return attributes;
 	};
 
 	self.manageCancelField = function( $context ) {
@@ -108,7 +144,7 @@ Toolset.CRED.AssociationFormsContentEditorToolbar = function( $ ) {
 	 * @since m2m
 	 */
 	self.initSelect2ForSelector = function( $selector, postType, valueType ) {
-		
+
 		var $selectorParent = $selector.closest( '.js-toolset-shortcode-gui-dialog-container' );
 		var currentInstance = this;
 

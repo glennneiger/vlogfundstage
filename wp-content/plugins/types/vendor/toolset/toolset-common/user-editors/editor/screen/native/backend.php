@@ -1,33 +1,22 @@
 <?php
-
+/**
+ * Backend Editor class for the native editor.
+ *
+ * Handles all the functionality needed to allow the native editor to work with Content Template editing on the backend.
+ *
+ * @since 2.5.9
+ */
 class Toolset_User_Editors_Editor_Screen_Native_Backend
 	extends Toolset_User_Editors_Editor_Screen_Abstract {
 
-	/**
-	 * @var Toolset_Constants
-	 */
-	protected $constants;
-
-	/**
-	 * Toolset_User_Editors_Editor_Screen_Native_Backend constructor.
-	 *
-	 * @param Toolset_Constants|null $constants
-	 */
-	public function __construct( Toolset_Constants $constants = null ) {
-		$this->constants = $constants
-			? $constants
-			: new Toolset_Constants();
-
-		$this->constants->define( 'NATIVE_SCREEN_ID', 'native' );
-	}
-
 	public function initialize() {
+		parent::initialize();
 
 		add_action( 'init', array( $this, 'register_assets' ), 50 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_assets' ), 50 );
 
 		add_filter( 'toolset_filter_toolset_registered_user_editors', array( $this, 'register_user_editor' ) );
-		add_filter( 'wpv_filter_wpv_layout_template_extra_attributes', array( $this, 'layout_template_attribute' ), 10, 3 );
+		add_filter( 'wpv_filter_wpv_layout_template_extra_attributes', array( $this, 'layout_template_attribute' ), 10, 2 );
 
 		/**
 		 * If we need to enable the Native Editor button in the CT editor, the TOOLSET_SHOW_NATIVE_EDITOR_BUTTON_FOR_CT
@@ -57,10 +46,9 @@ class Toolset_User_Editors_Editor_Screen_Native_Backend
 
 	public function register_assets() {
 
-		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager = Toolset_Assets_Manager::get_instance();
 
 		// Content Template own edit screen assets
-
 		$toolset_assets_manager->register_style(
 			'toolset-user-editors-native-style',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/native/backend.css',
@@ -69,7 +57,6 @@ class Toolset_User_Editors_Editor_Screen_Native_Backend
 		);
 
 		// Native post editor screen assets
-
 		$toolset_assets_manager->register_script(
 			'toolset-user-editors-native-script',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/native/backend_editor.js',
@@ -79,7 +66,6 @@ class Toolset_User_Editors_Editor_Screen_Native_Backend
 		);
 
 		// Content Template as inline object assets
-
 		$toolset_assets_manager->register_script(
 			'toolset-user-editors-native-layout-template-script',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/native/backend_layout_template.js',
@@ -142,7 +128,6 @@ class Toolset_User_Editors_Editor_Screen_Native_Backend
 	 *
 	 * @since 2.5.0
 	 */
-
 	public function html_output() {
 
 		if ( ! isset( $_GET['ct_id'] ) ) {
@@ -168,7 +153,7 @@ class Toolset_User_Editors_Editor_Screen_Native_Backend
 	}
 
 	public function register_inline_editor_action_buttons( $content_template ) {
-		$content_template_has_native = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'NATIVE_SCREEN_ID' ) );
+		$content_template_has_native = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === Toolset_User_Editors_Editor_Native::NATIVE_SCREEN_ID );
 		?>
 		<button
 			class="button button-secondary toolset-ct-button-logo js-wpv-ct-apply-user-editor js-wpv-ct-apply-user-editor-<?php echo esc_attr( $this->editor->get_id() ); ?>"
@@ -187,10 +172,15 @@ class Toolset_User_Editors_Editor_Screen_Native_Backend
 	 * On a Content Template used inside a View or WPA loop output, we set which builder it is using
 	 * so we can link to the CT edit page with the right builder instantiated.
 	 *
+	 * @param array   $attributes
+	 * @param WP_POST $content_template
+	 *
+	 * @return array
+	 *
 	 * @since 2.5.0
 	 */
-	public function layout_template_attribute( $attributes, $content_template, $view_id ) {
-		$content_template_has_native = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) == $this->constants->constant( 'NATIVE_SCREEN_ID' ) );
+	public function layout_template_attribute( $attributes, $content_template ) {
+		$content_template_has_native = ( get_post_meta( $content_template->ID, '_toolset_user_editors_editor_choice', true ) === Toolset_User_Editors_Editor_Native::NATIVE_SCREEN_ID );
 		if ( $content_template_has_native ) {
 			$attributes['builder'] = $this->editor->get_id();
 		}

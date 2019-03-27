@@ -14,7 +14,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
     /**
 	 * Generate the basic fields for the Toolset edit links.
 	 *
-	 * This method is shared by the toolset-edit-post-link and toolset-edit-user-link shortcodes, 
+	 * This method is shared by the toolset-edit-post-link and toolset-edit-user-link shortcodes,
 	 * and generates the style/class combo, as well as the target attribute GUI
 	 *
 	 * @return array
@@ -56,7 +56,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
 
 	/**
 	 * Get options for the text of the link shortcode.
-	 * 
+	 *
 	 * Each subclass will expand the supported options.
 	 *
 	 * @return array
@@ -68,7 +68,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
             'defaultForceValue' => __( 'Edit', 'wp-cred' )
         );
     }
-    
+
     /**
 	 * Adjust the fields for the Toolset edit links GUI.
 	 *
@@ -80,16 +80,16 @@ class Base extends \CRED_Shortcode_Base_GUI {
 	 * @since 2.1
 	 */
 	protected function adjust_edit_link_shortcodes_gui_fields( $attributes, $form_type = 'post' ) {
-		
+
 		if ( ! in_array( $form_type, array( 'post', 'user' ) ) ) {
 			return array();
         }
-        
+
         $layouts_condition = new \Toolset_Condition_Plugin_Layouts_Active();
-		
+
 		if ( $layouts_condition->is_met() ) {
 			$filter_args = array(
-				'property'	=> 'cell_type', 
+				'property'	=> 'cell_type',
 				'value'		=> ( 'user' == $form_type ) ? 'cred-user-cell' : 'cred-cell'
 			);
 			$layouts_available = apply_filters( 'ddl-filter_layouts_by_cell_type', array(), $filter_args );
@@ -97,7 +97,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
 				$available_options = array(
 					''	=> __( '-- Select a layout --', 'wp-cred' )
 				);
-				
+
 				foreach ( $layouts_available as $layout_for_edit ) {
 					$available_options[ $layout_for_edit->slug ] = $layout_for_edit->name;
 				}
@@ -112,7 +112,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
 						'required'	=> true,
 					)
 				);
-				
+
 				$layouts_data = array_merge( $layouts_data, $attributes['display-options']['fields'] );
 				$attributes['display-options']['fields'] = $layouts_data;
 			} else {
@@ -121,7 +121,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
                         'fields' => array(
                             'instructions'	=> array(
                                 'type'		=> 'information',
-                                'content'	=> '<p>' 
+                                'content'	=> '<p>'
                                                 . __( 'Create a new Layout that will include the editing form. You can start from scratch or copy the template you use to display the content and modify it.', 'wp-cred' )
                                                 . '</p>'
                                                 . '<p>'
@@ -142,7 +142,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
 				$available_options = array(
 					''	=> __( '-- Select a Content Template --', 'wp-cred' )
 				);
-				
+
 				foreach ( $content_templates_available as $content_templates_for_edit ) {
 					$available_options[ $content_templates_for_edit->post_name ] = $content_templates_for_edit->post_title;
 				}
@@ -157,7 +157,7 @@ class Base extends \CRED_Shortcode_Base_GUI {
 						'required'	=> true,
 					)
 				);
-				
+
 				$content_templates_data = array_merge( $content_templates_data, $attributes['display-options']['fields'] );
 				$attributes['display-options']['fields'] = $content_templates_data;
 			} else {
@@ -182,14 +182,14 @@ class Base extends \CRED_Shortcode_Base_GUI {
 				);
 			}
 		}
-		
+
 		return $attributes;
     }
-    
+
     /**
 	 * Auxiliar method to get Content Templates that contain a form shortcode.
 	 *
-	 * Used by toolset-edit-post-link and toolset-edit-user-link shortcodes, to get 
+	 * Used by toolset-edit-post-link and toolset-edit-user-link shortcodes, to get
 	 * Content Templates that contain [cred_form or [cred_user_form shortcodes
 	 *
 	 * @param string $form_type Whether this belongs to the toolset-edit-post-link or the toolset-edit-user-link shortcode: 'post'|'user'
@@ -202,39 +202,39 @@ class Base extends \CRED_Shortcode_Base_GUI {
 	 * @see WPV_Cache::delete_shortcodes_gui_transients_action
 	 *
 	 * @since 2.1
-	 * 
+	 *
 	 * @todo Move the transient management to CRED_Cache.
 	 */
 	protected function get_content_templates_with_edit_forms( $form_type = 'post' ) {
-		
+
 		if ( ! in_array( $form_type, array( 'post', 'user' ) ) ) {
 			return array();
 		}
-		
+
 		$content_templates_translatable = apply_filters( 'wpml_is_translated_post_type', false, 'view-template' );
-		
+
 		$transient_key = 'wpv_transient_pub_cts_for_cred_' . $form_type;
-		
+
 		$content_templates_available = get_transient( $transient_key );
-		
-		if ( 
-			$content_templates_available !== false 
+
+		if (
+			$content_templates_available !== false
 			&& $content_templates_translatable === false
 		) {
 			return $content_templates_available;
 		}
-		
-		global $wpdb, $sitepress;
+
+		global $wpdb;
 		$values_to_prepare = array();
 		$wpml_join = $wpml_where = "";
-		
+
 		if ( $content_templates_translatable ) {
 			$wpml_current_language = apply_filters( 'wpml_current_language', '' );
-			$wpml_join = " JOIN {$wpdb->prefix}icl_translations t ";
-			$wpml_where = " AND p.ID = t.element_id AND t.language_code = %s AND t.element_type LIKE 'post_%' ";
+			$wpml_join = " JOIN {$wpdb->prefix}icl_translations icl_t ";
+			$wpml_where = " AND p.ID = icl_t.element_id AND icl_t.language_code = %s AND icl_t.element_type LIKE 'post_%' ";
 			$values_to_prepare[] = $wpml_current_language;
 		}
-		
+
 		switch ( $form_type ) {
 			case 'post':
 				$values_to_prepare[] = '%[cred_form %';
@@ -245,25 +245,25 @@ class Base extends \CRED_Shortcode_Base_GUI {
 				$values_to_prepare[] = '%{!{cred_user_form %';
 				break;
 		}
-		
+
 		$values_to_prepare[] = 'view-template';
 		$content_templates_available = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT p.post_name, p.post_title 
-				FROM {$wpdb->posts} p {$wpml_join} 
-				WHERE p.post_status = 'publish' 
-				{$wpml_where} 
-				AND ( p.post_content LIKE '%s' OR p.post_content LIKE '%s' ) 
-				AND p.post_type = %s 
+				"SELECT p.post_name, p.post_title
+				FROM {$wpdb->posts} p {$wpml_join}
+				WHERE p.post_status = 'publish'
+				{$wpml_where}
+				AND ( p.post_content LIKE '%s' OR p.post_content LIKE '%s' )
+				AND p.post_type = %s
 				ORDER BY p.post_title",
 				$values_to_prepare
 			)
 		);
-		
+
 		if ( $content_templates_translatable === false ) {
 			set_transient( $transient_key, $content_templates_available, WEEK_IN_SECONDS );
 		}
-		
+
 		return $content_templates_available;
 	}
 

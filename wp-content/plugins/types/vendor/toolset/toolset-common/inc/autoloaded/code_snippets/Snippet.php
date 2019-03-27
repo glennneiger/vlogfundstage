@@ -65,6 +65,10 @@ class Snippet {
 	private $request_mode;
 
 
+	/** @var bool|null */
+	private $has_security_check;
+
+
 	/**
 	 * Snippet constructor.
 	 *
@@ -218,6 +222,9 @@ class Snippet {
 			) );
 		}
 
+		// Make sure the snippet will pass through toolset_snippet_security_check().
+		add_filter( 'toolset_is_snippet_being_executed', '__return_true' );
+
 		// Take no chances here.
 		$results = new \Toolset_Result_Set();
 		$include_result = false;
@@ -267,6 +274,8 @@ class Snippet {
 		ob_end_clean();
 
 		restore_error_handler();
+
+		remove_filter( 'toolset_is_snippet_being_executed', '__return_true' );
 
 		if( ! $include_result ) {
 			$results->add( false, sprintf(
@@ -423,5 +432,23 @@ class Snippet {
 	public function has_last_error() {
 		$last_error = $this->get_last_error();
 		return ! empty( $last_error );
+	}
+
+
+	/**
+	 * @return bool
+	 * @since Types 3.1.2
+	 */
+	public function has_security_check() {
+		return (bool) $this->has_security_check;
+	}
+
+
+	/**
+	 * @param bool $value
+	 * @since Types 3.1.2
+	 */
+	public function set_has_security_check( $value ) {
+		$this->has_security_check = (bool) $value;
 	}
 }

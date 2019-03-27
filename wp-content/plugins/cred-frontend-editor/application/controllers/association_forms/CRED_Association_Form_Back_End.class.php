@@ -11,9 +11,12 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 	const CSS_ADMIN_MAIN_HANDLE = 'toolset_cred_association_forms_back_end_main_css';
 	const CSS_ADMIN_REL_PATH = '/public/association_forms/css/backend_main.css';
 	const CSS_EDITOR_HANDLE = 'toolset_cred_association_forms_editor_css';
+	const JS_EDITOR_I18N_NAME = 'cred_post_form_content_editor_i18n';
 	const CSS_EDITOR_REL_PATH = '/public/association_forms/css/editor.css';
 	const CSS_WIZARD_HANDLE = 'toolset_cred_association_forms_wizard_css';
 	const CSS_WIZARD_REL_PATH = '/public/association_forms/css/wizard.css';
+	const CSS_EDITOR_BASE_HANDLE = 'toolset_cred_post_editor_base_css';
+	const CCS_EDITOR_BASE_REL_PATH = '/public/form_editor/css/editor.css';
 
 	private $assets_to_load_js = array();
 	private $assets_to_load_css = array();
@@ -54,7 +57,7 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 			$this->init_editor_toolbar();
 		}
 	}
-	
+
 	public function init_editor_toolbar() {
 		$content_editor_toolbar = new Toolbar();
 		$content_editor_toolbar->initialize();
@@ -99,6 +102,14 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 
 	function add_pages( $pages ) {
 
+		$pages[] = array(
+			'slug' => 'cred_relationship_forms',
+			'menu_title' => __('Relationship Forms', 'wp-cred'),
+			'page_title' => __('Relationship Forms', 'wp-cred'),
+			'callback' => array( $this->view, 'print_page' ),
+			'capability' => CRED_CAPABILITY
+		);
+
 		if( $this->get_page() === self::EDITOR_SLUG ){
 			$pages[] = array(
 				'slug' => 'cred_relationship_form',
@@ -108,14 +119,6 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 				'capability' => CRED_CAPABILITY
 			);
 		}
-
-		$pages[] = array(
-			'slug' => 'cred_relationship_forms',
-			'menu_title' => __('Relationship Forms', 'wp-cred'),
-			'page_title' => __('Relationship Forms', 'wp-cred'),
-			'callback' => array( $this->view, 'print_page' ),
-			'capability' => CRED_CAPABILITY
-		);
 
 		return $pages;
 	}
@@ -142,7 +145,8 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 				'buttons',
 				'cred_cred_style_dev',
 				'cred_wizard_general_style',
-				Toolset_Gui_Base::STYLE_GUI_BASE
+				Toolset_Gui_Base::STYLE_GUI_BASE,
+				OTGS_Assets_Handles::SWITCHER
 			),
 			CRED_FE_VERSION
 		);
@@ -174,6 +178,7 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 					'quicktags',
 					'ddl-abstract-dialog',
 					'ddl-dialog-boxes',
+					'jquery-ui-droppable',
 					Toolset_Assets_Manager::SCRIPT_TOOLSET_EVENT_MANAGER,
 					Toolset_Assets_Manager::SCRIPT_TOOLSET_SHORTCODE,
 					Toolset_Assets_Manager::SCRIPT_CODEMIRROR,
@@ -194,9 +199,17 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 					Toolset_Assets_Manager::SCRIPT_KNOCKOUT,
 					Toolset_Assets_Manager::SCRIPT_UTILS,
 					Toolset_Assets_Manager::SCRIPT_SELECT2,
-					CRED_Asset_Manager::SCRIPT_CODEMIRROR_SHORTCODES_MODE
+					Toolset_Assets_Manager::SCRIPT_TIPPY,
+					CRED_Asset_Manager::SCRIPT_CODEMIRROR_SHORTCODES_MODE,
+					CRED_Asset_Manager::SCRIPT_EDITOR_SCAFFOLD,
 				),
 				CRED_FE_VERSION
+			);
+
+			$this->assets_manager->localize_script(
+				self::JS_EDITOR_HANDLE,
+				self::JS_EDITOR_I18N_NAME,
+				$this->get_scaffold_localization()
 			);
 
 			// Wizard css for editor
@@ -213,16 +226,65 @@ class CRED_Association_Form_Back_End extends CRED_Association_Form_Abstract{
 				array(
 					self::CSS_ADMIN_MAIN_HANDLE,
 					self::CSS_WIZARD_HANDLE,
+					CRED_Asset_Manager::STYLE_EDITOR,
 					Toolset_Assets_Manager::STYLE_CODEMIRROR,
 					Toolset_Assets_Manager::STYLE_CODEMIRROR_CSS_HINT,
-					Toolset_Assets_Manager::STYLE_SELECT2_CSS_OVERRIDES
-
+					Toolset_Assets_Manager::STYLE_SELECT2_CSS_OVERRIDES,
+					Toolset_Assets_Manager::STYLE_TIPPY_CSS,
+					Toolset_Assets_Manager::STYLE_TOOLSET_DIALOGS_OVERRIDES,
+					'wpcf-css-embedded',
 				),
+				CRED_FE_VERSION
+			);
+
+			$this->assets_manager->register_style(
+				self::CSS_EDITOR_BASE_HANDLE,
+				CRED_ABSURL . self::CCS_EDITOR_BASE_REL_PATH,
+				array(),
 				CRED_FE_VERSION
 			);
 
 			$this->assets_to_load_js['editor_main'] = self::JS_EDITOR_HANDLE;
 			$this->assets_to_load_css['editor_main'] = self::CSS_EDITOR_HANDLE;
+			$this->assets_to_load_css['editor_base'] = self::CSS_EDITOR_BASE_HANDLE;
 		}
+	}
+
+
+	/**
+	 * Scaffold i18n
+	 *
+	 * @return array
+	 * @since 2.2
+	 */
+	private function get_scaffold_localization() {
+		return array(
+			// translators: Yes button.
+			'yes' => __( 'Yes', 'wp-cred' ),
+			// translators: No button.
+			'no' => __( 'No', 'wp-cred' ),
+			'notice' => $this->get_inline_notice_content(),
+		);
+	}
+
+
+	/**
+	 * Gets the content of a Toolset notice, adds a inline class a returns /**
+	 *
+	 * @since 2.2
+	 */
+	private function get_inline_notice_content() {
+		ob_start();
+		// translators: There are 2 kind of editors (visual and HTML), if the user switchs from html to editor, changes could be lost.
+		$notice = new \Toolset_Admin_Notice_Dismissible( 'scaffold_html_editor', __( 'Changes that you make in the HTML editor will be lost if you switch back to the Visual editor.', 'wp-cred' ) );
+		if ( \Toolset_Admin_Notices_Manager::is_notice_dismissed( $notice ) ) {
+			return '';
+		}
+		$notice->set_type( 'warning' );
+		$notice->set_inline_mode( true );
+		$notice->render();
+		$notice_content = ob_get_clean();
+
+		return $notice_content;
 	}
 }

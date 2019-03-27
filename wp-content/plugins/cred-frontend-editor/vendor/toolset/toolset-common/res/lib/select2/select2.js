@@ -4465,43 +4465,49 @@ Toolset_S2.define('toolset_select2/i18n/en',[],function () {
   // English
   return {
     errorLoading: function () {
-      return 'The results could not be loaded.';
+      return toolset_select2_i18n.errorLoading;
     },
     inputTooLong: function (args) {
       var overChars = args.input.length - args.maximum;
 
-      var message = 'Please delete ' + overChars + ' character';
+      var message = toolset_select2_i18n.inputTooLongSingular;
 
       if (overChars != 1) {
-        message += 's';
-      }
+        message = toolset_select2_i18n.inputTooLongPlural;
+	  }
+
+	  message = message.replace( '%NUM%', overChars );
 
       return message;
     },
     inputTooShort: function (args) {
       var remainingChars = args.minimum - args.input.length;
 
-      var message = 'Please enter ' + remainingChars + ' or more characters';
+	  var message = toolset_select2_i18n.inputTooShort;
+
+	  message = message.replace( '%NUM%', remainingChars );
 
       return message;
     },
     loadingMore: function () {
-      return 'Loading more results…';
+      return toolset_select2_i18n.loadingMore;
     },
     maximumSelected: function (args) {
-      var message = 'You can only select ' + args.maximum + ' item';
+      var message = toolset_select2_i18n.maximumSelectedSingular;
 
       if (args.maximum != 1) {
-        message += 's';
-      }
+        message = toolset_select2_i18n.maximumSelectedPlural;
+	  }
+
+	  message = message.replace( '%NUM%', args.maximum );
 
       return message;
     },
     noResults: function () {
-      return 'No results found';
+      return toolset_select2_i18n.noResults;
     },
     searching: function () {
-      return 'Searching…';
+      return toolset_select2_i18n.searching;
     }
   };
 });

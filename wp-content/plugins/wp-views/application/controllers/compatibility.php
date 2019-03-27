@@ -48,6 +48,12 @@ class Compatibility {
 			$the_events_calendar_compatibility = new Compatibility\TheEventsCalendar();
 			$this->initialize_single_integration( $the_events_calendar_compatibility );
 		}
+
+		$gutenberg_is_active = new \Toolset_Condition_Plugin_Gutenberg_Active();
+		if ( $gutenberg_is_active->is_met() ) {
+			$views_editor_blocks = new Compatibility\EditorBlocks\Blocks();
+			$this->initialize_single_integration( $views_editor_blocks );
+		}
 	}
 
 	private function initialize_single_integration( Compatibility\Base $compatibility ) {

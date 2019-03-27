@@ -26,7 +26,7 @@ class CRED_Form_Data {
 
     public function loadForm($formID, $post_type, $preview = false) {
         global $post, $current_user;
-        
+
         // load form data
         $fm = ($post_type == CRED_USER_FORMS_CUSTOM_POST_NAME) ? CRED_Loader::get('MODEL/UserForms') : CRED_Loader::get('MODEL/Forms');
         $form = $fm->getForm($formID);
@@ -62,7 +62,7 @@ class CRED_Form_Data {
 		    $form->fields['extra']->js = '';
 	    }
 
-        $form->fields['form_settings']->form['redirect_delay'] = 
+        $form->fields['form_settings']->form['redirect_delay'] =
             isset( $form->fields['form_settings']->form['redirect_delay'] )
             ? intval( $form->fields['form_settings']->form['redirect_delay'] )
             : 0;

@@ -657,6 +657,8 @@ function wpcf_admin_menu_edit_type()
                 esc_url(add_query_arg( 'page', 'wpcf-edit-type', admin_url('admin.php'))),
                 __('Add New', 'wpcf')
             );
+
+            $title .= '<div id="root"></div>';
         } else {
             $title = __( 'Add New Post Type', 'wpcf' );
         }
@@ -906,6 +908,16 @@ function wpcf_admin_settings_for_images( $sections ) {
         '#default_value' => !empty($settings['images_remote']),
         '#pattern' => '<ELEMENT><LABEL><DESCRIPTION>',
     );
+	$form['images_always_apply_media_library_modifications'] = array(
+		'#id' => 'images_always_apply_media_library_modifications',
+		'#name' => 'wpcf_images_always_apply_media_library_modifications',
+		'#type' => 'checkbox',
+		'#label' => __('Always apply image modifications done using Media Library', 'wpcf'),
+		'#description' => __('By default, the image shortcode [types field="image" size="full"] will display the URL of the field, without determining the underlying attachment object. This provides the best performance when using image fields. The downside of this is that image modifications done using Media Library are not used. Activate this option to always check for image modifications (performance will not be optimal)', 'wpcf'),
+		'#inline' => true,
+		'#default_value' => !empty($settings['images_always_apply_media_library_modifications']),
+		'#pattern' => '<ELEMENT><LABEL><DESCRIPTION>',
+	);
     $form['images_remote_clear'] = array(
 		'#title' => '<h3>' . __('Images caching', 'wpcf') . '</h3>',
         '#id' => 'images_remote_cache_time',
@@ -1020,9 +1032,10 @@ function wpcf_settings_save_image_settings() {
 	}
 	$settings = wpcf_get_settings();
 	$keys_to_check = array(
-		'add_resized_images_to_library'	=> 'esc_html',
-		'images_remote'					=> 'intval',
-		'images_remote_cache_time'		=> 'intval'
+		'add_resized_images_to_library'                   => 'esc_html',
+		'images_remote'                                   => 'intval',
+		'images_remote_cache_time'                        => 'intval',
+		'images_always_apply_media_library_modifications' => 'intval',
 	);
 	$posted_settings = isset( $_POST['settings'] ) ? wp_parse_args( $_POST['settings'] ) : array();
 	foreach ( $keys_to_check as $key => $validation ) {

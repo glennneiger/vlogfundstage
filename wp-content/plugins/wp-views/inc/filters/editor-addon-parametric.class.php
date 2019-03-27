@@ -1,6 +1,7 @@
 <?php
 
 // @todo this needs a complete $_POST data sanitization on several methods
+// @todo Move this to a proper AJAX callback
 
 class Editor_addon_parametric {
 
@@ -85,14 +86,14 @@ class Editor_addon_parametric {
 				}
 
 				global $wpdb;
-				$results = $wpdb->get_results( 
-					$wpdb->prepare( 
-						"SELECT DISTINCT meta_value FROM {$wpdb->postmeta} 
-						WHERE meta_key = %s 
-						ORDER BY meta_value 
+				$results = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT DISTINCT meta_value FROM {$wpdb->postmeta}
+						WHERE meta_key = %s
+						ORDER BY meta_value
 						LIMIT 0, 20",
-						$field 
-					) 
+						$field
+					)
 				);
 				foreach ( $results as $row ) {
 					echo $row->meta_value . "\n";

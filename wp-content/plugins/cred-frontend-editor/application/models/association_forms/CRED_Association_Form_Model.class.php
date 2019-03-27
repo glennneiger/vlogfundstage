@@ -17,6 +17,8 @@ class CRED_Association_Form_Model implements CRED_Association_Form_Model_Interfa
 	protected $form_script = '';
 	protected $form_style = '';
 	protected $redirect_custom_post = '';
+	protected $scaffold_data = '';
+	protected $editor_origin = 'scaffold';
 
 	private $action = 'add_new';
 
@@ -44,7 +46,9 @@ class CRED_Association_Form_Model implements CRED_Association_Form_Model_Interfa
 		"ajax_submission" => false,
 		"form_type" => CRED_Association_Form_Main::ASSOCIATION_FORMS_POST_TYPE,
 		"form_script" => '',
-	    "form_style"  => ''
+		"form_style"  => '',
+		"scaffold_data"  => '',
+		"editor_origin"  => 'scaffold',
 	);
 
 	/**

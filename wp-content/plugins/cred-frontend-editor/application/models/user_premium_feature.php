@@ -195,7 +195,12 @@ class CRED_User_Premium_Feature implements CRED_User_Premium_Feature_Interface {
 			unset( $data[ 'usermeta' ][ md5( '_password_generated' ) ] );
 		}
 
-		$new_user_id = $this->user_form_model->addUser( $data[ 'userdata' ], $data[ 'usermeta' ], $data[ 'fieldsInfo' ], $data[ 'removed_fields' ] );
+		if ( (int) toolset_getarr( $data[ 'userdata' ], 'ID', 0 ) > 0 ) {
+			$new_user_id = $this->user_form_model->updateUser( $data[ 'userdata' ] );
+			$this->user_form_model->updateUserInfo( $new_user_id, $data[ 'usermeta' ], $data[ 'fieldsInfo' ], $data[ 'removed_fields' ] );
+		} else {
+			$new_user_id = $this->user_form_model->addUser( $data[ 'userdata' ], $data[ 'usermeta' ], $data[ 'fieldsInfo' ], $data[ 'removed_fields' ] );
+		}
 
 		if ( isset( $order_id ) ) {
 			$order_id = (int) $order_id;

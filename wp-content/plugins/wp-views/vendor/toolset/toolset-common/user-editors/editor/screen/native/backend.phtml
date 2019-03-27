@@ -19,7 +19,7 @@ $medium_allowed_frontend_templates = $this->medium->get_frontend_templates();
     <p>
 		<?php
 		echo sprintf(
-			__( 'This Content Template is used in %1$s, and uses the native post editor.', 'wpv-views' ),
+			__( 'This Content Template is used in %1$s, and uses the Classic Editor.', 'wpv-views' ),
 			'<strong>' . $template['form-option-label'] . '</strong>'
 		);
 		?>
@@ -28,14 +28,14 @@ $medium_allowed_frontend_templates = $this->medium->get_frontend_templates();
     } else {
     ?>
     <p>
-		<?php _e( 'This Content Template uses the native post editor.', 'wpv-views' ); ?>
+		<?php _e( 'This Content Template uses the classic Editor.', 'wpv-views' ); ?>
     </p>
     <?php
     }
     ?>
     <div>
         <a href="<?php echo admin_url( 'post.php?post=' . $ct_id . '&action=edit' ); ?>" class="button button-primary button-large">
-            <?php _e( 'Launch native editor', 'wpv-views' ); ?>
+            <?php _e( 'Launch the Classic Editor', 'wpv-views' ); ?>
         </a>
     </div>
 </div>

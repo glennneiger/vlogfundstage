@@ -24,7 +24,8 @@ Toolset.CRED.AssociationFormModel = Backbone.Model.extend({
         isActive: false,
         action: null,
         form_type : Toolset.CRED.AssociationFormsEditor.form_type,
-        post_status : 'draft'
+		post_status : 'draft',
+		editor_origin: 'scaffold'
     },
     initialize: function( data ){
         var self = this;
@@ -39,7 +40,7 @@ Toolset.CRED.AssociationFormModel = Backbone.Model.extend({
             type: 'POST',
             success: function ( model, response, object ) {
 
-                if( self.get('id') === 0 && response.hasOwnProperty('data') && response.data.hasOwnProperty('results') ){
+                if( ! self.get('id') && response.hasOwnProperty('data') && response.data.hasOwnProperty('results') ){
                     if( response.data.results.id ){
                         self.set( 'id', response.data.results.id );
                     }

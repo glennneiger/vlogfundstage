@@ -43,7 +43,7 @@ class WPV_Shortcode_Post_Next_Link_GUI extends WPV_Shortcode_Base_GUI {
 						'format' => array(
 							'type'        => 'text',
 							'label'       => __( 'Format', 'wpv-views' ),
-							'description' => __( 'The link anchor format. Should contain \'%%LINK%%\' in order to display a link, otherwise it will create plain text. Default \'&laquo; %%LINK%%\'.', 'wpv-views' ),
+							'description' => __( 'The link anchor format. Should contain \'%%LINK%%\' in order to display a link, otherwise it will create plain text. Default \'%%LINK%% &raquo;\'.', 'wpv-views' ),
 							'default'     => '%%LINK%% &raquo;',
 						),
 						'link' => array(
@@ -56,8 +56,11 @@ class WPV_Shortcode_Post_Next_Link_GUI extends WPV_Shortcode_Base_GUI {
 				),
 			)
 		);
+
+		$default_context = 'wpv-post-next-link';
+		/** This filter is documented in application/models/shortcode/post/previous_link_gui.php */
+		$data = apply_filters( 'wpv_filter_wpv_shortcodes_gui_wpml_context_data' , $data, $default_context );
+
 		return $data;
 	}
-	
-	
 }

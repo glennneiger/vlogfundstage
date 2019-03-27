@@ -6,9 +6,9 @@
  * @since m2m
  */
 class CRED_Api_Handler_Get_Available_Forms extends CRED_Api_Handler_Abstract implements CRED_Api_Handler_Interface {
-	
+
 	/**
-	 * @var \OTGS\Toolset\CRED\Cache\Model\Forms\Factory 
+	 * @var \OTGS\Toolset\CRED\Cache\Model\Forms\Factory
 	 */
 	private $cache_factory;
 
@@ -17,7 +17,7 @@ class CRED_Api_Handler_Get_Available_Forms extends CRED_Api_Handler_Abstract imp
 	}
 
 	/**
-	 * In the case of post and user forms, this filter returns an array with two main entries, 'new' and 'edit', 
+	 * In the case of post and user forms, this filter returns an array with two main entries, 'new' and 'edit',
 	 * holding the forms to create a new or to edit a specific object type.
 	 *
 	 * For association forms, the array contains the existing forms as top level elements.
@@ -39,11 +39,11 @@ class CRED_Api_Handler_Get_Available_Forms extends CRED_Api_Handler_Abstract imp
 			return array();
 		}
 
-		if ( $existing_transient = $caching->get_transient() ) {
+		if ( false !== ( $existing_transient = $caching->get_transient() ) ) {
 			return $existing_transient;
 		}
-		
+
 		return $caching->generate_transient();
 	}
-	
+
 }

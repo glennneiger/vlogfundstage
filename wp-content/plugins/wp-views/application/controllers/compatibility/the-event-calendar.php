@@ -58,7 +58,7 @@ class TheEventsCalendar extends Base {
 			$this->the_events_calendar_is_active->is_met() &&
 			$this->tribe_events_query_class_exists->is_met()
 		) {
-			remove_action( 'pre_get_posts', array( \Tribe__Events__Query::class, 'pre_get_posts' ), 50 );
+			remove_action( 'pre_get_posts', array( 'Tribe__Events__Query', 'pre_get_posts' ), 50 );
 		}
 
 		return $query;
@@ -78,7 +78,7 @@ class TheEventsCalendar extends Base {
 			$this->the_events_calendar_is_active->is_met() &&
 			$this->tribe_events_query_class_exists->is_met()
 		) {
-			add_action( 'pre_get_posts', array( \Tribe__Events__Query::class, 'pre_get_posts' ), 50 );
+			add_action( 'pre_get_posts', array( 'Tribe__Events__Query', 'pre_get_posts' ), 50 );
 		}
 
 		return $query;

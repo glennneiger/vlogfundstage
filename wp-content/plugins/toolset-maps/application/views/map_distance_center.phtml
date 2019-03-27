@@ -1,3 +1,4 @@
+<?php /** @var array $vars Settings for this view */ ?>
 <li>
 	<label>
 		<input class="js-filter-center-source" type="radio" name="map_center_source"
@@ -39,7 +40,13 @@
 </li>
 <li>
 	<label>
-		<input class="js-filter-center-source" type="radio" name="map_center_source"
-		       value="user_location" <?php checked( 'user_location', $vars['map_center_source'] ); ?>>
+		<input
+			class="js-filter-center-source"
+			type="radio"
+			name="map_center_source"
+		    value="user_location"
+			<?php checked( 'user_location', $vars['map_center_source'] ); ?>
+			<?php disabled( ! $vars['frontend_served_over_https'] ) ?>
+		>
 		<?php _e('Distance center is set from user location.', 'toolset-maps') ?></label>
 </li>

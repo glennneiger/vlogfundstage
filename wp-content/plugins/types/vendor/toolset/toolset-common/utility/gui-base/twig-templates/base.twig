@@ -4,7 +4,7 @@
     @since 2.2
 #}
 
-<div class="wrap">
+<div class="{{ wrap_element_class|default('wrap') }}">
     {% block heading %}
         <h1>{% block title %}{% endblock %}</h1>
     {% endblock %}

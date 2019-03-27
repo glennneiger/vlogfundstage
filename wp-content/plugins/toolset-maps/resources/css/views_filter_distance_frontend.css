@@ -10,7 +10,7 @@
     height: 35px;
 }
 
-button.js-toolset-maps-distance-current-location {
+input.js-toolset-maps-distance-current-location {
     display: none;
 }
 

@@ -8,7 +8,7 @@ use OTGS\Toolset\CRED\Controller\Forms\User\Editor\Content\Toolbar;
 
 /**
  * User forms backend controller.
- * 
+ *
  * @since 2.1
  */
 class Backend extends BackendBase {
@@ -20,35 +20,42 @@ class Backend extends BackendBase {
 
     /**
      * Initialize backend.
-     * 
-     * Creates metaboxes, initializes the toolbar on the edit page, 
+     *
+     * Creates metaboxes, initializes the toolbar on the edit page,
      * initializes scripts in edit and listing pages.
-     * 
+     *
      * @since 2.1
      */
     public function initialize() {
         parent::initialize();
-        
-        add_action('add_meta_boxes_' . UserFormMain::POST_TYPE, array( $this , 'add_meta_boxes'), 20, 1);
+        $this->form_container = UserFormMain::SHORTCODE_NAME_FORM_CONTAINER;
 
         if ( $this->is_edit_page() ) {
+            add_filter( 'screen_options_show_screen', '__return_false' );
+            add_filter( 'screen_layout_columns', array( $this, 'screen_layout_columns' ) );
+            add_filter( 'get_user_option_screen_layout_' . UserFormMain::POST_TYPE, array( $this, 'screen_layout' ) );
+
+            add_action( 'add_meta_boxes_' . UserFormMain::POST_TYPE, array( $this , 'add_meta_boxes'), 20, 1 );
+            add_action( 'do_meta_boxes', array( $this, 'remove_meta_boxes' ) );
+            add_filter( 'hidden_meta_boxes', '__return_empty_array' );
+
             $content_editor_toolbar = new Toolbar();
             $content_editor_toolbar->initialize();
         }
 
-        if ( 
+        if (
             $this->is_edit_page()
-            || $this->is_listing_page() 
+            || $this->is_listing_page()
         ) {
             $this->init_scripts_and_styles();
         }
     }
-    
+
     /**
      * Whether we are on a bckend listing page.
      *
      * @return boolean
-     * 
+     *
      * @since 2.1
      */
     protected function is_listing_page() {
@@ -68,13 +75,13 @@ class Backend extends BackendBase {
      * Whether we are on a backend edit page.
      *
      * @return boolean
-     * 
+     *
      * @since 2.1
      */
     protected function is_edit_page() {
         global $pagenow;
 
-        if ( 
+        if (
             'post.php' === $pagenow
             && UserFormMain::POST_TYPE === get_post_type( toolset_getget( 'post' ) )
         ) {
@@ -90,30 +97,43 @@ class Backend extends BackendBase {
 
         return false;
     }
-    
+
+    public function screen_layout_columns( $columns ) {
+        $columns[ UserFormMain::POST_TYPE ] = 1;
+        return $columns;
+    }
+
+    public function screen_layout( $dummy ) {
+        return 1;
+    }
+
+    public function remove_meta_boxes() {
+        remove_meta_box( 'submitdiv', UserFormMain::POST_TYPE, 'side' );
+        remove_meta_box( 'slugdiv', UserFormMain::POST_TYPE, 'normal' );
+    }
+
     /**
      * Register metaboxs for the backend edit page.
      *
      * @param object $form
-     * 
+     *
      * @since 2.1
      */
     public function add_meta_boxes( $form ) {
         $model = \CRED_Loader::get('MODEL/UserForms');
         $form_fields = $model->getFormCustomFields(
-            $form->ID, 
+            $form->ID,
             array( 'form_settings', 'notification', 'extra' )
         );
 
+        $this->register_save_metabox( $form_fields );
         $this->register_settings_metabox( $form_fields );
         $this->register_access_metabox( $form_fields );
         $this->register_content_metabox( $form_fields );
         $this->register_notifications_metabox( $form_fields );
         $this->register_messages_metabox( $form_fields );
-        $this->register_save_metabox( $form_fields );
 
-        // CRED_PostExpiration is not registered here anymore
-        // Keep for backwards compatibility, although I think we should remove
+        // Keep for backwards compatibility, although I think we should remove: post expiration metabox is not managed here
         $this->metaboxes = apply_filters( 'cred_ext_meta_boxes', $this->metaboxes, $form_fields );
 
         $this->maybe_register_module_manager_metabox();

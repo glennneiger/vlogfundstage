@@ -242,11 +242,9 @@ class Upgrade {
      * Set database for new sites.
      *
      * @since 2.6.4
-     * 
-     * @todo On 2.7.0, uncomment the line to set the default for the setting on query filters by meta keys with spaces.
      */
     public function do_setup() {
-        //$this->set_default_settings();
+        $this->set_default_settings();
     }
 
     /**

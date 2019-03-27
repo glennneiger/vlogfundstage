@@ -26,8 +26,6 @@ abstract class CRED_Form_Builder_Base {
 	 * @return bool
 	 */
 	public function get_form( $form_id, $post_id = false, $form_count = 1, $preview = false ) {
-		$this->try_to_update_by_post( $form_id, $post_id, $form_count, $preview );
-
 		global $post;
 		CRED_StaticClass::$_cred_container_id = ( isset( $_POST[ CRED_StaticClass::PREFIX . 'cred_container_id' ] ) ) ? intval( $_POST[ CRED_StaticClass::PREFIX . 'cred_container_id' ] ) : ( isset( $post ) ? $post->ID : "" );
 
@@ -166,23 +164,6 @@ abstract class CRED_Form_Builder_Base {
 		$this->maybe_hide_comments( $form );
 
 		return $form;
-	}
-
-	/**
-	 * @param $form_id
-	 * @param $post_id
-	 * @param $form_count
-	 * @param $preview
-	 */
-	public function try_to_update_by_post( &$form_id, &$post_id, &$form_count, &$preview ) {
-		if ( array_key_exists( CRED_StaticClass::PREFIX . 'form_id', $_POST ) &&
-			array_key_exists( CRED_StaticClass::PREFIX . 'form_count', $_POST )
-		) {
-			$form_id = intval( $_POST[ CRED_StaticClass::PREFIX . 'form_id' ] );
-			$form_count = intval( $_POST[ CRED_StaticClass::PREFIX . 'form_count' ] );
-			$post_id = ( array_key_exists( CRED_StaticClass::PREFIX . 'post_id', $_POST ) ) ? intval( $_POST[ CRED_StaticClass::PREFIX . 'post_id' ] ) : false;
-			$preview = ( array_key_exists( CRED_StaticClass::PREFIX . 'form_preview_content', $_POST ) ) ? true : false;
-		}
 	}
 
 }

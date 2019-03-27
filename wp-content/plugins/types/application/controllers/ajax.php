@@ -31,6 +31,7 @@ class Types_Ajax extends Toolset_Ajax {
 	const CALLBACK_INTERMEDIARY_PARENT_CHILD = 'intermediary_parent_child';
 	const CALLBACK_ASSOCIATIONS_IMPORT = 'associations_import';
 	const CALLBACK_MERGE_RELATIONSHIPS = 'merge_relationships';
+	const CALLBACK_SET_EDITOR_MODE = 'set_editor_mode';
 
 
 	private static $callbacks = array(
@@ -50,6 +51,7 @@ class Types_Ajax extends Toolset_Ajax {
 		self::CALLBACK_INTERMEDIARY_PARENT_CHILD,
 		self::CALLBACK_ASSOCIATIONS_IMPORT,
 		self::CALLBACK_MERGE_RELATIONSHIPS,
+		self::CALLBACK_SET_EDITOR_MODE,
 	);
 
 
@@ -104,13 +106,6 @@ class Types_Ajax extends Toolset_Ajax {
 		// or from wpcf_ajax(). The wp_ajax_wpcf_ajax action will be reached only if the $fallthrough variables
 		// in those functions are set to true (which means that the call was not handled).
 		add_action( 'wp_ajax_wpcf_ajax', array( $this, 'do_legacy_wpcf_ajax' ) );
-		
-		// shortcode [types]
-		$factory = new Types_Shortcode_Factory();
-
-		if( $shortcode = $factory->get_shortcode( 'types' ) ) {
-			add_shortcode( 'types', array( $shortcode, 'render' ) );
-		};
 	}
 
 

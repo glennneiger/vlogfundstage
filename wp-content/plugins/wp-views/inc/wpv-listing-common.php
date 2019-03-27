@@ -609,9 +609,9 @@ function wpv_prepare_ct_listing_query( $listed_post_status,	$additional_fields =
  * Generates an Undo link for the 'trashed' message on Views / WordPress Archives listing.
  *
  * @since 1.7
- * 
+ *
  * @see wpv_maybe_show_listing_message_undo filter.
- */ 
+ */
 function wpv_admin_view_listing_message_undo( $undo_link, $message_name, $affected_ids ) {
 	if( ( 'trashed' == $message_name ) && !empty( $affected_ids ) ) {
 		$undo_link = sprintf( '<a href="%s"	class="js-wpv-untrash" data-ids="%s" data-nonce="%s">%s</a>',
@@ -664,7 +664,7 @@ function wpv_admin_empty_trash( $class, $empty_trash_button_attributes = array()
 
 /**
  * @todo comment
- */ 
+ */
 function wpv_render_ct_listing_dialog_templates_arrangeby_usage() {
 	?>
 	<div class="popup-window-container"> <!-- placeholder for static colorbox popups -->
@@ -685,7 +685,7 @@ function wpv_render_ct_listing_dialog_templates_arrangeby_usage() {
 
 /**
  * @todo comment
- */ 
+ */
 function wpv_render_ct_listing_dialog_templates_arrangeby_name() {
 	?>
 	<div class="popup-window-container">
@@ -727,13 +727,13 @@ function wpv_render_ct_listing_dialog_templates_arrangeby_name() {
 function wpv_render_wpa_listing_dialog_templates_arrangeby_name() {
 	?>
 	<div class="popup-window-container"> <!-- placeholder for static colorbox popups -->
-	
+
 		<div id="js-wpv-delete-wpa-dialog" class="toolset-shortcode-gui-dialog-container wpv-shortcode-gui-dialog-container">
 			<div class="wpv-dialog">
 				<p><?php _e( 'Are you sure want delete this WordPress Archive?', 'wpv-views' ); ?></p>
 			</div>
 		</div>
-		
+
 		<div id="js-wpv-bulk-delete-wpa-dialog" class="toolset-shortcode-gui-dialog-container wpv-shortcode-gui-dialog-container">
 			<div class="wpv-dialog">
 				<p><?php _e( 'Are you sure you want to delete the selected WordPress Archives?', 'wpv-views' ); ?></p>
@@ -751,7 +751,7 @@ function wpv_render_wpa_listing_dialog_templates_arrangeby_name() {
                 <p><?php _e( 'Loading...', 'wpv-views' ); ?></p>
             </div>
         </div>
-	
+
 	</div> <!-- .popup-window-container" -->
 	<?php
 }
@@ -759,16 +759,16 @@ function wpv_render_wpa_listing_dialog_templates_arrangeby_name() {
 
 function wpv_render_wpa_listing_dialog_templates_arrangeby_usage() {
 	?>
-	
+
 	<div class="popup-window-container"> <!-- placeholder for static colorbox popups -->
 		<div id="js-wpv-create-wpa-for-archive-loop-dialog" class="toolset-shortcode-gui-dialog-container wpv-shortcode-gui-dialog-container">
 			<div class="wpv-dialog wpv-shortcode-gui-content-wrapper js-wpv-dialog-wpa-manager">
 				<p>
-					<label for="wpv-create-wpa-for-archive-loop-title"><?php 
+					<label for="wpv-create-wpa-for-archive-loop-title"><?php
 					echo sprintf(
 							__( 'Name the new WordPress Archive for %s', 'wpv-views' ),
 							'<strong class="js-wpv-create-wpa-for-archive-loop-hint"></strong>'
-						); 
+						);
 					?></label>
 					<input type="text" id="wpv-create-wpa-for-archive-loop-title" value="" class="large-text js-wpv-create-wpa-for-archive-loop-title" placeholder="<?php echo esc_attr( __('WordPress Archive name','wpv-views') ) ?>" />
 				</p>
@@ -793,16 +793,16 @@ function wpv_render_wpa_listing_dialog_templates_arrangeby_usage() {
 				<div class="js-wpv-error-container"></div>
 			</div>
 		</div>
-	
+
 	</div> <!-- .popup-window-container" -->
-	
+
 	<?php
 }
 
 
 /**
  * @todo comment
- */ 
+ */
 function wpv_render_view_listing_dialog_templates() {
 	?>
 	<div class="popup-window-container"> <!-- placeholder for static colorbox popups -->
@@ -812,7 +812,6 @@ function wpv_render_view_listing_dialog_templates() {
 			<div class="wpv-dialog wpv-shortcode-gui-content-wrapper no-scrollbar">
 				<div class="js-wpv-error-container"></div>
 				<?php
-					wp_nonce_field('wp_nonce_create_view', 'wp_nonce_create_view');
 					printf(
 							'<input class="js-view-new-redirect" name="view_creation_redirect" type="hidden" value="%s" />',
 							// Careful, it is expected that this value really ends with "view_id=". View ID gets appended to it in JS.
@@ -881,7 +880,7 @@ function wpv_render_view_listing_dialog_templates() {
 
 /**
  * @todo comment
- */ 
+ */
 function wpv_render_duplicate_dialog( $type ) {
 
 	switch( $type ) {
@@ -906,7 +905,7 @@ function wpv_render_duplicate_dialog( $type ) {
 					__( 'A %s with that name already exists. Please use another name.', 'wpv-views'),
 					$type_label ),
 			ENT_QUOTES );
-	
+
 	?>
 	<div id="<?php echo $dialog_selector; ?>" class="toolset-shortcode-gui-dialog-container wpv-shortcode-gui-dialog-container <?php echo $dialog_selector; ?>">
 		<div class="wpv-dialog wpv-shortcode-gui-content-wrapper">

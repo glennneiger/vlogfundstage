@@ -865,7 +865,16 @@ if ( !class_exists( 'CRED_Loader', false ) ) {
             return null;
         }
 
-        // custom metaboxes methods (customized from WP)
+        /**
+         * Do form editor metaboxes.
+         *
+         * @param $screen
+         * @param $context
+         * @param $object
+         * @return int
+         * 
+         * @deprecated 2.1.2
+         */
         public static function do_meta_boxes($screen, $context, $object) {
             //global $wp_meta_boxes;
             static $already_sorted = false;
@@ -924,6 +933,7 @@ if ( !class_exists( 'CRED_Loader', false ) ) {
             return $i;
         }
 
+        // DEPRECATED
         public static function add_meta_box($id, $title, $callback, $screen = null, $context = 'advanced', $priority = 'default', $callback_args = null) {
             //global $wp_meta_boxes;
 

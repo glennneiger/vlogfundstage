@@ -11,13 +11,13 @@
  */
 
 class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
-	
+
 	var $tree_type = 'taxonomy';
 	var $db_fields = array (
-		'parent'	=> 'parent', 
+		'parent'	=> 'parent',
 		'id'		=> 'term_id'
 	);
-	
+
 	/**
 	 * Walker construct
 	 *
@@ -41,9 +41,9 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 	 *
 	 * @since 2.4.0
 	 */
-	
+
 	function __construct( $walker_args ) {
-		
+
 		$defaults = array(
 			'name'				=> '',
 			'selected'			=> '',
@@ -59,29 +59,33 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 			'dependency'		=> 'disabled',
 			'empty_action'		=> 'hide',
 			'operator'			=> 'IN',
-			'query_cache'		=> array()
+			'query_cache'		=> array(),
+			'query_mode' => 'normal',
 		);
 
 		$walker_args = wp_parse_args( $walker_args, $defaults );
 
 		$this->walker_args = array_intersect_key( $walker_args, $defaults );
-		
+
 		$this->walker_args['counters'] = ( strpos( $this->walker_args['format'], '%%COUNT%%' ) !== false ) ? 'enabled' : 'disabled';
 		$this->walker_args['use_query_cache'] = ( $this->walker_args['dependency']== 'enabled' || $this->walker_args['counters'] == 'enabled' ) ? 'enabled' : 'disabled';
-		
+
 		global $wp_query;
         $this->in_this_tax_archive_page = false;
         $this->tax_archive_term = null;
-		
+
 		$this->name = $this->walker_args['taxonomy'];
 		if ( $this->name == 'category' ) {
 			$this->name = 'post_category';
 		}
 
         if (
-            is_tax()
-            || is_category()
-            || is_tag()
+			'normal' !== toolset_getarr( $this->walker_args, 'query_mode', 'normal' )
+			&& (
+				is_tax()
+				|| is_category()
+				|| is_tag()
+			)
         ) {
             $term = $wp_query->get_queried_object();
 
@@ -93,15 +97,15 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
                 $this->tax_archive_term = $term;
             }
         }
-		
+
 		// Flag to signal whether the legacy structure nees to be displayed.
-		// Needed because legacy checkboxes display in an uordered list structure, and 
+		// Needed because legacy checkboxes display in an uordered list structure, and
 		// children lists must be included in parent list items.
-		
+
 		$this->show_legacy_item = false;
-		
+
 	}
-	
+
 	public function start_lvl( &$output, $depth = 0, $args = array() ) {
 		if ( 'legacy' == $this->walker_args['output'] ) {
 			$indent = str_repeat("\t", $depth);
@@ -117,15 +121,15 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 	}
 
 	public function start_el( &$output, $taxonomy_term, $depth = 0, $args = array(), $current_object_id = 0 ) {
-		
+
 		$popular_cats = isset( $args['popular_cats'] ) ? $args['popular_cats'] : array();
-		
-		$taxonomy_term->tax_option = str_replace( 
-			'%%NAME%%', 
-			$taxonomy_term->name, 
-			$this->walker_args['format'] 
+
+		$taxonomy_term->tax_option = str_replace(
+			'%%NAME%%',
+			$taxonomy_term->name,
+			$this->walker_args['format']
 		);
-		
+
 		switch ( $this->walker_args['value_type'] ) {
 			case 'slug':
 				$tax_value = urldecode( $taxonomy_term->slug );
@@ -135,9 +139,9 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 				$tax_value = $taxonomy_term->name;
 				break;
 		}
-		
+
 		$li_class = in_array( $taxonomy_term->term_id, $popular_cats ) ? ' class="popular-category"' : '';
-		
+
 		$el_args = array(
 			'attributes'	=> array(
 				'input'		=> array(
@@ -155,9 +159,9 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 				),
 			),
 		);
-		
+
 		$el_args['attributes']['input']['class'][] = 'js-wpv-filter-trigger';
-		
+
 		switch ( $this->walker_args['output'] ) {
 			case 'bootstrap':
 				$el_args['attributes']['input']['id'] = $this->name . '-' . $taxonomy_term->slug;
@@ -168,7 +172,7 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 				$el_args['attributes']['label']['class'][] = 'selectit';
 				break;
 		}
-		
+
 		// If the current page is a taxonomy page for the taxonomy the filter refers to
         if ( $this->in_this_tax_archive_page ) {
 		    // ... and if the queried taxonomy term is the current term rendered in the filter
@@ -180,10 +184,10 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 					$wpv_tax_criteria_matching_posts = wp_list_filter( $this->walker_args['query_cache'], $wpv_tax_criteria_to_filter );
 					$taxonomy_term->tax_option = str_replace( '%%COUNT%%', count( $wpv_tax_criteria_matching_posts ), $taxonomy_term->tax_option );
 				}
-				
+
 				$el_args['label'] = $taxonomy_term->tax_option;
 				$el_args['attributes']['input']['checked'] = 'checked';
-				
+
 				switch ( $this->walker_args['output'] ) {
 					case 'bootstrap':
 						$output .= $this->input_el_bootstrap( $el_args );
@@ -197,13 +201,13 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 						$this->show_legacy_item = true;
 						break;
 				}
-				
+
             }
             // ... else disregard this taxonomy term option for the filter
         } else {
-			
+
 			$show_item = $this->show_item_by_dependency_and_counters( $taxonomy_term );
-			
+
 		    // ... else let the normal procedures decide whether to display the option or not.
             if ( is_array( $this->walker_args['selected'] ) ) {
 				if ( in_array( $tax_value, $this->walker_args['selected'] ) ) {
@@ -214,17 +218,17 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 					$el_args['attributes']['input']['checked'] = 'checked';
 				}
             }
-			
+
 			$el_args['label'] = $taxonomy_term->tax_option;
 
-            if ( 
-				$show_item 
+            if (
+				$show_item
 				|| (
-					isset( $el_args['attributes']['input']['checked'] ) 
+					isset( $el_args['attributes']['input']['checked'] )
 					&& 'checked' == $el_args['attributes']['input']['checked']
 				)
 			) {
-				
+
 				switch ( $this->walker_args['output'] ) {
 					case 'bootstrap':
 						$output .= $this->input_el_bootstrap( $el_args );
@@ -238,12 +242,12 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 						$this->show_legacy_item = true;
 						break;
 				}
-				
+
             } else if ( $this->walker_args['empty_action'] != 'hide') {
-				
+
 				$el_args['attributes']['input']['disabled'] = 'disabled';
 				$el_args['attributes']['label']['class'][] = 'wpv-parametric-disabled';
-				
+
 				switch ( $this->walker_args['output'] ) {
 					case 'bootstrap':
 						$output .= $this->input_el_bootstrap( $el_args );
@@ -257,11 +261,11 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 						$this->show_legacy_item = true;
 						break;
 				}
-				
+
             }
-			
+
         }
-		
+
 	}
 
 	public function end_el( &$output, $taxonomy_term, $depth = 0, $args = array() ) {
@@ -271,7 +275,7 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 			$this->show_legacy_item = false;
 		}
 	}
-	
+
 	/**
 	 * Calculate whether the current item should be disabled or hidden, and its match count, based on ependency anc counters.
 	 *
@@ -287,9 +291,9 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 			$wpv_tax_criteria_matching_posts = array();
 			$wpv_tax_criteria_to_filter = array( $taxonomy_term->term_id => $taxonomy_term->term_id );
 			$wpv_tax_criteria_matching_posts = wp_list_filter( $this->walker_args['query_cache'], $wpv_tax_criteria_to_filter );
-			if ( 
-				count( $wpv_tax_criteria_matching_posts ) == 0 
-				&& 'enabled' == $this->walker_args['dependency'] 
+			if (
+				count( $wpv_tax_criteria_matching_posts ) == 0
+				&& 'enabled' == $this->walker_args['dependency']
 			) {
 				$show_item_bool = false;
 			}
@@ -299,7 +303,7 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 		}
 		return $show_item_bool;
 	}
-	
+
 	/**
 	 * Render an item using the legacy output.
 	 *
@@ -315,7 +319,7 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 		$output .= $this->el_label( $input_output . ' ' . $args['label'], $args['attributes']['label'] );
 		return $output;
 	}
-	
+
 	/**
 	 * Render an item using the bootstrap output.
 	 *
@@ -333,5 +337,5 @@ class WPV_Walker_Taxonomy_Checkboxes extends WPV_Walker_Control_Base {
 		$output .= '</div>';
 		return $output;
 	}
-	
+
 }

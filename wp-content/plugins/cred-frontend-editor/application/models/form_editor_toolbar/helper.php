@@ -4,7 +4,7 @@ namespace OTGS\Toolset\CRED\Model\FormEditorToolbar;
 
 /**
  * Helper for the post forms content editor toolbar.
- * 
+ *
  * @since 2.1
  */
 abstract class Helper {
@@ -14,7 +14,7 @@ abstract class Helper {
      * basic fields, plus fields belonging to each of the domains.
      *
      * @var array
-     * 
+     *
      * @since 2.1
      */
     protected $items = array();
@@ -23,7 +23,7 @@ abstract class Helper {
      * List of field types that do not support being prefilled with a value or urlparam attribute.
      *
      * @var array
-     * 
+     *
      * @since 2.1
      */
     protected $field_types_without_value_and_url_options = array(
@@ -34,7 +34,7 @@ abstract class Helper {
      * Populate and return the list of items.
      *
      * @return array
-     * 
+     *
      * @since 2.1
      */
     abstract public function populate_items();
@@ -50,9 +50,9 @@ abstract class Helper {
      * Populate the options for a field for prefilling with a value or urlparam attribute.
      *
      * @param array $options
-     * 
+     *
      * @return array
-     * 
+     *
      * @since 2.1
      */
     protected function get_value_and_url_options( $options = array() ) {
@@ -73,24 +73,24 @@ abstract class Helper {
                 )
             )
         );
-        return $options; 
+        return $options;
     }
-    
+
     /**
      * Populate the options for a field for sorting and filtering its options.
-     * 
+     *
      * Used on post selector fields (post reference, or hierarchical, legacy or m2m parents)
      * to sort the available options and filter them by author.
-     * 
+     *
      * For backwards compatibility, post and user forms use the "order" attribute for the orderby query argument,
      * and the "ordering" attribute for the order query argument.
      *
      * @param array $options
      * @param string $orderby_slug
      * @param string $order_slug
-     * 
+     *
      * @return array
-     * 
+     *
      * @since 2.1
      */
     protected function get_sorting_and_author_options( $options = array(), $orderby_slug = 'orderby', $order_slug = 'order' ) {
@@ -130,4 +130,23 @@ abstract class Helper {
         return $options;
     }
 
+	/**
+	 * Add labels option to fields
+	 *
+	 * @since 2.3
+	 */
+	protected function add_label_option_to_fields() {
+		foreach ( $this->items as $type => $fields ) {
+			foreach ( $fields as $key => $field ) {
+				$this->items[ $type ][ $key ]['options']['label'] = array(
+					// translators: Label of an option.
+					'label' => __( 'Label', 'wp-cred' ),
+					'type' => 'text',
+					'defaultForceValue' => $field['label'],
+					// translators: it is a text input that will be translated into a <label>text</label> HTML element.
+					'description' => __( 'A &lt;label&gt; included in the Form\'s HTML', 'wp-cred' ),
+				);
+			}
+		}
+	}
 }

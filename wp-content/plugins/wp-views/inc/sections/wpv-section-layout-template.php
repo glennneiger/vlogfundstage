@@ -152,14 +152,14 @@ function wpv_list_view_ct_item( $template, $ct_id, $view_id, $opened = false ) {
 	$opened = $is_loop_content_template ? true : $opened;
     ?>
     <li id="wpv-ct-listing-<?php echo esc_attr( $ct_id ); ?>" class="js-wpv-ct-listing js-wpv-ct-listing-show js-wpv-ct-listing-<?php echo esc_attr( $ct_id ); ?> layout-html-editor" data-id="<?php echo esc_attr( $ct_id ); ?>" data-viewid="<?php echo esc_attr( $view_id ); ?>" data-attributes="<?php echo esc_js( json_encode( $extra_ct_attributes ) ); ?>">
-        <span class="wpv-inline-content-template-title" style="display:block;">
+        <span class="wpv-inline-content-template-title js-wpv-inline-content-template-title" style="display:block;">
 			
 			<strong><?php echo esc_html( $template->post_title ); ?></strong>
 			<span class="wpv-inline-content-template-action-buttons">
 				<?php if ( ! $is_loop_content_template ) { ?>
 				<button class="button button-secondary button-small wpv-button-remove js-wpv-ct-remove-from-view"><i class="fa fa-times" aria-hidden="true"></i> <?php _e('Remove','wpv-views'); ?></button>
 				<?php } ?>
-				<button class="button button-secondary button-small js-wpv-ct-update-inline js-wpv-ct-update-inline-<?php echo esc_attr( $ct_id ); ?>" disabled="disabled" data-unsaved="<?php echo esc_attr( __('Not saved', 'wpv-views') ); ?>" data-id="<?php echo esc_attr( $ct_id ); ?>"><i class="fa fa-check" aria-hidden="true"></i> <?php _e('Update','wpv-views'); ?></button>
+				<input type="hidden" class="js-wpv-ct-update-inline js-wpv-ct-update-inline-<?php echo esc_attr( $ct_id ); ?>" data-unsaved="<?php echo esc_attr( __( 'Not saved', 'wpv-views' ) ); ?>" data-id="<?php echo esc_attr( $ct_id ); ?>" />
 				<button aria-expanded="true" class="button button-secondary button-small js-wpv-content-template-open wpv-content-template-open" data-target="<?php echo esc_attr( $ct_id ); ?>" data-viewid="<?php echo esc_attr( $view_id ); ?>">
 					<i aria-hidden="true" class="js-wpv-open-close-arrow fa fa-fw fa-caret-<?php if ( $opened ) { echo 'up'; } else { echo 'down'; } ?>"> </i>
 					<span class="screen-reader-text"><?php echo sprintf( __( 'Toggle Content Template panel: %s', 'wpv-views' ), $template->post_title ); ?></span>
@@ -325,7 +325,7 @@ function wpv_assign_ct_to_view_callback() {
 								&& $template_post->post_type  == 'view-template'
 							) {
 								$not_in_array[] =  $template_post->ID;
-								echo '<option value="' . esc_attr( $template_post->ID ) . '">' . esc_html( $template_post->post_title ) . '</option>';
+								echo '<option value="' . esc_attr( $template_post->ID ) . '" data-ct-name="' . esc_attr( $template_post->post_name ). '">' . esc_html( $template_post->post_title ) . '</option>';
 							}
 						 }
 						}
@@ -382,7 +382,7 @@ function wpv_assign_ct_to_view_callback() {
 						<option value="0"><?php _e( 'Select a Content Template','wpv-views' ) ?>&hellip;</option>
 						<?php
 						foreach( $query as $temp_post ) {
-							echo '<option value="' . esc_attr( $temp_post->ID ) .'">' . esc_html( $temp_post->post_title ) .'</option>';
+							echo '<option value="' . esc_attr( $temp_post->ID ) .'" data-ct-name="' . esc_attr( $temp_post->post_name ). '">' . esc_html( $temp_post->post_title ) .'</option>';
 						}
 						?>
 					</select>
@@ -419,142 +419,6 @@ function wpv_assign_ct_to_view_callback() {
 		'dialog_content' => $response
 	);
 	wp_send_json_success( $data );
-}
-
-// Create a new or assign an existing Content template as an inline Template for a View or WPA
-// @todo add proper wp_send_json_error/wp_send_json_success management here
-
-add_action( 'wp_ajax_wpv_add_inline_content_template', 'wpv_add_inline_content_template_callback' );
-
-function wpv_add_inline_content_template_callback() {
-	if ( ! current_user_can( 'manage_options' ) ) {
-		$data = array(
-			'type' => 'capability',
-			'message' => __( 'You do not have permissions for that.', 'wpv-views' )
-		);
-		wp_send_json_error( $data );
-	}
-	if ( 
-		! isset( $_POST["wpnonce"] )
-		|| (
-			! wp_verify_nonce( $_POST["wpnonce"], 'wpv_inline_content_template' )
-			&& ! wp_verify_nonce( $_POST["wpnonce"], 'wpv-ct-inline-edit' )			
-		)
-	) {
-		$data = array(
-			'type' => 'nonce',
-			'message' => __( 'Your security credentials have expired. Please reload the page to get new ones.', 'wpv-views' )
-		);
-		wp_send_json_error( $data );
-	}
-	if ( 
-		! isset( $_POST['view_id'] ) 
-		|| ! is_numeric( $_POST["view_id"] )
-		|| intval( $_POST['view_id'] ) < 1 
-	) {
-		$data = array(
-			'type' => 'data',
-			'message' => __( 'Wrong data.', 'wpv-views' )
-		);
-		wp_send_json_error( $data );
-	}
-	$ct_post_id = 0;
-	$view_id = sanitize_text_field( $_POST['view_id'] );
-	$mode = ( in_array( $_POST['mode'], array( 'assign', 'create' ) ) ) ? sanitize_text_field( $_POST['mode'] ) : '';
-	switch ( $mode ) {
-		case 'assign':
-			if ( isset( $_POST['template_id'] ) ) {
-				$ct_post_id = sanitize_text_field( $_POST['template_id'] );
-			} else if ( isset( $_POST['template_name'] ) ) {
-				$ct_post_id = WPV_Content_Template_Embedded::get_template_id_by_name( $_POST['template_name'] );
-			}
-			break;
-		case 'create':
-			if ( 
-				! isset( $_POST['template_name'] ) 
-				|| $_POST['template_name'] == ''
-			) {
-				$data = array(
-					'type' => 'data',
-					'message' => __( 'Wrong data.', 'wpv-views' )
-				);
-				wp_send_json_error( $data );
-			}
-			$template_name = sanitize_text_field( $_POST['template_name'] );
-			$response = wpv_create_content_template( $template_name, '', false, '' );
-			if ( isset( $response['error'] ) ) {
-				// Another Content Template with that title or name already exists
-				$data = array(
-					'type' => 'name',
-					'message' => __( 'There is already another Content Template with this same name.', 'wpv-views' )
-				);
-				wp_send_json_error( $data );
-			} else if ( isset( $response['success'] ) ) {
-				// Everything went well
-				$ct_post_id = $response['success'];
-			}
-			break;
-		default:
-			$data = array(
-				'type' => 'data',
-				'message' => __( 'Wrong data.', 'wpv-views' )
-			);
-			wp_send_json_error( $data );
-			break;
-	}
-    $ct_post_object = get_post( $ct_post_id, OBJECT, 'edit' );
-    if ( ! is_object( $ct_post_object ) ) {
-        $data = array(
-			'type' => 'data',
-			'message' => __( 'Wrong data.', 'wpv-views' )
-		);
-		wp_send_json_error( $data );
-    }
-	$view_settings		= get_post_meta( $view_id, '_wpv_settings', true);
-    $meta				= get_post_meta( $view_id, '_wpv_layout_settings', true );
-	if ( 
-		! isset( $view_settings['view-query-mode'] )
-		|| ( 'normal' == $view_settings['view-query-mode'] ) 
-	) {
-		$query_mode = 'normal';
-	} else {
-		$query_mode = 'archive';
-	}
-    $reg_templates = array();
-    if ( isset( $meta['included_ct_ids'] ) ) {
-        $reg_templates = explode( ',', $meta['included_ct_ids'] );
-		$reg_templates = array_map( 'esc_attr', $reg_templates );
-		$reg_templates = array_map( 'trim', $reg_templates );
-		// is_numeric does sanitization
-		$reg_templates = array_filter( $reg_templates, 'is_numeric' );
-		$reg_templates = array_map( 'intval', $reg_templates );
-	}
-	if ( in_array( $ct_post_id, $reg_templates ) ) {
-		// The Content Template was already on the inline list
-		$data = array(
-			'type' => 'already',
-			'ct_id' => $ct_post_id,
-			'message' => __( 'This Content Template is already assigned to this View.', 'wpv-views' )
-		);
-		if ( $query_mode == 'archive' ) {
-			$data['message'] = __( 'This Content Template is already assigned to this WordPress Archive.', 'wpv-views' );
-		}
-		wp_send_json_success( $data );
-	} else {
-		// Add the Content Template to the inline list and save it
-		$reg_templates[] = $ct_post_id;
-        $meta['included_ct_ids'] = implode( ',', $reg_templates );
-        update_post_meta( $view_id, '_wpv_layout_settings', $meta );
-		do_action( 'wpv_action_wpv_save_item', $view_id );
-		$data = array(
-			'type' => 'insert',
-			'ct_id' => $ct_post_id
-		);
-		ob_start();
-        wpv_list_view_ct_item( $ct_post_object, $ct_post_id, $view_id, true );
-		$data['message'] = ob_get_clean();
-		wp_send_json_success( $data );
-	}
 }
 
 // Load CT editor (inline - inside View editor page) TODO check nonce and, god's sake, error handling

@@ -231,7 +231,7 @@ Types.page.extension.relatedContent.viewmodels.RelatedContentViewModel = functio
 					nonce,
 					{
 						'association_uid': model.association_uid,
-						post_id: WPV_Toolset.Utils.getParameterByName('post')
+						post_id: model.post_id
 					},
 					successCallback,
 					errorCallback
@@ -314,10 +314,6 @@ Types.page.extension.relatedContent.viewmodels.RelatedContentViewModel = functio
 	 */
 	self.showQuickEdit = function(object, event) {
 		var $container = jQuery(event.target).parents('tr:first').next().show().find('.types-quick-edit-fields');
-		$container.on( 'click', '.js-wpt-file-upload', function( event ) {
-			event.preventDefault();
-			wptFile.bindOpen( jQuery( this ) );
-		} );
 		wptDate.init( $container[0] );
 		// Nested forms are not valid and the browser removes the child one during loading, so this workaround is needed.
 		var $fakeForm = $container.parent(); // It should be a form, but it is created as a div.

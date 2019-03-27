@@ -21,7 +21,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	self.markers = {};
 	self.infowindows = {};
 	self.bounds = {};
-	
+
 	self.default_cluster_options = {
 		imagePath:			views_addon_maps_i10n.cluster_default_imagePath,
 		gridSize:			60,
@@ -29,12 +29,12 @@ WPViews.ViewAddonMaps = function( $ ) {
 		zoomOnClick:		true,
 		minimumClusterSize:	2
 	};
-	
+
 	self.cluster_options = {};
 	self.has_cluster_options = {};
-	
+
 	self.resize_queue = [];
-		
+
 	/**
 	* collect_maps_data
 	*
@@ -42,7 +42,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.collect_maps_data = function() {
 		$( '.js-wpv-addon-maps-render' ).each( function() {
 			self.collect_map_data( $( this ) );
@@ -200,7 +200,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 			'zoomOnClick':			( thiz_map.data( 'clusterclickzoom' ) == 'off' ) ? false : true,
 			'minimumClusterSize':	parseInt( thiz_map.data( 'clusterminsize' ) )
 		};
-		
+
 		// As we might have cleared those options if we are on a reload event, we need to set them again with the data we saved in self.has_cluster_options
 		if ( _.has( self.has_cluster_options, thiz_map_id ) ) {
 			if ( _.has( self.has_cluster_options[ thiz_map_id ] , "styles" ) ) {
@@ -210,19 +210,19 @@ WPViews.ViewAddonMaps = function( $ ) {
 				thiz_cluster_options['calculator'] = self.has_cluster_options[ thiz_map_id ]['calculator'];
 			}
 		}
-		
+
 		var thiz_map_collected = {
-			'map':				thiz_map_id, 
-			'markers':			thiz_map_points, 
+			'map':				thiz_map_id,
+			'markers':			thiz_map_points,
 			'options':			thiz_map_options,
 			'cluster_options':	thiz_cluster_options
 		};
-		
+
 		self.maps_data.push( thiz_map_collected );
 		self.cluster_options[ thiz_map_id ] = thiz_cluster_options;
 
 		return thiz_map_collected;
-		
+
 	};
 
 	/**
@@ -409,7 +409,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.init_maps = function() {
 		self.maps_data.map( function( map ) {
 			// If there is a marker on the map with option for map rendering to wait until it's ready, do nothing.
@@ -425,13 +425,13 @@ WPViews.ViewAddonMaps = function( $ ) {
 			self.init_map_after_loading_styles( map );
 		});
 	};
-	
+
 	/**
 	* init_map
 	*
 	* @since 1.0
 	*/
-	
+
 	self.init_map = function( map ) {
 		var map_icon = '',
 		map_icon_hover = '',
@@ -541,8 +541,18 @@ WPViews.ViewAddonMaps = function( $ ) {
 				clickEvent = 'click';
 			}
 
+			// Helps SVG marker icons to have a reasonable size and render properly in Internet Explorer
+			if ( marker_map_icon.slice( -4 ).toLowerCase() === '.svg' ) {
+				var scaledSize = new google.maps.Size(32, 32);
+			} else {
+				var scaledSize = null;
+			}
+
 			if ( marker_map_icon != '' ) {
-				marker_settings['icon'] = marker_map_icon;
+				marker_settings['icon'] = {
+					url: marker_map_icon,
+					scaledSize: scaledSize,
+				}
 			}
 			if ( marker.title != '' ) {
 				marker_settings['title'] = marker.title;
@@ -560,19 +570,29 @@ WPViews.ViewAddonMaps = function( $ ) {
 			) {
 				marker_map_icon = ( marker_map_icon == '' ) ? views_addon_maps_i10n.marker_default_url : marker_map_icon;
 				marker_map_icon_hover = ( marker_map_icon_hover == '' ) ? marker_map_icon : marker_map_icon_hover;
+
 				if ( marker_map_icon != marker_map_icon_hover ) {
+					var marker_icon_scaled = {
+						url: marker_map_icon,
+						scaledSize: scaledSize,
+					};
+					var marker_hover_icon_scaled = {
+						url: marker_map_icon_hover,
+						scaledSize: scaledSize,
+					};
+
 					self.api.event.addListener( self.markers[ map.map ][ marker.marker ], 'mouseover', function() {
-						self.markers[ map.map ][ marker.marker ].setIcon( marker_map_icon_hover );
+						self.markers[ map.map ][ marker.marker ].setIcon( marker_hover_icon_scaled );
 					});
 					self.api.event.addListener( self.markers[ map.map ][ marker.marker ], 'mouseout', function() {
-						self.markers[ map.map ][ marker.marker ].setIcon( marker_map_icon );
+						self.markers[ map.map ][ marker.marker ].setIcon( marker_icon_scaled );
 					});
 					// Add custom classnames to reproduce this hover effect from an HTML element
 					$( document ).on( 'mouseover', '.js-toolset-maps-hover-map-' + map.map + '-marker-' + marker.marker, function() {
-						self.markers[ map.map ][ marker.marker ].setIcon( marker_map_icon_hover );
+						self.markers[ map.map ][ marker.marker ].setIcon( marker_hover_icon_scaled );
 					});
 					$( document ).on( 'mouseout', '.js-toolset-maps-hover-map-' + map.map + '-marker-' + marker.marker, function() {
-						self.markers[ map.map ][ marker.marker ].setIcon( marker_map_icon );
+						self.markers[ map.map ][ marker.marker ].setIcon( marker_icon_scaled );
 					});
 				}
 			}
@@ -627,7 +647,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 				return item == map.map;
 			});
 		}
-		
+
 		$( document ).trigger( 'js_event_wpv_addon_maps_init_map_completed', [ event_settings ] );
 
 		// Init Street View overlay if lat and long are provided (coming from address)
@@ -660,26 +680,26 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.clean_map_data = function( map_id ) {
 		self.maps_data = _.filter( self.maps_data, function( map_data_unique ) {
 			return map_data_unique.map != map_id;
 		});
-		
+
 		self.maps				= _.omit( self.maps, map_id );
 		self.markers			= _.omit( self.markers, map_id );
 		self.infowindows		= _.omit( self.infowindows, map_id );
 		self.bounds				= _.omit( self.bounds, map_id );
 		self.cluster_options	= _.omit( self.cluster_options, map_id );
-		
+
 		var settings = {
 			map_id: map_id
 		};
-		
+
 		$( document ).trigger( 'js_event_wpv_addon_maps_clean_map_completed', [ settings ] );
-		
+
 	};
-	
+
 	/**
 	* keep_map_center_and_resize
 	*
@@ -687,7 +707,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.1
 	*/
-	
+
 	self.keep_map_center_and_resize = function( map ) {
 		var map_iter_center = map.getCenter();
 		self.api.event.trigger( map, "resize" );
@@ -1023,7 +1043,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	// ------------------------------------
 	// API
 	// ------------------------------------
-	
+
 	/**
 	* WPViews.view_addon_maps.reload_map
 	*
@@ -1031,7 +1051,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.reload_map = function( map_id ) {
 		var settings = {
 			map_id: map_id
@@ -1040,7 +1060,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 		$( document ).trigger( 'js_event_wpv_addon_maps_reload_map_triggered', [ settings ] );
 		$( document ).trigger( 'js_event_wpv_addon_maps_reload_map_completed', [ settings ] );
 	};
-	
+
 	/**
 	* document.js_event_wpv_addon_maps_reload_map_triggered
 	*
@@ -1052,12 +1072,12 @@ WPViews.ViewAddonMaps = function( $ ) {
 	* @since 1.5 supports Azure API
 	*/
 	$( document ).on( 'js_event_wpv_addon_maps_reload_map_triggered', function( event, data ) {
-		var defaults = { 
+		var defaults = {
 			map_id: false
 		},
 		settings = $.extend( {}, defaults, data );
-		if ( 
-			settings.map_id == false 
+		if (
+			settings.map_id == false
 			|| $( '#js-wpv-addon-maps-render-' + settings.map_id ).length != 1
 		) {
 			return;
@@ -1082,7 +1102,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.get_map = function( map_id ) {
 		if ( map_id in self.maps ) {
 			return self.maps[ map_id ];
@@ -1090,7 +1110,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 			return false;
 		}
 	};
-	
+
 	/**
 	* WPViews.view_addon_maps.get_map_marker
 	*
@@ -1101,7 +1121,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.get_map_marker = function( marker_id, map_id ) {
 		if (
 			map_id in self.markers
@@ -1112,17 +1132,17 @@ WPViews.ViewAddonMaps = function( $ ) {
 			return false;
 		}
 	};
-	
+
 	// ------------------------------------
 	// Interaction
 	// ------------------------------------
-	
+
 	/**
 	* Reload on js-wpv-addon-maps-reload-map.click
 	*
 	* @since 1.0
 	*/
-	
+
 	$( document ).on( 'click', '.js-wpv-addon-maps-reload-map', function( e ) {
 		e.preventDefault();
 		var thiz = $( this );
@@ -1130,7 +1150,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 			self.reload_map( thiz.data( 'map' ) );
 		}
 	});
-	
+
 	/**
 	* Center on a marker on js-wpv-addon-maps-center-map.click
 	*
@@ -1144,7 +1164,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 		thiz_marker,
 		thiz_zoom;
 		if (
-			thiz.attr( 'data-map' ) 
+			thiz.attr( 'data-map' )
 			&& thiz.attr( 'data-marker' )
 		) {
 			thiz_map = thiz.data( 'map' );
@@ -1179,7 +1199,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 			}
 		}
 	});
-	
+
 	/**
 	* Center map on fitbounds on js-wpv-addon-maps-center-map-fitbounds.click
 	*
@@ -1187,7 +1207,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	$( document ).on( 'click', '.js-wpv-addon-maps-restore-map', function( e ) {
 		e.preventDefault();
 		var thiz = $( this ),
@@ -1202,7 +1222,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 			) {
 				self.maps[ thiz_map ].fitBounds( self.bounds[ thiz_map ] );
 			}
-			
+
 			if ( _.size( self.markers[ thiz_map ] ) == 1 ) {
 				current_map_data_array = _.filter( self.maps_data, function( map_data_unique ) {
 					return map_data_unique.map == thiz_map;
@@ -1242,33 +1262,33 @@ WPViews.ViewAddonMaps = function( $ ) {
 			}
 		}
 	});
-	
+
 	// ------------------------------------
 	// Views compatibility
 	// ------------------------------------
-	
+
 	/**
 	* Reload the maps contained on the parametric search results loaded via AJAX
 	*
 	* @since 1.0
 	*/
-	
+
 	$( document ).on( 'js_event_wpv_parametric_search_results_updated', function( event, data ) {
 		var affected_maps = self.get_affected_maps( data.layout );
 		_.each( affected_maps, self.reload_map );
 	});
-	
+
 	/**
 	* Reload the maps contained on the pagination results loaded via AJAX
 	*
 	* @since 1.0
 	*/
-	
+
 	$( document ).on( 'js_event_wpv_pagination_completed', function( event, data ) {
 		var affected_maps = self.get_affected_maps( data.layout );
 		_.each( affected_maps, self.reload_map );
 	});
-	
+
 	/**
 	* get_affected_maps
 	*
@@ -1280,7 +1300,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.1
 	*/
-	
+
 	self.get_affected_maps = function( container ) {
 		var affected_maps = [];
 		container.find( '.js-wpv-addon-maps-render' ).each( function() {
@@ -1292,11 +1312,11 @@ WPViews.ViewAddonMaps = function( $ ) {
 		affected_maps = _.uniq( affected_maps );
 		return affected_maps;
 	};
-	
+
 	// ------------------------------------
 	// Clusters definitions and interactions
 	// ------------------------------------
-	
+
 	/**
 	* WPViews.view_addon_maps.set_cluster_options
 	*
@@ -1329,7 +1349,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.set_cluster_options = function( options, map_id ) {
 		if ( typeof map_id === 'undefined' ) {
 			// If map_id is undefined, set global options
@@ -1352,7 +1372,7 @@ WPViews.ViewAddonMaps = function( $ ) {
 			self.has_cluster_options[ map_id ] = options;
 		}
 	};
-	
+
 	/**
 	* WPViews.view_addon_maps.get_cluster_options
 	*
@@ -1364,18 +1384,18 @@ WPViews.ViewAddonMaps = function( $ ) {
 	*
 	* @since 1.0
 	*/
-	
+
 	self.get_cluster_options = function( map_id ) {
 		var options = self.default_cluster_options;
-		if ( 
+		if (
 			typeof map_id !== 'undefined'
-			&& _.has( self.cluster_options, map_id ) 
+			&& _.has( self.cluster_options, map_id )
 		) {
 			options = self.cluster_options[ map_id ];
 		}
 		return options;
 	};
-	
+
 	// ------------------------------------
 	// Init
 	// ------------------------------------
@@ -1434,6 +1454,30 @@ WPViews.ViewAddonMaps = function( $ ) {
 					mapInitCallback();
 				}
 			});
+		}
+	};
+
+	/**
+	 * Initializes a single map by given id, and also cleans up if map with same id was already initialized.
+	 *
+	 * API agnostic.
+	 *
+	 * @since 1.7
+	 * @param {string} id
+	 */
+	self.initMapById = function( id ) {
+		self.clean_map_data( id );
+
+		const mapData = self.collect_map_data( $( 'div#js-wpv-addon-maps-render-' + id ) );
+
+		if ( API_GOOGLE === views_addon_maps_i10n.api_used ) {
+			self.init_map_after_loading_styles( mapData );
+			// This is emitted only by collect_maps_data, not by the single map data collector that's used here, and is
+			// needed by add_current_visitor_location_after_geolocation in order to run at the right time. (Google API
+			// only).
+			$( document ).trigger('js_event_wpv_addon_maps_map_data_collected');
+		} else {
+			self.maps[id] = self.resolveGeolocatedMarkerThenInitMapAzure( mapData );
 		}
 	};
 

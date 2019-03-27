@@ -4,7 +4,7 @@ namespace OTGS\Toolset\CRED\Controller\Forms\Post\PageExtension;
 
 /**
  * Post form content metabox extension.
- * 
+ *
  * @since 2.1
  */
 class Content {
@@ -14,7 +14,7 @@ class Content {
      *
      * @param object $form
      * @param array $callback_args
-     * 
+     *
      * @since 2.1
      */
     public function print_metabox_content( $form, $callback_args = array() ) {
@@ -24,36 +24,38 @@ class Content {
         $extra = toolset_getarr( $args, 'extra', array() );
         $extra_js = $extra->js;
         $extra_css = $extra->css;
-        ?>
-        <div class="cred-editor-toolbar code-editor-toolbar js-cred-editor-toolbar js-toolset-editor-toolbar js-code-editor-toolbar" data-target="content">
-        <?php
-            do_action( 'cred_content_editor_print_toolbar_buttons' );
-        ?>
-        </div>
-        <textarea style="width:100%" id="content" name="content" autocomplete="off"><?php echo esc_textarea( $form->post_content ); ?></textarea>
+        $context = array(
+            'extra' => $extra,
+            'extra_js' => $extra_js,
+            'extra_css' => $extra_css,
+            'form' => $form,
+            'notice' => $this->get_inline_notice_content(),
+        );
+        $template_repository = \CRED_Output_Template_Repository::get_instance();
+        $renderer = \Toolset_Renderer::get_instance();
+        $output = $renderer->render(
+            $template_repository->get( \CRED_Output_Template_Repository::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_CONTAINER ),
+            $context
+        );
+    }
 
-        <div id='cred-editor-container-css' class='cred-editor-container js-cred-editor-container js-cred-editor-container-css'>
-            <h2 class="code-editor-toolbar cred-editor-toggler js-cred-editor-toggler" data-target="css">
-                <i class="fa fa-caret-down icon-large fa-lg" style="margin-right:5px"></i>
-                <i class="cred-icon-pushpin fa fa-thumb-tack js-editor-nonempty-flag"></i>
-                <?php _e( 'CSS editor', 'wp-cred' ); ?>
-            </h2>
-            <div class="cred-editor-wrap js-cred-editor-wrap-css" style="display:none">
-            <textarea id='cred-extra-css-editor' name='_cred[extra][css]' style="position:relative;overflow-y:auto;" class="cred-extra-css-editor" autocomplete="off"><?php echo $extra_css; ?></textarea>
-            </div>    
-        </div>
 
-        <div id='cred-editor-container-js' style="border-bottom:solid 1px #ccc" class='cred-editor-container js-cred-editor-container js-cred-editor-container-js'>    
-            <h2 class="code-editor-toolbar cred-editor-toggler js-cred-editor-toggler" data-target="js">
-                <i class="fa fa-caret-down icon-large fa-lg" style="margin-right:5px"></i>
-                <i class="cred-icon-pushpin fa fa-thumb-tack js-editor-nonempty-flag"></i>
-                <?php _e( 'JS editor', 'wp-cred' ); ?>
-            </h2>
-            <div class="cred-editor-wrap js-cred-editor-wrap-js" style="display:none">
-            <textarea id='cred-extra-js-editor' name='_cred[extra][js]' style="position:relative;overflow-y:auto;" class="cred-extra-js-editor" autocomplete="off"><?php echo $extra_js; ?></textarea>
-            </div>
-        </div>
-
-        <?php
+    /**
+     * Gets the content of a Toolset notice, adds a inline class a returns /**
+     *
+     * @since 2.2
+     */
+    private function get_inline_notice_content() {
+        ob_start();
+        // translators: There are 2 kind of editors (visual and HTML), if the user switchs from html to editor, changes could be lost.
+        $notice = new \Toolset_Admin_Notice_Dismissible( 'scaffold_html_editor', __( 'Changes that you make in the HTML editor will be lost if you switch back to the Visual editor.', 'wp-cred' ) );
+        if ( \Toolset_Admin_Notices_Manager::is_notice_dismissed( $notice ) ) {
+            return '';
+        }
+        $notice->set_type( 'warning' );
+        $notice->set_inline_mode( true );
+        $notice->render();
+        $notice_content = ob_get_clean();
+        return $notice_content;
     }
 }

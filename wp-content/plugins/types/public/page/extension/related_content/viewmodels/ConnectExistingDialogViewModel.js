@@ -95,6 +95,10 @@ Types.page.extension.relatedContent.viewmodels.ConnectExistingDialogViewModel = 
 
 		self.dialog_id = 'types-connect-existing-content-dialog-' + relatedContentModel.relationship_slug;
 
+		var maxDialogWidth = relatedContentModel.relatedContent.columns.relationship.length > 0
+			? 1200 // with relationship fields
+			: 600; // without relationship fields
+
 		var dialog = Types.page.extension.relatedContent.main.createDialog(
 			self.dialog_id,
 			relatedContentModel.strings.misc['connectExisting'],
@@ -119,7 +123,8 @@ Types.page.extension.relatedContent.viewmodels.ConnectExistingDialogViewModel = 
 				}
 			],
 			{
-				dialogClass: 'toolset-dialog-connect-related-content'
+				dialogClass: 'toolset-dialog-connect-related-content',
+                width: jQuery( window ).width() < maxDialogWidth + 50 ? jQuery( window ).width() - 50 : maxDialogWidth
 			}
 		);
 

@@ -25,7 +25,9 @@ class Toolset_Post_Type_Exclude_List {
 		'revision',
 		'acf-field-group',
 		'acf',
-		'otgs_ps_bundles',
+		'otgs_ps_bundles', // Installer project bundles.
+		'wp_block', // Reusable Gutenberg blocks.
+		'elementor_library', // "My Templates" post type from Elementor.
 	);
 
 

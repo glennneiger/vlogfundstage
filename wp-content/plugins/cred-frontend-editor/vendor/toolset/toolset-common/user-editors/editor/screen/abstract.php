@@ -20,12 +20,50 @@ abstract class Toolset_User_Editors_Editor_Screen_Abstract
 	protected $editor;
 
 	/**
+	 * @var Toolset_Constants
+	 */
+	protected $constants;
+
+	/**
+	 * @var Toolset_Renderer
+	 */
+	protected $toolset_renderer;
+
+	/**
+	 * @var Toolset_Output_Template_Repository
+	 */
+	protected $template_repository;
+
+	/**
+	 * @var null|Toolset_Assets_Manager
+	 */
+	protected $assets_manager;
+
+	public function __construct(
+		\Toolset_User_Editors_Editor_Abstract $editor,
+		\Toolset_User_Editors_Medium_Interface $medium,
+		\Toolset_Constants $constants,
+		\Toolset_Renderer $toolset_renderer,
+		\Toolset_Output_Template_Repository $template_repository,
+		\Toolset_Assets_Manager $assets_manager
+	) {
+		$this->editor = $editor;
+		$this->medium = $medium;
+		$this->constants = $constants;
+		$this->toolset_renderer = $toolset_renderer;
+		$this->template_repository = $template_repository;
+		$this->assets_manager = $assets_manager;
+	}
+
+	/**
 	 * Initializes the Toolset_User_Editors_Editor_Screen_Abstract class.
 	 */
 	public function initialize() {
 		add_filter( 'wpv_filter_display_ct_used_editor', array( $this, 'get_editor_name_for_ct_states' ), 10, 2 );
+		
+		add_filter( 'wpv_filter_get_edit_ct_with_editor_link', array( $this, 'maybe_get_ct_edit_with_editor_link' ), 10, 2 );
 	}
-
+	
 	/**
 	 * Check whether the current page is a Views edit page or a WPAs edit page.
 	 * We need this check to register the needed assets for the inline CT section of those pages.
@@ -66,26 +104,6 @@ abstract class Toolset_User_Editors_Editor_Screen_Abstract
 	}
 
 	/**
-	 * Returns the editor's name.
-	 *
-	 * @param string $default
-	 *
-	 * @return string The editor's name.
-	 */
-	public function get_editor_name( $default = '' ) {
-		return $default;
-	}
-
-	/**
-	 * Returns the editor's screen ID.
-	 *
-	 * @return string The editor's screen ID.
-	 */
-	public function get_editor_screen_id( $default = '' ) {
-		return $default;
-	}
-
-	/**
 	 * Returns the editor name to display it next to the Content Template on the Content Template listing page, if the
 	 * Content Template of the displayed row is built the the current editor.
 	 *
@@ -96,7 +114,7 @@ abstract class Toolset_User_Editors_Editor_Screen_Abstract
 	 */
 	public function get_editor_name_for_ct_states( $used_ct_editor, $ct ) {
 		if ( $this->maybe_ct_is_built_with_editor( $ct->ID ) ) {
-			$used_ct_editor = $this->get_editor_name( $used_ct_editor );
+			$used_ct_editor = $this->editor->get_name();
 		}
 
 		return $used_ct_editor;
@@ -105,16 +123,41 @@ abstract class Toolset_User_Editors_Editor_Screen_Abstract
 	/**
 	 * Determines if the Content Template with ID equals to the given parameter is using the current editor.
 	 *
-	 * @param  int   $ct_id The ID of the investigated Content Template.
+	 * @param  int  $ct_id The ID of the investigated Content Template.
 	 *
-	 * @return bool True if the investigated Content Tempalte uses the current editor, false otherwise.
+	 * @return bool True if the investigated Content Template uses the current editor, false otherwise.
 	 */
-	private function maybe_ct_is_built_with_editor( $ct_id ) {
+	protected function maybe_ct_is_built_with_editor( $ct_id ) {
 		$ct_user_editor_choice_meta = get_post_meta( $ct_id, '_toolset_user_editors_editor_choice', true );
-		$editor_screen_id = $this->get_editor_screen_id( 'unknown' );
-		if ( $ct_user_editor_choice_meta === $editor_screen_id ) {
-			return true;
+		$editor_screen_id = $this->editor->get_id();
+
+		return $ct_user_editor_choice_meta === $editor_screen_id;
+	}
+
+	/**
+	 * Gets the "Edit with <editor>" link under each Content Template in the Content Templates listing page.
+	 *
+	 * @param int $template_id
+	 *
+	 * @return string
+	 */
+	public function get_ct_edit_with_editor_link( $template_id = 0 ) {
+		return '';
+	}
+
+	/**
+	 * Callback for the filter to get the "Edit with <editor>" link under each Content Template in the Content Templates listing page.
+	 *
+	 * @param string $edit_with_editor_output
+	 * @param int    $template_id
+	 *
+	 * @return string
+	 */
+	public function maybe_get_ct_edit_with_editor_link( $edit_with_editor_output, $template_id ) {
+		if ( $this->maybe_ct_is_built_with_editor( $template_id ) ) {
+			$edit_with_editor_output = $this->get_ct_edit_with_editor_link( $template_id );
 		}
-		return false;
+
+		return $edit_with_editor_output;
 	}
 }

@@ -6,6 +6,8 @@
     var staticData = $.parseJSON( WPV_Toolset.Utils.editor_decode64( $( '#types_rfg_model_data' ).html() ) ),
         lastActiveGroupPerLevel = {};
 
+    var isHorizontalViewActive = false;
+
     /**
      * Function to update HTML of inputs related to user changes
      *
@@ -40,6 +42,12 @@
         return oldHTML.apply( this );
     };
 
+    Types.RepeatableGroup.Model.Col = function( index ) {
+        self = this;
+        self.index = index;
+        self.isVisible = ko.observable( false );
+    }
+
     /**
      * Group model
      *
@@ -64,7 +72,7 @@
         // Map Headlines
         self.headlines = ko.observableArray( ko.utils.arrayMap( data.headlines || [],
             function( headlineData ) {
-                return new Types.RepeatableGroup.Model.Headline( headlineData );
+                return new Types.RepeatableGroup.Model.Headline( headlineData, self );
             } ) );
 
         // Map Items
@@ -72,6 +80,79 @@
             function( itemData ) {
                 return new Types.RepeatableGroup.Model.Item( itemData, self );
             } ) );
+
+        /**
+         * For the horizontal view we have a bunch of extra steps to make conditions work
+         * as all fields share the title in form of the table headline row
+         */
+        if( isHorizontalViewActive ) {
+            // cols
+            self.cols = ko.observableArray();
+
+            var calculateIsColVisibleTimeout = [];
+
+            /**
+             * Calculates if an col must be shown or not. Even for
+             * hidden fields the cell will be shown if one of all fields is visible
+             *
+             * The real calculation happens in self._calculateIsColVisible(), which will be
+             * called with an timeout of 50ms, which will be overwritten by each field of the same
+             * col to make sure this is only called when all fields visibility was updated.
+             *
+             * @param col
+             */
+            self.calculateIsColVisible = function( col ) {
+                if( typeof calculateIsColVisibleTimeout[col.index] != 'undefined' ) {
+                    clearTimeout( calculateIsColVisibleTimeout[col.index] )
+                }
+
+                // delay here as all fields need to be updated before calculation for cols visibility
+                calculateIsColVisibleTimeout[col.index] = setTimeout(
+                    self._calculateIsColVisible,
+                    50,
+                    col
+                );
+            }
+
+            self._calculateIsColVisible = function( col ) {
+                var fieldVisible = false;
+
+                for (let i = 0; i < self.items().length; i++) {
+                    let field = self.items()[i].fields()[col.index];
+                    if( field.fieldConditionsMet() ) {
+                        // one field visible = col visible
+                        fieldVisible = true;
+
+                        // no need to check further fields
+                        break;
+                    }
+                }
+
+                // col is visible
+                col.isVisible( fieldVisible );
+
+                // just to be sure there are no glitches on the position fixed elements
+                setTimeout( Types.RepeatableGroup.Functions.cssExtension, 200 );
+            }
+
+            /**
+             * table cols
+             */
+			for (let i = 0; i < self.headlines().length; i++) {
+				let col = new Types.RepeatableGroup.Model.Col( i );
+				self.cols.push( col );
+			}
+
+			// function to refresh col visibility
+            self.refreshColVisibility = function() {
+				for (let i = 0; i < self.cols().length; i++) {
+					self.calculateIsColVisible( self.cols()[i] );
+				}
+			}
+
+			// do refresh once on group init
+			self.refreshColVisibility();
+        }
 
         /**
          * Toggle visibility
@@ -90,7 +171,6 @@
 
                 lastActiveGroupPerLevel[self.level] = self;
             }
-
 
             if( self.field === null ) {
                 // nothing else to do for a non nested group
@@ -200,7 +280,16 @@
 
                         // Yoast integration
                         initYoastFields( [ response.data.item ] );
-                    }
+
+                        // Refresh col visibility for horizontal view
+						if( isHorizontalViewActive ) {
+							newItem.group.refreshColVisibility();
+						}
+                    } else {
+						if( response.data.message ) {
+							alert( response.data.message );
+						}
+					}
                 },
 
                 error: function( response ) {
@@ -281,6 +370,12 @@
 
             // set visibility
             affectedField.fieldConditionsMet( data.visible ? true : false );
+
+            // Horizontal specific - col visibility
+            if( isHorizontalViewActive ) {
+                let indexOfField = affectedField.item.fields.indexOf( affectedField );
+                affectedField.item.group.calculateIsColVisible( affectedField.item.group.cols()[indexOfField] );
+            }
         } );
     }
 
@@ -290,7 +385,8 @@
      * @param data
      * @constructor
      */
-    Types.RepeatableGroup.Model.Headline = function( data ) {
+    Types.RepeatableGroup.Model.Headline = function( data, group ) {
+        this.group = group;
         this.title = data.title || '';
         this.wpmlIsCopied = data.wpmlIsCopied || 0;
     }
@@ -619,27 +715,10 @@
             // task for horizontal view
             if( rgx.length ) {
 
-                // position the fixed columns (sort handle and delete of first item level)
-                rgx.find( 'th:last-child' ).css( 'left', ( $( '.c-rgx__body' ).offset().left + $( '.c-rgx__body' ).width()  ) + 'px' );
-                rgx.find( '.c-rgx__level--1' ).each( function() {
-                    var tbodyHeight = $( this ).closest( 'tbody' ).outerHeight() + 1;
-
-                    $( this ).css( 'height', tbodyHeight + 'px' );
-                    $( this ).find( 'i.fa' ).each( function() {
-                        $( this ).css( {
-                            'position' : 'absolute',
-                            'top': ( tbodyHeight - $( this ).height() ) / 2,
-                            'left': '20%'
-                        } );
-                    } );
-
-                    $( this ).css( 'top', $( this ).closest( 'tbody' ).offset().top - $( window ).scrollTop() + 'px' );
-                } );
-
                 // adjust the size of the container with the delete countdown
                 rgx.find( '.js-rg-countdown' ).each( function() {
                     $( this ).parent().css( 'position', 'relative' );
-                    var parentTr = $( this ).closest( 'tbody' );
+                    var parentTr = $( this ).closest( 'tr' );
                     var isNested = parentTr.closest( '.js-rgx__td--group-container' );
                     var width = parentTr.get( 0 ).clientWidth;
 
@@ -651,9 +730,9 @@
                     }
 
                     $( this ).css( {
-                        'width': width + 'px',
-                        'line-height': parentTr.get( 0 ).clientHeight + 'px',
-                        'height': parentTr.get( 0 ).clientHeight + 'px'
+                        'width': width - parentTr.find( 'th:first' ).get( 0 ).clientWidth - parentTr.find( 'th:last' ).get( 0 ).clientWidth + 'px',
+                        'line-height': parentTr.get( 0 ).clientHeight - 1 + 'px',
+                        'height': parentTr.get( 0 ).clientHeight - 1 + 'px'
                     } );
                 } );
             }
@@ -698,10 +777,6 @@
             if( typeof wptSkype != 'undefined' ) {
                 wptSkype.init();
             }
-
-            if( typeof wptFile != 'undefined' ) {
-                wptFile.init();
-            }
         },
 
         /**
@@ -735,11 +810,10 @@
                 // which use a field outside of the rfg for the condition.
                 $.each( wptCondTriggers, function( formID, triggers ) {
                     $.each( triggers, function( trigger, field ) {
-                        var $trigger = wptCond.getTrigger( trigger, formID );
-                        $trigger.trigger( 'change' );
+                        wptCond.check( formID, field );
                     } )
                 } );
-                
+
                 Types.RFGSetFieldConditionsRunning = false;
             }
         },
@@ -982,6 +1056,10 @@
             repeatableGroups.each( function() {
                 var repeatableGroup = $( this );
 
+                if( staticData.post_id == 0 && jQuery( '#post_ID' ).length ) {
+                    staticData.post_id = jQuery( '#post_ID' ).val();
+                }
+
                 if( staticData.post_id == 0 ) {
                     repeatableGroup.find( '.js-rgx__notice_loading' ).hide();
                     repeatableGroup.find( '.js-rgx__notice_save_post_first' ).show();
@@ -1001,6 +1079,7 @@
                         success: function( response ) {
                             if( response.success ) {
                                 repeatableGroup.html( tplRepeatableGroup );
+                                isHorizontalViewActive = $( '.js-rgx' ).length ? true : false;
                                 ko.applyBindings( ko.mapping.fromJS( response.data, Types.RepeatableGroup.Mapper ), repeatableGroup.get( 0 ) );
                                 Types.RepeatableGroup.Functions.cssExtension();
                                 if( positioningInit === false ) {
@@ -1066,7 +1145,7 @@
         if( typeof Types.RFGSetFieldConditionsRunning != 'undefined' && Types.RFGSetFieldConditionsRunning ) {
             return;
         }
-        
+
         // deregister event (no need to run twice)
         $( document ).off( 'keydown.rfgBlockViewSwitch change.rfgBlockViewSwitch' );
 
@@ -1080,10 +1159,17 @@
     });
 
     // Saving draft button when post is not saved yet
-    jQuery( document ).on( 'click', '#wpcf-save-post', function() {
+    $( document ).on( 'click', '#wpcf-save-post', function() {
         // Save post button.
-        jQuery( '#save-post').click();
+        $( '#save-post').click();
         // Disables and show spinner.
-        jQuery( this ).attr('disabled', 'disabled').next().addClass( 'is-active' );
+        $( this ).attr('disabled', 'disabled').next().addClass( 'is-active' );
     } );
+
+    // Make sure last clicked metabox is on front
+	$( document ).on( 'click', '.postbox[id^="wpcf-group-"]', function() {
+		$( '.postbox[id^="wpcf-group-"]' ).css( 'z-index', 1 );
+		$( this ).css( 'z-index', 2 );
+	} );
+
 })( jQuery );

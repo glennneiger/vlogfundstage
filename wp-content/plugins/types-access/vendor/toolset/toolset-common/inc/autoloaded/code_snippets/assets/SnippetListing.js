@@ -139,19 +139,20 @@ Toolset.page.codeSnippets.SnippetListing = function(snippetModels, defaults, l10
 
             self.beginAction();
 
-            // We only need to pass the slug, basically.
-            var snippet = new Toolset.page.codeSnippets.Snippet({
-                slug: snippetSlug,
-                isActive: false,
-                isEditable: false,
-                displayName: '',
-                description: '',
-                code: '',
-                filePath: '',
-                runMode: '',
-                runContexts: [],
-                lastError: ''
-            }, self.itemActions, self, l10n, pageController);
+			// We only need to pass the slug, basically.
+			var snippet = new Toolset.page.codeSnippets.Snippet({
+				slug: snippetSlug,
+				isActive: false,
+				isEditable: false,
+				displayName: '',
+				description: '',
+				code: '',
+				filePath: '',
+				runMode: '',
+				runContexts: [],
+				lastError: '',
+				hasSecurityCheck: true,
+			}, self.itemActions, self, l10n, pageController);
 
             var handleFailure = function(response) {
                 self.displayMessagesFromAjax(response.data || {}, 'error', l10n['updateResults']['error']);

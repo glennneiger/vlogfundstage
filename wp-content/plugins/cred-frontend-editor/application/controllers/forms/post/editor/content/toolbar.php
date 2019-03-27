@@ -4,19 +4,19 @@ namespace OTGS\Toolset\CRED\Controller\Forms\Post\Editor\Content;
 
 use OTGS\Toolset\CRED\Controller\Forms\Post\Main as PostFormMain;
 use OTGS\Toolset\CRED\Controller\FormEditorToolbar\Base;
+use OTGS\Toolset\CRED\Model\Forms\Post\Helper;
 
-use OTGS\Toolset\CRED\Model\Settings;
 
 /**
  * Post form content editor toolbar controller.
- * 
+ *
  * @since 2.1
  */
 class Toolbar extends Base {
-	
+
 	protected $editor_domain = 'post';
 	protected $editor_target = 'content';
-	
+
 	/**
 	 * Print the toolbar buttons.
 	 *
@@ -27,12 +27,13 @@ class Toolbar extends Base {
 
 		$this->print_default_buttons();
 		$this->print_generic_and_conditional_buttons();
+		$this->print_third_party_buttons();
 		$this->print_media_button( $post_ID );
 	}
 
 	/**
 	 * Print the toolbar buttons for the notification subject input.
-	 * 
+	 *
 	 * @param string $editor_id
 	 *
 	 * @since 2.1
@@ -55,10 +56,10 @@ class Toolbar extends Base {
 		);
 		$this->print_button( $placeholders_args );
 	}
-	
+
 	/**
 	 * Print the toolbar buttons for the notification body editor.
-	 * 
+	 *
 	 * @param string $editor_id
 	 *
 	 * @since 2.1
@@ -84,7 +85,7 @@ class Toolbar extends Base {
 
 	/**
 	 * Print the toolbar buttons for the message after submitting the form.
-	 * 
+	 *
 	 * @param string $editor_id
 	 *
 	 * @since 2.1
@@ -104,7 +105,7 @@ class Toolbar extends Base {
 	 * Complete shared data to be used in the toolbar script.
 	 *
 	 * @return array
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	protected function get_script_localization() {
@@ -150,27 +151,6 @@ class Toolbar extends Base {
 								'requiredItem' => true,
 								'attributes' => array(),
 								'options' => array()
-							)
-						)
-					)
-				),
-				'scaffold' => array(
-					'fields' => array(
-						'formElements' => array(
-							'feedback' => array(
-								'label' => __( 'Form messages', 'wp-cred' ),
-								'shortcode' => PostFormMain::SHORTCODE_NAME_FORM_FIELD,
-								'attributes' => array(
-									'field' => 'form_messages'
-								),
-								'options' => array(
-									'class' => array(
-										'label' => __( 'Additional classnames', 'wp-cred' ),
-										'type'  => 'text',
-										'defaultForceValue' => 'alert alert-warning'
-									)
-								),
-								'location' => 'top'
 							)
 						)
 					)
@@ -235,61 +215,49 @@ class Toolbar extends Base {
 			)
 		);
 
-		$blocked_reCaptcha = true;
-		$cred_settings = Settings::get_instance()->get_settings();//\CRED_Loader::get( 'MODEL/Settings' )->getSettings();
-		if (
-			isset( $cred_settings[ 'recaptcha' ][ 'public_key' ] )
-			&& isset( $cred_settings[ 'recaptcha' ][ 'private_key' ] )
-			&& ! empty( $cred_settings[ 'recaptcha' ][ 'public_key' ] )
-			&& ! empty( $cred_settings[ 'recaptcha' ][ 'private_key' ] ) 
-		) {
-			$blocked_reCaptcha = false;
+		if ( $initial_cache = $this->maybe_get_initial_cache() ) {
+			$i18n['initialCache'] = $initial_cache;
 		}
-
-		$reCaptcha_settings_url = admin_url( 'admin.php' );
-		$reCaptcha_settings_url = add_query_arg(
-			array( 'page' => 'toolset-settings', 'tab' => 'forms' ),
-			$reCaptcha_settings_url
-		);
-
-		$i18n['data']['scaffold']['fields']['formElements']['recaptcha'] = array(
-			'label' => __( 'reCaptcha', 'wp-cred' ),
-			'shortcode' => PostFormMain::SHORTCODE_NAME_FORM_FIELD,
-			'blockedItem' => $blocked_reCaptcha,
-			'blockedReason' => __( 'You need an API key to use the reCaptcha field', 'wp-cred' ),
-			'blockedLink' => $reCaptcha_settings_url,
-			'attributes' => array(
-				'field' => 'recaptcha',
-				'class' => 'form-control',
-				'output' => 'bootstrap'
-			),
-			'location' => 'bottom'
-		);
-
-		$i18n['data']['scaffold']['fields']['formElements']['submit'] = array(
-			'label' => __( 'Submit button', 'wp-cred' ),
-			'shortcode' => PostFormMain::SHORTCODE_NAME_FORM_FIELD,
-			'requiredItem' => true,
-			'attributes' => array(
-				'field' => 'form_submit',
-				'output' => 'bootstrap'
-			),
-			'options' => array(
-				'value' => array(
-					'label' => __( 'Button label', 'wp-cred' ),
-					'type'  => 'text',
-					'defaultForceValue' => __( 'Submit', 'wp-cred' )
-				),
-				'class' => array(
-					'label' => __( 'Additional classnames', 'wp-cred' ),
-					'type'  => 'text',
-					'defaultForceValue' => 'btn btn-primary btn-lg'
-				)
-			),
-			'location' => 'bottom'
-		);
 
 		return array_merge( $i18n_shared, $i18n );
 	}
-	
+
+	/**
+	 * Maybe populate the initial cache for fields
+	 * for the post type that the current form might manipulate
+	 *
+	 * @since 2.3.1
+	 * @return array|bool
+	 */
+	private function maybe_get_initial_cache() {
+		global $pagenow;
+		$form_id = (int) toolset_getget( 'post', 0 );
+
+		if (
+			'post.php' === $pagenow
+			&& $form_id > 0
+			&& PostFormMain::POST_TYPE === get_post_type( $form_id )
+		) {
+			$form = new \CRED_Form_Data( $form_id, PostFormMain::POST_TYPE, false );
+			$form_fields = $form->getFields();
+			$post_type = toolset_getarr( $form_fields[ 'form_settings' ]->post, 'post_type', false );
+			if (
+				! $post_type
+				|| empty( $post_type )
+			) {
+				return false;
+			}
+			$post_type_object = get_post_type_object( $post_type );
+			if ( ! $post_type_object ) {
+				return false;
+			}
+
+			$toolbar_helper = new Helper( $post_type_object, new \Toolset_Condition_Plugin_Types_Active() );
+
+			return array( $post_type => $toolbar_helper->populate_items() );
+		}
+
+		return false;
+	}
+
 }

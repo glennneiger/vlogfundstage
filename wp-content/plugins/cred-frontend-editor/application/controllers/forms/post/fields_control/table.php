@@ -34,8 +34,8 @@ class Table extends BaseTable {
     }
 
     /**
-     * method overwrites WP_List_Table::get_columns() method and sets the names of the table fields 
-     * 
+     * method overwrites WP_List_Table::get_columns() method and sets the names of the table fields
+     *
      */
     function get_columns() {
         return $columns = array(
@@ -54,22 +54,21 @@ class Table extends BaseTable {
             // get custom post types not managed by Types
             $custom_posts = $this->get_fields_model()->getPostTypesWithoutTypes();
             ?>
-            <label><?php _e( 'Show fields for', 'wp-cred' ); ?>
-                <select id='cred_custom_posts' name='posttype'>
-                    <option value="" disabled="disabled" <?php selected( '', $this->_post_type ); ?>>
-                        <?php _e( 'Select a post type', 'wp-cred' ); ?>
-                    </option>
-                    <?php
-                    foreach ( $custom_posts as $cp ) {
-                        ?>
-                        <option value="<?php echo esc_attr( $cp['type'] ); ?>" <?php selected( $cp['type'], $this->_post_type ); ?>>
-                        <?php echo $cp['name']; ?>
-                        </option>
-                        <?php
-                    }
-                    ?>
-                </select>
-            </label>
+            <?php _e( 'Show fields for', 'wp-cred' ); ?>
+			<select id='cred_custom_posts' name='posttype'>
+				<option value="" disabled="disabled" <?php selected( '', $this->_post_type ); ?>>
+					<?php _e( 'Select a post type', 'wp-cred' ); ?>
+				</option>
+				<?php
+				foreach ( $custom_posts as $cp ) {
+					?>
+					<option value="<?php echo esc_attr( $cp['type'] ); ?>" <?php selected( $cp['type'], $this->_post_type ); ?>>
+					<?php echo $cp['name']; ?>
+					</option>
+					<?php
+				}
+				?>
+			</select>
             <?php
             $this->print_private_fields_control();
         }

@@ -108,7 +108,7 @@
 {% block tdCells %}
     {# List of groups the field belongs to (if managed by Types) #}
 	<td data-colname="{{ strings.column.description }}" data-bind="text: descriptionGroup"></td>
-	<td data-colname="{{ strings.column.isActive }}" data-bind="text: isActive"></td>
+	<td data-colname="{{ strings.column.isActive }}" data-bind="text: (isActive() ? '{{ __( 'Yes', 'wpcf' ) }}' : '{{ __( 'No', 'wpcf' ) }}')"></td>
 	<!-- ko if: (display.currentDomain == 'posts') -->
 		<td data-colname="{{ strings.column.postTypes }}"  data-bind="text: postTypes"></td>
 		<td data-colname="{{ strings.column.taxonomies }}"  data-bind="html: taxonomies"></td>

@@ -1,7 +1,5 @@
 <?php
 
-// the non-m2m part still needs to support PHP 5.2 for the time being.
-//namespace OTGS\Toolset\Common\PublicAPI;
 
 /**
  * Loads the public-facing API of Toolset Common.
@@ -30,6 +28,8 @@ class Toolset_Public_API_Loader {
 		} else {
 			require_once TOOLSET_COMMON_PATH . '/inc/public_api/legacy_relationships.php';
 		}
+
+		require_once TOOLSET_COMMON_PATH . '/inc/public_api/custom_fields.php';
 	}
 
 }

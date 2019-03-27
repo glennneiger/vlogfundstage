@@ -647,7 +647,7 @@ function wpcf_wpml_register_labels( $prefix, $data, $context = 'post' ) {
                 	$string_context = array( 'domain'  => 'Types-TAX' );
 	                $string_context['context'] = $label === 'name' ? 'taxonomy general name' : 'taxonomy singular name';
                     wpcf_translate_register_string( $string_context, false, $string );
-                    continue;
+                    break;
                 }
                 if ( isset( $default['labels'][$label] ) && $string == $default['labels'][$label] ) {
                     wpcf_translate_register_string( 'Types-TAX', $label, $string );
@@ -664,7 +664,7 @@ function wpcf_wpml_register_labels( $prefix, $data, $context = 'post' ) {
                 if ( $label == 'name' || $label == 'singular_name' ) {
                     wpcf_translate_register_string( 'Types-CPT',
                             $prefix . ' ' . $label, $string );
-                    continue;
+                    break;
                 }
 
                 // Check others for defaults

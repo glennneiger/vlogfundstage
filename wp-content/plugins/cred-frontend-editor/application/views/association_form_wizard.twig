@@ -34,38 +34,46 @@
 <div class="cred-association-forms-wizard-step-1 cred-wizard-step-wrapper" data-bind="fadeVisible: stepFormInstructionsVisiblity">
     <h2 class="cred-wizard-header">{{ __( 'Instructions', 'wp-cred' ) }}</h2>
     {% include '@associations_editor_metaboxes/instructions.twig' %}
-    {{ navigation.nextButton( 'stepFormName') }}
+    <div class="cred-wizard-buttons">
+        {{ navigation.nextButton( 'stepFormName') }}
+    </div>
 </div>
 
 <div class="cred-association-forms-wizard-step-2 cred-wizard-step-wrapper" data-bind="fadeVisible: stepFormNameVisiblity">
     <h2 class="cred-wizard-header">{{ __( 'Form Name', 'wp-cred' ) }}</h2>
     {% include '@associations_editor_metaboxes/title.twig' %}
-    {{ navigation.prevButton( 'stepFormInstructions', 'stepFormName' ) }}
-    {{ navigation.nextButton( 'stepFormSettings' ) }}
+    <div class="cred-wizard-buttons">
+        {{ navigation.prevButton( 'stepFormInstructions', 'stepFormName' ) }}
+        {{ navigation.nextButton( 'stepFormSettings' ) }}
+    </div>
 </div>
 
 <div class="cred-association-forms-wizard-step-3 cred-wizard-step-wrapper" data-bind="fadeVisible: stepFormSettingsVisiblity">
     <h2 class="cred-wizard-header">{{ __( 'Form Settings', 'wp-cred' ) }}</h2>
     {% include '@associations_editor_metaboxes/settings.twig' %}
-    {{ navigation.prevButton( 'stepFormName', 'stepFormSettings' ) }}
-    {{ navigation.nextButton( 'stepFormContent') }}
+    <div class="cred-wizard-buttons">
+        {{ navigation.prevButton( 'stepFormName', 'stepFormSettings' ) }}
+        {{ navigation.nextButton( 'stepFormContent') }}
+    </div>
 </div>
 
 <div class="cred-association-forms-wizard-step-4 cred-wizard-step-wrapper" data-bind="fadeVisible: stepFormContentVisiblity">
     <h2 class="cred-wizard-header">{{ __( 'Form Content', 'wp-cred' ) }}</h2>
     <div class="toolset-help toolset-help-sm">
         <div class="toolset-help-content">
-            <p>{{ __( 'Build the form using HTML and Toolset Forms shortcodes. Click on the "Auto-Generate Form content" button to create the form with default fields. Use the "Add Fields" button to add fields that belong to this relationship.', 'wp-cred' ) }}</p>
+            <p>{{ __( 'Use the drag-and-drop editor to create a complete form. If you need to edit the form\'s HTML markup, click to enter the "Expert Mode".', 'wp-cred' ) }}</p>
         </div>
         <div class="toolset-help-sidebar"></div>
     </div>
     {% include '@associations_editor_metaboxes/content.twig' %}
 
-    {{ navigation.prevButton( 'stepFormSettings', 'stepFormContent' ) }}
-    <button type="button" data-bind="click: onSave, onEnterKey: onSave, enable: can_submit" class="button-wizard button button-primary-toolset button-wizard-finish">
-        {{ __( 'Finish', 'wp-cred' ) }}
-    </button>
-    {{ forms.spinner('display.isSaving()') }}
+    <div class="cred-wizard-buttons">
+        {{ navigation.prevButton( 'stepFormSettings', 'stepFormContent' ) }}
+        <button type="button" data-bind="click: onSave, onEnterKey: onSave, enable: can_submit" class="button-wizard button button-primary-toolset button-wizard-finish">
+            {{ __( 'Finish', 'wp-cred' ) }}
+        </button>
+        {{ forms.spinner('display.isSaving()') }}
+    </div>
 </div>
 
 

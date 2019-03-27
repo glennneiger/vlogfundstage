@@ -13,9 +13,9 @@
         //url argument holds the absolute url of our plugin directory
         init : function(ed, url) {
 
-            //add new button    
+            //add new button
             ed.addButton("wpv_conditional_output", {
-                title : wpv_shortcodes_gui_texts.wpv_conditional_button,
+                title : wpv_shortcodes_gui_texts.mce.conditional.button,
                 cmd : "views_conditional_output",
                 icon : 'icon wpv-conditional-output-icon'
             });

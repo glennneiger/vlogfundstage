@@ -3,32 +3,32 @@
 /**
  * Main AJAX call controller for Toolset.
  *
- * 
+ *
  * When DOING_AJAX, you need to run initialize() to register the callbacks, only creating an instance will not be enough.
  *
- * 
+ *
  * When implementing AJAX actions here, please follow these rules:
  *
  * 1.  All AJAX action names are automatically prefixed with 'wp_ajax_{$plugin_name}_'. Only lowercase characters
  *     and underscores can be used.
- * 
+ *
  *     $plugin_name is in this case 'toolset' but it may be different in subclasses.
- * 
+ *
  * 2.  Action names (without a prefix) should be defined as constants, and be part of array returned
  *     by get_callback_names().
- * 
- * 3.  For each action, there should be a dedicated class implementing the Toolset_Ajax_Handler_Interface. 
- * 
- *     Name of the class must be {$capitalized_plugin_name}_Ajax_Handler_{$capitalized_action_name}. 
- * 
- *     So for example, for a hook to 'wp_ajax_types_field_control_action' you need to create a class 
+ *
+ * 3.  For each action, there should be a dedicated class implementing the Toolset_Ajax_Handler_Interface.
+ *
+ *     Name of the class must be {$capitalized_plugin_name}_Ajax_Handler_{$capitalized_action_name}.
+ *
+ *     So for example, for a hook to 'wp_ajax_types_field_control_action' you need to create a class
  *     'Types_Ajax_Handler_Field_Control_Action'.
- * 
+ *
  * 4.  All callbacks must use the ajax_begin() and ajax_finish() methods.
- * 
- * 
+ *
+ *
  * When creating subclasses, you only need to do following:
- * 
+ *
  * - Override get_plugin_slug().
  * - Override get_callback_names().
  * - Override additional_ajax_init() if you need to.
@@ -57,7 +57,6 @@ class Toolset_Ajax {
 	const CALLBACK_GET_USER_BY_ID = 'get_user_by_id';
 	const CALLBACK_GET_VIEW_BLOCK_PREVIEW = 'get_view_block_preview';
 	const CALLBACK_GET_CONTENT_TEMPLATE_BLOCK_PREVIEW = 'get_content_template_block_preview';
-	const CALLBACK_GET_CRED_FORM_BLOCK_PREVIEW = 'get_cred_form_block_preview';
 	const CALLBACK_INTERMEDIARY_POST_CLEANUP = 'intermediary_post_cleanup';
 	const CALLBACK_CODE_SNIPPETS_ACTION = 'code_snippets_action';
 	const CALLBACK_GET_VIEW_CUSTOM_SEARCH_STATUS = 'get_view_custom_search_status';
@@ -94,7 +93,6 @@ class Toolset_Ajax {
 			self::CALLBACK_INTERMEDIARY_POST_CLEANUP,
 			self::CALLBACK_GET_VIEW_BLOCK_PREVIEW,
 			self::CALLBACK_GET_CONTENT_TEMPLATE_BLOCK_PREVIEW,
-			self::CALLBACK_GET_CRED_FORM_BLOCK_PREVIEW,
 			self::CALLBACK_CODE_SNIPPETS_ACTION,
 			self::CALLBACK_GET_VIEW_CUSTOM_SEARCH_STATUS,
 		);
@@ -367,7 +365,7 @@ class Toolset_Ajax {
 	/**
 	 * Handles all initialization that is needed when doing AJAX,
 	 * except the actual AJAX callbacks.
-	 * 
+	 *
 	 * Note that this gets fired when the class is intialized, not only during AJAX calls.
 	 *
 	 * @since m2m

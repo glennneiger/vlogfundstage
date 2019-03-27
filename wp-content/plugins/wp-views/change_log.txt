@@ -1,6 +1,64 @@
+Toolset Views 2.7.5
+	- Removed the legacy Maps settings tab when using Views Lite.
+	- Extended the conditional output based on taxonomy terms by checking against term names too.
+	- Restored the textarea for setting the description field for Views CTs and WPAs.
+	- Improved compatibility with WPML especially with other third parties and their custom queries.
+	- Fixed spinner image URLs for Views created before a site gets SSL.
+	- Fixed a problem when adding taxonomy search filters to a View if the taxonomy name contains a single quote.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.7.4
+	- Fixed a regression making the wrapper DIV setting and the View output editor content impossible to save, caused by the integration of the single save button in Views.
+	- Fixed a regression that prevented saving single inline Content Templates when changing the custom editor to use.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.7.3
+	- Added a new fixed admin top bar on Views, Content Templates and WordPress Archives editors.
+	- Improved the conditional output shortcode by supporting many-to-many relationships.
+	- Improved the conditional output shortcode by better managing conditions by taxonomies.
+	- Included a new shortcode to render the current View loop index.
+	- Improved the admin listing pages by adding a column with the last modified date for each element.
+	- Fixed a problem when getting the current language on frontend AJAX pagination or searches.
+	- Fixed a problem with Views that include a taxonomy search filter when shown in the taxonomy archives.
+	- Fixed an inconsistency with the media manager used in Content Templates editors.
+	- Fixed an issue with the styling of the results of an AJAX search performed from inside a View, when the loop of the View is styled with a Content Template designed with Beaver Builder.
+	- Fixed an issue with the styling of the results of an AJAX search performed from inside a View, when the loop of the View is styled with a Content Template designed with Visual Composer.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.7.2
+	- Fixed several issues with the integration with page builder caused by the new editor introduced in WordPress 5.0.
+	- Fixed an issue with custom functions inside conditionals that take arguments with exclamation marks.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.7.1
+	- Fixed an issue with the Views blocks not rendering their preview for non-admin users.
+	- Fixed a usability issue when assigning a Content Template to a post type that contained posts with a different or no Content Template assigned.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Views 2.7.0 AKA Bertrand Zobrist
+	- Added support for designing Content Templates using Gutenberg.
+	- Added a Toolset blocks category in the Gutenberg block inserter, which include the new "View", "Content Template" and "Forms" blocks.
+	- Added a mechanism to insert Views, Types and Forms shortcodes into the Gutenberg core Classic Editor blocks.
+	- Added a mechanism to insert Views, Types, Access and Forms shortcodes into the Gutenberg core Paragraph blocks.
+	- Added a View for forms inserted in the Gutenberg classic editor block.
+	- Added an indication of the editor used to design a Content Template next to each Content Template on the Content Template listing page.
+	- Added support for designing Content Templates using Layouts.
+	- Added support for translating the "more" attribute of the "wpv-post-excerpt" shortcode through WPML String Translation.
+	- Added support for allowing the "&" character in the name of Views, Content Templates and WordPress Archives.
+	- Added the shortcodes processing filters to the shared basic formatting content filter.
+	- Fixed an issue with Beaver Builder when used as a Content Template editor, inside a View loop that updated its results using AJAX.
+	- Fixed an issue with the Toolset Elementor widgets where the "Upgrade to PRO" encouragement message lost its styling on the latest version of the editor.
+	- Fixed an issue between Content Templates and WPML where the modified extra CSS and JS weren't copied to the translations of a Content Template when its default language was modified.
+	- Fixed an issue with the "wpv-post-excerpt" shortcode which was creating empty paragraphs when it was used with "noautop" format inside a Content Template.
+	- Fixed an issue where wpv-post-featured-image shortcode sometimes used GUID as image URL.
+	- Unified the offered options of the "date" field filter for the "Search and Pagination" and the "Query Filter" GUI.
+	- Removed the option to have View edit links on the frontend.
+	- Removed the "Forms Editing" links from the "Fields and Views" modal, as these shortcodes were moved to the "Toolset Forms" modal.
+
+-------------------------------------------------------------------------------------------------------------------
 Toolset Views 2.6.4.2
 	- Fixed a PHP parse error related to the compatibility with Elementor, with PHP 5.x versions.
-	
+
 -------------------------------------------------------------------------------------------------------------------
 Toolset Views 2.6.4.1
 	- Fixed an issue with Elementor where "Header" and "Footer" templates designed with the page builder stopped working.
@@ -27,7 +85,7 @@ Toolset Views 2.6.4
 	- Fixed several issues related to the Views importing/exporting when using either the native functionality or doing it through the Module Manager.
 	- Fixed a compatibility issue where a View listing "Events" from the "The Events Calendar" plugin was returning no results.
 	- Changed the type of control for the AJAX pagination delay customization and the transition duration.
-	
+
 -------------------------------------------------------------------------------------------------------------------
 Toolset Views 2.6.3
 	- Elementor compatibility: add a Views widget to Elementor.
@@ -402,7 +460,7 @@ Toolset Views 2.0.0, AKA Cthulhu
 	- Fixed an issue regarding AJAX pagination and parametric search, resulting in wrong pagination outcome.
 	- Fixed an issue regarding WPML and query filters by specific post IDs when setting values that belong to translated posts.
 	- Fixed an issue regarding WPML and query filters by post parent and post relationship where not relevant options were offered.
-	
+
 -------------------------------------------------------------------------------------------------------------------
 Toolset Views 1.12.1
 	- Fixed an issue regarding parametric search, related to taxonomies no longer existing.
@@ -640,7 +698,7 @@ Views 1.6.4
 -------------------------------------------------------------------------------------------------------------------
 Views 1.6.3
     - Fix: improve datepicker.css so styling only applies to the datepicker popup
-	
+
 -------------------------------------------------------------------------------------------------------------------
 Views 1.6.2
 	- New: create a standalone plugin out of the Embedded Views directory
@@ -955,7 +1013,7 @@ Version 1.3.1
 Version 1.3.0.3
 	- Fix problem rendering [wpv-post-body] when no view_template is specified
 	- Fix bug creating Content Templates on some systems
-	
+
 -------------------------------------------------------------------------------------------------------------------
 Version 1.3.0.2
 	- Fix comparison function when inserting a filter
@@ -989,7 +1047,7 @@ Version 1.3.0
 	- Improved workflow for layouts with Layout wizard
 	- Easy HTML editing
 	- Added Inline Content Templates editing to Views Editor
-	
+
 -------------------------------------------------------------------------------------------------------------------
 Version 1.2.1
 	- Fixed wpv_control -- auto_fill_sort parameter is not working
@@ -1038,7 +1096,7 @@ Version 1.2.0
 -------------------------------------------------------------------------------------------------------------------
 Version 1.1.4.1
 	- Fixed taxonomy query using name instead of slug
-    
+
 
 -------------------------------------------------------------------------------------------------------------------
 Version 1.1.4

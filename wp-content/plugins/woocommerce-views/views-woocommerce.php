@@ -5,11 +5,11 @@
   Description: Lets you add e-commerce functionality to any site, running any theme.
   Author: OnTheGoSystems
   Author URI: http://www.onthegosystems.com
-  Version: 2.7.7
-  WC tested up to: 3.3.0
+  Version: 2.7.8
+  WC tested up to: 3.5.4
  */
 
-
+/** {ENCRYPTION PATCH HERE} **/
 
 /**
  * include plugin class
@@ -22,7 +22,7 @@ if(defined('WOOCOMMERCE_VIEWS_PATH')) return;
 
 define('WOOCOMMERCE_VIEWS_PATH', dirname(__FILE__) . '/Class_WooCommerce_Views.php');
 
-define('WC_VIEWS_VERSION', '2.7.7');
+define('WC_VIEWS_VERSION', '2.7.8');
 
 if (!defined('WPVDEMO_TOOLSET_DOMAIN')) {
 	define('WPVDEMO_TOOLSET_DOMAIN', 'toolset.com');
@@ -45,8 +45,10 @@ if(!isset($Class_WooCommerce_Views))
 //WooCommerce Views Alias Functions compatible for [wpv-if]
 require WOOCOMMERCE_VIEWS_PLUGIN_PATH . '/inc/wcviews-alias-functions.php';
 
-//Recalculate prices on plugin activation
-register_activation_hook( __FILE__, array( $Class_WooCommerce_Views, 'ajax_process_wc_views_batchprocessing' ) );
+// Offer to recalculate prices on plugin activation:
+// This is as simple as to add an admin notice if the woocommerce_last_run_update option is missing
+// or empty, no need to run this here...
+register_activation_hook( __FILE__, array( $Class_WooCommerce_Views, 'maybe_start_processing_products_fields' ) );
 
 //Reset custom fields updating when deactivated
 register_deactivation_hook(__FILE__,array($Class_WooCommerce_Views,'wcviews_request_to_reset_field_option'));

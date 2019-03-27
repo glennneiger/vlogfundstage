@@ -233,13 +233,13 @@ http://docs.woothemes.com/document/related-products-up-sells-and-cross-sells/', 
 	if ( 'woocommerce-views-functions' == $section ) {
 		$return = array(
 				'classname' => 'js-wpv-editor-instructions-for-woocommerce-views-functions-section',
-				'title' => __( 'WooCommerce Views Public Functions', 'wpv-views' ),
+				'title' => __( 'WooCommerce Views Public Functions', 'woocommerce_views' ),
 				'content' => '',
 				'table' => array(
 						array(
 						//woo_product_on_sale()
 								'element' => '<span class="wpv-code wpv-code-html">woo_product_on_sale()</span>',
-								'description' => __( 'Check if product is on sale.', 'wpv-views' ).'<br />'
+								'description' => __( 'Check if product is on sale.', 'woocommerce_views' ).'<br />'
 								.__('Example usage with wpv-if').':'.'<br />'															
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="woo_product_on_sale() = 1"]
                 					This product is on sale
@@ -251,7 +251,7 @@ http://docs.woothemes.com/document/related-products-up-sells-and-cross-sells/', 
 						//woo_product_in_stock()
 						array(
 								'element' => '<span class="wpv-code wpv-code-html">woo_product_in_stock()</span>',
-								'description' => __( 'Check if stock is available.', 'wpv-views' ).'<br />'
+								'description' => __( 'Check if stock is available.', 'woocommerce_views' ).'<br />'
 								.__('Example usage with wpv-if').':'.'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="woo_product_in_stock() = 1"]Stock is available for this product.[/wpv-if]</span>').'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="woo_product_in_stock() = 0"]Stock is not available for this product.[/wpv-if]</span>').'<br />'
@@ -259,7 +259,7 @@ http://docs.woothemes.com/document/related-products-up-sells-and-cross-sells/', 
 						//wpv_woo_single_products_rating_func()
 						array(
 								'element' => '<span class="wpv-code wpv-code-html">wpv_woo_single_products_rating_func()</span>',
-								'description' => __( 'Check if a rating is available for this product (single product).', 'wpv-views' ).'<br />'
+								'description' => __( 'Check if a rating is available for this product (single product).', 'woocommerce_views' ).'<br />'
 								.__('Example usage with wpv-if').':'.'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_single_products_rating_func() != \'\'"]A rating is available for this product.[/wpv-if]</span>').'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_single_products_rating_func() = \'\'"]A rating is not available for this product.[/wpv-if]    </span>').'<br />'
@@ -267,7 +267,7 @@ http://docs.woothemes.com/document/related-products-up-sells-and-cross-sells/', 
 						//wpv_woo_list_attributes_func()
 						array(
 								'element' => '<span class="wpv-code wpv-code-html">wpv_woo_list_attributes_func()</span>',
-								'description' => __( 'Check if this product has attributes set.', 'wpv-views' ).'<br />'
+								'description' => __( 'Check if this product has attributes set.', 'woocommerce_views' ).'<br />'
 								.__('Example usage with wpv-if').':'.'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_list_attributes_func() != \'\'"]This product has attributes set.[/wpv-if]</span>').'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_list_attributes_func() = \'\'"]This product still does not have attributes set.[/wpv-if]</span>').'<br />'
@@ -275,7 +275,7 @@ http://docs.woothemes.com/document/related-products-up-sells-and-cross-sells/', 
 						//wpv_woo_show_upsell_func()
 						array(
 								'element' => '<span class="wpv-code wpv-code-html">wpv_woo_show_upsell_func()</span>',
-								'description' => __( 'Check if this item has an upsell product assigned (single product pages ).', 'wpv-views' ).'<br />'
+								'description' => __( 'Check if this item has an upsell product assigned (single product pages ).', 'woocommerce_views' ).'<br />'
 								.__('Example usage with wpv-if').':'.'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_show_upsell_func() != \'\'"]This item has an associated upsell product assigned.[/wpv-if]</span>').'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_show_upsell_func() = \'\'"]This item does not have any associated upsell item.[/wpv-if]</span>').'<br />'
@@ -283,7 +283,7 @@ http://docs.woothemes.com/document/related-products-up-sells-and-cross-sells/', 
 						//wpv_woo_products_rating_on_listing_func()
 						array(
 								'element' => '<span class="wpv-code wpv-code-html">wpv_woo_products_rating_on_listing_func()</span>',
-								'description' => __( 'Check if a rating is available for this product (product listing).', 'wpv-views' ).'<br />'
+								'description' => __( 'Check if a rating is available for this product (product listing).', 'woocommerce_views' ).'<br />'
 								.__('Example usage with wpv-if').':'.'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_products_rating_on_listing_func() != \'\'"]This item has a rating, let\'s show in this product listing.[/wpv-if]</span>').'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="wpv_woo_products_rating_on_listing_func() = \'\'"]Product is not yet rated[/wpv-if]</span>').'<br />'
@@ -291,7 +291,7 @@ http://docs.woothemes.com/document/related-products-up-sells-and-cross-sells/', 
 						//woo_has_product_subcategory()
 						array(
 								'element' => '<span class="wpv-code wpv-code-html">woo_has_product_subcategory()</span>',
-								'description' => __( 'Check if a product category being loaded has a subcategory.', 'wpv-views' ).'<br />'
+								'description' => __( 'Check if a product category being loaded has a subcategory.', 'woocommerce_views' ).'<br />'
 								.__('Example usage with wpv-if').':'.'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="woo_has_product_subcategory() = 1"]This product category has a subcategory.[/wpv-if]</span>').'<br />'
 								.__('<span class="wpv-code wpv-code-shortcode">[wpv-if evaluate="woo_has_product_subcategory() = 0"]This product category has does not have a subcategory.[/wpv-if]</span>').'<br />'

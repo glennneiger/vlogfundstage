@@ -208,7 +208,7 @@ CREDFormSettingsBox.init = function () {
             for (var user_role in self.user_roles) {
                 if (Array.isArray(self.selected_user_roles)
                     && jQuery.inArray(user_role, self.selected_user_roles) !== -1) {
-                    jQuery('#role_' + user_role).prop('checked', true);
+                    jQuery('#role_' + user_role).prop('checked', true).trigger( 'change' );
                 }
             }
         } else {
@@ -219,7 +219,8 @@ CREDFormSettingsBox.init = function () {
                     jQuery('#cred_form_user_role option[value=' + self.selected_user_roles[user_role] + ']').prop('selected', 'selected');
                     break;
                 }
-            }
+			}
+			jQuery( '#cred_form_user_role' ).trigger( 'change' );
         }
     };
 

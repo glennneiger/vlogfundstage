@@ -17,9 +17,15 @@ class CRED_Output_Template_Repository extends Toolset_Output_Template_Repository
 	const SETTINGS_POST_EXPIRATION = 'editor_settings/post/expiration.phtml';
 	const SETTINGS_OTHER_SETTINGS = 'editor_settings/shared/other_settings.phtml';
 
-	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_DIALOG = 'scaffold-dialog.phtml';
+	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_CONTENT = 'scaffold-content.phtml';
 	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM = 'scaffold-item.phtml';
 	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS = 'scaffold-item_options.phtml';
+	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_MEDIA = 'scaffold-item_options_media.phtml';
+	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_CONDITIONALS = 'scaffold-item_options_conditionals.phtml';
+	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_HTML_CONTENT = 'scaffold-item_options_html_content.phtml';
+	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_NO_DATA = 'scaffold-need-more-data.phtml';
+	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_CONTAINER = 'scaffold-container.phtml';
+	const CONTENT_EDITOR_TOOLBAR_SCAFFOLD_DIALOG_SWITCH_TO_DD = 'scaffold-dialog-switch-to-dd.phtml';
 	const CONTENT_EDITOR_TOOLBAR_FIELDS_DIALOG = 'fields-dialog.phtml';
 	const CONTENT_EDITOR_TOOLBAR_GENERIC_FIELDS_DIALOG = 'generic-fields-dialog.phtml';
 	const CONTENT_EDITOR_TOOLBAR_GENERIC_FIELDS_OPTIONS_MANUAL_TABLE = 'generic-fields-options-manual-table.phtml';
@@ -27,10 +33,12 @@ class CRED_Output_Template_Repository extends Toolset_Output_Template_Repository
 	const CONTENT_EDITOR_TOOLBAR_FIELDS_ITEM = 'fields-item.phtml';
 	const CONTENT_EDITOR_TOOLBAR_CONDITIONAL_GROUPS_DIALOG = 'conditional-groups-dialog.phtml';
 	const CONTENT_EDITOR_TOOLBAR_CONDITIONAL_GROUPS_ROW = 'conditional-groups-row.phtml';
+	const CONTENT_EDITOR_WIZARD_TITLE_WRAPPER = 'wizard-title-wrapper.phtml';
 
 	const NOTIFICATION_EDITOR_ITEM = 'editor_notifications/notification.phtml';
 	const NOTIFICATION_EDITOR_SECTION_SHARED_NAME = 'editor_notifications/shared/name.phtml';
 	const NOTIFICATION_EDITOR_SECTION_POST_TRIGGER = 'editor_notifications/post/trigger.phtml';
+	const NOTIFICATION_EDITOR_SECTION_POST_TRIGGER_EXPIRATION = 'editor_notifications/post/trigger/expiration.phtml';
 	const NOTIFICATION_EDITOR_SECTION_USER_TRIGGER = 'editor_notifications/user/trigger.phtml';
 	const NOTIFICATION_EDITOR_SECTION_SHARED_TRIGGER_META_CONDITION = 'editor_notifications/shared/trigger_meta_condition.phtml';
 	const NOTIFICATION_EDITOR_SECTION_SHARED_RECIPIENT = 'editor_notifications/shared/recipient.phtml';
@@ -46,13 +54,21 @@ class CRED_Output_Template_Repository extends Toolset_Output_Template_Repository
 	const FIELDS_CONTROL_SHARED_PRIVATE_FIELDS_CONTROL = 'fields_control/shared/private_fields_control.phtml';
 	const FIELDS_CONTROL_SHARED_TABLE_ROW = 'fields_control/shared/table_row.phtml';
 	const FIELDS_CONTROL_ADD_OR_EDIT_DIALOG = 'fields_control/shared/add_or_edit_dialog.phtml';
-	
+
 	const SHORTCODE_CRED_FORM_DIALOG = 'cred-form.phtml';
 	const SHORTCODE_CRED_USER_FORM_DIALOG = 'cred-user-form.phtml';
 	const SHORTCODE_CRED_DELETE_POST_DIALOG = 'cred-delete-post.phtml';
 	const SHORTCODE_CRED_CHILD_DIALOG = 'cred-child.phtml';
-	
+
 	const SHORTCODE_CRED_RELATIONSHIP_FORM_WIZARD_DIALOG = 'cred-relationship-form.phtml';
+
+	const MCE_VIEW_CRED_FORM = '/mce/cred_form.phtml';
+	const MCE_VIEW_CRED_USER_FORM = '/mce/cred_user_form.phtml';
+	const MCE_VIEW_CRED_RELATIONSHIP_FORM = '/mce/cred-relationship-form.phtml';
+
+	const SINGULAR_METABOX_POST_EXPIRATION = 'singular_metaboxes/post_expiration.phtml';
+
+	const TOOLSET_SETTINGS_POST_EXPIRATION = 'settings/other/post_expiration.phtml';
 
 	/**
 	 * @var array Template definitions.
@@ -127,16 +143,44 @@ class CRED_Output_Template_Repository extends Toolset_Output_Template_Repository
 				'base_path' => CRED_TEMPLATES,
 				'namespaces' => array()
 			),
-			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_DIALOG => array(
-				'base_path' => CRED_TEMPLATES . '/editor_toolbars',
+			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_CONTENT => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
 				'namespaces' => array()
 			),
 			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM => array(
-				'base_path' => CRED_TEMPLATES . '/editor_toolbars',
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
 				'namespaces' => array()
 			),
 			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS => array(
-				'base_path' => CRED_TEMPLATES . '/editor_toolbars',
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
+				'namespaces' => array()
+			),
+			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_MEDIA => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
+				'namespaces' => array()
+			),
+			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_CONDITIONALS => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
+				'namespaces' => array()
+			),
+			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_ITEM_OPTIONS_HTML_CONTENT => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
+				'namespaces' => array()
+			),
+			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_NO_DATA => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
+				'namespaces' => array()
+			),
+			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_CONTAINER => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
+				'namespaces' => array()
+			),
+			self::CONTENT_EDITOR_TOOLBAR_SCAFFOLD_DIALOG_SWITCH_TO_DD => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
+				'namespaces' => array()
+			),
+			self::CONTENT_EDITOR_WIZARD_TITLE_WRAPPER => array(
+				'base_path' => CRED_TEMPLATES . '/editor_gui',
 				'namespaces' => array()
 			),
 			self::CONTENT_EDITOR_TOOLBAR_FIELDS_DIALOG => array(
@@ -176,6 +220,10 @@ class CRED_Output_Template_Repository extends Toolset_Output_Template_Repository
 				'namespaces' => array()
 			),
 			self::NOTIFICATION_EDITOR_SECTION_POST_TRIGGER => array(
+				'base_path' => CRED_TEMPLATES,
+				'namespaces' => array()
+			),
+			self::NOTIFICATION_EDITOR_SECTION_POST_TRIGGER_EXPIRATION => array(
 				'base_path' => CRED_TEMPLATES,
 				'namespaces' => array()
 			),
@@ -250,7 +298,27 @@ class CRED_Output_Template_Repository extends Toolset_Output_Template_Repository
 			self::SHORTCODE_CRED_RELATIONSHIP_FORM_WIZARD_DIALOG => array(
 				'base_path' => CRED_TEMPLATES . '/dialogs/shortcodes',
 				'namespaces' => array()
-			)
+			),
+			self::MCE_VIEW_CRED_FORM => array(
+				'base_path' => CRED_TEMPLATES,
+				'namespaces' => array()
+			),
+			self::MCE_VIEW_CRED_USER_FORM => array(
+				'base_path' => CRED_TEMPLATES,
+				'namespaces' => array()
+			),
+			self::MCE_VIEW_CRED_RELATIONSHIP_FORM => array(
+				'base_path' => CRED_TEMPLATES,
+				'namespaces' => array()
+			),
+			self::SINGULAR_METABOX_POST_EXPIRATION => array(
+				'base_path' => CRED_TEMPLATES,
+				'namespaces' => array()
+			),
+			self::TOOLSET_SETTINGS_POST_EXPIRATION => array(
+				'base_path' => CRED_TEMPLATES,
+				'namespaces' => array()
+			),
 		);
 	}
 

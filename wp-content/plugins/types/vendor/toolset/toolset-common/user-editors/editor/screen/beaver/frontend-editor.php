@@ -18,8 +18,6 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 
 		/* disable Toolset Starters "No Content Template assigned" message */
 		add_filter( 'toolset_starter_show_msg_no_content_template', '__return_false' );
-
-		add_filter( 'wpv_filter_wpv_shortcodes_gui_localize_script', array( $this, 'add_beaver_inputs_to_dialog_for_any_input' ) );
 	}
 
 	public function is_active() {
@@ -36,14 +34,6 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 		// Caution! this depends on the current editor option name, as different editors might store different templates (?)
 		// we need to change the frontend editor template
 		add_filter( 'template_include', array( $this, 'frontend_editor_template_file' ) );
-	}
-
-	public function add_beaver_inputs_to_dialog_for_any_input( $shortcodes_gui_translations ) {
-		
-		$shortcodes_gui_translations['integrated_inputs'][] = '.fl-lightbox-content input:text';
-
-		return $shortcodes_gui_translations;
-		
 	}
 
 	public function frontend_editor_template_file( $template_file ) {
@@ -84,7 +74,7 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 	}
 
 	public function register_frontend_editor_assets() {
-		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager = Toolset_Assets_Manager::get_instance();
 		$toolset_assets_manager->register_style(
 			'toolset-user-editors-beaver-frontend-editor-style',
 			TOOLSET_COMMON_URL . '/user-editors/editor/screen/beaver/frontend-editor.css',
@@ -94,7 +84,7 @@ class Toolset_User_Editors_Editor_Screen_Beaver_Frontend_Editor
 	}
 
 	public function enqueue_frontend_editor_assets() {
-		$toolset_assets_manager = Toolset_Assets_Manager::getInstance();
+		$toolset_assets_manager = Toolset_Assets_Manager::get_instance();
 		$toolset_assets_manager->enqueue_styles( array( 'toolset-user-editors-beaver-frontend-editor-style' ) );
 		$toolset_assets_manager->enqueue_scripts( array( 'views-widgets-gui-script' ) );
 	}

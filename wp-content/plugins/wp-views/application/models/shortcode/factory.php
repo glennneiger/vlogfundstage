@@ -6,16 +6,24 @@
  * @since 2.5.0
  */
 class WPV_Shortcode_Factory {
-	
+
 	/**
 	 * @var Toolset_Shortcode_Attr_Interface
 	 */
 	private $attr_item_chain;
-	
+
+	/**
+	 * @var \OTGS\Toolset\Views\Controller\Frontend\LoopIndex
+	 */
+	private $loop_index_controller;
+
 	public function __construct(
 		Toolset_Shortcode_Attr_Item_M2M $attr_item_chain
 	) {
 		$this->attr_item_chain = $attr_item_chain;
+
+		$this->loop_index_controller = new \OTGS\Toolset\Views\Controller\Frontend\LoopIndex();
+		$this->loop_index_controller->initialize();
 	}
 
 	/**
@@ -137,14 +145,14 @@ class WPV_Shortcode_Factory {
 				$shortcode_gui = new WPV_Shortcode_Post_Taxonomy_GUI();
 				return new WPV_Shortcode_Base_View( $shortcode_object );
 				break;
-			
-			
+
+
 			case WPV_Shortcode_Control_Post_Relationship::SHORTCODE_NAME:
 			case WPV_Shortcode_Control_Post_Relationship::SHORTCODE_NAME_ALIAS:
 				$shortcode_object = new WPV_Shortcode_Control_Post_Relationship( $shortcode );
 				return new WPV_Shortcode_Base_View( $shortcode_object );
 				break;
-			case WPV_Shortcode_Control_Post_Ancestor::SHORTCODE_NAME: 
+			case WPV_Shortcode_Control_Post_Ancestor::SHORTCODE_NAME:
 			case WPV_Shortcode_Control_Post_Ancestor::SHORTCODE_NAME_ALIAS;
 				if ( apply_filters( 'toolset_is_m2m_enabled', false ) ) {
 					$shortcode_object = new WPV_Shortcode_Control_Post_Ancestor_From_M2m( $shortcode );
@@ -153,7 +161,7 @@ class WPV_Shortcode_Factory {
 				}
 				return new WPV_Shortcode_Base_View( $shortcode_object );
 				break;
-			
+
 			case WPV_Shortcode_WPML_Conditional::SHORTCODE_NAME:
 				$shortcode_object = new WPV_Shortcode_WPML_Conditional();
 				if ( $shortcode_object->condition_is_met() ) {
@@ -161,6 +169,12 @@ class WPV_Shortcode_Factory {
 					return new WPV_Shortcode_Base_View( $shortcode_object );
 				}
 				return new WPV_Shortcode_Base_View( new WPV_Shortcode_Empty() );
+
+			case WPV_Shortcode_Loop_Index::SHORTCODE_NAME:
+				$shortcode_object = new WPV_Shortcode_Loop_Index( $this->loop_index_controller );
+				$shortcode_gui = new WPV_Shortcode_Loop_Index_GUI();
+				return new WPV_Shortcode_Base_View( $shortcode_object );
+				break;
 		}
 
 		return false;

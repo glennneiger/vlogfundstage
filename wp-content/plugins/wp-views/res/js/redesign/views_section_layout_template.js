@@ -1,24 +1,26 @@
 var WPViews = WPViews || {};
 
-// @todo Proper naming conventions for the inline CT editor, CSS editor and JS editor, 
+// @todo Proper naming conventions for the inline CT editor, CSS editor and JS editor,
 // together with their WPV_Toolset.CodeMirror_instance keys,
 // so we can properly use wpv-action-wpv-edit-screen-delete-codemirror-editor
 // as it also includes deleting on window.iclCodemirror
 // which has another entirely diferent set of keys :-(
 
 WPViews.ViewEditScreenInlineCT = function( $ ) {
-	
+
 	var self = this;
-	
+
+	self.i18n = wpv_inline_templates_i18n;
+
 	self.view_id				= $('.js-post_ID').val();
 	self.current_ct_id			= 0;
 	self.current_ct_container	= null;
-	
+
 	self.codemirror_highlight_options = {
 		className: 'wpv-codemirror-highlight'
 	};
 	self.spinner = '<span class="wpv-spinner ajax-loader"></span>&nbsp;&nbsp;';
-		
+
 	self.shortcodeDialogSpinnerContent = $(
         '<div style="min-height: 150px;">' +
             '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; ">' +
@@ -27,29 +29,29 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
             '</div>' +
         '</div>'
     );
-	
+
 	// ---------------------------------
 	// Inline Content Template add dialog management
 	// ---------------------------------
-	
+
 	// Open dialog
-	
+
 	$( document ).on( 'click', '.js-wpv-ct-assign-to-view', function() {
 		var dialog_height = $( window ).height() - 100;
 		self.dialog_assign_ct.dialog( "open" ).dialog({
 			maxHeight:	dialog_height,
 			draggable:	false,
 			resizable:	false,
-			position:	{ 
-				my:			"center top+50", 
-				at:			"center top", 
-				of:			window, 
+			position:	{
+				my:			"center top+50",
+				at:			"center top",
+				of:			window,
 				collision:	"none"
 			}
 		});
-		
+
 		self.dialog_assign_ct.html( self.shortcodeDialogSpinnerContent );
-		
+
 		var data = {
 			action:		'wpv_assign_ct_to_view',
 			view_id:	$( this ).data('id'),
@@ -77,19 +79,19 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				//console.log( "Error: ", ajaxContext.responseText );
 			},
 			complete:	function() {
-				
+
 			}
 		});
 	});
-	
+
 	// Manage changes
-	
+
 	$( document ).on( 'change', '.js-wpv-inline-template-type', function() {
 		var thiz = $( this ),
 		thiz_val = thiz.val();
 		$( '.js-wpv-assign-ct-already, .js-wpv-assign-ct-existing, .js-wpv-assign-ct-new' ).hide();
 		$( '.js-wpv-assign-ct-' + thiz_val ).fadeIn( 'fast' );
-		
+
 		switch ( thiz_val ) {
 			case 'already':
 				if ( $( '.js-wpv-inline-template-assigned-select' ).val() == 0 ) {
@@ -135,7 +137,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				break;
 		}
 	});
-	
+
 	$( document ).on( 'change', '.js-wpv-inline-template-assigned-select', function() {
 		if ( $( '.js-wpv-inline-template-assigned-select' ).val() == 0 ) {
 			$( '.js-wpv-assign-inline-content-template' )
@@ -149,7 +151,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				.addClass( 'button-primary' );
 		}
 	});
-	
+
 	$( document ).on( 'change', '.js-wpv-inline-template-existing-select', function() {
 		if ( $( '.js-wpv-inline-template-existing-select').val() == 0 ) {
 			$( '.js-wpv-assign-inline-content-template' )
@@ -163,7 +165,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				.addClass( 'button-primary' );
 		}
 	});
-	
+
 	$( document ).on( 'change keyup input cut paste', '.js-wpv-inline-template-new-name', function() {
 		$( '.js-wpv-add-new-ct-name-error-container .toolset-alert' ).remove();
 		if ( $( '.js-wpv-inline-template-new-name' ).val() == '' ) {
@@ -178,9 +180,9 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				.addClass( 'button-primary' );
 		}
 	});
-	
+
 	// Submit
-	
+
 	$( document ).on( 'click','.js-wpv-assign-inline-content-template', function() {
 		// On AJAX, both #wpv_inline_content_template and #wpv-ct-inline-edit are valid nonces
 		var thiz			= $( this ),
@@ -189,53 +191,57 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 		template_name		= '',
 		type				= $( '.js-wpv-inline-template-type:checked' ).val(),
 		mode				= '',
-		spinnerContainer	= $('<div class="wpv-spinner ajax-loader auto-update">').insertAfter( thiz ).show();
-		
+		spinnerContainer	= $('<div class="wpv-spinner ajax-loader auto-update">').insertAfter( thiz ).show(),
+		data = {
+			action: self.i18n.ajax.action.add_inline_content_template,
+			wpnonce: self.i18n.ajax.nonce.add_inline_content_template
+		};
+
 		thiz
 			.prop( 'disabled', true )
 			.removeClass( 'button-primary' )
 			.addClass( 'button-secondary' );
-		
+
 		switch ( type ) {
 			case 'existing':
 				if ( $( '.js-wpv-inline-template-existing-select' ).val() == '' ) {
 					return;
 				}
 				template_id		= $( '.js-wpv-inline-template-existing-select' ).val();
-				template_name	= $( '.js-wpv-inline-template-existing-select option:selected' ).text();
+				template_name	= $( '.js-wpv-inline-template-existing-select option:selected' ).data( 'ct-name' );
 				mode			= 'assign';
-				data			= {
-					action:			'wpv_add_inline_content_template',
-					mode:			mode,
-					view_id:		$( '.js-wpv-ct-assign-to-view' ).data( 'id' ),
-					template_id:	template_id,
-					wpnonce:		$( '#wpv_inline_content_template' ).attr( 'value' )
-				};
+				data = Object.assign(
+					{
+						mode: mode,
+						view_id: $( '.js-wpv-ct-assign-to-view' ).data( 'id' ),
+						template_id: template_id,
+					},
+					data
+				);
 				break;
 			case 'new':
 				if ( $( '.js-wpv-inline-template-new-name' ).val() == '' ) {
 					return;
 				}
 				template_name	= $( '.js-wpv-inline-template-new-name' ).val();
-				template_name	= template_name.replace( /\'/gi, '' );
-				template_name	= WPV_Toolset.Utils._strip_tags_and_preserve_text( _.unescape( template_name ) );
 				mode			= 'create';
-				data			= {
-					action:			'wpv_add_inline_content_template',
-					mode:			mode,
-					view_id:		$('.js-wpv-ct-assign-to-view').data('id'),
-					template_name:	template_name,
-					wpnonce:		$('#wpv-ct-inline-edit').attr('value')
-				};
+				data = Object.assign(
+					{
+						mode: mode,
+						view_id: $('.js-wpv-ct-assign-to-view').data('id'),
+						template_name: template_name,
+					},
+					data
+				);
 				break;
 			case 'already':
 				send_ajax		= false;
 				template_id		= $( '.js-wpv-inline-template-assigned-select' ).val();
-				template_name	= $( '.js-wpv-inline-template-assigned-select option:selected' ).text();
+				template_name	= $( '.js-wpv-inline-template-assigned-select option:selected' ).data( 'ct-name' );
 				mode			= 'insert';
 				break;
 		}
-		
+
 		if ( send_ajax ) {
 			$.ajax({
 				type:		"POST",
@@ -254,14 +260,17 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 								.append( response.data.message );
 						Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-init-inline-content-template', response.data.ct_id );
 					}
-					self.add_content_template_shortcode( template_name, response.data.ct_id );
+					self.add_content_template_shortcode( response.data.ct_name, response.data.ct_id );
 					$( '.wpv_ct_inline_message' ).remove();
 					spinnerContainer.remove();
 					self.dialog_assign_ct.dialog( "close" );
 				} else {
 					if ( response.data.type == 'name' ) {
+						var errorMessage = 'undefined' !== typeof response.data.message ?
+							response.data.message :
+							wpv_inline_templates_i18n.error.name_in_use;
 						$( '.js-wpv-add-new-ct-name-error-container' ).wpvToolsetMessage({
-							text: wpv_inline_templates_i18n.error.name_in_use,
+							text: errorMessage,
 							stay: true,
 							close: false,
 							type: ''
@@ -276,7 +285,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				}
 			})
 			.fail( function() {
-				
+
 			})
 			.always( function() {
 				spinnerContainer.remove();
@@ -289,9 +298,9 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 		}
 		return false;
 	});
-	
+
 	// Insert shortcode into textarea
-	
+
 	self.add_content_template_shortcode = function( template_name, template_id ) {
 		if ( $( '.js-wpv-add-to-editor-check' ).prop('checked') == true || $( '.js-wpv-inline-template-type:checked' ).val() == 'already' ) {
 			var content = '[wpv-post-body view_template="' + template_name + '"]',
@@ -353,11 +362,11 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 			}
 		}
 	};
-	
+
 	// ---------------------------------
 	// Inline Content Template change and update management
 	// ---------------------------------
-	
+
 	/**
 	* track_inline_content_template_changes
 	*
@@ -365,25 +374,19 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.track_inline_content_template_changes = function( template_id ) {
-		if ( 
-			WPV_Toolset.CodeMirror_instance_value["wpv_ct_inline_editor_" + template_id] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_inline_editor_" + template_id].getValue() 
-			|| WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_css_editor_" + template_id] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_css_editor_" + template_id].getValue() 
-			|| WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_js_editor_" + template_id] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_js_editor_" + template_id].getValue() 
+		if (
+			WPV_Toolset.CodeMirror_instance_value["wpv_ct_inline_editor_" + template_id] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_inline_editor_" + template_id].getValue()
+			|| WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_css_editor_" + template_id] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_css_editor_" + template_id].getValue()
+			|| WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_js_editor_" + template_id] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_js_editor_" + template_id].getValue()
 		) {
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-save-queue', { section: 'save_section_inline_content_template', action: 'add', args: { template_id: template_id } } );
-			$( '.js-wpv-ct-update-inline-' + template_id )
-				.removeClass('button-secondary')
-				.addClass( 'button-primary js-wpv-section-unsaved' )
-				.prop( 'disabled', false );
+			$( '.js-wpv-ct-update-inline-' + template_id ).addClass( 'js-wpv-section-unsaved' );
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-set-confirm-unload', true );
 		} else {
 			Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-save-queue', { section: 'save_section_inline_content_template', action: 'remove', args: { template_id: template_id } } );
-			$( '.js-wpv-ct-update-inline-' + template_id )
-				.removeClass( 'button-primary js-wpv-section-unsaved' )
-				.addClass( 'button-secondary' )
-				.prop( 'disabled', true );
+			$( '.js-wpv-ct-update-inline-' + template_id ).removeClass( 'js-wpv-section-unsaved' );
 			$( '.js-wpv-ct-update-inline-' + template_id )
 				.parent()
 					.find( '.toolset-alert-error' )
@@ -391,7 +394,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 			$( document ).trigger( 'js_event_wpv_set_confirmation_unload_check' );
 		}
 	};
-	
+
 	/**
 	* set_inline_content_template_editor
 	*
@@ -399,7 +402,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 	*
 	* @since 2.3.0
 	*/
-	
+
 	self.set_inline_content_template_editor = function( template_id ) {
 		// Content editor
 		WPV_Toolset.CodeMirror_instance["wpv_ct_inline_editor_" + template_id] = icl_editor.codemirror( 'wpv-ct-inline-editor-' + template_id, true );
@@ -408,26 +411,24 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 		//Add quicktags toolbar
 		var wpv_inline_editor_qt = quicktags( { id: 'wpv-ct-inline-editor-'+template_id, buttons: 'strong,em,link,block,del,ins,img,ul,ol,li,code,close' } );
 		WPV_Toolset.add_qt_editor_buttons( wpv_inline_editor_qt, WPV_Toolset.CodeMirror_instance['wpv_ct_inline_editor_' + template_id] );
-		
+
 		_.defer( function() {
 			// CSS Components compatibility
 			Toolset.hooks.doAction( 'toolset_text_editor_CodeMirror_init', 'wpv-ct-inline-editor-' + template_id );
 		});
-		
+
 		// Extra assets editors
 		WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_css_editor_" + template_id] = icl_editor.codemirror( 'wpv-ct-assets-inline-css-editor-' + template_id, true, 'css' );
 		WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_css_editor_" + template_id].setSize( "100%", 250 );
 		WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_css_editor_" + template_id] = WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_css_editor_" + template_id].getValue();
-		
+
 		WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_js_editor_" + template_id] = icl_editor.codemirror( 'wpv-ct-assets-inline-js-editor-' + template_id, true, 'javascript' );
 		WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_js_editor_" + template_id].setSize( "100%", 250 );
 		WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_js_editor_" + template_id] = WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_js_editor_" + template_id].getValue();
-		
-		$( '.js-wpv-ct-update-inline-' + template_id ).prop( 'disabled', true );
-		
+
 		return self;
 	};
-	
+
 	/**
 	* set_inline_content_template_events
 	*
@@ -435,7 +436,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 	*
 	* @since 2.1.0
 	*/
-	
+
 	self.set_inline_content_template_events = function( template_id ) {
 		if ( typeof WPV_Toolset.CodeMirror_instance["wpv_ct_inline_editor_" + template_id] !== "undefined" ) {
 			WPV_Toolset.CodeMirror_instance["wpv_ct_inline_editor_" + template_id].on( 'change', function() {
@@ -452,11 +453,11 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				self.track_inline_content_template_changes( template_id );
 			});
 		}
-		
+
 		Toolset.hooks.doAction( 'wpv-action-wpv-set-inline-content-template-events', template_id );
-		
+
 	};
-	
+
 	/**
 	* save_section_inline_content_template
 	*
@@ -464,7 +465,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.save_section_inline_content_template = function( event, propagate, args ) {
 		var thiz = $( '.js-wpv-ct-update-inline-' + args.template_id ),
 		thiz_container = thiz.closest('.js-wpv-ct-listing' ),
@@ -484,14 +485,9 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 			ct_id:			ct_id,
 			wpnonce:		$( '#wpv_inline_content_template' ).attr( 'value' )
 		};
-		
-		thiz
-			.prop( 'disabled', true )
-			.removeClass( 'button-primary' )
-			.addClass( 'button-secondary' );
-		
+
 		Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-save-queue', { section: 'save_section_inline_content_template', action: 'remove', args: { template_id: ct_id } } );
-		
+
 		$.post( ajaxurl, data, function( response ) {
 			if ( response.success ) {
 				thiz
@@ -531,25 +527,37 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 			spinnerContainer.remove();
 		});
 	};
-	
-	$( document ).on( 'click', '.js-wpv-ct-update-inline', function( e ) {
-		e.preventDefault();
-		var thiz = $( this ),
-		ct_id = thiz.data( 'id' );
-		self.save_section_inline_content_template( 'js_event_wpv_save_section_inline_content_template_completed', false, { template_id: ct_id } );
-	});
-	
+
+	/**
+	 * Save a single inline Content Template, on demand.
+	 *
+	 * Required because before 2.7.3 each inline CT had its own save button
+	 * and user editors saved individual inline CTs by firing a click event on them.
+	 *
+	 * @param int templateId
+	 * @since 2.7.4
+	 */
+	self.save_inline_content_template = function ( templateId ) {
+		if (
+			WPV_Toolset.CodeMirror_instance_value["wpv_ct_inline_editor_" + templateId] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_inline_editor_" + templateId].getValue()
+			|| WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_css_editor_" + templateId] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_css_editor_" + templateId].getValue()
+			|| WPV_Toolset.CodeMirror_instance_value["wpv_ct_assets_inline_js_editor_" + templateId] !=  WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_js_editor_" + templateId].getValue()
+		) {
+			self.save_section_inline_content_template( 'js_event_wpv_save_section_inline_content_template_completed', false, { template_id: templateId } );
+		}
+	}
+
 	// Open
-	
+
 	$( document ).on( 'click', '.js-wpv-content-template-open', function( e ) {
 		e.preventDefault();
 		var thiz = $( this ),
 		template_id = thiz.data( 'target' ),
 		li_container = $( '.js-wpv-inline-editor-container-' + template_id ),
 		arrow = thiz.find( '.js-wpv-open-close-arrow' );
-		
+
 		arrow.removeClass( 'fa-caret-down fa-caret-up' );
-		
+
 		li_container.toggle( 400 ,function() {
 			if ( li_container.is(':hidden') ) {
 				arrow.addClass( 'fa-caret-down' );
@@ -570,9 +578,9 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 						console.log('Error, Content Template not found.');
 					} else {
 						$( '.js-wpv-inline-editor-container-' + template_id ).html( response );
-						
+
 						self.init_inline_template( template_id );
-						
+
 						thiz.prop( 'disabled', false );
 						arrow
 							.addClass( 'fa-caret-up' )
@@ -588,9 +596,9 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 		});
 		return;
 	});
-	
+
 	// Remove dialog
-	
+
 	$( document ).on( 'click', '.js-wpv-ct-remove-from-view', function( e ) {
 		e.preventDefault();
 		var thiz = $( this ),
@@ -630,10 +638,10 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 		}
 		return false;
 	});
-	
+
 	self.remove_inline_content_template = function( template_id, template_container ) {
-		if ( 
-			template_id == 0 
+		if (
+			template_id == 0
 			|| template_container == null
 		) {
 			return;
@@ -644,7 +652,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				height:		"toggle",
 				opacity:	"toggle"
 			}, 400, function() {
-				
+
 				if ( _.has( WPV_Toolset.CodeMirror_instance, 'wpv_ct_inline_editor_' + template_id ) ) {
 					WPV_Toolset.CodeMirror_instance[ 'wpv_ct_inline_editor_' + template_id ].focus();
 					delete WPV_Toolset.CodeMirror_instance[ 'wpv_ct_inline_editor_' + template_id ];
@@ -656,7 +664,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 						delete WPV_Toolset.CodeMirror_instance_qt[ 'wpv_ct_inline_editor_' + template_id ];
 					}
 				}
-				
+
 				if ( _.has( WPV_Toolset.CodeMirror_instance, 'wpv_ct_assets_inline_css_editor_' + template_id ) ) {
 					WPV_Toolset.CodeMirror_instance[ 'wpv_ct_assets_inline_css_editor_' + template_id ].focus();
 					delete WPV_Toolset.CodeMirror_instance[ 'wpv_ct_assets_inline_css_editor_' + template_id ];
@@ -668,7 +676,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 						delete WPV_Toolset.CodeMirror_instance_qt[ 'wpv_ct_assets_inline_css_editor_' + template_id ];
 					}
 				}
-				
+
 				if ( _.has( WPV_Toolset.CodeMirror_instance, 'wpv_ct_assets_inline_js_editor_' + template_id ) ) {
 					WPV_Toolset.CodeMirror_instance[ 'wpv_ct_assets_inline_js_editor_' + template_id ].focus();
 					delete WPV_Toolset.CodeMirror_instance[ 'wpv_ct_assets_inline_js_editor_' + template_id ];
@@ -680,20 +688,20 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 						delete WPV_Toolset.CodeMirror_instance_qt[ 'wpv_ct_assets_inline_js_editor_' + template_id ];
 					}
 				}
-				
+
 				$( this ).remove();
-				
+
 				Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-manage-save-queue', { section: 'save_section_inline_content_template', action: 'remove', args: { template_id: template_id } } );
-				
+
 				if ( $( "ul.js-wpv-inline-content-template-listing > li" ).length < 1 ) {
 					$( '.js-wpv-settings-inline-templates' ).hide();
 				}
-				
+
 			});
 	};
-	
+
 	// Manage pushpin for inline CT assets
-	
+
 	$( document ).on( 'js_event_wpv_editor_metadata_toggle_toggled', function( event, toggler ) {
 		if ( toggler.hasClass( 'js-wpv-ct-assets-inline-editor-toggle' ) ) {
 			var ct_inline_id = toggler.data( 'id' ),
@@ -705,18 +713,18 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_" + thiz_type + "_editor_" + ct_inline_id].refresh();
 				toggler.addClass( 'js-wpv-ct-assets-inline-editor-toggle-refreshed' );
 			}
-			if ( 
-				self.asset_needs_flag( ct_inline_id, thiz_type ) 
+			if (
+				self.asset_needs_flag( ct_inline_id, thiz_type )
 				&& (
-					this_toggler_icon.hasClass( 'icon-caret-down' ) 
-					|| this_toggler_icon.hasClass( 'fa-caret-down' ) 
+					this_toggler_icon.hasClass( 'icon-caret-down' )
+					|| this_toggler_icon.hasClass( 'fa-caret-down' )
 				)
 			) {
 				thiz_flag.animate( {width: 'toggle'}, 200 );
 			}
 		}
 	});
-	
+
 	self.asset_needs_flag = function( ct_id, type ) {
 		var needed = false;
 		if ( WPV_Toolset.CodeMirror_instance["wpv_ct_assets_inline_" + type + "_editor_" + ct_id].getValue() != '' ) {
@@ -724,10 +732,10 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 		}
 		return needed;
 	};
-	
+
 	self.init_dialogs = function() {
 		$( 'body' ).append( '<div id="js-wpv-dialog-assign-content-template-to-view-dialog" class="toolset-shortcode-gui-dialog-container wpv-shortcode-gui-dialog-container js-wpv-shortcode-gui-dialog-container"></div>' );
-		
+
 		var query_mode				= Toolset.hooks.applyFilters( 'wpv-filter-wpv-edit-screen-get-query-mode', 'normal' ),
 		dialog_assign_ct_title		= wpv_inline_templates_i18n.dialog.assign.view_title,
 		dialog_unassign_ct_title	= wpv_inline_templates_i18n.dialog.unassign.view_title;
@@ -735,15 +743,15 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 			dialog_assign_ct_title		= wpv_inline_templates_i18n.dialog.assign.wpa_title;
 			dialog_unassign_ct_title	= wpv_inline_templates_i18n.dialog.unassign.wpa_title;
 		}
-		
+
 		self.dialog_assign_ct = $( "#js-wpv-dialog-assign-content-template-to-view-dialog" ).dialog({
 			autoOpen:	false,
 			modal:		true,
 			title:		dialog_assign_ct_title,
 			minWidth:	600,
-			show:		{ 
-				effect:		"blind", 
-				duration:	800 
+			show:		{
+				effect:		"blind",
+				duration:	800
 			},
 			open:		function( event, ui ) {
 				$( 'body' ).addClass( 'modal-open' );
@@ -768,15 +776,15 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				}
 			]
 		});
-		
+
 		self.dialog_unassign_ct = $( "#js-wpv-dialog-remove-content-template-from-view-dialog" ).dialog({
 			autoOpen:	false,
 			modal:		true,
 			title:		dialog_unassign_ct_title,
 			minWidth:	600,
-			show:		{ 
-				effect:		"blind", 
-				duration:	800 
+			show:		{
+				effect:		"blind",
+				duration:	800
 			},
 			open:		function( event, ui ) {
 				$( 'body' ).addClass( 'modal-open' );
@@ -845,7 +853,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 			]
 		});
 	};
-	
+
 	/**
 	* init_hooks
 	*
@@ -853,7 +861,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 	*
 	* @since 2.1
 	*/
-	
+
 	self.init_hooks = function() {
 		// Register the inline Content Template saving action
 		Toolset.hooks.doAction( 'wpv-action-wpv-edit-screen-define-save-callbacks', {
@@ -863,8 +871,10 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 		});
 		// Action to init an inline Content Template
 		Toolset.hooks.addAction( 'wpv-action-wpv-edit-screen-init-inline-content-template', self.init_inline_template );
+
+		Toolset.hooks.addAction( 'wpv-action-wpv-save-inline-content-template', self.save_inline_content_template );
 	};
-	
+
 	/**
 	* init_open_inline_templates
 	*
@@ -875,7 +885,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 	*
 	* @since 2.3.0
 	*/
-	
+
 	self.init_open_inline_templates = function() {
 		$( '.js-wpv-ct-inline-editor-textarea' ).each( function() {
 			var thiz = $( this ),
@@ -883,7 +893,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 				self.init_inline_template( thiz_template_id );
 		});
 	};
-	
+
 	/**
 	* init_inline_template
 	*
@@ -894,7 +904,7 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 	*
 	* @since 2.3.0
 	*/
-	
+
 	self.init_inline_template = function( template_id ) {
 		self.set_inline_content_template_editor( template_id )
 			.set_inline_content_template_events( template_id );
@@ -902,13 +912,13 @@ WPViews.ViewEditScreenInlineCT = function( $ ) {
 			cred_cred.posts();// this should be an event!!!
 		}
 	};
-	
+
 	self.init = function() {
 		self.init_dialogs();
 		self.init_hooks();
 		self.init_open_inline_templates();
 	};
-	
+
 	self.init();
 
 };

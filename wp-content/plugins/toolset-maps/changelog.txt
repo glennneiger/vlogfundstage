@@ -1,4 +1,29 @@
 -------------------------------------------------------------------------------------------------------------------
+Toolset Maps 1.7.2
+	- Added even more features to Map Gutenberg block.
+	- Improved custom Distance filter dialog now has an option to make distance center field required or not.
+	- Fixed an issue in preset distance filter where visitor location was offered even if site is not served over HTTPS.
+	- Fixed Query by Distance from current user Location not asking SSL permissions and query results always being "No Items Found".
+	- Fixed a regression from 1.7 where PNG marker icons where needlessly resized.
+	- Fixed an issue with upload file checking and WP 5.0.1 and higher which broke JSON style file uploads.
+	- Deprecated long unused AJAX calls.
+	- Various small fixes and improvements to UI.
+	- Known issue: Map blocks created with Maps 1.7 or 1.7.1 will break after update. This will not happen any more in future versions.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Maps 1.7.1
+	- Added lots of features to Map Gutenberg block.
+	- Refactored "Reload" button dialog now has nicer UI.
+
+-------------------------------------------------------------------------------------------------------------------
+Toolset Maps 1.7
+	- Added Gutenberg block for Maps.
+	- Improved SVG Compatibility for markers with Google API, and especially for IE11.
+	- Improved initializing of map preview in address editor fixes some edge cases and improves performance a bit.
+	- Fixed a regression where current user location search (which requires HTTPS) was offered even if site is loaded with HTTP.
+	- Fixed an issue where map distance filter fields were shown twice after current visitor location was determined.
+
+-------------------------------------------------------------------------------------------------------------------
 Toolset Maps 1.6
 	- Added an option to return results outside of the radius instead of inside in Distance Filter.
 	- Added a shortcode for conditional display based on visitor location.

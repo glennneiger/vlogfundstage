@@ -81,7 +81,7 @@ class WPV_Editor_Loop_Selection {
 			</div>
 			<span class="update-action-wrap auto-update js-wpv-update-action-wrap">
 				<span class="js-wpv-message-container"></span>
-				<span type="hidden" data-success="<?php echo esc_attr( __( 'Updated', 'wpv-views') ); ?>" data-unsaved="<?php echo esc_attr( __('Not saved', 'wpv-views') ); ?>" data-nonce="<?php echo wp_create_nonce( 'wpv_view_loop_selection_nonce' ); ?>" class="js-wpv-loop-selection-update" />
+				<input type="hidden" data-success="<?php echo esc_attr( __( 'Updated', 'wpv-views' ) ); ?>" data-unsaved="<?php echo esc_attr( __( 'Not saved', 'wpv-views' ) ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'wpv_view_loop_selection_nonce' ) ); ?>" class="js-wpv-loop-selection-update" />
 			</span>
 		</div>
 		<?php

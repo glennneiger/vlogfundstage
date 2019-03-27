@@ -57,7 +57,7 @@ class Toolset_Ajax_Handler_Get_Cred_Form_Block_Preview extends Toolset_Ajax_Hand
 		$this->ajax_begin(
 			array(
 				'nonce' => Toolset_Ajax::CALLBACK_GET_CRED_FORM_BLOCK_PREVIEW,
-				'is_public' => false,
+				'is_public' => true,
 			)
 		);
 
@@ -72,9 +72,14 @@ class Toolset_Ajax_Handler_Get_Cred_Form_Block_Preview extends Toolset_Ajax_Hand
 				$this->ajax_finish( array( 'message' => sprintf( __( 'Error while retrieving the form preview. The selected form (ID: "%s") was not found.', 'wpv-views' ), $cred_form_id ) ), false );
 			} else {
 				$cred_form_content = $this->forms_preview_renderer->render_preview( $cred_form );
-				$cred_form_content .= $this->render_block_overlay( $cred_form_id, $cred_form->post_title, false );
+				$cred_form_content .= $this->render_block_overlay( $cred_form_id, $cred_form->post_title, $cred_form->post_type );
 
-				$this->ajax_finish( $cred_form_content, true );
+				$result = array(
+					'formID' => strval( $cred_form_id ),
+					'formContent' => $cred_form_content,
+				);
+
+				$this->ajax_finish( $result, true );
 			}
 		}
 	}
@@ -84,17 +89,26 @@ class Toolset_Ajax_Handler_Get_Cred_Form_Block_Preview extends Toolset_Ajax_Hand
 	 *
 	 * @param string $form_id    The ID of the selected Form.
 	 * @param string $form_title The title of the selected Form.
+	 * @param string $form_type Form type.
 	 *
 	 * @return bool|string The markup for the editor block overlay rendering echo-ed or returned.
 	 */
-	public function render_block_overlay( $form_id, $form_title ) {
+	public function render_block_overlay( $form_id, $form_title, $form_type ) {
 		$renderer = $this->toolset_renderer;
 		$template_repository = \Toolset_Output_Template_Repository::get_instance();
 		$context = array(
 			'module_title' => $form_title,
 			'module_type' => __( 'Form', 'wpv-views' ),
-			'edit_link' => get_edit_post_link( $form_id ),
 		);
+		// The edit link is only offered for users with proper permissions.
+		if ( current_user_can( 'manage_options' ) ) {
+			if ( 'cred_rel_form' === $form_type ) {
+				$context['edit_link'] =admin_url( 'admin.php?page=cred_relationship_form&action=edit&id=' . $form_id );
+			} else {
+				$context['edit_link'] = get_edit_post_link( $form_id );
+			}
+		}
+
 		$html = $renderer->render(
 			$template_repository->get( $this->constants->constant( 'Toolset_Output_Template_Repository::PAGE_BUILDER_MODULES_OVERLAY' ) ),
 			$context,

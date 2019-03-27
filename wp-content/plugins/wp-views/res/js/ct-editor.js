@@ -50,7 +50,7 @@ var ajaxurl = ajaxurl || '';
 WPViews.CTEditScreen = function( $ ) {
 
     var self = this;
-	
+
 	/**
 	 * Keymap shortcut definition for editing Views shortcodes in Codemirror editors.
 	 * @since 2.3.0
@@ -59,9 +59,9 @@ WPViews.CTEditScreen = function( $ ) {
 		// Ctrl + Alt + Space = Try to edit the current Views shortcode under the cursor
 		"Ctrl-Alt-Space": function( cm ) {
 					var textarea_id = cm.getTextArea().id;
-					if ( 
-						textarea_id !== undefined 
-						&& _.has( WPV_Toolset.CodeMirror_instance, textarea_id ) 
+					if (
+						textarea_id !== undefined
+						&& _.has( WPV_Toolset.CodeMirror_instance, textarea_id )
 					) {
 						Toolset.hooks.doAction( 'wpv-action-wpv-shortcodes-gui-maybe-edit-shortcode', textarea_id );
 					}
@@ -342,8 +342,9 @@ WPViews.CTEditScreen = function( $ ) {
                     name: vm.getModelPropertyName(propertyName),
                     value: vm[ propertyName + 'Accepted' ]()
                 };
-            });
+			});
 
+			self.highlight_action_bar('saving');
 
             // Callback after asynchronous AJAX action.
             var callback = function(ajaxResult) {
@@ -560,9 +561,6 @@ WPViews.CTEditScreen = function( $ ) {
 
                     self.showErrorMessage(messageContainer, propertiesToCheck, errorMessage);
 
-                } else {
-                    // All relevant updates have succeeded.
-                    self.showSuccessMessage(messageContainer, savedMessage);
                 }
             }
 
@@ -614,9 +612,6 @@ WPViews.CTEditScreen = function( $ ) {
         vm.titleAccepted = ko.observable(ct_data.title);
         vm.titleAccepted.subscribe(_.partial(vm.propertyChange, 'title' ));
 
-        vm.titleForcePropertyChanged = ko.observable( false );
-
-        vm.titleWasLastInputEscaped = ko.observable(true);
         vm.titleLastInput = ko.observable(null);
 
         vm.title = ko.pureComputed({
@@ -627,19 +622,9 @@ WPViews.CTEditScreen = function( $ ) {
                     return vm.titleLastInput();
                 }
             },
-            write: function(newTitle) {
-                vm.titleLastInput(newTitle);
-				var titleEscaped = newTitle.replace( /'/gi, '' );
-                titleEscaped = WPV_Toolset.Utils._strip_tags_and_preserve_text(_.unescape(titleEscaped));
-                vm.titleWasLastInputEscaped(titleEscaped != newTitle);
-                if ( vm.titleAccepted() !== titleEscaped ) {
-                    vm.titleForcePropertyChanged( false );
-                    vm.titleAccepted( titleEscaped );
-                }
-                else {
-                    vm.titleForcePropertyChanged( true );
-                    vm.titleAccepted.valueHasMutated();
-                }
+            write: function( newTitle ) {
+                vm.titleLastInput( newTitle );
+	            vm.titleAccepted( newTitle );
             }
         });
 
@@ -721,6 +706,7 @@ WPViews.CTEditScreen = function( $ ) {
          * Manually update all properties from the Title section.
          *
          * @since 1.9
+         * @deprecated 2.7
          */
         vm.titleSectionUpdate = function() {
             vm.log('vm.titleSectionUpdate');
@@ -783,21 +769,6 @@ WPViews.CTEditScreen = function( $ ) {
 
                     self.showErrorMessage(self.titleSectionMessageContainer, vm.titleSectionProperties, errorMessage);
 
-                } else {
-
-                    // All relevant updates have succeeded.
-
-                    //noinspection JSUnresolvedVariable
-                    var successMessage = self.l10n.title_section.saved;
-
-                    // If we escaped the title, show a different message and display the accepted value.
-                    if(vm.titleWasLastInputEscaped()) {
-                        //noinspection JSUnresolvedVariable
-                        successMessage = self.l10n.title_section.title_was_escaped;
-                        vm.titleLastInput(vm.titleAccepted());
-                    }
-
-                    self.showSuccessMessage(self.titleSectionMessageContainer, successMessage);
                 }
             }
 
@@ -1050,6 +1021,18 @@ WPViews.CTEditScreen = function( $ ) {
             return isEnabled;
         };
 
+		/**
+		 * Returns the number of Dissident posts the given post type.
+		 *
+		 * @param postType
+		 * @returns {number}
+		 */
+		vm.dissidentPostsCountForPostType = function( postType ) {
+			var dissidentPostsForPostType = _.find( vm.postTypesWithDissidentPosts(), function( postTypeWithDissidentPosts ) {
+				return postTypeWithDissidentPosts.postType === postType;
+			});
+			return ! _.isUndefined( dissidentPostsForPostType ) ? dissidentPostsForPostType.posts.length : 0;
+		};
 
         vm.isUsageSectionUpdating = ko.pureComputed(_.partial(vm.isSectionUpdating, vm.usageSectionProperties));
 
@@ -1067,6 +1050,71 @@ WPViews.CTEditScreen = function( $ ) {
             self.l10n.usage_section.unsaved,
             self.l10n.usage_section.saved,
             self.usageSectionMessageContainer));
+
+        /**
+		 * Updates the ViewModel for the Usage section to display the "Bind posts" button with the proper number of posts.
+         *
+		 * @param postTypesWithDissidentPosts
+		 * @param updateResults
+		 */
+		vm.notifyBindDissidentPosts = function( postTypesWithDissidentPosts, updateResults ) {
+			 _.each( updateResults.succeeded, function( property ) {
+				if (
+					_.has( property, 'dissidentPosts' ) &&
+					_.isObject( property.dissidentPosts )
+				) {
+					if ( Object.keys( property.dissidentPosts ).length < postTypesWithDissidentPosts().length ) {
+						// This case updates the ViewModel when post type is removed from the observable array.
+						var postTypesToRemove = [];
+						_.each(
+							postTypesWithDissidentPosts(),
+							function( postTypeObject ) {
+								if ( ! _.has( property.dissidentPosts, postTypeObject.postType ) ) {
+									postTypesToRemove.push( postTypeObject );
+								}
+							}
+						);
+
+						_.each(
+							postTypesToRemove,
+							function( postTypeObject ) {
+								postTypesWithDissidentPosts.remove( postTypeObject );
+							}
+						);
+					} else {
+						// This case updates the ViewModel when post type is added to the observable array.
+						_.each(
+							property.dissidentPosts,
+							function( dissidentPosts, postType ) {
+								var postTypeObject = _.find(
+									postTypesWithDissidentPosts(),
+									function ( postTypeObj ) {
+										return postTypeObj.postType === postType;
+									}
+								);
+
+								if ( _.isUndefined( postTypeObject ) ) {
+									var newPostTypeObject = {
+										postType: postType,
+										posts: dissidentPosts,
+										labelSingular: ct_data.usage_post_type_labels[ postType ].singular,
+										labelPlural: ct_data.usage_post_type_labels[ postType ].plural
+									};
+									postTypesWithDissidentPosts.push( newPostTypeObject );
+								}
+							}
+						);
+					}
+				}
+			});
+		};
+
+	    vm.lastUpdateResults.subscribe(
+	    	_.partial(
+	    		vm.notifyBindDissidentPosts,
+			    vm.postTypesWithDissidentPosts
+		    )
+	    );
 
 
         /**
@@ -1219,7 +1267,7 @@ WPViews.CTEditScreen = function( $ ) {
 
 
         // ------------------------------------------------------------------------
-        // "Save all sections at once"
+        // "Save the Content Template"
         // ------------------------------------------------------------------------
 
 
@@ -1233,22 +1281,26 @@ WPViews.CTEditScreen = function( $ ) {
             title: {
                 properties: vm.titleSectionProperties,
                 messageContainer: vm.titleSectionMessageContainer,
-                isUpdateNeeded: vm.isTitleSectionUpdateNeeded
+				isUpdateNeeded: vm.isTitleSectionUpdateNeeded,
+				isUpdating: vm.isTitleSectionUpdating
             },
             settings: {
                 properties: vm.settingsSectionProperties,
                 messageContainer: vm.settingsSectionMessageContainer,
-                isUpdateNeeded: function() { return false }
+				isUpdateNeeded: function() { return false },
+				isUpdating: vm.isSettingsSectionUpdating
             },
             usage: {
                 properties: vm.usageSectionProperties,
                 messageContainer: vm.usageSectionProperties,
-                isUpdateNeeded: vm.isUsageSectionUpdateNeeded
+				isUpdateNeeded: vm.isUsageSectionUpdateNeeded,
+				isUpdating: vm.isUsageSectionUpdating
             },
             content: {
                 properties: vm.contentSectionProperties,
                 messageContainer: vm.contentSectionMessageContainer,
-                isUpdateNeeded: vm.isContentSectionUpdateNeeded
+				isUpdateNeeded: vm.isContentSectionUpdateNeeded,
+				isUpdating: vm.isContentSectionUpdating
             }
         };
 
@@ -1262,6 +1314,17 @@ WPViews.CTEditScreen = function( $ ) {
          */
         vm.isAnyUpdateNeeded = ko.pureComputed(function() {
             return _.any(vm.sections, function(section) { return section.isUpdateNeeded(); });
+		});
+
+        /**
+         * Determine if there are any saving properties.
+         *
+         * Depends on the per-section checking functions.
+         *
+         * @since 2.7.3
+         */
+        vm.isAnySectionUpdating = ko.pureComputed(function() {
+            return _.any(vm.sections, function(section) { return section.isUpdating(); });
         });
 
 
@@ -1426,7 +1489,7 @@ WPViews.CTEditScreen = function( $ ) {
         return $(selector).wpvToolsetMessage({
             text: text,
             type: type,
-            inline: true,
+            inline: false,
             stay: stay,
             fadeOut: fadeOut
         });
@@ -1681,9 +1744,9 @@ WPViews.CTEditScreen = function( $ ) {
     self.updateProperties = function(ct_data, callback) {
 
         var data = {
-            action: 'wpv_ct_update_properties',
+            action: self.l10n.editor.ajax.action.update_content_template_properties,
             id: self.ct_data.id,
-            wpnonce: self.update_nonce,
+            wpnonce: self.l10n.editor.ajax.nonce.update_content_template_properties,
             properties: ct_data
         };
 
@@ -2096,45 +2159,60 @@ WPViews.CTEditScreen = function( $ ) {
     self.init_action_bar = function() {
 
         self.action_bar = $( '#js-wpv-general-actions-bar' );
+        self.action_bar_message_container	= $( '#js-wpv-general-actions-bar .js-wpv-message-container' );
 
-        // Update the bar width based on the first (title) section width.
-        self.set_action_bar_width = _.debounce(function() {
-            //noinspection JSValidateTypes
-            var adminBarWidth = $('.js-wpv-title-section').find('.wpv-setting-container').width();
-            //noinspection JSValidateTypes
-            self.action_bar.width( adminBarWidth );
-        }, 100);
+        var adminBarWidth = $( '.wrap.toolset-views' ).width(),
+        	adminBarHeight = self.action_bar.height(),
+        	adminBarTopOffset = 0,
+			adjustControls = function() {
+				if ( $( window ).scrollTop() > 5 ) {
+					$( '#save-form-actions' ).fadeOut( 'fast' );
+					$( '#describe-actions' ).fadeOut( 'fast' );
+				}
+				else {
+					$( '#save-form-actions' ).fadeIn( 'fast' );
+					$( '#describe-actions' ).fadeIn( 'fast' );
+				}
+			};
 
+		if ( $( '#wpadminbar' ).length !== 0 ) {
+			adminBarTopOffset = $('#wpadminbar').height();
+		}
 
-        // Initialize the bar position and size and register event hooks to update those on scrolling and resizing.
-        if ( self.action_bar && self.action_bar.offset() ) {
-            self.action_bar_message_container = self.action_bar.find('.js-wpv-message-container' );
-            var toolbarPos = self.action_bar.offset().top;
-            var adminBarHeight = 0;
-            var wpadminbar = $('#wpadminbar');
-            if ( wpadminbar.length !== 0 ) {
-                adminBarHeight = wpadminbar.height();
-                self.set_action_bar_width()
-            }
+		self.action_bar.css({
+			'position': 'fixed',
+			'top':adminBarTopOffset,
+			'width':adminBarWidth
+		});
 
-            self.set_toolbar_pos = function() {
-                //noinspection JSValidateTypes
-                if ( toolbarPos <= $(window).scrollTop() + adminBarHeight + 15) {
-                    self.html.addClass('wpv-general-actions-bar-fixed');
-                }
-                else {
-                    self.html.removeClass('wpv-general-actions-bar-fixed');
-                }
-            };
+		$( 'div#wpbody-content' ).css({
+			'padding-top':( adminBarHeight + 20 )
+		});
 
-            $( window ).on( 'scroll', function() {
-                self.set_toolbar_pos();
-            });
+		$( window ).on( 'scroll', adjustControls );
 
-            $( window ).on( 'resize', self.set_action_bar_width);
+		$( window ).on( 'resize', function() {
+			var adminBarWidth = $( '.wrap.toolset-views' ).width();
+			self.action_bar.width( adminBarWidth );
+		});
 
-            self.set_toolbar_pos();
-        }
+		$( document ).on( 'click', '#title-alt', function( e ) {
+			e.preventDefault();
+			$( this ).hide();
+			$( '#title' ).show();
+		});
+
+		$( document ).on( 'click', '#description-alt', function( e ) {
+			e.preventDefault();
+			$( this ).hide();
+			$( '.js-wpv-description' ).show();
+			var updatedAdminBarHeight = self.action_bar.height();
+			$( 'div#wpbody-content' ).css({
+				'padding-top':( updatedAdminBarHeight + 20 )
+			});
+		});
+
+		adjustControls();
 
     };
 
@@ -2146,13 +2224,22 @@ WPViews.CTEditScreen = function( $ ) {
      *
      * @since 1.9
      */
-    self.highlight_action_bar = function(mode) {
-        var highlight_class = 'wpv-action-success';
-        if('failure' == mode) {
-            highlight_class = 'wpv-action-failure';
-        }
-        self.action_bar.addClass(highlight_class);
-        setTimeout(function() { self.action_bar.removeClass(highlight_class); }, 1000);
+    self.highlight_action_bar = function( mode ) {
+		self.action_bar.removeClass( 'wpv-action-saving wpv-action-failure wpv-action-success' );
+
+		switch ( mode ) {
+			case 'saving':
+				self.action_bar.addClass( 'wpv-action-saving' );
+				break;
+			case 'failure':
+				self.action_bar.addClass( 'wpv-action-failure' );
+				setTimeout(function() { self.action_bar.removeClass( 'wpv-action-failure' ); }, 1000);
+				break;
+			default:
+				self.action_bar.addClass( 'wpv-action-success' );
+				setTimeout(function() { self.action_bar.removeClass( 'wpv-action-success' ); }, 1000);
+				break;
+		}
     };
 
 
@@ -2220,11 +2307,11 @@ WPViews.CTEditScreen = function( $ ) {
             }
         });
     };
-	
+
 	// ----------------------------------------------------------------------------
     // Colorbox compatibility - to deprecate
     // ----------------------------------------------------------------------------
-	
+
 	// Add .colorbox-active to the body element when colorbox is active
     $(document).on('cbox_complete', function() {
 
@@ -2273,8 +2360,8 @@ WPViews.CTEditScreen = function( $ ) {
         $.colorbox.close();
 
     });
-	
-	
+
+
 	/**
 	 * Toggle the usage section visibility
 	 *
@@ -2298,7 +2385,7 @@ WPViews.CTEditScreen = function( $ ) {
 	 * @since 2.4.0 Removed the CRED buttons initialization as CRED itself manages that
      */
     self.toolset_compatibility = function() {
-        
+
     };
 
 
