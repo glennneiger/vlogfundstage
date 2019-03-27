@@ -58,6 +58,7 @@
 							<?php endif; //Endif ?>
 						</ul>
 						<ul id="sf-navigation-account-items" class="sf-navigation-items sf-navigation-items-right sf-navigation-items-menu sf-navigation-logged-in sf-navigation-dropdown">
+							 <li class="login-w-a sf-navigation-item sf-hidden"><a href="/" class="sf-navigation-link">About</a></li>
 							<?php if( is_user_logged_in() ) : //Check User Logged In ?>
 								<li class="sf-navigation-item sf-hidden"><a href="/account/edit-account" class="sf-navigation-link">My Account</a></li>
 								<li class="sf-navigation-item sf-hidden"><a href="/account/my-campaigns" class="sf-navigation-link">My Campaigns</a></li>

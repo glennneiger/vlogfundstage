@@ -8411,10 +8411,12 @@ span.select2-selection__rendered {
 
 
 .sf-notice {
-border: 2px dashed #dadddd;
+/*border: 2px dashed #dadddd;*/
 margin-top: 20px;
 padding: 20px;
 background: oldlace;
+background: white;
+box-shadow: 0 0 4px 0 #dadddd;
 }
 
 .sf-notice i {
@@ -10199,7 +10201,7 @@ label.error {
 
 .vf-ref-prize-item {
 /*margin: auto;*/
-    flex: 1;
+    flex: 1 30%;
     padding: 15px;
 /*margin: 5px;*/
 }
