@@ -7984,6 +7984,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
   overflow: hidden;
   text-overflow: ellipsis;
   /*text-transform: capitalize;*/
+  text-align: center;
 }
 
 .sfc-campaign-archive-post-title-inner {
