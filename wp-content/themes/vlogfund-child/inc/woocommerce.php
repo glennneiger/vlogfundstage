@@ -45,8 +45,10 @@ function vlogfund_woocommerce_add_checkout_organization_fields($checkout){
 	if( WC()->cart->get_cart_contents_count() > 0 ) :
 		$cart_items = array_shift( WC()->cart->get_cart() );
 		$camp_orgs = toolset_get_related_posts($cart_items['product_id'], 'organization-campaign', 'child');
-		$org_args['post__in'] = $camp_orgs;
-		$chosen_org = array_shift($camp_orgs);
+		if( !empty( $camp_orgs ) ) :
+			$org_args['post__in'] = $camp_orgs;
+			$chosen_org = array_shift($camp_orgs);
+		endif;
 	endif; //Endif
 	$organization = get_posts( $org_args );
 	if( !empty( $organization ) ) :
@@ -54,7 +56,7 @@ function vlogfund_woocommerce_add_checkout_organization_fields($checkout){
 		foreach( $organization as $key => $org_id ) :
 			$chosen_org = ( $key == 0 && empty( $chosen_org ) ) ? $org_id : $chosen_org;
 			$organization_options[$org_id] = get_the_title($org_id) . '&nbsp;';
-		endforeach;
+		endforeach;	
 		//echo $checkout->get_value('billing_cause');
 		echo '<div class="organizations-wrapper">';
 		echo '<span class="sfc-checkout-org-not-selected"> Your contribution will go to: <a href="/checkout-choose-organization"><i class="fa fa-pencil"></i></a></span>';
