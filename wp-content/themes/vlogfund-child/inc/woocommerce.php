@@ -6,6 +6,7 @@ remove_action('woocommerce_before_main_content','woocommerce_breadcrumb', 20, 0 
 remove_action('woocommerce_before_main_content','woocommerce_output_content_wrapper', 10 );
 remove_action('woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
 add_filter('woocommerce_show_page_title', '__return_false', 999);
+add_filter('woocommerce_create_account_default_checked', '__return_true', 999); //Make Create Account Checkbox Checked
 /**** Override Woocommerce Functionality ****/
 if( !function_exists('vlogfund_woocommerce_override_checkout_fields') ) :
 /**

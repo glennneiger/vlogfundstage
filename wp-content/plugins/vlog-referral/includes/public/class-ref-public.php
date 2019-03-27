@@ -45,9 +45,7 @@ class Vlogref_Public{
 		//Order Create
 		add_action('woocommerce_checkout_order_processed',	array($this, 'woo_add_donate_referral_to_order'), 99, 3);
 		//Order Complete Hook to Update Referrals
-		add_action('woocommerce_order_status_changed',		array($this, 'woo_insert_donate_referral'), 99, 4);
-		//Make Create Account Box Checked
-		add_filter('woocommerce_create_account_default_checked', array($this, 'woo_create_account_default_checked'));
+		add_action('woocommerce_order_status_changed',		array($this, 'woo_insert_donate_referral'), 99, 4);		
 	}	
 	/**
 	 * Register Style / Scripts
@@ -326,15 +324,6 @@ class Vlogref_Public{
 				$this->insert_referral( $ref_args );				
 			endif;
 		endif; //Endif
-	}
-	/**
-	 * Make Checkbox Checked for Referral Donor Guest
-	 **/
-	public function woo_create_account_default_checked($enabled){
-		if( isset( $_SESSION['referral'] ) && !empty( $_SESSION['referral'] ) ) : 
-			$enabled = true;
-		endif;
-		return $enabled;
 	}
 }
 //Run Class
