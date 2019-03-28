@@ -2293,6 +2293,34 @@ function register($form) {
 			}
 		});
 	});
+	
+	//NGO Overview Radio Click
+	$(document).on('click', '.sfc-ngo-overview-item-wrapper label.sfc-ngo-overview-item', function() {
+		var $postid = $(this).attr('for');
+		$('.sfc-ngo-overview-item-wrapper').find('input').attr('checked',false);
+		$('.sfc-ngo-overview-item-wrapper').find('input[value^="'+$postid+'"]').attr('checked',true);
+	});
+	
+	//NGO more info
+	$(document).on('click', '.sfc-ngo-overview-item .sfc-ngo-overview-read-more', function() {
+		var $parents = $(this).parents('label.sfc-ngo-overview-item');
+		//Show What is Exactly Asked
+		$parents.find('.sfc-ngo-overview-read-more').css('z-index', '998');
+		$parents.find('.sfc-ngo-overview-select-item-inner').css({
+			'opacity': '1',
+			'transition:': 'opacity .2s',
+			'z-index': '999'
+		});
+		return false;
+	});
+	//Close Overview
+	$(document).on('click', '.sfc-ngo-overview-item .sfc-ngo-overview-select-close', function() {		
+		$(this).parents('.sfc-ngo-overview-select-item-inner').css({
+			'opacity': '0',
+			'z-index': '-1'
+		});
+		return false;
+	});
 
 }); //end
 
