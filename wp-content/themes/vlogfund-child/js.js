@@ -1276,12 +1276,14 @@ if( jQuery('select[name=wpv-_nyp] option:selected').val() == 'yes' ) {
 //organization archive
 jQuery('.page-checkout .sfc-checkout-non-clickable').removeAttr('href');
 
-    jQuery('a button.sfc-checkout-add-org').click(function () {
-         jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
+   /* jQuery('a button.sfc-checkout-add-org').click(function () {
+        jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
         jQuery(this).addClass('sfc-checkout-add-org-active');
         jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
         jQuery(this).html('<strong>Selected</strong>');
-});
+		var orgid = jQuery(this).data('id');
+    	setCookie('vlogfundorg', orgid);
+	});*/
 
 
 
@@ -1755,25 +1757,27 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 		return false;
   };
 
-  jQuery('button.sfc-checkout-add-org').on('click', function() {
-    var orgid = jQuery(this).data('id');
-    setCookie('vlogfundorg', orgid);
-  });
-
   /** checkout choose organization **/
 
     jQuery('.page-checkout .sfc-checkout-non-clickable').removeAttr('href');
     jQuery(document).on('click', 'a button.sfc-checkout-add-org', function() {
-    jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
-    jQuery(this).html('<strong>Selected</strong>');
-    jQuery('.sfc-checkout-org-not-selected').hide();
+		
+		jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
+        jQuery(this).addClass('sfc-checkout-add-org-active');
 
-    //Make Billing Cause Selected
-    var $orgid = jQuery(this).data('id');
-    if (typeof $orgid !== 'undefined' && $orgid != '') {
-      jQuery('#billing_cause_field').find('input[id^="billing_cause_' + $orgid + '"]').attr('checked', true);
-    }
-  });
+		var orgid = jQuery(this).data('id');
+    	setCookie('vlogfundorg', orgid);		
+		
+		jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
+		jQuery(this).html('<strong>Selected</strong>');
+		jQuery('.sfc-checkout-org-not-selected').hide();
+	
+		//Make Billing Cause Selected
+		var $orgid = jQuery(this).data('id');
+		if( typeof $orgid !== 'undefined' && $orgid != '' ){
+		  jQuery('#billing_cause_field').find('input[id^="billing_cause_' + $orgid + '"]').attr('checked', true);
+		}
+  	});
 
   if (jQuery('.product_custom_price').length) {
     jQuery(document).on('change', 'td.product-price input[type="radio"]', function() {
