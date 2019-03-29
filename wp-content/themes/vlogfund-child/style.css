@@ -10191,6 +10191,13 @@ label.error {
   margin: 0;
 }
 
+.vf-ref-prize-place {
+  text-align: center;
+  margin: auto;
+  display: block;
+  color: #999;
+  font-size: 12px;
+}
 .vf-ref-prize-desc {
   text-align: center;
 }

@@ -159,7 +159,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							//Title of Prize
 							echo !empty( $prize_data['title'] ) ? sprintf('<h4 class="vf-ref-prize-title"><strong>%1$s</strong></h4>', $prize_data['title'] ) : '';
 							//Description of Prize
-							//echo !empty( $prize_data['desc'] ) 	? sprintf('<p class="description">%1$s</p>', $prize_data['desc'] ) : '';
+							echo !empty( $prize_data['desc'] ) 	? sprintf('<span class="vf-ref-prize-place">%1$s</span>', $prize_data['desc'] ) : '';
 						?>
 					</div><!--/.vf-referral-prize-->
 				<?php $prize_counter++;
