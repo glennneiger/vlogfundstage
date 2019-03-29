@@ -2297,8 +2297,8 @@ function register($form) {
 	//NGO Overview Radio Click
 	$(document).on('click', '.sfc-ngo-overview-item-wrapper label.sfc-ngo-overview-item', function() {
 		var $postid = $(this).attr('for');
-		$('.sfc-ngo-overview-item-wrapper').find('input').attr('checked',false);
-		$('.sfc-ngo-overview-item-wrapper').find('input[value^="'+$postid+'"]').attr('checked',true);
+		$('.sfc-ngo-overview-item-wrapper').find('input').prop('checked',false);
+		$('.sfc-ngo-overview-item-wrapper').find('input[value^="'+$postid+'"]').prop('checked',true);
 	});
 	
 	//NGO more info
