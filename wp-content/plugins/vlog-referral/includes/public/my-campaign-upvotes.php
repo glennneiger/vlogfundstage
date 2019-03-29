@@ -63,7 +63,7 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 								$referred_by = get_userdata($rank['referred_by']);
 								$winner_str = '';
 								if( array_key_exists($referred_by->ID, $winners) && $referred_by->ID !== $userdata->ID ) : //Check Winner
-									$winner_str = ' <span class="vf-creator">'. __('Also won','vlog-referral').'</span>';
+									$winner_str = ' <span class="vf-creator">'. __('Winner','vlog-referral').'</span>';
 								elseif( array_key_exists($referred_by->ID, $winners) && $referred_by->ID === $userdata->ID ) :
 									$winner_str = ' <span class="vf-creator">'. __('You won','vlog-referral').'</span>';
 								endif; //Endif ?>
