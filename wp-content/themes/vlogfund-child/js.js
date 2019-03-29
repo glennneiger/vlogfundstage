@@ -303,11 +303,6 @@ if (pageWidth > 996) {
   });
 
 
-/*if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration')) {
-jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr('required');
-}*/
-
-
 
 
 //copy text quote to hidden field
@@ -673,23 +668,6 @@ jQuery('input[name="tweet_url_2"]').change(function() {
     })
 
 
-//on ajax submit
-/*  jQuery( document ).on( "ajaxSuccess", function() {
-    var form_status = jQuery('input[name="form_status"]').val();
-    if(form_status == 1){
- //form is loaded first time
-        jQuery('input[name="form_status"]').val(0);
-        return;
-    }
-    else {
-// the form is submitted
-        //alert(12345);
-        console.log('success');
-
-      }
-}); //end ajax submit*/
-
-
 
 
 jQuery( document ).on( "ajaxSuccess", function() {
@@ -757,11 +735,6 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
 
   jQuery('textarea[name="post_content_substitute"]').attr('onmouseover', 'this.focus();this.select()');
-
-
-  //jQuery('select.sfc-campaign-new-select').find('option[value="pending"]').attr('selected', true);
-
-
 
 
 
@@ -987,10 +960,6 @@ jQuery( document ).on( "ajaxSuccess", function() {
 		toastr.warning('', 'Please review your collab');
 	});
 
-
-/*if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration')) {
-jQuery('[name="wpcf-collaborator-1"], [name="wpcf-collaborator-2"]').removeAttr('required');
-}*/
 
 
 
@@ -1274,60 +1243,7 @@ if( jQuery('select[name=wpv-_nyp] option:selected').val() == 'yes' ) {
 
 
 //organization archive
-jQuery('.page-checkout .sfc-checkout-non-clickable').removeAttr('href');
-
-   /* jQuery('a button.sfc-checkout-add-org').click(function () {
-        jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
-        jQuery(this).addClass('sfc-checkout-add-org-active');
-        jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
-        jQuery(this).html('<strong>Selected</strong>');
-		var orgid = jQuery(this).data('id');
-    	setCookie('vlogfundorg', orgid);
-	});*/
-
-
-
-//checkout choose organization
-jQuery('.page-checkout .label-cause:first-of-type').html('You chose the following cause:');
-/*jQuery('input[name="billing_cause"] + label').append(' <i class="fa fa-pencil sfc-checkout-progress-step-0 "></i>');*/
-if (jQuery('input:radio[name=billing_cause]').prop('checked', false) ) {
-       jQuery('label.label-cause:first-of-type').append(' <span class="sfc-checkout-org-not-selected"><i class="fa fa-plus sfc-checkout-progress-step-0"></i> Select your cause</span>');
-    }
-
-/*jQuery('a button.sfc-checkout-add-org').click(function () {
-jQuery('.sfc-ngo-overview, .progress-bar-header-step-1').hide();
-jQuery('.sfc-checkout-progress-step-1').addClass('sfc-checkout-progress-bar-active').fadeIn('1000');
-jQuery('.sfc-checkout-progress-step-2, .progress-bar-header-step-2').fadeIn('1000');
-jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
-jQuery(this).addClass('sfc-checkout-add-org-active');
-jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
-jQuery(this).html('<strong>Selected</strong>');
-jQuery('.sfc-checkout-org-not-selected').hide();
-});
-
-jQuery('.sfc-checkout-progress-step-0').click(function() {
-jQuery('.sfc-ngo-overview, .progress-bar-header-step-1').show();
-jQuery('.sfc-checkout-progress-step-0').addClass('sfc-checkout-progress-bar-active').fadeIn('1000');
-jQuery('.sfc-checkout-progress-step-2, .progress-bar-header-step-2').hide();
-jQuery('.sfc-checkout-progress-step-1 ').removeClass('sfc-checkout-progress-bar-active');
-});*/
-
-
-
-      /*  jQuery(".care").click(function () {
-      jQuery('input:radio[name=organisations][value="Care"]').prop('checked', true); //select radio button second
-});
-
-      jQuery(".world-vision").click(function () {
-      jQuery('input:radio[name=organisations][value="World Vision"]').prop('checked', true); //select radio button second
-        });
-
-   jQuery(".amnesty-international").click(function () {
-      jQuery('input:radio[name=organisations][value="Amnesty International"]').prop('checked', true); //select radio button second
-    });*/
-
-
-
+jQuery('.woocommerce-cart .sfc-checkout-non-clickable').removeAttr('href');
 
 
 
@@ -1472,7 +1388,7 @@ if( jQuery('select[name=wpv-_alg_crowdfunding_enabled] option:selected').val() =
   /*******************************************************/
   //campaign
   /*******************************************************/
-  
+
   $('#close-site-notice-campaigns, #close-site-notice-campaigns-btn').click(function() {
   var vfnotice = document.getElementById("sf-notice");
   vfnotice.classList.add("hide");
@@ -1510,9 +1426,6 @@ return false;
   });
 
 
-  // setTimeout(function() {
-  //   jQuery('div.at-share-btn-elements').append(' <a href="mailto:" role="button" tabindex="1" class="at-icon-wrapper1 at-share-btn1 at-svc-email1" style="background-color: rgb(132, 132, 132); border-radius: 0%;"><span class="at4-visually-hidden">Share to Email</span><span class="at-icon-wrapper1" style="line-height: 32px; height: 32px; width: 32px;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" version="1.1" role="img" aria-labelledby="at-svg-email-15" class="at-icon at-icon-email" style="width: 32px; height: 32px;"><title id="at-svg-email-15">Email</title><g><g fill-rule="evenodd"></g><path d="M27 22.757c0 1.24-.988 2.243-2.19 2.243H7.19C5.98 25 5 23.994 5 22.757V13.67c0-.556.39-.773.855-.496l8.78 5.238c.782.467 1.95.467 2.73 0l8.78-5.238c.472-.28.855-.063.855.495v9.087z"></path><path d="M27 9.243C27 8.006 26.02 7 24.81 7H7.19C5.988 7 5 8.004 5 9.243v.465c0 .554.385 1.232.857 1.514l9.61 5.733c.267.16.8.16 1.067 0l9.61-5.733c.473-.283.856-.96.856-1.514v-.465z"></path></g></svg></span><span class="at-label" style="font-size: 11.4px; line-height: 32px; height: 32px;">Email</span></a>');
-  // }, 3000);
 
 
   jQuery('.upvote-container f.upvote-progress-button.icon.success').click(function() {
@@ -1759,19 +1672,19 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 
   /** checkout choose organization **/
 
-    jQuery('.page-checkout .sfc-checkout-non-clickable').removeAttr('href');
+    jQuery('.woocommerce-cart .sfc-checkout-non-clickable').removeAttr('href');
     jQuery(document).on('click', 'a button.sfc-checkout-add-org', function() {
-		
+
 		jQuery('a button.sfc-checkout-add-org').removeClass('sfc-checkout-add-org-active');
         jQuery(this).addClass('sfc-checkout-add-org-active');
 
 		var orgid = jQuery(this).data('id');
-    	setCookie('vlogfundorg', orgid);		
-		
+    	setCookie('vlogfundorg', orgid);
+
 		jQuery('a button.sfc-checkout-add-org').html('<strong class="mobile-none">Choose this cause</strong><strong class="desktop-none">Select</strong>');
 		jQuery(this).html('<strong>Selected</strong>');
 		jQuery('.sfc-checkout-org-not-selected').hide();
-	
+
 		//Make Billing Cause Selected
 		var $orgid = jQuery(this).data('id');
 		if( typeof $orgid !== 'undefined' && $orgid != '' ){
@@ -1820,8 +1733,8 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
       }, 500);
     });
   }
-  
-  //When Checkout Processing  
+
+  //When Checkout Processing
   $(document).ajaxSuccess(function( event, xhr, settings ) {
 	  if( settings.url == '/?wc-ajax=checkout' ) {
 		$('.sfc-checkout-progress-step-2 form.sfc-checkout-billing-container').block({
@@ -1831,10 +1744,10 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
 				opacity: 0.6
 			}
 		});
-		toastr.success('', 'Your donation is processing');		
+		toastr.success('', 'Your donation is processing');
 	  }
   });
-  
+
 
 
   jQuery(document).on('updated_cart_totals', function() {
@@ -1870,7 +1783,7 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
   /** organizations @ checkout **/
 
   if (location.href.indexOf("#checkout") != -1) {
-    jQuery('.site-header, .site-footer').hide();
+    jQuery('.site-header, .header, .site-footer').hide();
   }
 
 
@@ -2293,7 +2206,7 @@ function register($form) {
 			}
 		});
 	});
-	
+
 	//NGO Overview Radio Click
 	$(document).on('click', '.sfc-ngo-overview-item-wrapper label.sfc-ngo-overview-item', function() {
 		var $postid = $(this).attr('for');
@@ -2304,9 +2217,9 @@ function register($form) {
 		$connecttocamp.find('input').prop('checked',false);
 		$connecttocamp.find('input[value^="'+$postid+'"]').prop('checked',true);
 	});
-	
+
 	//NGO more info
-	$(document).on('click', '.sfc-ngo-overview-item .sfc-ngo-overview-read-more', function() {
+	$(document).on('click', '.page-create-a-new-youtube-collaboration .sfc-ngo-overview-item .sfc-ngo-overview-read-more', function() {
 		var $parents = $(this).parents('label.sfc-ngo-overview-item');
 		//Show What is Exactly Asked
 		$parents.find('.sfc-ngo-overview-read-more').css('z-index', '998');
@@ -2318,7 +2231,7 @@ function register($form) {
 		return false;
 	});
 	//Close Overview
-	$(document).on('click', '.sfc-ngo-overview-item .sfc-ngo-overview-select-close', function() {		
+	$(document).on('click', '.page-create-a-new-youtube-collaboration .sfc-ngo-overview-item .sfc-ngo-overview-select-close', function() {
 		$(this).parents('.sfc-ngo-overview-select-item-inner').css({
 			'opacity': '0',
 			'z-index': '-1'
@@ -2372,9 +2285,6 @@ jQuery(function() {
 /*******************************************************/
 //Thumbnails
 /*******************************************************/
-
-
-
 document.addEventListener("DOMContentLoaded",
   function() {
     var div, n,

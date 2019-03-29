@@ -5857,7 +5857,7 @@ display: none;
 
 .sfc-ngo-overview-item-content p {
   margin: 0;
-  padding: 5px;
+  padding: 5px 5px 10px 5px;
   font-size: 14px;
 }
 
