@@ -6,6 +6,7 @@ remove_action('woocommerce_before_main_content','woocommerce_breadcrumb', 20, 0 
 remove_action('woocommerce_before_main_content','woocommerce_output_content_wrapper', 10 );
 remove_action('woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
 add_filter('woocommerce_show_page_title', '__return_false', 999);
+add_filter('wc_add_to_cart_message_html', '__return_false', 999); //Remove Add to Cart Message
 /**** Override Woocommerce Functionality ****/
 if( !function_exists('vlogfund_woocommerce_override_checkout_fields') ) :
 /**
@@ -783,20 +784,4 @@ function vlogfund_user_redirect_checkout( $url ) {
     return $url;
 } 
 add_filter('woocommerce_add_to_cart_redirect', 'vlogfund_user_redirect_checkout', 99);
-endif;
-if( !function_exists('vlogfund_add_to_cart_show_organization') ) :
-/**
- * Change Add to Cart Notice to Show Organization Chosen
- *
- * @since 1.0
- **/
-function vlogfund_add_to_cart_show_organization($message, $products){
-	if( isset( $_COOKIE['vlogfundorg'] ) && !empty( $_COOKIE['vlogfundorg'] ) ) :
-		$org_notice = sprintf('“%1$s” %2$s.', get_the_title($_COOKIE['vlogfundorg']), __('selected'));
-		$return_to = apply_filters( 'woocommerce_continue_shopping_redirect', wc_get_raw_referer() ? wp_validate_redirect( wc_get_raw_referer(), false ) : wc_get_page_permalink( 'shop' ) );
-		$message   = sprintf( '<a href="%s" tabindex="1" class="button wc-forward">%s</a> %s', esc_url( $return_to ), esc_html__( 'Continue' ), esc_html( $org_notice ) );
-	endif; //Endif
-	return $message;
-}
-add_filter('wc_add_to_cart_message_html', 'vlogfund_add_to_cart_show_organization', 999, 2);
 endif;
