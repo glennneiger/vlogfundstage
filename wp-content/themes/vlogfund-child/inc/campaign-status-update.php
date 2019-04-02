@@ -66,43 +66,43 @@ function vlogfund_post_status_get_email_subject_body( $status ) {
 	if( $status == '6' /*&& $status !== 'pending'*/ ) : //Draft
 		$sub_body['subject'] = 'Your campaign %%POST_TITLE%% has been saved as a draft';
 		ob_start();
-		include_once( get_theme_file_path('/inc/campaign-status-emails/draft.php') );
+		include_once( get_theme_file_path('/inc/emails/campaign-status/draft.php') );
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	elseif( $status == '5' /*&& $status !== 'draft'*/ ) : //Pending
 		$sub_body['subject'] = 'Your campaign %%POST_TITLE%% is pending';
 		ob_start();
-		include_once( get_theme_file_path('/inc/campaign-status-emails/pending.php') );
+		include_once( get_theme_file_path('/inc/emails/campaign-status/pending.php') );
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	elseif( $status == '3' ) : //Declined
 		$sub_body['subject'] = 'We are sorry. Your campaign %%POST_TITLE%% was not approved';
 		ob_start();
-		include_once( get_theme_file_path('/inc/campaign-status-emails/declined.php') );
+		include_once( get_theme_file_path('/inc/emails/campaign-status/declined.php') );
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	elseif( $status == '1' ) : //Vote
 		$sub_body['subject'] = 'Your campaign %%POST_TITLE%% has been published';
 		ob_start();
-		include_once( get_theme_file_path('/inc/campaign-status-emails/vote.php') );
+		include_once( get_theme_file_path('/inc/emails/campaign-status/vote.php') );
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	elseif( $status == '2' ) : //Contribute
 		$sub_body['subject'] = 'Your campaign %%POST_TITLE%% hit a new stage';
 		ob_start();
-		include_once( get_theme_file_path('/inc/campaign-status-emails/contribute.php') );
+		include_once( get_theme_file_path('/inc/emails/campaign-status/contribute.php') );
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	elseif( $status == '4' ) : //Success
 		$sub_body['subject'] = 'Hurray! Your campaign %%POST_TITLE%% was successful';
 		ob_start();
-		include_once( get_theme_file_path('/inc/campaign-status-emails/success.php') );
+		include_once( get_theme_file_path('/inc/emails/campaign-status/success.php') );
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	elseif( $status == 'vote-contribute' ) : //Vote to Contribute to User Email
 		$sub_body['subject'] = '%%POST_TITLE%% now open for contributions';
 		ob_start();
-		include_once( get_theme_file_path('/inc/campaign-status-emails/user-vote-contribute.php') );
+		include_once( get_theme_file_path('/inc/emails/campaign-status/user-vote-contribute.php') );
 		$sub_body['body'] = ob_get_contents();
 		ob_get_clean();
 	endif;
@@ -214,7 +214,7 @@ function vlogfund_post_cred_save_data($post_id, $form_data){
 			$post = get_post( $post_id );
 			$author = get_userdata( $post->post_author );
 			$post_status = ( $_POST['post_status'] == 'pending' ) ? 5 : 6;
-            update_post_meta($post_id, 'wpcf-campaign-status', $post_status);
+            update_post_meta($post_id, 'wpcf-campaign-status', $post_status);			
 			if( $sub_body = vlogfund_post_status_get_email_subject_body( $post_status ) ) :
 				$find_vars = array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%', '%%STATUS_NOTE%%');
 				$replace_vars = array( get_the_title( $post_id ), get_permalink( $post_id ), $post_id, home_url(), '' );
@@ -311,7 +311,7 @@ function vlogfund_send_email_draft_campaign_inactivity(){
 
 	$subject = 'Your campaign %%POST_TITLE%% is still saved as a draft';
 	ob_start();
-	include_once( get_theme_file_path('/inc/campaign-status-emails/draft-inactivity.php') );
+	include_once( get_theme_file_path('/inc/emails/campaign-status/draft-inactivity.php') );
 	$email_body = ob_get_contents();
 	ob_get_clean();
 	add_filter('wp_mail_content_type', function(){ return "text/html"; });

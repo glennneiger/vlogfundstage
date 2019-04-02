@@ -243,7 +243,7 @@ function vlogfund_update_product_sales_customer( $order_id, $from_status, $to_st
 						$campaign_data = get_post($order_product['product_id']);
 						$author_email = get_the_author_meta('user_email',$campaign_data->post_author);
 						ob_start();
-						include_once( get_theme_file_path('/inc/email-milestone-reached.php') );
+						include_once( get_theme_file_path('/inc/emails/email-milestone-reached.php') );
 						$body = ob_get_contents();
 						ob_get_clean();
 						add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
