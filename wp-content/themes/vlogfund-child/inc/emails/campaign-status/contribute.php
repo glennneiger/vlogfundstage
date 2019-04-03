@@ -489,10 +489,11 @@
 		</style>
 	</head>
     <body>
-		<!--*|IF:MC_PREVIEW_TEXT|*-->
+		<?php /*<!--*|IF:MC_PREVIEW_TEXT|*-->
 		<!--[if !gte mso 9]><!---->
-			<span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">Preheader</span><!--<![endif]-->
-		<!--*|END:IF|*-->
+			<span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">Preheader</span>
+		<!--<![endif]-->
+		<!--*|END:IF|*-->*/?>
         <center>
             <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable">
                 <tr>
@@ -672,7 +673,7 @@
 																<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
 																	<tr style="padding:0;text-align:left;vertical-align:top">
 																		<th style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left">
-																			<center data-parsed="" style="min-width:532px;width:100%"><small align="center" class="float-center" style="color:#cacaca;font-size:80%">You can not edit your campaign at this point anymore but<br>you can be the first one to contribute<br><br>vlogfund <a href="https://www.vlogfund.com/terms?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" target="_blank" style="Margin:0;color:#dc2c5d;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">Terms & Conditions</a></small></center>
+																			<center data-parsed="" style="min-width:532px;width:100%"><small align="center" class="float-center" style="color:#cacaca;font-size:80%">You can not edit your campaign at this point anymore but<br>you can be the first one to contribute<br><br>Vlogfund <a href="https://www.vlogfund.com/terms?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" target="_blank" style="Margin:0;color:#dc2c5d;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">Terms & Conditions</a></small></center>
 																		</th>
 																		<th class="expander" style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>
 																	</tr>

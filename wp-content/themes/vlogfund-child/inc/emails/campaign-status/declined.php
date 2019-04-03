@@ -489,10 +489,10 @@
 		</style>
 	</head>
     <body>
-		<!--*|IF:MC_PREVIEW_TEXT|*-->
+		<?php /*<!--*|IF:MC_PREVIEW_TEXT|*-->
 		<!--[if !gte mso 9]><!---->
 			<span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">Preheader</span><!--<![endif]-->
-		<!--*|END:IF|*-->
+		<!--*|END:IF|*-->*/?>
         <center>
             <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable">
                 <tr>
@@ -563,7 +563,7 @@
 																					<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">												
 																						<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">😭 Your campaign was not approved</span></h2>
 																						%%STATUS_NOTE%%
-																						<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">Please don’t feel discouraged to resubmit this campaign or create a brand new campaign. Make sure to read our <a href="https://www.vlogfund.com/rules-and-guidelines/?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" style="Margin:0;color:#6b10d6;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">rules & guidelines</a> so your campaign will be approved the next time.</p>
+																						<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">Please don’t feel discouraged to resubmit this campaign or create a brand new campaign. Make sure to read our <a href="https://www.vlogfund.com/rules-and-guidelines/?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" style="Margin:0;color:#dc2c5d;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">rules & guidelines</a> so your campaign will be approved the next time.</p>
 																					</td>
 																				</tr>
 																			</tbody>
@@ -620,7 +620,7 @@
 																					<tbody>
 																						<tr style="border-collapse:collapse;padding:0;text-align:left;vertical-align:top">
 																							<td style="-moz-hyphens:auto;-webkit-hyphens:auto;-webkit-text-size-adjust:none;Margin:0;background:#dc2c5d;border:2px solid #dc2c5d;;border-collapse:collapse!important;color:#ffffff;font-family:Lato,Arial,sans-serif;font-size:16px;font-weight:900;hyphens:auto;line-height:1.3;margin:0;mso-line-height-rule:exactly;padding:0;text-align:left;vertical-align:top;word-wrap:break-word;text-transform:uppercase;">
-																								<a class="btn" href="%%HOME_URL%%/campaign-form-edit/?post_id=%%POST_ID%%&utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=buttonlink" style="-webkit-text-size-adjust:none;Margin:0;border:0 solid #fff;color:#ffffff;display:inline-block;font-family:Lato,Arial,sans-serif;font-style: italic;font-size:16px;font-weight:900;line-height:1.3;margin:0;mso-line-height-rule:exactly;padding:12px 25px 12px 25px;text-align:left;text-decoration:none;text-transform:uppercase;">Click here to try it again</a>
+																								<a class="btn" href="%%HOME_URL%%/edit-your-youtube-collaboration/?post_id=%%POST_ID%%&utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=buttonlink" style="-webkit-text-size-adjust:none;Margin:0;border:0 solid #fff;color:#ffffff;display:inline-block;font-family:Lato,Arial,sans-serif;font-style: italic;font-size:16px;font-weight:900;line-height:1.3;margin:0;mso-line-height-rule:exactly;padding:12px 25px 12px 25px;text-align:left;text-decoration:none;text-transform:uppercase;">Click here to try it again</a>
 																							</td>
 																						</tr>
 																					</tbody>
@@ -672,7 +672,7 @@
 																<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
 																	<tr style="padding:0;text-align:left;vertical-align:top">
 																		<th style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left">
-																			<center data-parsed="" style="min-width:532px;width:100%"><small align="center" class="float-center" style="color:#cacaca;font-size:80%">If you wish to edit your campaign:<br>Log into Vlogfund<br>Click on Account, located on the right side of the navigation bar<br>Click ”My Campaigns” in the drop-down menu<br>Click on the little pencil of your campaign to edit it<br><br>vlogfund <a href="https://www.vlogfund.com/terms?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" target="_blank" style="Margin:0;color:#dc2c5d;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">Terms & Conditions</a></small></center>
+																			<center data-parsed="" style="min-width:532px;width:100%"><small align="center" class="float-center" style="color:#cacaca;font-size:80%">If you wish to edit your campaign:<br>Log into Vlogfund<br>Click on Account, located on the right side of the navigation bar<br>Click ”My Campaigns” in the drop-down menu<br>Click on the little pencil of your campaign to edit it<br><br>Vlogfund <a href="https://www.vlogfund.com/terms?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" target="_blank" style="Margin:0;color:#dc2c5d;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">Terms & Conditions</a></small></center>
 																		</th>
 																		<th class="expander" style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>
 																	</tr>
