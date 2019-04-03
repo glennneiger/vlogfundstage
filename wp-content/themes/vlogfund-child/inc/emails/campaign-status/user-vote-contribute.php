@@ -676,7 +676,7 @@
 																				<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
 																					<tr style="padding:0;text-align:left;vertical-align:top">
 																						<th style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left">
-																							<center data-parsed="" style="min-width:532px;width:100%"><small align="center" class="float-center" style="color:#cacaca;font-size:80%">You are receiving this email because you upvoted %%POST_TITLE%% <br>which is now eligible to accept contributions<br><br>Vlogfund <a href="https://www.vlogfund.com/terms?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" target="_blank" style="Margin:0;color:#dc2c5d;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">Terms & Conditions</a></small></center>
+																							<center data-parsed="" style="min-width:532px;width:100%"><small align="center" class="float-center" style="color:#cacaca;font-size:80%">You are receiving this email because you upvoted %%POST_TITLE%% <br>which is now eligible to accept contributions</small></center>
 																						</th>
 																						<th class="expander" style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>
 																					</tr>
@@ -922,7 +922,7 @@
 																	<tbody>
 																		<tr>										
 																			<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
-																				<em>Copyright © Vlogfund <?php echo date('Y');?>, All rights reserved.</em><br>
+																				<em>Copyright © Vlogfund <?php echo date('Y');?>, All rights reserved.</em> | <a href="https://www.vlogfund.com/terms?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=textlink" target="_blank" style="Margin:0;color:#dc2c5d;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none">Terms & Conditions</a><br>
 												 							</td>
 																		</tr>
 																	</tbody>

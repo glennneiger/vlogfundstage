@@ -254,13 +254,13 @@ function vlogfund_update_product_sales_customer( $order_id, $from_status, $to_st
 						end($milestones);
 						if( key($milestones) == $key ) :
 							$next_milestone = 'Campaign '.$campaign_title.' reached it’s last milestone<br>';
-							$next_milestone .= 'Thank you for helping raise $1 Million<br>';
+							$next_milestone .= 'Thank you for helping raise '.wc_price($milestone).'<br>';
 							$next_milestone .= 'We’ll reach out to you once the collaboration goes live';
 						else :
-							$next_milestone = 'Next Milestone: <strong>$'.number_format($milestones[$key+1], 2, ',', '.').'</strong>';
+							$next_milestone = 'Next Milestone: <strong>'.wc_price($milestones[$key+1]).'</strong>';
 						endif;
 						$body = str_replace( array('%%POST_TITLE%%', '%%MILESTONE_REACHED%%', '%%NEXT_MILESTONE%%'),
-											array( $campaign_title, number_format($milestone,2, ',', '.'), $next_milestone ),
+											array( $campaign_title, wc_price($milestone), $next_milestone ),
 											$body );
 						foreach( $purchased_customers as $email ) :
 							$backerbody = str_replace( array('%%POST_LINK%%', '%%VISIT_CAMPAIGN_LABEL%%'),
