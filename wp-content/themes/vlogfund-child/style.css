@@ -8581,7 +8581,7 @@ div.alert.alert-success p:before {
   .home .sfc-campaign-images {
     margin-top: 0;
   }
-  .home div.js-wpv-view-layout, .home div.js-wpv-layout-responsive {
+  .home div.js-wpv-view-layout, .home div.js-wpv-layout-responsive, .woocommerce-page .js-wpv-layout-responsive {
     visibility: visible!important;
   }
 

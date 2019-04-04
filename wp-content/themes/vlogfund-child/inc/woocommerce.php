@@ -40,7 +40,7 @@ if( !function_exists('vlogfund_woocommerce_add_checkout_organization_fields') ) 
  **/
 function vlogfund_woocommerce_add_checkout_organization_fields($checkout){
 
-	$org_args = array('post_type' => 'organization', 'posts_per_page' => -1, 'post_status' => 'publish', 'fields' => 'ids');
+	$org_args = array('post_type' => 'organizations', 'posts_per_page' => -1, 'post_status' => 'publish', 'fields' => 'ids');
 	$chosen_org = isset( $_COOKIE['vlogfundorg'] ) ? $_COOKIE['vlogfundorg'] : '';
 	//Check Cart Not Empty And Related Organization Set
 	if( WC()->cart->get_cart_contents_count() > 0 ) :
@@ -57,7 +57,7 @@ function vlogfund_woocommerce_add_checkout_organization_fields($checkout){
 		foreach( $organization as $key => $org_id ) :
 			$chosen_org = ( $key == 0 && empty( $chosen_org ) ) ? $org_id : $chosen_org;
 			$organization_options[$org_id] = get_the_title($org_id) . '&nbsp;';
-		endforeach;	
+		endforeach;
 		//echo $checkout->get_value('billing_cause');
 		echo '<div class="organizations-wrapper">';
 		echo '<span class="sfc-checkout-org-not-selected"> Your contribution will go to: <a href="/checkout-choose-organization"><i class="fa fa-pencil"></i></a></span>';
@@ -105,7 +105,7 @@ if( !function_exists('vlogfun_woocommerce_order_details') ) :
  **/
 function vlogfun_woocommerce_order_details( $order ){
 	$organization = get_post_meta($order->get_id(), 'billing_cause', true);
-	$all_organizations = get_posts( array('post_type' => 'organization', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids') ); ?>
+	$all_organizations = get_posts( array('post_type' => 'organizations', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids') ); ?>
         <p class="form-field form-field-wide">
             <label for="billing_cause"><?php _e('Cause');?></label>
             <select name="billing_cause" id="billing_cause" class="wc-enhanced-select">
@@ -777,11 +777,11 @@ function vlogfund_user_redirect_checkout( $url ) {
 		$organization = toolset_get_related_posts($cart_items['product_id'], 'organization-campaign', 'child');
 		$organization = is_array($organization) ? array_shift($organization) : (array) $organization;
 		if( !empty( $organization ) ) :
-			setcookie('vlogfundorg', $organization, time()+3600);			
+			setcookie('vlogfundorg', $organization, time()+3600);
 			return wc_get_checkout_url();
 		endif; //Endif
 	endif; //Endif
     return $url;
-} 
+}
 add_filter('woocommerce_add_to_cart_redirect', 'vlogfund_user_redirect_checkout', 99);
 endif;

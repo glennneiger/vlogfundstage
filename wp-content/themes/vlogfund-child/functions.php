@@ -43,7 +43,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
    			wp_enqueue_script('validate-script');
 		}
 
-		if ( ( is_page('about') || is_singular('product') ) && ! is_admin() ) {
+		if ( ( is_page('about') ) && ! is_admin() ) {
 
 			wp_enqueue_style( 'owl-carousel', get_stylesheet_directory_uri() . '/css/owl.carousel.css', array(), null );
 
@@ -57,9 +57,9 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
 			wp_enqueue_script( 'slick-script', get_stylesheet_directory_uri() . '/js/vendor/slick.min.js', array(), null, true );
 
-				wp_enqueue_script( 'general-script', get_stylesheet_directory_uri() . '/js/general.js', array(), null, true );
+			wp_enqueue_script( 'general-script', get_stylesheet_directory_uri() . '/js/general.js', array(), null, true );
 
-				wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
+			wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
 
 		}
 		if ( is_post_type_archive( 'organization' ) || is_shop() || is_checkout() || is_home()  ) {
@@ -232,12 +232,13 @@ function deregister_scripts2(){
 		endforeach;
 
 		//Remove Unnecessary Scripts
-		$deregister_scripts = array('views-pagination-script1', 'woocommerce_views_onsale_badge_js', 'knockout', 'ddl-layouts-frontend',
+		$deregister_scripts = array('views-pagination-script', 'woocommerce_views_onsale_badge_js', 'knockout', 'ddl-layouts-frontend',
 						'wp-mediaelement1', 'mediaelement-migrate1', 'owl-carousel', 'toolset-utils', 'layouts-theme-integration-layouts_loader',
 						'decomments1', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
-						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default', 'thickbox' );
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default', 'thickbox',
+						'stripe', 'wc-single-product' );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
