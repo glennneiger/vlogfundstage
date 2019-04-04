@@ -212,13 +212,13 @@ function vlogfund_post_cred_save_data($post_id, $form_data){
 
 	// if a specific form
     if( $form_data['id'] == 98 || $form_data['id'] == 216 || $form_data['id'] == 64104 ) :
-        if( isset( $_POST['post_status'] ) ) :
+        //if( isset( $_POST['post_status'] ) ) :
 			$post = get_post( $post_id );
 			$author = get_userdata( $post->post_author );
 			if( $form_data['id'] == 64104 ) :
 				$post_status = 5;
 			else : //Else 
-				$post_status = ( $_POST['post_status'] == 'pending' ) ? 5 : 6;
+				$post_status = ( isset( $_POST['post_status'] ) && $_POST['post_status'] == 'pending' ) ? 5 : 6;
 			endif; //Endif
             update_post_meta($post_id, 'wpcf-campaign-status', $post_status);			
 			if( $sub_body = vlogfund_post_status_get_email_subject_body( $post_status ) ) :
@@ -231,7 +231,7 @@ function vlogfund_post_cred_save_data($post_id, $form_data){
 				//Email to Author
 				wp_mail( $author->user_email, htmlspecialchars_decode($email_subject), $email_body );
 			endif; //Endif
-        endif; //Endif
+        //endif; //Endif
     endif; //Endif	
 }
 add_action('cred_save_data', 'vlogfund_post_cred_save_data',100,2);
