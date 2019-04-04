@@ -492,7 +492,7 @@
 		<?php /*<!--*|IF:MC_PREVIEW_TEXT|*-->
 		<!--[if !gte mso 9]><!---->
 			<span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">Preheader</span><!--<![endif]-->
-		<!--*|END:IF|?>
+		<!--*|END:IF|*/ ?>
         <center>
             <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable">
                 <tr>
@@ -778,7 +778,7 @@
 																																				<table align="left" border="0" cellpadding="0" cellspacing="0" width="">
 																																					<tbody>
 																																						<tr>															
-																																							<td align="center" valign="middle" width="24" class="mcnFollowIconContent">
+																																							<td align="center" valign="middle" width="24" class="mcnFollowIconContent"> 
 																																								<a href="https://twitter.com/vlogfunding" target="_blank"><img src="https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-twitter-48.png" style="display:block;" height="24" width="24" class=""></a>
 																																							</td>
 																																						</tr>
