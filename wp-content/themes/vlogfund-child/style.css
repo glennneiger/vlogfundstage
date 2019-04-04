@@ -5589,7 +5589,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
   flex:3;
 }
 
-.post-type-archive-organization .sfc-ngo-overview-col:nth-of-type(1) {
+.post-type-archive-organizations .sfc-ngo-overview-col:nth-of-type(1) {
   flex:1;
   background: white;
   border-top: 4px solid #6b10d6;
@@ -5606,7 +5606,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
     flex: auto;
     order:2;
   }
-  .post-type-archive-organization .sfc-ngo-overview-col:nth-of-type(1) {
+  .post-type-archive-organizations .sfc-ngo-overview-col:nth-of-type(1) {
 
     flex:100%;
     box-shadow: none;
@@ -5625,7 +5625,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
 
 }
 
-.post-type-archive-organization .sfc-ngo-overview-col:nth-of-type(2) {
+.post-type-archive-organizations .sfc-ngo-overview-col:nth-of-type(2) {
   flex: 3;
   box-shadow: none;
   background: transparent;
@@ -5645,7 +5645,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
 
 
   }
-  .post-type-archive-organization .sfc-ngo-overview-col:nth-of-type(2) {
+  .post-type-archive-organizations .sfc-ngo-overview-col:nth-of-type(2) {
     flex: auto;
     order:2;
   }

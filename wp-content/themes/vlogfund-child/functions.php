@@ -1817,11 +1817,11 @@ add_filter( 'logout_url', 'add_welcome_message_logout_redirect', 100, 2 );
 
 
 /**
- * Set 'with_front' to false for the 'experts' post type.
+ * Set 'with_front' to false for the 'organization' post type.
  */
 add_filter( 'register_post_type_args', function( $args, $post_type )
 {
-    if( 'organization' === $post_type && is_array( $args ) )
+    if( 'organizations' === $post_type && is_array( $args ) )
             $args['rewrite']['with_front'] = false;
 
     return $args;
