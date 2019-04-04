@@ -563,8 +563,8 @@
 																				<tr>
 																					<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">												
 																						<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Your campaign<br>%%POST_TITLE%%<br>reached a milestone</span></h2>
-																						<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center"><strong>%%MILESTONE_REACHED%%</strong> have been raised by contributors so far</p>
-                                  														<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">%%NEXT_MILESTONE%%</p>
+																						<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><strong>%%MILESTONE_REACHED%%</strong> have been raised by contributors so far</span></p>
+                                  														<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">%%NEXT_MILESTONE%%</span></p>
 																					</td>
 																				</tr>
 																			</tbody>

@@ -211,7 +211,7 @@ if( !function_exists('vlogfund_post_cred_save_data') ) :
 function vlogfund_post_cred_save_data($post_id, $form_data){
 
 	// if a specific form
-    if( $form_data['id'] == 98 || $form_data['id'] == 216 ) :
+    if( $form_data['id'] == 98 || $form_data['id'] == 216 || $form_data['id'] == 64104 ) :
         if( isset( $_POST['post_status'] ) ) :
 			$post = get_post( $post_id );
 			$author = get_userdata( $post->post_author );

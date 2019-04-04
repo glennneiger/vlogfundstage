@@ -564,7 +564,7 @@
 																					<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">												
 																						<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Your campaign<br>%%POST_TITLE%%<br>was updated</span></h2>
 																						%%STATUS_NOTE%%
-																						<p class="float-center" align="left" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left">We are happy to inform you that your campaign generated enough upvotes to be selected for the next stage. Your campaign is now eligible to accept <strong>contributions.</strong><br><br>Make sure to spread the word and tell your friends and family so we can all make this collaboration happen.<br><br>Be the first to contribute to your campaign or</p>
+																						<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">We are happy to inform you that your campaign generated enough upvotes to be selected for the next stage. Your campaign is now eligible to accept <strong>contributions.</strong><br><br>Make sure to spread the word and tell your friends and family so we can all make this collaboration happen.<br><br>Be the first to contribute to your campaign or</span></p>
 																					</td>
 																				</tr>
 																			</tbody>

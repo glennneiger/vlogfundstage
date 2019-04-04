@@ -563,7 +563,7 @@
 																					<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">												
 																						<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">%%POST_TITLE%%<br>is now eligible to receive contributions</span></h2>
 																						%%STATUS_NOTE%%
-																						<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">This collaboration generated enough upvotes</p>
+																						<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">This collaboration generated enough upvotes</span></p>
 																					</td>
 																				</tr>
 																			</tbody>

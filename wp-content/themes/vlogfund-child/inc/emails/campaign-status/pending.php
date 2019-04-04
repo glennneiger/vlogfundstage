@@ -563,8 +563,8 @@
 																					<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">												
 																						<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Your campaign is currently pending</span></h2>
 																						%%STATUS_NOTE%%
-																						<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">You’ll get notified once we publish your campaign.<br>Please be patient as this can take up to <strong>72 hours</strong>.</p>
-                                  														<p class="text-center float-center" align="center" style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">In the meantime we welcome you to check out other collaborations.</p>
+																						<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">You’ll get notified once we publish your campaign.<br>Please be patient as this can take up to <strong>72 hours</strong>.</span></p>
+                                  														<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">In the meantime we welcome you to check out other collaborations.</span></p>
 																					</td>
 																				</tr>
 																			</tbody>

@@ -563,7 +563,7 @@
 																					<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">												
 																						<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Your campaign<br>%%POST_TITLE%%<br>was officially approved</span></h2>
 																						%%STATUS_NOTE%%
-																						<p class="text-center float-center" align="center" style="Margin:0;Margin-top:10px;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:center">Be the first one to comment and vote or</p>
+																						<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Be the first one to comment and vote or</span></p>
 																					</td>
 																				</tr>
 																			</tbody>
