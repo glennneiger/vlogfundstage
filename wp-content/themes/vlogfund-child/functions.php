@@ -157,6 +157,9 @@ function sf_remove_scripts() {
 
     wp_dequeue_script( 'theme_js' );
 
+		wp_dequeue_style( 'wp-block-library' );
+    wp_deregister_style( 'wp-block-library' );
+
 
 		/*wp_deregister_style( 'wc-social-login-frontend-inline' );
     wp_dequeue_style( 'wc-social-login-frontend-inline' );
@@ -238,7 +241,7 @@ function deregister_scripts2(){
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
 						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default', 'thickbox',
-						'stripe', 'wc-single-product' );
+						'stripe', 'wc-single-product', 'accounting', 'wp-embed' );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
@@ -310,7 +313,8 @@ function deregister_scripts4(){
 						'decomments', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
-						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default', );
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default',
+					  'wc-single-product' );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
@@ -507,8 +511,16 @@ if (is_front_page() || is_single() ) wp_dequeue_script('wc-cart-fragments');
 remove_action( 'wp_head', 'wlwmanifest_link' ) ;
 remove_action( 'wp_head', 'rsd_link' ) ;
 
+// add_filter('xmlrpc_enabled', '__return_false');
 
+// Disable REST API link tag
+remove_action('wp_head', 'rest_output_link_wp_head', 10);
 
+// Disable oEmbed Discovery Links
+remove_action('wp_head', 'wp_oembed_add_discovery_links', 10);
+
+// Disable REST API link in HTTP headers
+remove_action('template_redirect', 'rest_output_link_header', 11, 0);
 
 /**************************************************
  * Load custom cells types for Layouts plugin from the /dd-layouts-cells/ directory
