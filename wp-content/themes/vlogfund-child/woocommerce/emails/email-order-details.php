@@ -21,69 +21,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $text_align = is_rtl() ? 'right' : 'left';
 
-do_action( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text, $email ); ?>
+do_action( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text, $email ); 
 
-<h2>
-	<?php
-	if ( $sent_to_admin ) {
-		$before = '<a class="link" href="' . esc_url( $order->get_edit_order_url() ) . '">';
-		$after  = '</a>';
-	} else {
-		$before = '';
-		$after  = '';
-	}
-	/* translators: %s: Order ID. */
-	echo wp_kses_post( $before . sprintf( __( 'Order #%s', 'woocommerce' ) . $after . ' (<time datetime="%s">%s</time>)', $order->get_order_number(), $order->get_date_created()->format( 'c' ), wc_format_datetime( $order->get_date_created() ) ) );
-	?>
-</h2>
+$organization = get_post_meta($order->get_id(), 'billing_cause', true); ?>
 
-<div style="margin-bottom: 40px;">
-	<table class="td" cellspacing="0" cellpadding="6" style="width: 100%; font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;" border="1">
+<p style="font-size: 18px !important; text-align: center;"><strong style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Contribution #<?php echo $order->get_order_number();?> (<?php echo wc_format_datetime( $order->get_date_created() );?>)</strong></p>
+<div>
+	<table class="td" cellspacing="0" cellpadding="6" style="width: 100%; font-family:open sans,helvetica neue,helvetica,arial,sans-serif;" border="1">
 		<thead>
 			<tr>
-				<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Product', 'woocommerce' ); ?></th>
-				<th class="td" scope="col" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Price', 'woocommerce' ); ?></th>
+				<th class="td" style="text-align: left;"><?php esc_html_e('Campaign', 'woocommerce');?></th>
+				<th class="td" style="text-align: left;"><?php esc_html_e('Amount', 'woocommerce'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
 			<?php
-			echo wc_get_email_order_items( $order, array( // WPCS: XSS ok.
-				'show_sku'      => $sent_to_admin,
-				'show_image'    => false,
-				'image_size'    => array( 32, 32 ),
-				'plain_text'    => $plain_text,
-				'sent_to_admin' => $sent_to_admin,
-			) );
+				echo wc_get_email_order_items( $order, array( // WPCS: XSS ok.
+					'show_sku'      => $sent_to_admin,
+					'show_image'    => false,
+					'image_size'    => array( 32, 32 ),
+					'plain_text'    => $plain_text,
+					'sent_to_admin' => $sent_to_admin,
+				) );
 			?>
-		</tbody>
-		<tfoot>
-			<?php
-			$totals = $order->get_order_item_totals();
-
-			if ( $totals ) {
-				$i = 0;
-				foreach ( $totals as $total ) {
-					if( strpos( $total['label'], 'Subtotal' ) !== false ) : continue; endif;
-					$i++;
-					?>
-					<tr>
-						<th class="td" scope="row" style="text-align:<?php echo esc_attr( $text_align ); ?>; <?php echo ( 1 === $i ) ? 'border-top-width: 4px;' : ''; ?>"><?php echo wp_kses_post( $total['label'] ); ?></th>
-						<td class="td" style="text-align:<?php echo esc_attr( $text_align ); ?>; <?php echo ( 1 === $i ) ? 'border-top-width: 4px;' : ''; ?>"><?php echo wp_kses_post( $total['value'] ); ?></td>
-					</tr>
-					<?php
-				}
-			}
-			if ( $order->get_customer_note() ) {
-				?>
-				<tr>
-					<th class="td" scope="row" colspan="2" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php esc_html_e( 'Note:', 'woocommerce' ); ?></th>
-					<td class="td" style="text-align:<?php echo esc_attr( $text_align ); ?>;"><?php echo wp_kses_post( wptexturize( $order->get_customer_note() ) ); ?></td>
-				</tr>
-				<?php
-			}
-			?>
-		</tfoot>
+			<tr>
+				<th class="td" style="text-align: left;"><?php esc_html_e('Payment Method', 'woocommerce');?></th>
+				<td class="td" style="text-align: left;"><?php echo $order->get_payment_method();?></td>
+			</tr>
+			<tr>
+				<th class="td" style="text-align: left;"><?php esc_html_e('Charity', 'woocommerce'); ?></th>
+				<td class="td" style="text-align: left;"><?php echo $organization ? get_the_title($organization) : '&mdash;';?></td>
+			</tr>
+	  </tbody>
 	</table>
 </div>
-
 <?php do_action( 'woocommerce_email_after_order_table', $order, $sent_to_admin, $plain_text, $email ); ?>

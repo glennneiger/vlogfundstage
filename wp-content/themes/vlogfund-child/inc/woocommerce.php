@@ -161,7 +161,7 @@ function vlogfund_woocommerce_email_order_cause( $order ) {
 <?php endif;
     //return $fields;
 }
-add_action( 'woocommerce_email_after_order_table', 'vlogfund_woocommerce_email_order_cause', 10, 3 );
+//add_action( 'woocommerce_email_after_order_table', 'vlogfund_woocommerce_email_order_cause', 10, 3 );
 endif;
 if( !function_exists('vlogfund_wc_stripe_payment_metadata') ) :
 /**
