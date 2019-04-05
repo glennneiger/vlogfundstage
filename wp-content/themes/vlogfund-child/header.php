@@ -10,7 +10,8 @@
 	<link rel="icon" href="https://www.vlogfund.com/wp-content/uploads/2018/06/V_logo_ICO.ico" type="image/x-icon" />
 	<link rel="shortcut icon" href="https://www.vlogfund.com/wp-content/uploads/2018/06/V_logo_ICO.ico" type="image/x-icon" />
 	<?php wp_head(); ?>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
+	<?php if (!is_page('checkout')) : ?>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
 	<script>
 	window.addEventListener("load", function(){
 	window.cookieconsent.initialise({
@@ -29,6 +30,7 @@
 	})
 	});
 	</script>
+  <?php endif; //Endif ?>
 </head>
 
 <body <?php body_class(); ?>>

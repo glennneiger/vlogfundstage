@@ -22,12 +22,6 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 						wp_register_style( 'fontawesome5', 'https://use.fontawesome.com/releases/v5.0.13/css/all.css' );
 						wp_enqueue_style('fontawesome5');
 
-						wp_register_style( 'jqueryui-css', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.min.css' );
-						wp_enqueue_style('jqueryui-css');
-
-						wp_register_script( 'jqueryui-script', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js', '', '', true );
-					  wp_enqueue_script('jqueryui-script');
-
 					  wp_register_script('validate-script', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js', array('jquery'), '1.0', true );
 				    wp_enqueue_script('validate-script');
 
@@ -36,6 +30,14 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
             wp_enqueue_script( 'js', get_stylesheet_directory_uri() . '/js.js', array(), null );
 
+		}
+
+		if ( is_shop() || is_page('create-a-new-youtube-collaboration') || is_page('edit-your-youtube-collaboration')   ) {
+			wp_register_style( 'jqueryui-css', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.min.css' );
+			wp_enqueue_style('jqueryui-css');
+
+			wp_register_script( 'jqueryui-script', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js', '', '', true );
+			wp_enqueue_script('jqueryui-script');
 		}
 
 		if( is_singular('product') ) {
@@ -62,7 +64,7 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 			wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
 
 		}
-		if ( is_post_type_archive( 'organization' ) || is_shop() || is_checkout() || is_home()  ) {
+		if ( is_post_type_archive( 'organization' ) || is_shop() || is_home()  ) {
 
 			wp_register_style( 'select2-style', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
 			wp_enqueue_style('select2-style');
@@ -160,6 +162,14 @@ function sf_remove_scripts() {
 		wp_dequeue_style( 'wp-block-library' );
     wp_deregister_style( 'wp-block-library' );
 
+		if( is_checkout() ) {
+			wp_dequeue_style( 'decomments' );
+	    wp_deregister_style( 'decomments' );
+
+			wp_dequeue_style( 'decomments-ie' );
+	    wp_deregister_style( 'decomments-ie' );
+		}
+
 
 		/*wp_deregister_style( 'wc-social-login-frontend-inline' );
     wp_dequeue_style( 'wc-social-login-frontend-inline' );
@@ -218,12 +228,12 @@ function deregister_scripts(){
 }
 
 
-//dequeu scripts and styles conditionally on signle blog posts
+//dequeu scripts and styles conditionally on campaign pages or blog posts
 add_action( 'wp_enqueue_scripts', 'deregister_scripts2', 99 );
 function deregister_scripts2(){
 
 	global $post;
-	if( is_single()  ) :
+	if( is_single()   ) :
 
 		//Remove Unnecessary Styles
 		$deregister_styles = array('decomments1', 'decomments-ie1', 'dashicons', 'upvote-public-style1',
@@ -252,7 +262,9 @@ function deregister_scripts2(){
 
 
 
-//dequeu scripts and styles conditionally on signle blog archive
+
+
+//dequeu scripts and styles conditionally on the homepage
 add_action( 'wp_enqueue_scripts', 'deregister_scripts3', 99 );
 function deregister_scripts3(){
 
@@ -288,7 +300,7 @@ function deregister_scripts3(){
 
 
 
-//dequeue scripts and styles conditionally on organization archive
+//dequeue scripts and styles conditionally on campaign archive
 add_action( 'wp_enqueue_scripts', 'deregister_scripts4', 99 );
 function deregister_scripts4(){
 
@@ -314,7 +326,7 @@ function deregister_scripts4(){
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
 						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default',
-					  'wc-single-product' );
+					  'wc-single-product', 'wp-util1' );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
@@ -330,7 +342,7 @@ add_action( 'wp_enqueue_scripts', 'deregister_scripts5', 99 );
 function deregister_scripts5(){
 
 	global $post;
-	if( is_post_type_archive( 'organization' ) ) :
+	if( is_post_type_archive( 'organizations' ) || is_page('checkout-choose-organization') ) :
 
 
 		remove_action('wp_print_scripts', 'DECOM_Component_Comments::PrintJsLanguage',10 );
@@ -338,7 +350,7 @@ function deregister_scripts5(){
 		//Remove Unnecessary Styles
 		$deregister_styles = array('decomments', 'decomments-ie', 'dashicons', 'upvote-public-style',
 						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
-						'select2-style', 'tmpl-wp-playlist-current-item' );
+						'select2-style', 'tmpl-wp-playlist-current-item', 'select2-css' );
 		foreach( $deregister_styles as $style_handle ) :
 			wp_dequeue_style( $style_handle );
 			wp_deregister_style( $style_handle );
@@ -350,7 +362,8 @@ function deregister_scripts5(){
 						'decomments', 'jquery-blockui', 'js-cookie', 'woocommerce', 'wc-cart-fragments', 'jquery-geocomplete',
 						'toolset-maps-views-filter-distance-frontend-js', 'jquery-ui-datepicker1', 'suggest1', 'wptoolset-forms',
 						'wptoolset-field-date', 'toolset-event-manager1', 'cred-frontend-js', 'toolset-select2-compatibility',
-						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default' );
+						'toolset_select2', 'cred-select2-frontend-js', 'ddl-tabs-scripts', 'zoom', 'flexslider', 'photoswipe', 'photoswipe-ui-default',
+					  'wp-embed', 'selectWoo', 'stripe', 'wc_stripe_payment_request', 'wc-single-product' );
 		foreach( $deregister_scripts as $script_handle ) :
 			wp_dequeue_script( $script_handle );
 			wp_deregister_script( $script_handle );
@@ -358,6 +371,37 @@ function deregister_scripts5(){
 
 	endif; //Endif
 }
+
+
+
+
+//dequeue scripts and styles conditionally on checkout page
+add_action( 'wp_enqueue_scripts', 'deregister_scripts_wc_checkout', 99 );
+function deregister_scripts_wc_checkout(){
+
+	global $post;
+	if( is_page('checkout') ) :
+
+		//Remove Unnecessary Styles
+		$deregister_styles = array('decomments1', 'decomments-ie1', 'dashicons', 'upvote-public-style1',
+						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
+						'select2-style', 'tmpl-wp-playlist-current-item', 'decomments-css', 'select2' );
+		foreach( $deregister_styles as $style_handle ) :
+			wp_dequeue_style( $style_handle );
+			wp_deregister_style( $style_handle );
+		endforeach;
+
+		//Remove Unnecessary Scripts
+		$deregister_scripts = array('views-pagination-script', 'woocommerce_views_onsale_badge_js', 'decomments', 'wptoolset-forms',
+	  'zoom', 'flexslider', 'photoswipe', 'wp-embed', 'selectWoo', 'wc-single-product', 'wc-address-i18n1' );
+		foreach( $deregister_scripts as $script_handle ) :
+			wp_dequeue_script( $script_handle );
+			wp_deregister_script( $script_handle );
+		endforeach;
+
+	endif; //Endif
+}
+
 
 
 

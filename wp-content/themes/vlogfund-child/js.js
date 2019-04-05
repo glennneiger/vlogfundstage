@@ -932,7 +932,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
 
 
   //autocomplete
-
+if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration') || jQuery('body').hasClass('page-edit-your-youtube-collaboration') ) {
   jQuery(".sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
@@ -954,7 +954,7 @@ jQuery( document ).on( "ajaxSuccess", function() {
       };
     },
   });
-
+}
 	//errors
 	jQuery('#cred_form_98_1, #cred_form_216_1').bind('invalid-form.validate', function() {
 		toastr.warning('', 'Please review your collab');
@@ -1050,11 +1050,7 @@ jQuery('.sfc-campaign-archive-create-own').insertAfter('.sfc-campaign-archive-po
 if (jQuery('body').hasClass('post-type-archive-product')) {
       jQuery("select.selecttwo").select2({ placeholder: "Select a category" });
       jQuery(".form-control").select2({ minimumResultsForSearch: Infinity });
-}
-
-
-
-        jQuery(".sfc-campaign-archive-search-input").autocomplete({
+      jQuery(".sfc-campaign-archive-search-input").autocomplete({
           source: function(request, response) {
             $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
               "hl": "en", // Language
@@ -1075,6 +1071,7 @@ if (jQuery('body').hasClass('post-type-archive-product')) {
             };
           },
         });
+}
 
         jQuery(document).on('click', 'a[href^="#login"]', function(e) {
           e.preventDefault();
@@ -1159,6 +1156,7 @@ dataLayer.push({
 
 
 //campaign archive
+if (jQuery('body').hasClass('post-type-archive-product')) {
   jQuery(".sfc-campaign-archive-search-input").autocomplete({
     source: function(request, response) {
       $.getJSON("https://suggestqueries.google.com/complete/search?callback=?", {
@@ -1180,7 +1178,7 @@ dataLayer.push({
       };
     },
   });
-
+}
 
 
 jQuery('.select2-container.select2-container--default.select2-container--open').remove();
@@ -2165,11 +2163,12 @@ function register($form) {
 		  	location.reload(true);
 		});
   	}
-
+if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration') || jQuery('body').hasClass('page-edit-your-youtube-collaboration') ) {
 	jQuery("[name='wpcf-collaborator-1'], [name='wpcf-collaborator-2']").autocomplete({
 		source: Vlogfund.ajaxurl + '?action=ytc_search_autocomplete',
 		minLength: 2
 	});
+}
 	//Youtuber 1
 	jQuery("[name='wpcf-collaborator-1']").on('autocompleteselect', function(event, ui){
 		$.ajax({
