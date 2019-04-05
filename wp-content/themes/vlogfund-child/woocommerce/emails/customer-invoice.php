@@ -1,8 +1,8 @@
 <?php
 /**
- * Customer completed order email
+ * Customer invoice email
  *
- * This template can be overridden by copying it to yourtheme/woocommerce/emails/customer-completed-order.php.
+ * This template can be overridden by copying it to yourtheme/woocommerce/emails/customer-invoice.php.
  *
  * HOWEVER, on occasion WooCommerce will need to update template files and you
  * (the theme developer) will need to copy the new files to your theme to
@@ -29,7 +29,10 @@ foreach ( $order->get_items() as $item_id => $item ) :
 	endif;
 endforeach;
 $campaign_link = get_permalink($campaign);
-/*
+
+/**
+ * Executes the e-mail header.
+ *
  * @hooked WC_Emails::email_header() Output the email header
  */
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
@@ -51,29 +54,64 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 							<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
 								<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php echo $email->get_subject();?></span></h2>
 								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php echo $email->get_heading();?></span></p>
-								<br>								
+								<?php if ( $order->has_status( 'pending' ) ) { ?>
+									<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">
+									<?php
+									printf(
+										wp_kses(
+											/* translators: %1$s Site title, %2$s Order pay link */
+											__( 'An order has been created for you on %1$s. Your invoice is below, with a link to make payment when you’re ready: %2$s', 'woocommerce' ),
+											array(
+												'a' => array(
+													'href' => array(),
+												),
+											)
+										),
+										esc_html( get_bloginfo( 'name', 'display' ) ),
+										'<a href="' . esc_url( $order->get_checkout_payment_url() ) . '">' . esc_html__( 'Pay for this order', 'woocommerce' ) . '</a>'
+									);
+									?>
+									</span></p>
+								
+								<?php } else { ?>
+									<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">
+									<?php
+										/* translators: %s Order date */
+										printf( esc_html__( 'Here are the details of your order placed on %s:', 'woocommerce' ), esc_html( wc_format_datetime( $order->get_date_created() ) ) );
+									?>
+									</span></p>
 								<?php
-									/*
-									 * @hooked WC_Emails::order_details() Shows the order details table.
-									 * @hooked WC_Structured_Data::generate_order_data() Generates structured data.
-									 * @hooked WC_Structured_Data::output_structured_data() Outputs structured data.
-									 * @since 2.5.0
-									 */
-									do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
-									
-									/*
-									 * @hooked WC_Emails::order_meta() Shows order meta data.
-									 */
-									do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
-									
-									/*
-									 * @hooked WC_Emails::customer_details() Shows customer details
-									 * @hooked WC_Emails::email_address() Shows email address
-									 */
-									//do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email );
-								?>								
+								}
+								?>
 								<br>
-								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Remember: If we raise enough money then the collaboration happens and the funds get released to all the charities and people who really need it. Else we will refund the money back into your account. So please make sure to share the collab with your friends.</span></p>
+								<?php
+								/**
+								 * Hook for the woocommerce_email_order_details.
+								 *
+								 * @hooked WC_Emails::order_details() Shows the order details table.
+								 * @hooked WC_Structured_Data::generate_order_data() Generates structured data.
+								 * @hooked WC_Structured_Data::output_structured_data() Outputs structured data.
+								 * @since 2.5.0
+								 */
+								do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
+								
+								/**
+								 * Hook for the woocommerce_email_order_meta.
+								 *
+								 * @hooked WC_Emails::order_meta() Shows order meta data.
+								 */
+								do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
+								
+								/**
+								 * Hook for woocommerce_email_customer_details.
+								 *
+								 * @hooked WC_Emails::customer_details() Shows customer details
+								 * @hooked WC_Emails::email_address() Shows email address
+								 */
+								//do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email );
+								
+								?>
+								<br>								
 							</td>
 						</tr>
 					</tbody>
@@ -321,9 +359,12 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 	</tbody>
 </table>
 <!--share-->
+
 <?php
 
-/*
+/**
+ * Executes the email footer.
+ *
  * @hooked WC_Emails::email_footer() Output the email footer
  */
 do_action( 'woocommerce_email_footer', $email );

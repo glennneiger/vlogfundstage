@@ -785,3 +785,78 @@ function vlogfund_user_redirect_checkout( $url ) {
 }
 add_filter('woocommerce_add_to_cart_redirect', 'vlogfund_user_redirect_checkout', 99);
 endif;
+if( !function_exists('vlogfund_wc_email_footer') ) :
+/**
+ * Woocommerce Email Footer
+ * 
+ * Handles to Email Footer
+ **/
+function vlogfund_wc_email_footer( $email ){ ?>
+	<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width:100%;">
+		<tbody class="mcnTextBlockOuter">
+			<tr>
+				<td valign="top" class="mcnTextBlockInner" style="padding-top:9px;">
+					<!--[if mso]>
+					<table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
+					<tr>
+					<![endif]-->
+	
+					<!--[if mso]>
+					<td valign="top" width="600" style="width:600px;">
+					<![endif]-->
+					<table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width:100%; min-width:100%;" width="100%" class="mcnTextContentContainer">
+						<tbody>
+							<tr>
+								<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
+									<!--<div style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><span style="font-size:12px">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</span></span></div>-->
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<!--[if mso]>
+					</td>
+					<![endif]-->
+	
+					<!--[if mso]>
+					</tr>
+					</table>
+					<![endif]-->
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width:100%;">
+		<tbody class="mcnTextBlockOuter">
+			<tr>
+				<td valign="top" class="mcnTextBlockInner" style="padding-top:9px;">
+					<!--[if mso]>
+					<table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
+					<tr>
+					<![endif]-->
+	
+					<!--[if mso]>
+					<td valign="top" width="600" style="width:600px;">
+					<![endif]-->
+					<table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width:100%; min-width:100%;" width="100%" class="mcnTextContentContainer">
+						<tbody>
+							<tr>
+								<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
+									<h1 class="null" style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><span style="font-size:14px"><strong>The Vlogfund Team!</strong></span></span></h1>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<!--[if mso]>
+					</td>
+					<![endif]-->
+					<!--[if mso]>
+					</tr>
+					</table>
+					<![endif]-->
+				</td>
+			</tr>
+		</tbody>
+	</table>
+<?php 
+}
+endif;

@@ -1,8 +1,8 @@
 <?php
 /**
- * Customer completed order email
+ * Customer on-hold order email
  *
- * This template can be overridden by copying it to yourtheme/woocommerce/emails/customer-completed-order.php.
+ * This template can be overridden by copying it to yourtheme/woocommerce/emails/customer-on-hold-order.php.
  *
  * HOWEVER, on occasion WooCommerce will need to update template files and you
  * (the theme developer) will need to copy the new files to your theme to
@@ -29,6 +29,7 @@ foreach ( $order->get_items() as $item_id => $item ) :
 	endif;
 endforeach;
 $campaign_link = get_permalink($campaign);
+
 /*
  * @hooked WC_Emails::email_header() Output the email header
  */
@@ -51,27 +52,29 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 							<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
 								<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php echo $email->get_subject();?></span></h2>
 								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php echo $email->get_heading();?></span></p>
-								<br>								
+								<br>
 								<?php
-									/*
-									 * @hooked WC_Emails::order_details() Shows the order details table.
-									 * @hooked WC_Structured_Data::generate_order_data() Generates structured data.
-									 * @hooked WC_Structured_Data::output_structured_data() Outputs structured data.
-									 * @since 2.5.0
-									 */
-									do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
-									
-									/*
-									 * @hooked WC_Emails::order_meta() Shows order meta data.
-									 */
-									do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
-									
-									/*
-									 * @hooked WC_Emails::customer_details() Shows customer details
-									 * @hooked WC_Emails::email_address() Shows email address
-									 */
-									//do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email );
-								?>								
+								
+								/*
+								 * @hooked WC_Emails::order_details() Shows the order details table.
+								 * @hooked WC_Structured_Data::generate_order_data() Generates structured data.
+								 * @hooked WC_Structured_Data::output_structured_data() Outputs structured data.
+								 * @since 2.5.0
+								 */
+								do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
+								
+								/*
+								 * @hooked WC_Emails::order_meta() Shows order meta data.
+								 */
+								do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
+								
+								/*
+								 * @hooked WC_Emails::customer_details() Shows customer details
+								 * @hooked WC_Emails::email_address() Shows email address
+								 */
+								//do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email );
+								
+								?>
 								<br>
 								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Remember: If we raise enough money then the collaboration happens and the funds get released to all the charities and people who really need it. Else we will refund the money back into your account. So please make sure to share the collab with your friends.</span></p>
 							</td>
