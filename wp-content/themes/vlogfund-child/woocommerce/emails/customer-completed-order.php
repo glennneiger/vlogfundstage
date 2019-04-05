@@ -28,6 +28,7 @@ foreach ( $order->get_items() as $item_id => $item ) :
 		break; 
 	endif;
 endforeach;
+$campaign_link = get_permalink($campaign);
 /*
  * @hooked WC_Emails::email_header() Output the email header
  */
@@ -49,7 +50,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 						<tr>
 							<td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
 								<h2 style="text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif">Thank you for your donation</span></h2>
-								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php printf( esc_html__( 'Hi %s,', 'woocommerce' ), esc_html( $order->get_billing_first_name() ) ); ?>,<br> your donation has been marked complete on our side.</span></p>
+								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php printf( esc_html__( 'Hi %s,', 'woocommerce' ), esc_html( $order->get_billing_first_name() ) ); ?><br> your donation has been marked complete on our side.</span></p>
 								<br>								
 								<?php
 									/*
@@ -144,10 +145,10 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 																									<tbody>
 																										<tr>
 																											<td align="center" valign="middle" width="24" class="mcnShareIconContent">
-																												<a href="http://www.facebook.com/sharer/sharer.php?u=<?php echo get_permalink($campaign);?>" target="_blank"><img src="https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-facebook-48.png" style="display:block;" height="24" width="24" class=""></a>
+																												<a href="http://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($campaign_link);?>" target="_blank"><img src="https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-facebook-48.png" style="display:block;" height="24" width="24" class=""></a>
 																											</td>
 																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
-																												<a href="http://www.facebook.com/sharer/sharer.php?u=<?php echo get_permalink($campaign);?>" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Share</a>
+																												<a href="http://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($campaign_link);?>" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Share</a>
 																											</td>
 																										</tr>
 																									</tbody>
@@ -179,10 +180,10 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 																									<tbody>
 																										<tr>
 																											<td align="center" valign="middle" width="24" class="mcnShareIconContent">
-																												<a href="http://twitter.com/intent/tweet?text=<?php echo get_the_title($campaign);?>: <?php echo get_permalink($campaign);?>" target="_blank"><img src="https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-twitter-48.png" style="display:block;" height="24" width="24" class=""></a>
+																												<a href="http://twitter.com/intent/tweet?text=<?php echo get_the_title($campaign);?>: <?php echo urlencode($campaign_link);?>" target="_blank"><img src="https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-twitter-48.png" style="display:block;" height="24" width="24" class=""></a>
 																											</td>
 																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
-																												<a href="http://twitter.com/intent/tweet?text=<?php echo get_the_title($campaign);?>: <?php echo get_permalink($campaign);?>" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Tweet</a>
+																												<a href="http://twitter.com/intent/tweet?text=<?php echo get_the_title($campaign);?>: <?php echo urlencode($campaign_link);?>" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Tweet</a>
 																											</td>
 																										</tr>
 																									</tbody>
@@ -213,10 +214,10 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 																									<tbody>
 																										<tr>
 																											<td align="center" valign="middle" width="24" class="mcnShareIconContent">
-																												<a href="whatsapp://send?text=<?php echo get_the_title($campaign);?> <?php echo get_permalink($campaign);?>" data-action="share/whatsapp/share" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/36656994-960a-4e92-9c4b-37e1ac9c8a78.png" style="display:block;" height="24" width="24" class=""></a>
+																												<a href="whatsapp://send?text=<?php echo get_the_title($campaign);?> <?php echo urlencode($campaign_link);?>" data-action="share/whatsapp/share" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/36656994-960a-4e92-9c4b-37e1ac9c8a78.png" style="display:block;" height="24" width="24" class=""></a>
 																											</td>
 																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
-																												<a href="whatsapp://send?text=<?php echo get_the_title($campaign);?> <?php echo get_permalink($campaign);?>" data-action="share/whatsapp/share" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Whatsapp</a>
+																												<a href="whatsapp://send?text=<?php echo get_the_title($campaign);?> <?php echo urlencode($campaign_link);?>" data-action="share/whatsapp/share" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Whatsapp</a>
 																											</td>
 																										</tr>
 																									</tbody>
@@ -248,10 +249,10 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 																									<tbody>
 																										<tr>
 																											<td align="center" valign="middle" width="24" class="mcnShareIconContent">
-																												<a href="https://www.reddit.com/submit?url=<?php echo get_permalink($campaign);?>" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/762ef7ba-832e-45c2-a7c8-88f00844cdb9.png" style="display:block;" height="24" width="24" class=""></a>
+																												<a href="https://www.reddit.com/submit?url=<?php echo urlencode($campaign_link);?>" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/762ef7ba-832e-45c2-a7c8-88f00844cdb9.png" style="display:block;" height="24" width="24" class=""></a>
 																											</td>
 																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
-																												<a href="https://www.reddit.com/submit?url=<?php echo get_permalink($campaign);?>" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Reddit</a>
+																												<a href="https://www.reddit.com/submit?url=<?php echo urlencode($campaign_link);?>" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Reddit</a>
 																											</td>
 																										</tr>
 																									</tbody>
@@ -283,10 +284,10 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 																									<tbody>
 																										<tr>
 																											<td align="center" valign="middle" width="24" class="mcnShareIconContent">
-																												<a href="fb-messenger://share/?link=<?php echo get_permalink($campaign);?>/&app_id=181038895828102" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/7eed5e49-469c-4f2e-8260-9f1126defc03.png" style="display:block;" height="24" width="24" class=""></a>
+																												<a href="fb-messenger://share/?link=<?php echo urlencode($campaign_link);?>/&app_id=181038895828102" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/7eed5e49-469c-4f2e-8260-9f1126defc03.png" style="display:block;" height="24" width="24" class=""></a>
 																											</td>
 																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
-																												<a href="fb-messenger://share/?link=<?php echo get_permalink($campaign);?>/&app_id=181038895828102" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Messenger</a>
+																												<a href="fb-messenger://share/?link=<?php echo urlencode($campaign_link);?>/&app_id=181038895828102" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Messenger</a>
 																											</td>
 																										</tr>
 																									</tbody>
