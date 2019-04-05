@@ -403,6 +403,35 @@ function deregister_scripts_wc_checkout(){
 }
 
 
+//dequeue scripts and styles conditionally on order received page
+add_action( 'wp_enqueue_scripts', 'deregister_scripts_wc_order_received', 99 );
+function deregister_scripts_wc_order_received(){
+
+	global $post;
+	if( is_wc_endpoint_url( 'order-received' ) ) :
+
+		//Remove Unnecessary Styles
+		$deregister_styles = array('decomments1', 'decomments-ie1', 'dashicons', 'upvote-public-style1',
+						'toolset-maps-views-filter-distance-frontend-css', 'toolset-select2-css', 'owl-carousel-css',
+						'select2-style', 'tmpl-wp-playlist-current-item', 'decomments-css', 'select2', 'stripe_styles-css' );
+		foreach( $deregister_styles as $style_handle ) :
+			wp_dequeue_style( $style_handle );
+			wp_deregister_style( $style_handle );
+		endforeach;
+
+		//Remove Unnecessary Scripts
+		$deregister_scripts = array('views-pagination-script', 'woocommerce_views_onsale_badge_js', 'decomments', 'wptoolset-forms',
+	  'zoom', 'flexslider', 'photoswipe', 'wp-embed', 'selectWoo', 'wc-single-product', 'wc-address-i18n1', 'woocommerce', 'woocommerce-tokenization-form',
+	   'wc-cart-fragments', 'stripe', 'wc_stripe_payment_request', 'query-payment', 'woocommerce_stripe' );
+		foreach( $deregister_scripts as $script_handle ) :
+			wp_dequeue_script( $script_handle );
+			wp_deregister_script( $script_handle );
+		endforeach;
+
+	endif; //Endif
+}
+
+
 
 
 //remove jquery migrate
