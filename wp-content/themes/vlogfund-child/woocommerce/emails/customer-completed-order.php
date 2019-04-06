@@ -195,40 +195,6 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 																<!--[if mso]>
 																</td>
 																<![endif]-->
-																<!--[if mso]>
-																<td align="center" valign="top">
-																<![endif]-->
-																<table align="left" border="0" cellpadding="0" cellspacing="0">
-																	<tbody>
-																		<tr>
-																			<td valign="top" style="padding-right:9px; padding-bottom:9px;" class="mcnShareContentItemContainer">
-																				<table border="0" cellpadding="0" cellspacing="0" width="" class="mcnShareContentItem" style="border-collapse: separate;background-color: #25D366;border: 4px solid #25D366;">
-																					<tbody>
-																						<tr>
-																							<td align="left" valign="middle" style="padding-top:5px; padding-right:9px; padding-bottom:5px; padding-left:9px;">
-																								<table align="left" border="0" cellpadding="0" cellspacing="0" width="">
-																									<tbody>
-																										<tr>
-																											<td align="center" valign="middle" width="24" class="mcnShareIconContent">
-																												<a href="whatsapp://send?text=<?php echo get_the_title($campaign);?> <?php echo urlencode($campaign_link);?>" data-action="share/whatsapp/share" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/36656994-960a-4e92-9c4b-37e1ac9c8a78.png" style="display:block;" height="24" width="24" class=""></a>
-																											</td>
-																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
-																												<a href="whatsapp://send?text=<?php echo get_the_title($campaign);?> <?php echo urlencode($campaign_link);?>" data-action="share/whatsapp/share" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Whatsapp</a>
-																											</td>
-																										</tr>
-																									</tbody>
-																								</table>
-																							</td>
-																						</tr>
-																					</tbody>
-																				</table>
-																			</td>
-																		</tr>
-																	</tbody>
-																</table>
-																<!--[if mso]>
-																</td>
-																<![endif]-->
 																
 																<!--[if mso]>
 																<td align="center" valign="top">
@@ -249,41 +215,6 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 																											</td>
 																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
 																												<a href="https://www.reddit.com/submit?url=<?php echo urlencode($campaign_link);?>" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Reddit</a>
-																											</td>
-																										</tr>
-																									</tbody>
-																								</table>
-																							</td>
-																						</tr>
-																					</tbody>
-																				</table>
-																			</td>
-																		</tr>
-																	</tbody>
-																</table>
-																<!--[if mso]>
-																</td>
-																<![endif]-->
-																
-																<!--[if mso]>
-																<td align="center" valign="top">
-																<![endif]-->
-																<table align="left" border="0" cellpadding="0" cellspacing="0">
-																	<tbody>
-																		<tr>
-																			<td valign="top" style="padding-right:0; padding-bottom:9px;" class="mcnShareContentItemContainer">
-																				<table border="0" cellpadding="0" cellspacing="0" width="" class="mcnShareContentItem" style="border-collapse: separate;background-color: #0084ff;border: 4px solid #0084ff;">
-																					<tbody>
-																						<tr>
-																							<td align="left" valign="middle" style="padding-top:5px; padding-right:9px; padding-bottom:5px; padding-left:9px;">
-																								<table align="left" border="0" cellpadding="0" cellspacing="0" width="">
-																									<tbody>
-																										<tr>
-																											<td align="center" valign="middle" width="24" class="mcnShareIconContent">
-																												<a href="fb-messenger://share/?link=<?php echo urlencode($campaign_link);?>/&app_id=181038895828102" target="_blank"><img src="https://gallery.mailchimp.com/144e2b841120da1b2d05b4e05/images/7eed5e49-469c-4f2e-8260-9f1126defc03.png" style="display:block;" height="24" width="24" class=""></a>
-																											</td>
-																											<td align="left" valign="middle" class="mcnShareTextContent" style="padding-left:5px;">
-																												<a href="fb-messenger://share/?link=<?php echo urlencode($campaign_link);?>/&app_id=181038895828102" target="" style="color: #FFFFFF;font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, Verdana, sans-serif;font-size: 12px;font-weight: normal;line-height: normal;text-align: center;text-decoration: none;">Messenger</a>
 																											</td>
 																										</tr>
 																									</tbody>

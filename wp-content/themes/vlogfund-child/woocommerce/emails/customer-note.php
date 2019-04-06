@@ -44,7 +44,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 								<?php /* translators: %s: Customer first name */ ?>
 								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php printf( esc_html__( 'Hi %s,', 'woocommerce' ), esc_html( $order->get_billing_first_name() ) ); ?></span></p>
 								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php esc_html_e( 'The following note has been added to your order:', 'woocommerce' ); ?></span></p>
-								<blockquote><?php echo wpautop( wptexturize( $customer_note ) ); ?></blockquote><?php // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped ?>
+								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php echo wptexturize( $customer_note ); ?></span></p><?php // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped ?>
 								<p style="font-size: 18px !important; text-align: center;"><span style="font-family:open sans,helvetica neue,helvetica,arial,sans-serif"><?php esc_html_e( 'As a reminder, here are your order details:', 'woocommerce' ); ?></span></p>
 								<br>
 								<?php
