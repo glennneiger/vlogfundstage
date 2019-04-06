@@ -2552,7 +2552,7 @@ div.sf-play {
   background: url("https://i.imgur.com/TxzC70f.png") no-repeat;
   cursor: pointer!important;
   display: block;
-  z-index: 9999;
+  z-index: 9998;
 }
 
 

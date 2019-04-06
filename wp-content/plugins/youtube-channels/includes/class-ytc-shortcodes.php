@@ -23,7 +23,7 @@ class YTC_Shortcodes{
 		add_filter('single_template',		array($this, 'single_template_loader'));
 		//Channels Meta Data
 		add_action('wp_head', 				array($this, 'channel_meta_data'));
-	}	
+	}
 	/**
 	* Channels Meta Data
 	*
@@ -57,7 +57,7 @@ class YTC_Shortcodes{
 		echo '<meta name="twitter:title" content="'.get_the_title().'"/>';
 		echo '<meta name="twitter:description" content="'.substr($desc,0,199).'"/>';
 		echo '<meta name="twitter:site" content="'.get_permalink().'"/>';
-		if( $tw = get_post_meta(get_the_ID(), 'wpcf-channel_tw', true) ) : //Check Twitter			
+		if( $tw = get_post_meta(get_the_ID(), 'wpcf-channel_tw', true) ) : //Check Twitter
 			echo '<meta name="twitter:creator" content="'.ytc_find_twitter_username($tw).'"/>';
 		endif; //Endif
 	}
@@ -68,7 +68,7 @@ class YTC_Shortcodes{
 	* @since YouTube Channels 1.0
 	**/
 	public function register_scripts(){
-		
+
 		if( is_post_type_archive('youtube_channels') ) : //Check YouTube Channel Archive
 			//Common Styles
 			wp_enqueue_style('ytc-styles',			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null);
@@ -88,7 +88,7 @@ class YTC_Shortcodes{
 	public function archive_template_loader($template){
 		//Check Post Type Archive
 		if( is_post_type_archive('youtube_channels') ) :
-			$template = YTC_PLUGIN_PATH . 'templates/archive-youtube_channels.php';	
+			$template = YTC_PLUGIN_PATH . 'templates/archive-youtube_channels.php';
 		endif;
 		return $template;
 	}
@@ -98,7 +98,7 @@ class YTC_Shortcodes{
 	public function single_template_loader($template){
 		//Check Post Type Archive
 		if( is_singular('youtube_channels') ) :
-			$template = YTC_PLUGIN_PATH . 'templates/single-youtube_channels.php';	
+			$template = YTC_PLUGIN_PATH . 'templates/single-youtube_channels.php';
 		endif;
 		return $template;
 	}
@@ -108,7 +108,7 @@ class YTC_Shortcodes{
 	* Handles to list all youtube channels with shortcode
 	**/
 	public function channels_shortcode_callback($atts, $content = null){
-		
+
 		extract( shortcode_atts( array(
 			'showresults' => 1 //Display Results by Default
 		), $atts, 'ytc_channels' ) );
@@ -213,7 +213,7 @@ class YTC_Shortcodes{
 					</div>
 				</div>
 			</div>-->*/
-		
+
 		$content = ob_get_contents(); //End Buffer
 		ob_get_clean();
 		return $content;
