@@ -1,13 +1,13 @@
 <?php
 /**
- * Template Name: Custom RSS Template - Feedname
+ * Template Name: Custom RSS Template - YT Collaborations
  */
 //$postCount = 5; // The number of posts to show in the feed
 //$posts = query_posts('showposts=' . $postCount);
 //query_posts( $args );
 $args = array(
 	'post_type' => 'product',
-	'showposts' => 30,
+	'showposts' => 200,
 	'post_status'=>'publish',
 	'ignore_sticky_posts' => true,
 	'orderby' => 'ID',
@@ -59,12 +59,11 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 
 	<g:additional_image_link><?php echo $thumb_url;?></g:additional_image_link><?php }?>
 
-	<g:brand>VlogFund></g:brand>
+	<g:brand>Vlogfund></g:brand>
 	<g:condition>New</g:condition>
 	<g:availability><?php echo $instock;?></g:availability>
-	<?php if(!empty($price)){?>
-<g:price><?php echo $price.' USD'?></g:price>
-	<?php }?><?php rss_enclosure(); ?><?php do_action('rss2_item');?>
+  <g:price>0</g:price>
+	<?php rss_enclosure(); ?><?php do_action('rss2_item');?>
 </item>
 <?php endwhile; ?>
 </channel>

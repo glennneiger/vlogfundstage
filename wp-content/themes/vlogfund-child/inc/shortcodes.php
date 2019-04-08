@@ -234,7 +234,7 @@ function format_completed_date_func($atts) {
 		'format' => 'm d Y',
 		'orderid' => 0
 	), $atts );
-	
+
 	$completedDate = get_post_meta( $a['orderid'], '_completed_date', true );
 	if ( !$completedDate )
 		return;
@@ -299,4 +299,42 @@ function post_count() {
     return $published_posts . ' ';
 }
 add_shortcode('postcount', 'post_count');
+endif;
+if( !function_exists('connections') ) :
+/**
+ * Register connections shortcode
+ *
+ * @att (string) relationship : post relationship slug
+ * @return count of connected posts
+ */
+add_shortcode( 'connections', function( $atts = [] ){
+
+    // provide defaults
+    $atts = shortcode_atts(
+        array(
+            'relationship'      =>   '',
+        ),
+        $atts
+    );
+
+    global $post;
+    $count = 0;
+
+    $relationship = toolset_get_relationship( $atts['relationship'] );
+
+    if ( $relationship ) {
+
+        $parent = $relationship['roles']['parent']['types'][0];
+        $child = $relationship['roles']['child']['types'][0];
+        $type = $post->post_type;
+
+        $origin = ( $parent == $type ) ? 'parent' : 'child';
+
+        // Get connected posts
+        $connections = toolset_get_related_posts( $post->ID, $atts['relationship'], $origin, 9999, 0, array(), 'post_id', 'other', null, 'ASC', true, $count );
+
+    }
+
+    return $count;
+});
 endif;

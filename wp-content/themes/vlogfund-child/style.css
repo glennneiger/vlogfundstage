@@ -492,7 +492,7 @@ padding-top: 0!important;
   }
 }
 
-.single-organization  .sf-breadcrumb {
+.single-organizations  .sf-breadcrumb {
   top: 0;
 }
 
@@ -4044,7 +4044,7 @@ btn {
   .sfc-campaign-new-how-it-works-item i {
     font-size: 90px !important;
   }
-  .single-organization .sfc-campaign-new-how-it-works-item i {
+  .single-organizations .sfc-campaign-new-how-it-works-item i {
     font-size: 50px !important;
   }
 }
@@ -4089,7 +4089,7 @@ btn {
   }*/
 }
 
-.single-organization .sfc-campaign-new-how-it-works-item h3 {
+.single-organizations .sfc-campaign-new-how-it-works-item h3 {
   color: #999;
   font-weight: normal;
   text-align: center;
@@ -4099,7 +4099,7 @@ btn {
 
 
 @media screen and (max-width:776px) {
-  .single-organization .sfc-campaign-new-how-it-works-item h3 {
+  .single-organizations .sfc-campaign-new-how-it-works-item h3 {
     font-size: 10px;
   }
 }
@@ -6615,7 +6615,7 @@ select[name="product_cat[]"], select[name="alt_product_cat"] {
     width: 60px;
     margin: 0 auto auto auto;
   }
-  .single-organization .sfc-campaign-new-how-it-works-arrow1, .single-organization .sfc-campaign-new-how-it-works-arrow2 {
+  .single-organizations .sfc-campaign-new-how-it-works-arrow1, .single-organizations .sfc-campaign-new-how-it-works-arrow2 {
     width: 40px;
     margin: 0 auto auto auto;
   }
@@ -8568,6 +8568,11 @@ div.alert.alert-success p:before {
 .page-checkout .sfc-campaign-image {
   height: 150px;
 }
+
+.home div.js-wpv-view-layout, .home div.js-wpv-layout-responsive, .woocommerce-page .js-wpv-layout-responsive, .single-youtube_channels .js-wpv-layout-responsive {
+  visibility: visible!important;
+}
+
 @media (min-width:996px) {
   .sfc-campaign-images {
     overflow: unset;
@@ -10186,6 +10191,26 @@ label.error {
 }
 
 
+/**campaign charity**/
+
+.vf-campaign-charity-title {
+margin: 0 auto;
+padding: 5px 0;
+text-align: center;
+line-height: normal;
+white-space: normal;
+}
+
+.vf-campaign-charity-logo {
+  text-align: center;
+  display: block;
+  width: 15%;
+  margin: 15px auto;
+}
+
+.vf-campaign-charity-description {
+  text-align: center;
+}
 
 
 /**campaign prizes**/
