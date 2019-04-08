@@ -45,7 +45,7 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 	$thumb_url = $thumb['0'];
 	?>
 <item>
-	<g:id><?php the_ID();?></g:id>
+	<g:id>woocommerce_gpf<?php the_ID();?></g:id>
 	<g:title><?php the_title_rss(); ?></g:title>
 	<g:description><![CDATA[<?php the_excerpt_rss() ?>]]></g:description>
 	<g:google_product_category>8</g:google_product_category>
