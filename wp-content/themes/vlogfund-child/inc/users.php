@@ -56,19 +56,21 @@ add_filter('media_view_strings', 'vlog_disable_frontend_media_tabs', 99);
 endif;
 if( !function_exists('vlog_change_media_default_active_tab') ) :
 //Trigger Insert Media Tab
-function vlog_change_media_default_active_tab(){ ?>
-	<script type="text/javascript">
-		jQuery(document).ready( function($){
-			$(document).on( 'click', '.insert-media', function(event){
-				$('.media-menu .media-menu-item:last' ).trigger('click');
-				$('.media-frame .media-frame-title h1').html('Insert from URL (YouTube, Twitter, Instagram...)');
-				if( !$('.media-frame .media-frame-content p.media-info').length ){
-					$('<p class="media-info">Here you can insert the link to your favorite YouTube Video, Twitter, or Instagram Post, It will render an embed on your campaign page when you save and preview the form.</p><p class="media-info">*Alternatively you can copy this shortcode [embed][/embed] add it to the editor and place your link inside it. This will render an embed as well when you save and preview your campaign.</p>').prependTo( $('.media-frame .media-frame-content') );
-				}
+function vlog_change_media_default_active_tab(){ 
+	if( is_page('create-a-new-youtube-collaboration') || is_page('edit-your-youtube-collaboration') ) : //Check Submit Collab & Edit Collab Page ?>
+		<script type="text/javascript">
+			jQuery(document).ready( function($){
+				$(document).on( 'click', '.insert-media', function(event){
+					$('.media-menu .media-menu-item:last' ).trigger('click');
+					$('.media-frame .media-frame-title h1').html('Insert from URL (YouTube, Twitter, Instagram...)');
+					if( !$('.media-frame .media-frame-content p.media-info').length ){
+						$('<p class="media-info">Here you can insert the link to your favorite YouTube Video, Twitter, or Instagram Post, It will render an embed on your campaign page when you save and preview the form.</p><p class="media-info">*Alternatively you can copy this shortcode [embed][/embed] add it to the editor and place your link inside it. This will render an embed as well when you save and preview your campaign.</p>').prependTo( $('.media-frame .media-frame-content') );
+					}
+				});
 			});
-		});
-	</script>
-<?php }
+		</script>
+<?php endif; //Endif
+}
 add_action('wp_footer', 'vlog_change_media_default_active_tab');
 endif;
 if( !function_exists('vlog_allow_subscribers_to_upload_media') ) :

@@ -60,19 +60,23 @@ class Vlogref_Public{
 	/**
 	 * Footer Scripts
 	 **/
-	public function referral_footer_script(){ ?>
-		<script type="text/jscript">
-			jQuery(document).ready(function($){
-				$('input.vf-referral-url').on('focus tap', function(){
-					$(this).get(0).setSelectionRange(0,9999);
-					document.execCommand('copy');
-					if( typeof toastr != 'undefined' ){
-						toastr.success('', 'Copied to clipboard!');
-					}
+	public function referral_footer_script(){ 
+		global $wp_query;
+		if( is_wc_endpoint_url('order-received') 
+			|| array_key_exists('my-referrals', $wp_query->query_vars) || get_query_var('my-referrals') ) : ?>
+			<script type="text/jscript">
+				jQuery(document).ready(function($){
+					$('input.vf-referral-url').on('focus tap', function(){
+						$(this).get(0).setSelectionRange(0,9999);
+						document.execCommand('copy');
+						if( typeof toastr != 'undefined' ){
+							toastr.success('', 'Copied to clipboard!');
+						}
+					});
 				});
-			});
-		</script>
-	<?php }
+			</script>
+	<?php endif; //Endif
+	}
 	/**
 	 * Render Referral Permalink
 	 *
