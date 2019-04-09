@@ -73,8 +73,8 @@
 						if( result.success == '1' ){
 							$this.parents('.upvote-progress-button').addClass('success-upvote');
 							$this.text(result.message);
-							$upvote.html('+ '+result.count);
-							$upvote.find('span').html('+ ' + result.count); //For all Upvote on page for same post
+							$upvote.html('↑ '+result.count);
+							$upvote.find('span').html('↑ ' + result.count); //For all Upvote on page for same post
 							$upvotecountcont.html(result.count);
 							//Other Vote Button
 							$othericonvotebtn.find('span').html('↑ ' + result.count).attr('disabled','disabled');
