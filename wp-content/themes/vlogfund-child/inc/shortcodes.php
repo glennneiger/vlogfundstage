@@ -114,7 +114,7 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 						<div class="sf-milestone-progress">
 							<div class="sf-milestone-container" style="width:100%"><span>'.$milestone_percent.'%</span></div>
 						</div>
-						<div class="sf-milestone-values"><span class="start">Campaign Goal Reached</span><span class="end">$'.$final_milestone.'</span></div>
+						<div class="sf-milestone-values"><span class="start">Campaign Goal Reached</span><span class="end">'.wc_price($final_milestone).'</span></div>
 				</div>';
 	else : //Else
 		foreach( $milestones as $key => $milestone ) :
@@ -127,11 +127,11 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 								<div class="sf-milestone-progress">
 									<div class="sf-milestone-container" style="width:'.( $milestone_percent > 100 ? 100 : $milestone_percent ) .'%"><span>'.$milestone_percent.'%</span></div>
 								</div>
-								<div class="sf-milestone-values"><span class="start">$'.$total_sales.'</span><span class="end">$'.$next_milestone.'</span></div>
+								<div class="sf-milestone-values"><span class="start">'.wc_price($total_sales).'</span><span class="end">'.wc_price($next_milestone).'</span></div>
 								<div class="sf-milestone-txt-content">
 									<span class="sf-milestone-txt">'.__('Milestone').' <strong>'.($key+1).'</strong></span>';
 									if( isset( $milestones[$key+2] ) ) : //Check Exist
-										$content .= '<span class="sf-next-milestone-txt">'.__('Next Milestone: $').$milestones[$key+2].'</span>';
+										$content .= '<span class="sf-next-milestone-txt">'.__('Next Milestone: ').wc_price($milestones[$key+2]).'</span>';
 									endif;
 				$content .= '</div>
 							</div>';
@@ -307,34 +307,25 @@ if( !function_exists('connections') ) :
  * @att (string) relationship : post relationship slug
  * @return count of connected posts
  */
-add_shortcode( 'connections', function( $atts = [] ){
-
+function connections( $atts, $content ){
     // provide defaults
     $atts = shortcode_atts(
-        array(
-            'relationship'      =>   '',
-        ),
+        array( 'relationship' => '' ),
         $atts
     );
-
     global $post;
     $count = 0;
-
     $relationship = toolset_get_relationship( $atts['relationship'] );
-
     if ( $relationship ) {
-
         $parent = $relationship['roles']['parent']['types'][0];
         $child = $relationship['roles']['child']['types'][0];
         $type = $post->post_type;
-
         $origin = ( $parent == $type ) ? 'parent' : 'child';
-
         // Get connected posts
         $connections = toolset_get_related_posts( $post->ID, $atts['relationship'], $origin, 9999, 0, array(), 'post_id', 'other', null, 'ASC', true, $count );
-
     }
 
     return $count;
-});
+}
+add_shortcode( 'connections', 'connections');
 endif;
