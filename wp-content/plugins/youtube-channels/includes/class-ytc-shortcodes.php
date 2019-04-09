@@ -72,9 +72,11 @@ class YTC_Shortcodes{
 		if( is_post_type_archive('youtube_channels') ) : //Check YouTube Channel Archive
 			//Common Styles
 			wp_enqueue_style('ytc-styles',			YTC_PLUGIN_URL . 'assets/css/styles.min.css', array(), null);
-			wp_enqueue_script(array('jquery', 'jquery-ui-core'));
+			wp_enqueue_script('jquery');
+			wp_enqueue_style('ytc-autocomplete-styles',YTC_PLUGIN_URL . 'assets/css/jquery-ui.min.css', array(), null);
+			wp_enqueue_script('ytc-autocomplete', 	YTC_PLUGIN_URL . 'assets/js/jquery-ui.autocomplete.min.js', array(), null, true);			
 			//Script for Public Function
-			wp_enqueue_script('ytc-app-script',		YTC_PLUGIN_URL . 'assets/js/app.js', array('jquery'), null, true);
+			wp_enqueue_script('ytc-app-script',		YTC_PLUGIN_URL . 'assets/js/app.js', array(), null, true);
 			wp_localize_script('ytc-app-script',	'YTC_Obj', array( 'ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ) ) );
 		endif; //Endif
 		if( is_singular('youtube_channels') ) : //Check YouTube Channel Page
@@ -114,8 +116,8 @@ class YTC_Shortcodes{
 		), $atts, 'ytc_channels' ) );
 
 		//Enqueue Scripts / Styles
-		wp_enqueue_style( array('ytc-styles') );
-		wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-app-script') );
+		//wp_enqueue_style( array('ytc-styles') );
+		//wp_enqueue_script( array('jquery', 'jquery-ui-core', 'ytc-app-script') );
 
 		ob_start(); //Start Buffer ?>
 
