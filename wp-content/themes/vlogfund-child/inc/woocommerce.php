@@ -5,6 +5,7 @@ remove_action('woocommerce_before_shop_loop', 	'woocommerce_result_count', 20 );
 remove_action('woocommerce_before_main_content','woocommerce_breadcrumb', 20, 0 );
 remove_action('woocommerce_before_main_content','woocommerce_output_content_wrapper', 10 );
 remove_action('woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
+remove_action('woocommerce_order_details_after_order_table', 'woocommerce_order_again_button');
 add_filter('woocommerce_show_page_title', '__return_false', 999);
 add_filter('wc_add_to_cart_message_html', '__return_false', 999); //Remove Add to Cart Message
 /**** Override Woocommerce Functionality ****/
