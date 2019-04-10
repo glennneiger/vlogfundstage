@@ -138,7 +138,7 @@ function upvote_icon_button_shortcode( $atts, $content = null ){
 						<a href="#register"><button class="upvote-btn icon">↑&nbsp;<span>'.$vote_count.'</span></button></a>
 						<i class="upvote-progress-circle fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
 					</div><!-- /progress-button -->';
-	else : //Else
+	else : //Else		
 		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) 
 			|| ( !is_user_logged_in() && in_array( upvote_get_ip(), $vote_ips ) ) ) : //Check user already voted or not
 			$content .= '<div class="upvote-progress-button icon success-upvote">

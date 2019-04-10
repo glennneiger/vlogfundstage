@@ -90,6 +90,7 @@ function upvote_update_vote_ajax_callback(){
 		if( ( is_user_logged_in() && in_array( $user_ID, $vote_users ) ) || ( !is_user_logged_in() && in_array( upvote_get_ip(), $vote_ips ) ) ) :
 			$response['voted'] = 1; //Success
 			$response['message'] = __('You already voted', 'upvote'); //Success
+			$response['count'] = $votes; //Success
 		else : //Else
 			//Update Vote Count
 			$vote_count = ( $votes + 1 );

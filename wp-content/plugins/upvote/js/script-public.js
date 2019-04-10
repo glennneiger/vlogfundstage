@@ -50,9 +50,11 @@
 								$('.upvote-btn.vote-me').wrap('<a href="#register" class="after-upvote"></a>').removeClass('vote-me').removeAttr('data-id');
 								//location.reload();
 							}
-						} else if( result.voted == '1' ){
-							$this.find('i').addClass($fill);
-							$this.remove();
+						} else if( result.voted == '1' ){							
+							$this.parents('.upvote-progress-button').addClass('success-upvote');
+							$this.html('↑ <span>'+result.count+'</span>').attr('disabled','disabled');
+							//$this.find('i').addClass($fill);
+							//$this.remove();
 						} //Endif
 					} //Endif
 				});
