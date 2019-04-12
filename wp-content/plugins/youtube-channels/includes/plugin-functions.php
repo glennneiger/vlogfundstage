@@ -194,11 +194,11 @@ function ytc_get_channel_loop( $post_id = 0 ) {
 
 	<div class="col-lg-3 col-sm-6 sfc-campaign-archive-post" id="<?php echo $channel_id; ?>">
 		<div class="box grid recipes">
-			<div class="by"><i class="fa fa-eye" aria-hidden="true"></i>
+			<?php /*<div class="by"><i class="fa fa-eye" aria-hidden="true"></i>
 				<span id="<?php echo $channel_id; ?>-views" style="color:white">
 					<?php echo ytc_number_abbs( $channel_views ); ?>
 				</span> <span id="<?php echo $channel_id; ?>-subs" class="fa-pull-right"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;<?php echo ( $channel_subscribers == 0 ) ? 0 : ytc_number_abbs( $channel_subscribers ); ?></span>
-			</div><!--/.by-->
+			</div><!--/.by-->*/ ?>
 			<a href="<?php the_permalink(); ?>" class="showinfoimg"><img id="<?php echo $channel_id; ?>-img" src="<?php echo $channel_img; ?>" alt="<?php echo get_the_title(get_the_ID());?>"></a>
 			<h2><a href="<?php the_permalink(); ?>" class="showinfo" data-gplus="<?php echo $channel_gplus; ?>" data-twitter="<?php echo $channel_tw; ?>" data-instagram="<?php echo $channel_insta; ?>" data-facebook="<?php echo $channel_fb; ?>" data-website="<?php echo $channel_web; ?>" data-snapchat="<?php echo $channel_snap; ?>" data-vk="<?php echo $channel_vk; ?>" data-channelid="<?php the_ID(); ?>" data-title="<?php echo get_the_title(); ?>">
 				<?php echo ytc_get_channel_short_title( get_the_title() ); ?>
@@ -267,5 +267,27 @@ function ytc_find_twitter_username( $url ){
   		return $regs['name'];
 	endif; //Endif
   	return false;
+}
+endif;
+if( !function_exists('ytc_get_channel_statistics') ) :
+/**
+ * Get YouTube Channel Data
+ *
+ * Handles to get youtube channel data
+ **/
+function ytc_get_channel_statistics($channelid = 0){
+	if( empty( $channelid ) ) :
+		$channelid = get_post_meta(get_the_ID(), 'wpcf-channel_id', true); //Channel ID
+	endif; //Endif
+	$use_yt_key 	= ytc_youtube_api_key(); //YTC_YOUTUBE_KEY; //
+	$channel_url 	= 'https://www.googleapis.com/youtube/v3/channels?part=statistics&key='.$use_yt_key.'&id='.$channelid;
+	$channel_results= json_decode( file_get_contents( $channel_url, false) );
+	$channel_data 	= array('views' => 0, 'subscribers' => 0);
+	if( isset( $channel_results->items ) && !empty( $channel_results->items ) ) :
+		$yt_data = array_shift( $channel_results->items );
+		$channel_data['views'] = $yt_data->statistics->viewCount;
+		$channel_data['subscribers'] = $yt_data->statistics->subscriberCount;
+	endif; //Endif
+	return $channel_data;
 }
 endif;

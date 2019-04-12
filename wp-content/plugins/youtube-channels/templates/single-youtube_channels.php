@@ -7,25 +7,24 @@
 get_header();
 
 	while( have_posts() ) : the_post(); //Loop to Show YouTube Channels Details
-
-		$banner = get_post_meta(get_the_ID(), 'wpcf-channel_banner', true);
-		$countries_obj = new WC_Countries();
-		$countries = $countries_obj->__get('countries');
-		$subscribers = get_post_meta(get_the_ID(), 'wpcf-channel_subscribers', true);
-		$subscribers = !empty( $subscribers ) ? ytc_number_abbs( $subscribers ) : 0;
-		$views = get_post_meta(get_the_ID(), 'wpcf-channel_views', true);
-		$views = !empty( $views ) ? ytc_number_abbs( $views ) : 0;
-
-		$tw 	= get_post_meta(get_the_ID(), 'wpcf-channel_tw', true);
-		$insta 	= get_post_meta(get_the_ID(), 'wpcf-channel_insta', true);
-		$fb 	= get_post_meta(get_the_ID(), 'wpcf-channel_fb', true);
-		$gplus 	= get_post_meta(get_the_ID(), 'wpcf-channel_gplus', true);
-		$web 	= get_post_meta(get_the_ID(), 'wpcf-channel_web', true);
-		$snap 	= get_post_meta(get_the_ID(), 'wpcf-channel_snap', true);
-		$vk 	= get_post_meta(get_the_ID(), 'wpcf-channel_vk', true);
-		$channel_id = get_post_meta(get_the_ID(), 'wpcf-channel_id', true);
-		$age 	= get_post_meta(get_the_ID(), 'wpcf-channel_dob', true);
-		$gender = get_post_meta(get_the_ID(), 'wpcf-channel_gender', true);
+	
+		$statistics 	= ytc_get_channel_statistics();
+		$banner 		= get_post_meta(get_the_ID(), 'wpcf-channel_banner', true);
+		$countries_obj 	= new WC_Countries();
+		$countries 		= $countries_obj->__get('countries');
+		$subscribers 	= get_post_meta(get_the_ID(), 'wpcf-channel_subscribers', true);
+		$subscribers 	= ytc_number_abbs( $statistics['subscribers'] );
+		$views 			= ytc_number_abbs( $statistics['views'] );
+		$tw 			= get_post_meta(get_the_ID(), 'wpcf-channel_tw', true);
+		$insta 			= get_post_meta(get_the_ID(), 'wpcf-channel_insta', true);
+		$fb 			= get_post_meta(get_the_ID(), 'wpcf-channel_fb', true);
+		$gplus 			= get_post_meta(get_the_ID(), 'wpcf-channel_gplus', true);
+		$web 			= get_post_meta(get_the_ID(), 'wpcf-channel_web', true);
+		$snap 			= get_post_meta(get_the_ID(), 'wpcf-channel_snap', true);
+		$vk 			= get_post_meta(get_the_ID(), 'wpcf-channel_vk', true);
+		$channel_id 	= get_post_meta(get_the_ID(), 'wpcf-channel_id', true);
+		$age 			= get_post_meta(get_the_ID(), 'wpcf-channel_dob', true);
+		$gender 		= get_post_meta(get_the_ID(), 'wpcf-channel_gender', true);		
 		if( !empty( $age ) ) :
 			$cdate = new DateTime(date('Y-m-d', current_time('timestamp')));
 			$bdate = new DateTime(date('Y-m-d', $age));
