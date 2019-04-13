@@ -5339,7 +5339,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  margin: -70px auto auto auto;
+  margin: -55px auto auto auto;
 }
 
 @media (min-width: 768px) {
@@ -5744,6 +5744,7 @@ overflow-x: hidden;
 .sfc-campaign-archive-post-title:hover {
   overflow-y: scroll;
   overflow-x: hidden;
+  text-overflow: unset;
 }
 
 
@@ -7978,7 +7979,7 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
   word-wrap: break-word;
   padding: 0;
   margin: 9px 0 2px 0;
-  font-size: 20px;
+  font-size: 16px;
 
   white-space: nowrap;
   overflow: hidden;
@@ -8081,11 +8082,12 @@ input[name="wpv_sort_orderby"][value="rand"]:checked + label.sfc-campaign-archiv
 .sfc-campaign-archive-post-excerpt {
   color: #202020;
   margin: 5px 0;
-  font-size: 14px;
+  font-size: 13px;
   /*max-width: 250px;*/
   word-wrap: break-word;
   height: 50px;
   font-style: italic;
+  text-align: center;
 }
 
 
@@ -8569,7 +8571,7 @@ div.alert.alert-success p:before {
   height: 150px;
 }
 
-.home div.js-wpv-view-layout, .home div.js-wpv-layout-responsive, .woocommerce-page .js-wpv-layout-responsive, .single-youtube_channels .js-wpv-layout-responsive {
+.home div.js-wpv-view-layout, .home div.js-wpv-layout-responsive, .woocommerce-page .js-wpv-layout-responsive, .single-youtube_channels .js-wpv-layout-responsive, .single-post .js-wpv-layout-responsive {
   visibility: visible!important;
 }
 
