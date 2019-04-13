@@ -47,21 +47,21 @@ if ( ! function_exists( 'ref_enqueue_main_stylesheet' ) ) {
 
 		if ( ( is_page('about') ) && ! is_admin() ) {
 
-			wp_enqueue_style( 'owl-carousel', get_stylesheet_directory_uri() . '/css/owl.carousel.css', array(), null );
+			// wp_enqueue_style( 'owl-carousel', get_stylesheet_directory_uri() . '/css/owl.carousel.css', array(), null );
 
 			wp_enqueue_style( 'slick-style', get_stylesheet_directory_uri() . '/css/vendor/slick.css', array(), null );
 			//wp_enqueue_style( 'animate-style', get_stylesheet_directory_uri() . '/css/vendor/animate.css', array(), null );
 			wp_enqueue_style( 'responsive-style', get_stylesheet_directory_uri() . '/css/responsive.css', array(), null );
 			wp_enqueue_style( 'normalize-style', get_stylesheet_directory_uri() . '/css/normalize.css', array(), null );
 
-			wp_enqueue_script( 'modernizr-script', get_stylesheet_directory_uri() . '/js/vendor/modernizr.min.js', array(), null, true );
-			wp_enqueue_script( 'waypoints-script', get_stylesheet_directory_uri() . '/js/vendor/waypoints.min.js', array(), null, true );
+			// wp_enqueue_script( 'modernizr-script', get_stylesheet_directory_uri() . '/js/vendor/modernizr.min.js', array(), null, true );
+			// wp_enqueue_script( 'waypoints-script', get_stylesheet_directory_uri() . '/js/vendor/waypoints.min.js', array(), null, true );
 
 			wp_enqueue_script( 'slick-script', get_stylesheet_directory_uri() . '/js/vendor/slick.min.js', array(), null, true );
 
 			wp_enqueue_script( 'general-script', get_stylesheet_directory_uri() . '/js/general.js', array(), null, true );
 
-			wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
+			// wp_enqueue_script( 'owl-carousel', get_stylesheet_directory_uri() . '/js/owl.carousel.js', array(), null, true );
 
 		}
 		if ( is_post_type_archive( 'organization' ) || is_shop() || is_home() ) {
