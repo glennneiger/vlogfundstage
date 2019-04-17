@@ -18,7 +18,7 @@ class YTC_Admin{
 		//Enqueue Scripts
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		//Admin AJAX
-		add_action( 'wp_ajax_ytc_update_channels', array( $this, 'ytc_update_channels' ) );
+		add_action( 'wp_ajax_ytc_update_channels', array( $this, 'ytc_update_channels' ) );		
 	}
 	
 	/**
@@ -59,7 +59,7 @@ class YTC_Admin{
 		
 		global $wpdb;
 		$date_before = date('Y-m-d', strtotime('-4days'));
-		$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_status = 'publish' AND post_type = 'youtube_channels' AND post_modified <= '$date_before';" );
+		$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_type = 'youtube_channels' AND post_modified <= '$date_before';" );
 		$total_to_update = !empty( $total_to_update ) ? $total_to_update : 0;
 		
 		echo '<div class="wrap">';
@@ -89,50 +89,61 @@ class YTC_Admin{
 			wp_send_json_error( 'Invalid security token.' );
 			wp_die(); //To Proper Output
 		else : //Else Process Update
-			$response = array('updated' => 0);
 			$date_before = date('Y-m-d', strtotime('-4days'));
-			$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_modified <= '$date_before';" );
-			$query = "SELECT m1.meta_value FROM $wpdb->posts
-					LEFT JOIN $wpdb->postmeta AS m1 ON (m1.post_id = $wpdb->posts.ID)
-					WHERE 1=1 AND $wpdb->posts.post_type = 'youtube_channels'
-					AND m1.meta_key = 'wpcf-channel_id' AND $wpdb->posts.post_status = 'publish'
-					AND $wpdb->posts.post_modified <= '$date_before' LIMIT 120;";
-			$all_channels = $wpdb->get_col( $query );
-			$updated = 0;
-			if( !empty( $all_channels ) ) : //Check Channel Data
-				$channel_slots = array_chunk( $all_channels, 40 );				
-				foreach( $channel_slots as $channels_list ) :			
-					$channel_ids = implode(',', $channels_list );					
-					$use_yt_key = ytc_youtube_api_key(); //YTC_YOUTUBE_KEY; //
-					$channel_url = 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics&key='.$use_yt_key.'&id='.$channel_ids;
-					$channel_data = file_get_contents( $channel_url, false);
-					$channel_results = json_decode( $channel_data );					
-					if( !empty( $channel_results->items ) ) : //Update the Channel Data
-						foreach( $channel_results->items as $channel ) :
-							$post_id = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE 1=1 AND meta_key = 'wpcf-channel_id' AND meta_value = '".$channel->id."';" );
-							if( !empty( $post_id ) ) :
-								$updated_post = wp_update_post( array(
-									'ID' => $post_id,
-									'post_title'   => $channel->snippet->title,
-								) );						
-								 //Update Related Details
-								update_post_meta( $post_id, 'wpcf-channel_views', 		$channel->statistics->viewCount );
-								update_post_meta( $post_id, 'wpcf-channel_subscribers', $channel->statistics->subscriberCount );
-								update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
-								update_post_meta( $post_id, 'wpcf-channel_img', 		$channel->snippet->thumbnails->medium->url );
-								update_post_meta( $post_id, 'wpcf-channel_banner', 		$channel->brandingSettings->image->bannerImageUrl );
-								update_post_meta( $post_id, 'wpcf-channel_videos', 		$channel->statistics->videoCount );
-								update_post_meta( $post_id, 'wpcf-channel_description', $channel->snippet->description );
-								
-								$updated++;							
-							endif;
-						endforeach; //Endforeach
+			$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_type='youtube_channels' AND post_modified <= '$date_before';" );
+			$paged = ( isset( $_POST['paged'] ) && !empty( $_POST['paged'] ) ) ? $_POST['paged'] : 1;
+			$updated = ( isset( $_POST['updated'] ) && !empty( $_POST['updated'] ) ) ? $_POST['updated'] : 0;
+			$response = array('updated' => 0);
+			$ytc_channels = get_posts( array( 
+								'post_type' => 'youtube_channels', 'post_status' => 'any', 'posts_per_page' => 40, 
+								'paged' => $paged, 'fields' => 'ids', 'date_query' => array( array( 'column' => 'post_modified', 'before' => $date_before ) )
+							) );			
+			$updated_channels = array();
+			if( !empty( $ytc_channels ) ) : //Check Have Post
+				$channels_list = array();
+				foreach( $ytc_channels as $channel ) : //Loop to Collect Channels ID
+					if( $channel_id = get_post_meta($channel, 'wpcf-channel_id', true) ) :
+						$channels_list[$channel] = $channel_id;
 					endif; //Endif
-				endforeach;				
-			endif; //Endif
+				endforeach;
+				$channel_ids 	= implode(',', $channels_list );
+				$use_yt_key 	= ytc_youtube_api_key(); //YTC_YOUTUBE_KEY; //
+				$channel_url 	= 'https://www.googleapis.com/youtube/v3/channels?part=topicDetails,status,brandingSettings,contentDetails,contentOwnerDetails,localizations,snippet,statistics&key='.$use_yt_key.'&id='.$channel_ids;
+				$channel_data 	= file_get_contents( $channel_url, false);
+				$channel_results= json_decode( $channel_data );				
+				if( !empty( $channel_results->items ) ) : //Update the Channel Data					
+					foreach( $channel_results->items as $channel ) :
+						$post_id = array_search($channel->id, $channels_list);						
+						if( !empty( $post_id ) ) :
+							$updated_post = wp_update_post( array(
+								'ID' => $post_id,
+								'post_title'   => $channel->snippet->title,
+							) );						
+							 //Update Related Details
+							update_post_meta( $post_id, 'wpcf-channel_views', 		$channel->statistics->viewCount );
+							update_post_meta( $post_id, 'wpcf-channel_subscribers', $channel->statistics->subscriberCount );
+							update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
+							update_post_meta( $post_id, 'wpcf-channel_img', 		$channel->snippet->thumbnails->medium->url );
+							update_post_meta( $post_id, 'wpcf-channel_banner', 		$channel->brandingSettings->image->bannerImageUrl );
+							update_post_meta( $post_id, 'wpcf-channel_videos', 		$channel->statistics->videoCount );
+							update_post_meta( $post_id, 'wpcf-channel_description', $channel->snippet->description );							
+							$updated++;
+							array_push($updated_channels, $post_id); //Add Updated Channel							
+						endif;
+					endforeach; //Endforeach
+				endif; //Endif
+				$not_updated = array_diff($ytc_channels, $updated_channels);
+				if( !empty( $not_updated ) ) : //Check Not Updated
+					foreach( $not_updated as $post_id => $channel ) :
+						$updated_post = wp_update_post( array('ID' => $post_id) );
+						$updated++;
+					endforeach; //Endforeach
+				endif; //Endif
+			endif; //Endif			
 			$response['left_update'] = ( $total_to_update - $updated );
 			$response['updated'] = $updated;
 			$response['success'] = 1;
+			$response['paged'] = ( $paged + 1 );
 			wp_send_json( $response );
 			wp_die();
 		endif; //Endif

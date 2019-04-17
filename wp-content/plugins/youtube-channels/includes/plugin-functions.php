@@ -12,7 +12,7 @@ if( !function_exists('ytc_youtube_api_key') ) :
  * Return YouTube API Key
  **/
 function ytc_youtube_api_key(){
-	$youtube_keys = array('AIzaSyDRp8PJ-exVLhq2hrELXXh3ukgmCxpXQqE', 'AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks', 'AIzaSyCojt9gvT7vj511o4eRCPAA0x2IDBULJzY');
+	$youtube_keys = array('AIzaSyA8zsv8cUPn5RFl-FPQDzt98_YVoetvzpM', 'AIzaSyDNWCjklIla_ozAj4GeZ7N3RI_ZTeiwjks');
 	$yt_rand_key = array_rand( $youtube_keys );
 	$use_yt_key = $youtube_keys[$yt_rand_key];
 	return $use_yt_key;
