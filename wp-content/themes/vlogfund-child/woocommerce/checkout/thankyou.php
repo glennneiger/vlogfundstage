@@ -95,7 +95,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         <div class="sfc-checkout-thankyou-row sfc-campaign-archive-post">
 
 
-					<span class="sfc-campaign-archive-post-status-donate"><span class="sfc-campaign-archive-post-status-dollar-sign">$</span></span>
+					<!-- <span class="sfc-campaign-archive-post-status-donate"><span class="sfc-campaign-archive-post-status-dollar-sign">$</span></span> -->
 
 
 
