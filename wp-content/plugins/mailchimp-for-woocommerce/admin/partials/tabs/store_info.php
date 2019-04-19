@@ -4,7 +4,7 @@ $handler = MailChimp_WooCommerce_Admin::connect();
 
 // if we don't have valid campaign defaults we need to redirect back to the 'campaign_defaults' tab.
 if (!$handler->hasValidApiKey()) {
-    wp_redirect('options-general.php?page=mailchimp-woocommerce&tab=api_key&error_notice=missing_api_key');
+    wp_redirect('admin.php?page=mailchimp-woocommerce&tab=api_key&error_notice=missing_api_key');
 }
 
 ?>
@@ -107,7 +107,7 @@ if (!$handler->hasValidApiKey()) {
     <legend class="screen-reader-text">
         <span>Postal Code</span>
     </legend>
-    <label for="<?php echo $this->plugin_name; ?>-store-state-label">
+    <label for="<?php echo $this->plugin_name; ?>-store-postal-code-label">
         <input required style="width: 30%;" type="text" id="<?php echo $this->plugin_name; ?>-store-postal-code-label" name="<?php echo $this->plugin_name; ?>[store_postal_code]" value="<?php echo isset($options['store_postal_code']) ? $options['store_postal_code'] : '' ?>" />
         <span>
             <?php

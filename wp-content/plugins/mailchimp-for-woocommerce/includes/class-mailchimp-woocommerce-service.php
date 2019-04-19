@@ -16,6 +16,22 @@ class MailChimp_Service extends MailChimp_WooCommerce_Options
     protected $cart_was_submitted = false;
     protected $cart = array();
     protected $validated_cart_db = false;
+    /** @var null|static */
+    protected static $_instance = null;
+
+    /**
+     * @return MailChimp_Service
+     */
+    public static function instance()
+    {
+        if (!empty(static::$_instance)) {
+            return static::$_instance;
+        }
+        $env = mailchimp_environment_variables();
+        static::$_instance = new MailChimp_Service();
+        static::$_instance->setVersion($env->version);
+        return static::$_instance;
+    }
 
     /**
      * hook fired when we know everything is booted
@@ -112,6 +128,17 @@ class MailChimp_Service extends MailChimp_WooCommerce_Options
     /**
      * @param $order_id
      */
+    public function onOrderRefunded($order_id)
+    {
+        if (!mailchimp_is_configured()) return;
+
+        $handler = new MailChimp_WooCommerce_Single_Order($order_id, null, null, null);
+        mailchimp_handle_or_queue($handler);
+    }
+
+    /**
+     * @param $order_id
+     */
     public function onPartiallyRefunded($order_id)
     {
         if (!mailchimp_is_configured()) return;
@@ -127,7 +154,7 @@ class MailChimp_Service extends MailChimp_WooCommerce_Options
     public function clearCartData()
     {
         if ($user_email = $this->getCurrentUserEmail()) {
-            $this->deleteCart($user_email);
+            $this->deleteCart(mailchimp_hash_trim_lower($user_email));
         }
     }
 
@@ -377,7 +404,7 @@ class MailChimp_Service extends MailChimp_WooCommerce_Options
     public function getCartItems()
     {
         if (!($this->cart = $this->getWooSession('cart', false))) {
-            $this->cart = function_exists('WC') ? false : WC()->cart->get_cart();
+            $this->cart = !function_exists('WC') ? false : WC()->cart->get_cart();
         } else {
             $cart_session = array();
             foreach ( $this->cart as $key => $values ) {

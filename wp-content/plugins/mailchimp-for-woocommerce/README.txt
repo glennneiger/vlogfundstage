@@ -3,10 +3,10 @@ Contributors: ryanhungate, Mailchimp
 Tags: ecommerce,email,workflows,mailchimp
 Donate link: https://mailchimp.com
 Requires at least: 4.3
-Tested up to: 4.9.8
-Stable tag: 2.1.11
-Requires PHP: 5.6
-WC tested up to: 3.4.5
+Tested up to: 5.1
+Stable tag: 2.1.15
+Requires PHP: 7.0
+WC tested up to: 3.5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Connect your store to your Mailchimp list to track sales, create targeted emails, send abandoned cart emails, and more.
@@ -24,10 +24,11 @@ With Mailchimp for WooCommerce, you’ll have the power to:
 - Add discount codes created in WooCommerce to your emails and automations with a Promo Code content block
 - Create beautiful landing pages that make it easy to highlight your products, promote a sale or giveaway, and grow your list.
 ###Important Notes
-This plugin supports our most powerful API 3.0 features, and is intended for users who have not yet integrated their WooCommerce stores with Mailchimp.
-You can run this new integration at the same time as your current WooCommerce integration for Mailchimp. However, data from the older integration will display separately in subscriber profiles, and can’t be used with e-commerce features that require API 3.0.
+This plugin supports our most powerful API 3.0 features, and is intended for users who have not yet integrated their WooCommerce stores with Mailchimp.  
+You can run this new integration at the same time as your current WooCommerce integration for Mailchimp. However, data from the older integration will display separately in subscriber profiles, and can’t be used with e-commerce features that require API 3.0.  
 WordPress.com compatibility is limited to Business tier users only.
-At this time, the synchronization of product categories from WooCommerce to Mailchimp is not supported.
+At this time, the synchronization of product categories from WooCommerce to Mailchimp is not supported.  
+Attention advanced users, theme makers and developers! We have a Wiki to help with advanced workflows and features of the plugin. You can find it on our GitHub Repository. <https://github.com/mailchimp/mc-woocommerce/wiki>
 == Installation ==
 ###Before You Start
 Here are some things to know before you begin this process.
@@ -54,6 +55,7 @@ You have 2 options to run this process:
 ### Optional on-demand queue processing
 If you would like to turn off the background queue processing and handle jobs "on-demand" you can do so by adding a constant in your wp-config.php file:
     `define('MAILCHIMP_DISABLE_QUEUE', true);`
+This is helpful with high CPU usage on small servers by making a call to the admin-ajax file and manually processing a single request at a time. 
 ### Multi-site Setups
 The Mailchimp for WooCommerce supports Wordpress Multi Sites and below are a few things to note.
 - Each site that has the plugin installed is a separate connection to Mailchimp.
@@ -61,6 +63,33 @@ The Mailchimp for WooCommerce supports Wordpress Multi Sites and below are a few
 - Deleting removes the connection between Mailchimp and WooCommerce, and uninstalls the plugin from your site.
 Refer to the Wordpress Codex for more information about [Multisite Network Administration](https://codex.wordpress.org/Multisite_Network_Administration)
 == Changelog ==
+= 2.1.15 =
+* adds optional feedback survey on deactivate 
+* updates syncing engine to use REST API 
+* fixes edited orders syncing old and new products into Mailchimp 
+* adds support for remove_action 
+= 2.1.14 =
+* Adds support for filter on newsletter field 
+* fixes inactive log delete button 
+* fixes Mailchimp option page flow and displays list defaults tab
+* fixes resource not found error on logs
+* fixes API Key Request errors
+* fixes transactional to pending double opt in issue
+* updated Variables passed to filter
+= 2.1.13 =
+* fixed spelling issues in plugin meta
+* changed submission sequence for products to use the PATCH endpoint when applicable
+* fallback on order submissions when products are not found in Mailchimp.
+= 2.1.12 =
+* adds error handling for blocked admin-ajax.php files
+* adds support for custom merge variables
+* removes global variable overwrite of REMOTE_ADDR
+* fixes signup form not adding customers to Mailchimp
+* support for rate limiting
+* PHP 7.0 requirement messaging
+* support for WooCommerce 3.5.0
+* ignores amazon marketplace addresses
+* fixes cart entries never being removed
 = 2.1.11 =
 * fix double opt in sending on transactional customers
 = 2.1.10 =

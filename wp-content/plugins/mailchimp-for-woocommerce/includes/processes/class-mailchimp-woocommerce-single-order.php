@@ -151,8 +151,21 @@ class MailChimp_WooCommerce_Single_Order extends WP_Job
                 }
             }
 
-            // update or create
-            $api_response = $api->$call($store_id, $order, false);
+            try {
+                // update or create
+                $api_response = $api->$call($store_id, $order, false);
+            } catch (\Exception $e) {
+                // if for whatever reason we get a product not found error, we need to iterate
+                // through the order items, and use a "create mode only" on each product
+                // then re-submit the order once they're in the database again.
+                if (mailchimp_string_contains($e->getMessage(), 'product with the provided ID')) {
+                    $api->handleProductsMissingFromAPI($order);
+                    // make another attempt again to add the order.
+                    $api_response = $api->$call($store_id, $order, false);
+                } else {
+                    throw $e;
+                }
+            }
 
             if (empty($api_response)) {
                 mailchimp_error('order_submit.failure', "$call :: #{$order->getId()} :: email: {$order->getCustomer()->getEmailAddress()} produced a blank response from MailChimp");
@@ -167,7 +180,7 @@ class MailChimp_WooCommerce_Single_Order extends WP_Job
 
             // if the customer has a flag to double opt in - we need to push this data over to MailChimp as pending
             // before the order is submitted.
-            if ($order->getCustomer()->requiresDoubleOptIn()) {
+            if ($order->getCustomer()->requiresDoubleOptIn() && $order->getCustomer()->getOriginalSubscriberStatus()) {
                 try {
                     $list_id = mailchimp_get_list_id();
                     $merge_vars = $order->getCustomer()->getMergeVars();
@@ -176,6 +189,7 @@ class MailChimp_WooCommerce_Single_Order extends WP_Job
                     try {
                         $member = $api->member($list_id, $email);
                         if ($member['status'] === 'transactional') {
+
                             $api->update($list_id, $email, 'pending', $merge_vars);
                             mailchimp_tell_system_about_user_submit($email, mailchimp_get_subscriber_status_options('pending'), 60);
                             mailchimp_log('double_opt_in', "Updated {$email} Using Double Opt In - previous status was '{$member['status']}'", $merge_vars);
@@ -196,6 +210,10 @@ class MailChimp_WooCommerce_Single_Order extends WP_Job
             }
 
             return $api_response;
+        } catch (MailChimp_WooCommerce_RateLimitError $e) {
+            sleep(3);
+            $this->release();
+            mailchimp_error('order_submit.error', mailchimp_error_trace($e, "RateLimited :: #{$this->order_id}"));
         } catch (\Exception $e) {
             $message = strtolower($e->getMessage());
             mailchimp_error('order_submit.tracing_error', $e);

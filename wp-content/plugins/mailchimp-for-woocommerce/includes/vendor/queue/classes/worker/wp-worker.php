@@ -28,7 +28,8 @@ if ( ! class_exists( 'WP_Worker' ) ) {
 		 * @return bool
 		 */
 		public function should_run() {
-			if ( $this->queue->available_jobs() ) {
+
+			if ($this->queue->available_jobs()) {
 				return true;
 			}
 
