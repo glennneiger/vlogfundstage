@@ -92,16 +92,16 @@ do_action( 'woocommerce_before_cart' ); ?>
 							<h4 class="sfc-checkout-review-amount-title">Donation Amount</h4>
 							<div class="sfc-campaign-choose-amount-wrapper">
 			<input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_30" value="30" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 30);?>>
-            <label for="donation_amount_<?php echo $product_id;?>_30" class="sfc-campaign-amount-button"><span><?php echo wc_price(30);?></span></label>
+            <label for="donation_amount_<?php echo $product_id;?>_30" class="sfc-campaign-amount-button"><span><?php echo wc_price(30, array('decimals' => 0));?></span></label>
 			
             <input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_20" value="20" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 20);?>>
-            <label for="donation_amount_<?php echo $product_id;?>_20" class="sfc-campaign-amount-button"><span><?php echo wc_price(20);?></span></label>
+            <label for="donation_amount_<?php echo $product_id;?>_20" class="sfc-campaign-amount-button"><span><?php echo wc_price(20, array('decimals' => 0));?></span></label>
 
             <input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_10" value="10" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 10);?>>
-            <label for="donation_amount_<?php echo $product_id;?>_10" class="sfc-campaign-amount-button"><span><?php echo wc_price(10);?></span></label>
+            <label for="donation_amount_<?php echo $product_id;?>_10" class="sfc-campaign-amount-button"><span><?php echo wc_price(10, array('decimals' => 0));?></span></label>
 
             <input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_5" value="5" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 5);?>>
-            <label for="donation_amount_<?php echo $product_id;?>_5" class="sfc-campaign-amount-button"><span><?php echo wc_price(5);?></span></label>
+            <label for="donation_amount_<?php echo $product_id;?>_5" class="sfc-campaign-amount-button"><span><?php echo wc_price(5, array('decimals' => 0));?></span></label>
 
             <?php /*<input type="radio" class="product_custom_price" name="donation_amount_<?php echo $product_id;?>" id="donation_amount_<?php echo $product_id;?>_3" value="3" data-id="<?php echo $product_id;?>" <?php checked($_product->get_price(), 3);?>>
             <label for="donation_amount_<?php echo $product_id;?>_3" class="sfc-campaign-amount-button"><span><?php echo get_woocommerce_currency_symbol();?>3</span></label>*/?>

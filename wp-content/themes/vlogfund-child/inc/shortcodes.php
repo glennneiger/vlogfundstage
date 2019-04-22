@@ -329,3 +329,12 @@ function connections( $atts, $content ){
 }
 add_shortcode( 'connections', 'connections');
 endif;
+if( !function_exists('vlogfund_currency_symbol_shortcode') ) :
+/**
+ * Currency Symbol
+ **/
+function vlogfund_currency_symbol_shortcode($atts,$content){
+	return get_woocommerce_currency_symbol();
+}
+add_shortcode('vlogfund_currency_symbol', 'vlogfund_currency_symbol_shortcode');
+endif;
