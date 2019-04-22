@@ -2354,7 +2354,7 @@ add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_status' );
 //Push featured image to dataLayer
 
 function vlogfund_datalayer_post_featured_image( $dataLayer, $post = null, $size = 'post-thumbnail' ) {
-	global $post;
+	global $post, $woocommerce;
 	$post_thumbnail_id = get_post_thumbnail_id( $post );
 
 	$yt_thumbnail_url_1 = 'i.ytimg.com/vi/';
@@ -2362,10 +2362,8 @@ function vlogfund_datalayer_post_featured_image( $dataLayer, $post = null, $size
 
 	if( get_post_type( get_the_ID() ) == 'post' && ( $post_thumbnail_id ) ) :
 		$dataLayer['postFeaturedImage'] = wp_get_attachment_image_url( $post_thumbnail_id, $size );
-
 	elseif ( get_post_type( get_the_ID() ) == 'post' &&  (! $post_thumbnail_id ) ):
         $dataLayer['postFeaturedImage'] = do_shortcode ($yt_thumbnail_url_1.( '[types field="post-youtube-video-id" output="raw"][/types]' ).$yt_thumbnail_url_2);
-
 	endif;
 	return $dataLayer;
 }
@@ -2399,6 +2397,14 @@ function vlogfund_datalayer_post_modified( $dataLayer ) {
 	return $dataLayer;
 }
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_modified' );
+
+//Push Order ID to Datalayer
+function vlogfund_datalayer_order_id_thankyou( $dataLayer ){	
+	if( is_wc_endpoint_url( 'order-received' ) && get_query_var('order-received') ) : //Check WooCommerce Thank You Page
+		$dataLayer['orderID'] = get_query_var('order-received');
+	endif;
+}
+add_action('gtm4wp_compile_datalayer', 'vlogfund_datalayer_order_id_thankyou');
 
 
 //pass page Info to dataLayer
