@@ -2399,14 +2399,13 @@ function vlogfund_datalayer_post_modified( $dataLayer ) {
 add_filter( 'gtm4wp_compile_datalayer', 'vlogfund_datalayer_post_modified' );
 
 
-//Push Order ID to Datalayer
-function vlogfund_datalayer_order_id_thankyou( $dataLayer ){
- 	if( is_wc_endpoint_url( 'order-received' ) && get_query_var('order-received') ) : //Check WooCommerce Thank You Page
- 		$dataLayer['orderID'] = get_query_var('order-received');
- 	endif;
-	return $dataLayer;
-}
-add_filter('gtm4wp_compile_datalayer', 'vlogfund_datalayer_order_id_thankyou');
+// //Push Order ID to Datalayer
+// function vlogfund_datalayer_order_id_thankyou( $dataLayer ){
+// 	if( is_wc_endpoint_url( 'order-received' ) && get_query_var('order-received') ) : //Check WooCommerce Thank You Page
+// 		$dataLayer['orderID'] = get_query_var('order-received');
+// 	endif;
+// }
+// add_action('gtm4wp_compile_datalayer', 'vlogfund_datalayer_order_id_thankyou');
 
 
 //pass page Info to dataLayer

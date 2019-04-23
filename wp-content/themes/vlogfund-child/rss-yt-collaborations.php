@@ -62,7 +62,7 @@ echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
 	<g:brand>Vlogfund></g:brand>
 	<g:condition>New</g:condition>
 	<g:availability><?php echo $instock;?></g:availability>
-	<g:price><?php echo html_entity_decode(get_woocommerce_currency_symbol());?>0</g:price>
+	<g:price><?php echo htmlentities(get_woocommerce_currency_symbol());?>0</g:price>
     <g:mpn>VLOG<?php echo $post->ID;?>FUND</g:mpn>
 	<?php rss_enclosure(); ?><?php do_action('rss2_item');?>
 </item>
