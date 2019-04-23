@@ -22,7 +22,7 @@ sitemap.xml.gz
 *.log
 .htaccess
 /wp-content/plugins/wp-rocket*
-wp-content/themes/vlogfund-child/inc/mailchimp/*
+/wp-content/themes/vlogfund-child/inc/mailchimp/*
 replacements.txt
 vlogfundstage.git/*
 
