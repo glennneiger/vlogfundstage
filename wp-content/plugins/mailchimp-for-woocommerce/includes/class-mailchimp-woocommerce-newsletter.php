@@ -10,23 +10,6 @@
  */
 class MailChimp_Newsletter extends MailChimp_WooCommerce_Options
 {
-    /** @var null|static */
-    protected static $_instance = null;
-
-    /**
-     * @return MailChimp_Newsletter
-     */
-    public static function instance()
-    {
-        if (!empty(static::$_instance)) {
-            return static::$_instance;
-        }
-        $env = mailchimp_environment_variables();
-        static::$_instance = new MailChimp_Newsletter();
-        static::$_instance->setVersion($env->version);
-        return static::$_instance;
-    }
-
     /**
      * @param WC_Checkout $checkout
      */
@@ -66,7 +49,7 @@ class MailChimp_Newsletter extends MailChimp_WooCommerce_Options
             $checkbox .= '</p>';
             $checkbox .= '<div class="clear"></div>';
 
-            echo apply_filters( 'mailchimp_woocommerce_newsletter_field', $checkbox, $status, $label);
+            echo $checkbox;
         }
     }
 
@@ -107,26 +90,15 @@ class MailChimp_Newsletter extends MailChimp_WooCommerce_Options
      */
     protected function handleStatus($order_id = null)
     {
-        $post_key = 'mailchimp_woocommerce_newsletter';
-        $meta_key = 'mailchimp_woocommerce_is_subscribed';
-        $logged_in = is_user_logged_in();
+        $status = isset($_POST['mailchimp_woocommerce_newsletter']) ? (int)$_POST['mailchimp_woocommerce_newsletter'] : 0;
 
-        // if the post key is available we use it - otherwise we null it out.
-        $status = isset($_POST[$post_key]) ? (int) $_POST[$post_key] : null;
-
-        // if the status is null, we don't do anything
-        if ($status === null) {
-            return false;
-        }
-
-        // if we passed in an order id, we update it here.
         if ($order_id) {
-            update_post_meta($order_id, $meta_key, $status);
+            update_post_meta($order_id, 'mailchimp_woocommerce_is_subscribed', $status);
         }
 
-        // if the user is logged in, we will update the status correctly.
-        if ($logged_in) {
-            update_user_meta(get_current_user_id(), $meta_key, $status);
+        if (is_user_logged_in()) {
+            update_user_meta(get_current_user_id(), 'mailchimp_woocommerce_is_subscribed', $status);
+            
             return $status;
         }
 

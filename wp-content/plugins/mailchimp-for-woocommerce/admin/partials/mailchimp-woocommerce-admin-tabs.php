@@ -11,31 +11,22 @@ if (!isset($_GET['tab']) && isset($options['active_tab'])) {
     $active_tab = $options['active_tab'];
 }
 
-$show_sync_tab = isset($_GET['resync']) ? $_GET['resync'] === '1' : false;
-
-// if we have a transient set to start the sync on this page view, initiate it now that the values have been saved.
-if (!$show_sync_tab && (bool) get_site_transient('mailchimp_woocommerce_start_sync', false)) {
-    $show_sync_tab = true;
-    $active_tab = 'sync';
-}
-
+$show_sync_tab = isset($_GET['resync']) ? $_GET['resync'] === '1' : false;;
 $show_campaign_defaults = true;
 $has_valid_api_key = false;
 $allow_new_list = true;
-$clicked_sync_button = $is_mailchimp_post && $active_tab == 'sync';
+$clicked_sync_button = $is_mailchimp_post&& $active_tab == 'sync';
 $has_api_error = isset($options['api_ping_error']) && !empty($options['api_ping_error']) ? $options['api_ping_error'] : null;
 
 if (isset($options['mailchimp_api_key'])) {
     try {
         if ($handler->hasValidApiKey(null, true)) {
             $has_valid_api_key = true;
-
             // if we don't have a valid api key we need to redirect back to the 'api_key' tab.
             if (($mailchimp_lists = $handler->getMailChimpLists()) && is_array($mailchimp_lists)) {
-                $show_campaign_defaults = true;
+                $show_campaign_defaults = false;
                 $allow_new_list = false;
             }
-
             // only display this button if the data is not syncing and we have a valid api key
             if ((bool) $this->getData('sync.started_at', false)) {
                 $show_sync_tab = true;
@@ -74,8 +65,6 @@ if (isset($options['mailchimp_api_key'])) {
     }
 </style>
 
-
-
 <?php if (!defined('PHP_VERSION_ID') || (PHP_VERSION_ID < 70000)): ?>
     <div data-dismissible="notice-php-version" class="error notice notice-error is-dismissible">
         <p><?php _e('Mailchimp says: Please upgrade your PHP version to a minimum of 7.0', 'mailchimp-woocommerce'); ?></p>
@@ -87,8 +76,6 @@ if (isset($options['mailchimp_api_key'])) {
         <p><?php _e("Mailchimp says: API Request Error - ".$has_api_error, 'mailchimp-woocommerce'); ?></p>
     </div>
 <?php endif; ?>
-
-<?php settings_errors(); ?>
 
 <!-- Create a header in the default WordPress 'wrap' container -->
 <div class="wrap">
@@ -103,12 +90,10 @@ if (isset($options['mailchimp_api_key'])) {
         <?php if($show_campaign_defaults): ?>
         <a href="?page=mailchimp-woocommerce&tab=campaign_defaults" class="nav-tab <?php echo $active_tab == 'campaign_defaults' ? 'nav-tab-active' : ''; ?>">List Defaults</a>
         <?php endif; ?>
-        <?php if($handler->hasValidCampaignDefaults()): ?>
-            <a href="?page=mailchimp-woocommerce&tab=newsletter_settings" class="nav-tab <?php echo $active_tab == 'newsletter_settings' ? 'nav-tab-active' : ''; ?>">List Settings</a>
-        <?php endif; ?>
+        <a href="?page=mailchimp-woocommerce&tab=newsletter_settings" class="nav-tab <?php echo $active_tab == 'newsletter_settings' ? 'nav-tab-active' : ''; ?>">List Settings</a>
         <?php if($show_sync_tab): ?>
-            <a href="?page=mailchimp-woocommerce&tab=sync" class="nav-tab <?php echo $active_tab == 'sync' ? 'nav-tab-active' : ''; ?>">Sync</a>
-            <a href="?page=mailchimp-woocommerce&tab=logs" class="nav-tab <?php echo $active_tab == 'logs' ? 'nav-tab-active' : ''; ?>">Logs</a>
+        <a href="?page=mailchimp-woocommerce&tab=sync" class="nav-tab <?php echo $active_tab == 'sync' ? 'nav-tab-active' : ''; ?>">Sync</a>
+        <a href="?page=mailchimp-woocommerce&tab=logs" class="nav-tab <?php echo $active_tab == 'logs' ? 'nav-tab-active' : ''; ?>">Logs</a>
         <?php endif; ?>
         <?php endif;?>
         <?php endif; ?>
