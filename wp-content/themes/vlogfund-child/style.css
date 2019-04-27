@@ -12634,7 +12634,7 @@ body.woocommerce-lost-password  > *:not(.woocommerce-message) p:first-child {
   display: none;
 }
 
-.page-checkout .input-radio {
+.page-checkout-choose-organization .input-radio {
   display: none!important;
 }
 
