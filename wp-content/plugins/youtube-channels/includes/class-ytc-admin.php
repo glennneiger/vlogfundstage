@@ -58,24 +58,38 @@ class YTC_Admin{
 	public function update_channels_submenu_callback(){
 		
 		global $wpdb;
-		$date_before = date('Y-m-d', strtotime('-4days'));
-		$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_type = 'youtube_channels' AND post_modified <= '$date_before';" );
-		$total_to_update = !empty( $total_to_update ) ? $total_to_update : 0;
-		
-		echo '<div class="wrap">';
-		echo '<h2>'.__('Update Channels','youtube-channels').'</h2><br>';
-		echo '<p><strong>'.__('Update may take some time. Please do not close your browser or refresh the page until the process is complete.', 'youtube-channels').'</strong></p>';
+		$date_before = date('Y-m-d', strtotime('-4days'));		
+		$ytc_channels = get_posts(array( 'post_type' => 'youtube_channels', 'post_status' => 'any', 'posts_per_page' => -1,
+									'meta_query' => array( array( 'key' => 'wpcf-channel_id', 'value' => '', 'compare' => '!=' ) ),
+									'fields' => 'ids',
+									'date_query' => array( 
+											array( 'column' => 'post_modified', 
+												'before' => array( 	
+													'year' 	=> date('Y', strtotime( $date_before ) ), 
+													'month' => date('m', strtotime( $date_before ) ), 
+													'day' 	=> date('d', strtotime( $date_before ) ) 
+												) 
+									) ) ) );		
+		$total_to_update = !empty( $ytc_channels ) ? count($ytc_channels) : 0;
 		echo '<style type="text/css">';
 		echo '.update-channel-progress-wrap{ width: 100%; background-color: #d3d3d3; margin-bottom:20px; display:none; }';
 		echo '.update-channel-progress{ width:0%; height: 30px; background-color: green; }';
 		echo '.result-count{ margin-bottom:20px; display:none; }';
 		echo '</style>';
-		echo '<div class="update-channel-progress-wrap"><div class="update-channel-progress"></div></div>';
-		echo '<div class="result-count">Updated <span class="updated">0</span> out of <span class="total">'.$total_to_update.'</span></div>';
-		echo '<a href="#" class="button button-primary update-channels-btn">'.__('Update','youtube-channels').'</a>';
-		echo '<p>Records will be updated which are updated on or before '.date('Y-m-d', strtotime('-4days')).'</p>';
-		echo '<div class="update-channel-results"></div>';		
-		echo '</div>';
+		echo '<div class="wrap">';
+		echo '<h2>'.__('Update Channels','youtube-channels').'</h2><br>';
+		if( !empty( $ytc_channels ) ) : //Check Channels to Updated 
+			echo '<p><strong>'.__('Update may take some time. Please do not close your browser or refresh the page until the process is complete.', 'youtube-channels').'</strong></p>';			
+			echo '<div class="update-channel-progress-wrap"><div class="update-channel-progress"></div></div>';
+			echo '<div class="result-count">Updated <span class="updated">0</span> out of <span class="total">'.$total_to_update.'</span></div>';
+			echo '<a href="#" class="button button-primary update-channels-btn">'.__('Update','youtube-channels').'</a>';
+			echo '<p>Records will be updated which are updated on or before '.date('Y-m-d', strtotime('-4days')).'</p>';
+			echo '<div class="update-channel-results"></div>';		
+			echo '</div>';
+		else : 
+			echo '<p>'.__('All records are updated, no records to update as of now', 'youtube-channels').'</p>';
+		endif; //Endif
+		wp_reset_postdata(); //Reset Postdata
 	}
 	
 	/**
@@ -89,15 +103,23 @@ class YTC_Admin{
 			wp_send_json_error( 'Invalid security token.' );
 			wp_die(); //To Proper Output
 		else : //Else Process Update
-			$date_before = date('Y-m-d', strtotime('-4days'));
-			$total_to_update = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->posts WHERE 1=1 AND post_type='youtube_channels' AND post_modified <= '$date_before';" );
-			$paged = ( isset( $_POST['paged'] ) && !empty( $_POST['paged'] ) ) ? $_POST['paged'] : 1;
-			$updated = ( isset( $_POST['updated'] ) && !empty( $_POST['updated'] ) ) ? $_POST['updated'] : 0;
-			$response = array('updated' => 0);
-			$ytc_channels = get_posts( array( 
-								'post_type' => 'youtube_channels', 'post_status' => 'any', 'posts_per_page' => 40, 
-								'paged' => $paged, 'fields' => 'ids', 'date_query' => array( array( 'column' => 'post_modified', 'before' => $date_before ) )
-							) );			
+			$date_before 	= date('Y-m-d', strtotime('-4days'));
+			$total_to_update= ( isset( $_POST['total'] ) && !empty( $_POST['total'] ) ) 	? intval( $_POST['total'] ) : 0;
+			$paged 			= ( isset( $_POST['paged'] ) && !empty( $_POST['paged'] ) ) 	? $_POST['paged'] : 1;
+			$updated 		= ( isset( $_POST['updated'] ) && !empty( $_POST['updated'] ) ) ? intval( $_POST['updated'] ) : 0;
+			$response 		= array('updated' => 0);
+			$ytc_args 		= array( 'post_type' => 'youtube_channels', 'post_status' => 'any', 'posts_per_page' => 40,
+								'paged' => $paged, 'fields' => 'ids',
+								'meta_query' => array( array( 'key' => 'wpcf-channel_id', 'value' => '', 'compare' => '!=' ) ),								
+								'date_query' => array(
+										array( 'column' => 'post_modified', 
+											'before' => array( 	
+												'year' => date('Y', strtotime( $date_before ) ), 
+												'month' => date('m', strtotime( $date_before ) ), 
+												'day' => date('d', strtotime( $date_before ) ) 
+											) 
+								) ) );
+			$ytc_channels 	= get_posts( $ytc_args );
 			$updated_channels = array();
 			if( !empty( $ytc_channels ) ) : //Check Have Post
 				$channels_list = array();
@@ -119,7 +141,7 @@ class YTC_Admin{
 								'ID' => $post_id,
 								'post_title'   => $channel->snippet->title,
 							) );						
-							 //Update Related Details
+							//Update Related Details
 							update_post_meta( $post_id, 'wpcf-channel_views', 		$channel->statistics->viewCount );
 							update_post_meta( $post_id, 'wpcf-channel_subscribers', $channel->statistics->subscriberCount );
 							update_post_meta( $post_id, 'wpcf-channel_keywords', 	$channel->brandingSettings->keywords );
@@ -134,16 +156,17 @@ class YTC_Admin{
 				endif; //Endif
 				$not_updated = array_diff($ytc_channels, $updated_channels);
 				if( !empty( $not_updated ) ) : //Check Not Updated
-					foreach( $not_updated as $post_id => $channel ) :
-						$updated_post = wp_update_post( array('ID' => $post_id) );
+					foreach( $not_updated as $channel ) :
+						$updated_post = wp_update_post( array('ID' => $channel ) );						
 						$updated++;
 					endforeach; //Endforeach
 				endif; //Endif
 			endif; //Endif			
-			$response['left_update'] = ( $total_to_update - $updated );
-			$response['updated'] = $updated;
-			$response['success'] = 1;
-			$response['paged'] = ( $paged + 1 );
+			$response['left_update'] = ( intval( $total_to_update ) - $updated );
+			$response['updated']= $updated;
+			$response['success']= 1;
+			$response['paged'] 	= ( $paged + 1 );
+			//$response['not_updated'] = $not_updated;
 			wp_send_json( $response );
 			wp_die();
 		endif; //Endif
