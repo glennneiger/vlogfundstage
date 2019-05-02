@@ -126,15 +126,21 @@ function vlogfund_campaign_milestone_shortcode( $atts, $content = null ){
 				$content .= '<div class="sf-milestone-progress-wrapper">
 								<div class="sf-milestone-progress">
 									<div class="sf-milestone-container" style="width:'.( $milestone_percent > 100 ? 100 : $milestone_percent ) .'%"><span>'.$milestone_percent.'%</span></div>
-								</div>
-								<div class="sf-milestone-values"><span class="start">'.wc_price($total_sales).'</span><span class="end">'.wc_price($next_milestone).'</span></div>
-								<div class="sf-milestone-txt-content">
-									<span class="sf-milestone-txt">'.__('Milestone').' <strong>'.($key+1).'</strong></span>';
-									if( isset( $milestones[$key+2] ) ) : //Check Exist
-										$content .= '<span class="sf-next-milestone-txt">'.__('Next Milestone: ').wc_price($milestones[$key+2]).'</span>';
-									endif;
-				$content .= '</div>
-							</div>';
+								</div>';
+								if( $final_milestone != $next_milestone ) : //Check Final and Current Milestone not same
+									$content .= '<div class="sf-milestone-values">';
+										if( $key == 0 ) : //First Milestone
+											$content .= '<span class="start">'.__('First Milestone').'</span>';
+										else : //Next Milestone
+											$content .= '<span class="start">'.__('Next Milestone').'</span>';
+										endif;									
+										$content .= '<span class="end">'.wc_price($next_milestone).'</span>';
+									$content .= '</div>';
+								endif;
+				$content .= '<div class="sf-milestone-values">';
+					$content .= '<span class="start"><strong>'.__('Goal').'</strong></span><span class="end">'.wc_price($final_milestone).'</span>';
+				$content .= '</div>';
+				$content .= '</div>';
 				break;
 			endif; //Endif
 		endforeach;
