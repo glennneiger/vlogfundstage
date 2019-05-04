@@ -154,44 +154,7 @@
 			$('.sf-animated-row').find('.animate').removeClass('animate');
 		}
 
-		//Campaign Stay In Loop
-		$('form#campaign_stay_loop_form').validate({
-			rules: {
-				csl_email: { email:true }
-			},
-			submitHandler: function() {
-				$.ajax({
-					url: Vlogfund.ajaxurl,
-					type:'POST',
-					data: { action: 'vlog_campaign_stay_in_loop', csl_email: $('#csl_email').val(), csl_campaign: $('#csl_campaign').val() },
-					beforeSend:function(){
-						$('.sf-campaign-stay-loop-message').removeClass('success error').hide();
-					},
-					success:function(response){
-						//alert(response);
-						if( typeof response.success != 'undefined' && response.success == 1 ){
-							//$('.sf-campaign-stay-loop-message').html('Subscribed successfully.').addClass('success').show().delay(2000).fadeOut();
-							$('#csl_email').css({'border' : 'none', 'box-shadow' : 'none'});
-							$('#csl_email').attr('placeholder', 'We\'ll keep you in the loop.');
-							toastr.success('', 'Success');
-							window.dataLayer = window.dataLayer || [];
-							dataLayer.push({
-							  'event': 'followCampaignSuccess'
-							});
-						} else {
-							//$('.sf-campaign-stay-loop-message').html('You\'re already subscribed or something went wrong!').addClass('error').show().delay(2000).fadeOut();
-							toastr.error('', 'Error');
-							window.dataLayer = window.dataLayer || [];
-							dataLayer.push({
-							  'event': 'followCampaignFail'
-							});
-						}
-						$('#csl_email').val('');
-					}
-				});
-				return false;
-			}
-		});
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 	});
 
