@@ -1748,13 +1748,14 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
       clearTimeout(timeout);
       timeout = setTimeout(function() {
         var productprices = {};
+		var currency = $('.product-custom-price-currency').text();
         jQuery('.product_custom_price').each(function() {
-          var offerprice = jQuery(this).val();
+          var offerprice = parseInt( jQuery(this).val() );
           var productid = jQuery(this).data('id');
-		  if( offerprice < 3 ) { //Don't allow less than 5
+		  if( offerprice < 3 ) { //Don't allow less than 3
 			offerprice = 3;
 			jQuery(this).val(3);
-			toastr.warning('', 'Minimum donation: $3');
+			toastr.warning('', 'Minimum donation: '+currency+'3');
 		  }
           if (typeof offerprice !== 'undefined' && offerprice != '') {
             productprices[productid] = offerprice;
@@ -1769,8 +1770,10 @@ jQuery(".page-checkout .country_to_state.country_select ").select2({ minimumResu
           },
           success: function(response) {
             //alert(response);
-            jQuery(document.body).trigger('update_checkout');
-            jQuery('.product_custom_price').parents('table').find('input[name="update_cart"]').trigger('click');
+			if( response == '1' ){
+            	jQuery(document.body).trigger('update_checkout');
+            	jQuery('.product_custom_price').parents('table').find('input[name^="update_cart"]').trigger('click');
+			}
           }
         });
       }, 500);
