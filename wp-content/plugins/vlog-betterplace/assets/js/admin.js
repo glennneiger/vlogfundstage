@@ -20,6 +20,7 @@
 				method: 'POST',
 				success: function(result){
 					//alert(result);
+					//return false;
 					if( result.success == 1 ){
 						var total_updated = parseInt( result.updated ) + parseInt( result.imported );
 						$('.betterplace-result-count').find('.updated').text( total_updated );

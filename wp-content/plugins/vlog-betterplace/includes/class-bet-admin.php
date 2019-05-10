@@ -108,33 +108,37 @@ class Vlogbet_Admin{
 	 * Import/Update Betterplace Records
 	 **/
 	public function vlog_betterplace_orgs_import_update(){
-		global $wpdb;
-		$updated_msg = $response = array();
+		global $wpdb;		
 		if( ! check_ajax_referer( 'vlogbet-secure-code', 'secure' ) ) :
 			wp_send_json_error( 'Invalid security token.' );
 			wp_die(); //To Proper Output
 		else : //Else Process Update
-			$page 		= ( isset( $_POST['page'] ) 	&& !empty( $_POST['page'] ) ) 		? intval( $_POST['page'] ) 		: 1;				
-			$updated	= ( isset( $_POST['updated'] ) 	&& !empty( $_POST['updated'] ) ) 	? intval( $_POST['updated'] ) 	: 0;
-			$imported	= ( isset( $_POST['imported'] ) && !empty( $_POST['imported'] ) ) 	? intval( $_POST['imported'] ) 	: 0;			
-			$in_middle	= false;
-			if( $page <= 1 && get_option('_betterplace_orgs_last_updated') ) : //Check Last Updated and Page Empty
-				$page = get_option('_betterplace_orgs_last_updated');
-				$in_middle = true;
-			endif; //Endif
+			$updated_msg 	= array();
+			$last_updated	= get_option('_betterplace_orgs_last_updated') ? get_option('_betterplace_orgs_last_updated') 		: ''; //Last Updated
+			$page 			= ( isset( $_POST['page'] ) 	&& !empty( $_POST['page'] ) ) 		? intval( $_POST['page'] ) 		: ( !empty( $last_updated ) ? $last_updated : 1 );
+			$updated		= ( isset( $_POST['updated'] ) 	&& !empty( $_POST['updated'] ) ) 	? intval( $_POST['updated'] ) 	: 0;
+			$imported		= ( isset( $_POST['imported'] ) && !empty( $_POST['imported'] ) ) 	? intval( $_POST['imported'] ) 	: 0;
+			$counter 		= ( !empty( $imported ) || !empty( $updated ) ) ? ( $updated + $imported ) : 0;
 			$betterplace_orgs = $this->get_betterplace_organizations( array('page' => $page) );
-			if( $in_middle && get_option('_betterplace_orgs_last_updated') ) : //Check Last Updated and Page Empty
+			if( !empty( $last_updated ) ) : //Check Last Updated and Page Empty
 				$updated = $betterplace_orgs->offset; //Set Updated Records
-			endif;
-			$counter 	= ( !empty( $imported ) || !empty( $updated ) ) ? ( $updated + $imported ) : 0;
-			if( !empty( $betterplace_orgs->data ) ) : //Check Organizations Not Empty			
+			endif; //Endif
+			//Initial Response
+			$response = array( 	'updated_msg' 	=> '', 
+								'page' 			=> $page, 
+								'success' 		=> 0, 
+								'imported' 		=> $imported, 
+								'updated' 		=> $updated,
+								'total_entries' => $updated,
+								'all_updated' 	=> 0 );
+			if( !empty( $betterplace_orgs->data ) ) : //Check Organizations Not Empty				
 				foreach( $betterplace_orgs->data as $org ) :
 					$betterplace_org_id = $org->id;
 					$exist = $wpdb->get_var( "SELECT post_id FROM $wpdb->postmeta WHERE 1=1 AND meta_key='_org_betterplace_id' AND meta_value='$betterplace_org_id';" );
 					$org_args = array( 'post_title' => $org->name, 'post_content' => $org->description, 'post_type' => 'organizations', 'post_status' => 'publish' );
 					if( !empty( $exist ) ) : //To be updated											
 						$org_args['ID'] = $exist;
-						$vlog_org_id = wp_update_post( $org_args );
+						$vlog_org_id = wp_update_post( $org_args );						
 						if( $vlog_org_id ) :
 							$updated_msg[] = '<span><strong>'.$org->name.'</strong> Updated. ' . date('H:i:s').'</span>';
 							$counter++; //Increase Counter
@@ -152,6 +156,7 @@ class Vlogbet_Admin{
 							update_post_meta($vlog_org_id, '_org_betterplace_id', $betterplace_org_id);
 						endif; //Endif
 					endif;
+					$response['post_return'][] = $vlog_org_id;
 					//If Failed
 					if( empty( $vlog_org_id ) ) :
 						$updated_msg[] = '<span><strong>'.$org->name.'</strong> Failed.</span>';
@@ -191,26 +196,26 @@ class Vlogbet_Admin{
 								endif; //Endif
 							endforeach; //Endforeach
 						endif; //Endif
-					endif;					
-				endforeach;								
-			endif; //Endif
-			$next_page = intval( $page + 1 );			
-			$response['updated_msg']= ( !empty( $updated_msg ) ? join('', $updated_msg) : '');
-			$response['page'] 		= $next_page;
-			$response['success'] 	= 1;
-			$response['imported'] 	= $imported;
-			$response['updated'] 	= $updated;			
-			$response['total_entries'] 	= $betterplace_orgs->total_entries;
-			//Cache Next Page Data
-			$this->get_betterplace_organizations( array('page' => $next_page) );
-			if( $counter >= $betterplace_orgs->total_entries ) :
-				$response['all_updated'] = 1;
-				//Track Last Updated Records
-				//delete_option('_betterplace_orgs_last_updated');
-			else : //Else
-				//Track Last Updated Records
-				update_option('_betterplace_orgs_last_updated', $next_page);
-			endif; //Endif
+					endif; //Endif
+				endforeach; //Endforeach
+				$next_page = intval( $page + 1 );			
+				$response['updated_msg']= ( !empty( $updated_msg ) ? join('', $updated_msg) : '');
+				$response['page'] 		= $next_page;
+				$response['success'] 	= 1;
+				$response['imported'] 	= $imported;
+				$response['updated'] 	= $updated;			
+				$response['total_entries'] 	= isset( $betterplace_orgs->total_entries ) ? $betterplace_orgs->total_entries : 0;
+				//Cache Next Page Data
+				$this->get_betterplace_organizations( array('page' => $next_page) );
+				if( !empty( $betterplace_orgs->total_entries ) && $counter >= $betterplace_orgs->total_entries ) :
+					$response['all_updated'] = 1;
+					//Track Last Updated Records
+					//delete_option('_betterplace_orgs_last_updated');
+				else : //Else
+					//Track Last Updated Records
+					update_option('_betterplace_orgs_last_updated', $next_page);
+				endif; //Endif
+			endif; //Endif			
 		endif; //Endif
 		wp_send_json( $response );
 		wp_die();
