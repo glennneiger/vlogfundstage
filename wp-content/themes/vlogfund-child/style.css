@@ -1611,7 +1611,7 @@ input.error {
   height: 34px;
 }
 
-.sf-smile-switch input {display:none;}
+.sf-smile-switch input, .woocommerce-billing-fields__field-wrapper p#billing_country_field{display:none;}
 
 .sf-smile-slider {
   position: absolute;

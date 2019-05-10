@@ -15,13 +15,16 @@ if( !function_exists('vlogfund_woocommerce_override_checkout_fields') ) :
  **/
 function vlogfund_woocommerce_override_checkout_fields( $fields ) {
 
-	//Remove Phone Required
-	$fields['billing']['billing_phone']['required'] = false;
+	//Make Lastname Optional
+	$fields['billing']['billing_last_name']['required'] = false;
+	//Make Optional Country Field
+	$fields['billing']['billing_country']['required'] = false;	
 
 	//Billing Fields
 	unset($fields['billing']['billing_address_1'],$fields['billing']['billing_address_2']);
 	unset($fields['billing']['billing_city'],$fields['billing']['billing_state']);
 	unset($fields['billing']['billing_postcode'],$fields['billing']['billing_company']);
+	unset($fields['billing']['billing_phone']);
 
 	//Shipping Fields
 	unset($fields['shipping']['shipping_first_name'],$fields['shipping']['shipping_last_name']);
