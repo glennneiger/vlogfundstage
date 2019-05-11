@@ -17,7 +17,15 @@
 				data: { action: 'vlog_betterplace_orgs_import_update', secure: Vlogbet_Admin_Obj.secure, page: page, updated: updated, imported: imported },
 				dataType: 'json',
 				async:false,
-				method: 'POST',
+				method: 'POST',				
+				statusCode: {
+					500: function() {
+						var errorok = confirm('There is something wrong, AJAX response failure, please try after sometime!');
+						if( errorok == true ){						
+							location.reload();
+						}
+					}
+				},
 				success: function(result){
 					//alert(result);
 					//return false;
@@ -43,8 +51,13 @@
 							clearInterval(channelUpdateInt);
 							alert('All records updated successfully.');
 							setTimeout(function(){								
-								location.reload();
+								location.reload(true);
 							}, 300);
+						}
+					} else {
+						var errorok = confirm('There is something wrong, AJAX response failure, please try after sometime!');
+						if( errorok == true ){						
+							location.reload(true);
 						}
 					}
 				}

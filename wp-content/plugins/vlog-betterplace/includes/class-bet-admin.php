@@ -127,9 +127,9 @@ class Vlogbet_Admin{
 			$response = array( 	'updated_msg' 	=> '', 
 								'page' 			=> $page, 
 								'success' 		=> 0, 
-								'imported' 		=> $imported, 
-								'updated' 		=> $updated,
-								'total_entries' => $updated,
+								'imported' 		=> intval( $imported ), 
+								'updated' 		=> intval( $updated ),
+								'total_entries' => intval( $updated ),
 								'all_updated' 	=> 0 );
 			if( !empty( $betterplace_orgs->data ) ) : //Check Organizations Not Empty				
 				foreach( $betterplace_orgs->data as $org ) :
@@ -156,7 +156,7 @@ class Vlogbet_Admin{
 							update_post_meta($vlog_org_id, '_org_betterplace_id', $betterplace_org_id);
 						endif; //Endif
 					endif;
-					$response['post_return'][] = $vlog_org_id;
+					//$response['post_return'][] = $vlog_org_id;
 					//If Failed
 					if( empty( $vlog_org_id ) ) :
 						$updated_msg[] = '<span><strong>'.$org->name.'</strong> Failed.</span>';
@@ -210,7 +210,7 @@ class Vlogbet_Admin{
 				if( !empty( $betterplace_orgs->total_entries ) && $counter >= $betterplace_orgs->total_entries ) :
 					$response['all_updated'] = 1;
 					//Track Last Updated Records
-					//delete_option('_betterplace_orgs_last_updated');
+					delete_option('_betterplace_orgs_last_updated');
 				else : //Else
 					//Track Last Updated Records
 					update_option('_betterplace_orgs_last_updated', $next_page);
