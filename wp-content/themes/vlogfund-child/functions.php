@@ -1324,38 +1324,26 @@ add_filter('language_attributes', 'doctype_opengraph');*/
 function fb_opengraph() {
     global $post;
 
-    if( get_post_type( get_the_ID() ) == 'product' ) {
-
-
+    if( is_singular('product') && !has_post_thumbnail() ) {
         $yt_thumbnail_url_1 = 'https://i.ytimg.com/vi/';
         $yt_thumbnail_url_2 = '/hqdefault.jpg';
-
-
-        if($excerpt = $post->post_excerpt) {
+        if( $excerpt = $post->post_excerpt ) {
             $excerpt = strip_tags($post->post_excerpt);
             $excerpt = str_replace("", "'", $excerpt);
         } else {
             $excerpt = get_bloginfo('description');
-        }
-        ?>
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="<?php echo the_permalink(); ?>"/>
-<meta property="og:site_name" content="<?php echo get_bloginfo(); ?>"/>
-<meta property="og:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
-<meta property="og:image:secure_url" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-2" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
-<meta property="og:image:secure_url" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-2" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="fb:app_id" content="181038895828102"/>
-<meta name="twitter:domain" content="<?php echo get_site_url() ?>">
-<meta name="twitter:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
-<?php
-    } else {
-        return;
-    }
+        } ?>
+        <meta property="og:type" content="website"/>
+        <meta property="og:url" content="<?php echo the_permalink(); ?>"/>
+        <meta property="og:site_name" content="<?php echo get_bloginfo(); ?>"/>
+        <meta property="og:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
+        <meta property="og:image:secure_url" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">        
+        <meta property="fb:app_id" content="181038895828102"/>
+        <meta name="twitter:domain" content="<?php echo get_site_url() ?>">
+        <meta name="twitter:image" content="<?php echo do_shortcode ($yt_thumbnail_url_1.( '[types field="youtube-video-id-collaborator-1" output="raw"][/types]' ).$yt_thumbnail_url_2); ?>"/>
+<?php }
 }
 add_action('wp_head', 'fb_opengraph', 5);
 
