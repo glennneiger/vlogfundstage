@@ -1704,8 +1704,12 @@ add_action('wp_ajax_nopriv_update_product_price_on_cart', 	'update_product_price
 
 
 function load_scripts2(){
+	//Campaign Countdown Script
+	if( is_singular('product') && get_post_meta(get_the_ID(), 'wpcf-expiry-date',true) ) :
+		wp_enqueue_script('vlogfund-countdown-script', get_theme_file_uri('/js/vendor/countdown.jquery.min.js'), array('jquery'), null, true );
+	endif;
     wp_enqueue_script('js', get_theme_file_uri('js.js'), array('jquery'), null, true );
-	wp_localize_script('js', 'Vlogfund', array('ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http') ) ) );
+	wp_localize_script('js', 'Vlogfund', array('ajaxurl' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http') ), 'timezone' => get_option('gmt_offset') ) );
 }
 add_action('wp_enqueue_scripts', 'load_scripts2');
 

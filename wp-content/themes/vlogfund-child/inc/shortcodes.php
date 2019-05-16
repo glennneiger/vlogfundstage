@@ -344,3 +344,22 @@ function vlogfund_currency_symbol_shortcode($atts,$content){
 }
 add_shortcode('vlogfund_currency_symbol', 'vlogfund_currency_symbol_shortcode');
 endif;
+if( !function_exists('vlogfund_campaign_countdown_timer_shortcode') ) :
+/**
+ * Countdown Timer for Campaign
+ **/
+function vlogfund_campaign_countdown_timer_shortcode($atts, $content){
+	// provide defaults
+    extract( shortcode_atts(
+        array( 'postid' => get_the_ID() ),
+        $atts, 'vlogfund_campaign_countdown' 
+	) );
+	$expiry_date = get_post_meta($postid, 'wpcf-expiry-date', true);
+	if( !empty( $expiry_date ) ) :
+		return '<div class="campaign-countdown" data-year="'.date('Y',$expiry_date).'" data-month="'.date('m',$expiry_date).'" data-day="'.date('d',$expiry_date).'"></div>';
+	else :
+		return $content;
+	endif;
+}
+add_shortcode('vlogfund_campaign_countdown', 'vlogfund_campaign_countdown_timer_shortcode');
+endif;

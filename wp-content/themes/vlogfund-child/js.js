@@ -2285,6 +2285,17 @@ if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration') || jQuery
 		});
 		return false;
 	});
+	
+	//Campaign Countdown
+	if( $('.campaign-countdown').length ){
+		var $timezone = Vlogfund.timezone ? Vlogfund.timezone : 0;
+		$('.campaign-countdown').countdown({
+			year: $('.campaign-countdown').data('year'), // YYYY Format
+			month: $('.campaign-countdown').data('month'), // 1-12
+			day: $('.campaign-countdown').data('day'), // 1-31
+			timezone: $timezone
+		});
+	}
 
 }); //end
 

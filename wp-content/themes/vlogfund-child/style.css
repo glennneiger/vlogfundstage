@@ -15138,3 +15138,8 @@ button.toast-close-button {
 .cc-invisible{
   opacity:0
 }
+
+.campaign-countdown{ display:flex; }
+.campaign-countdown > div{ margin:auto; text-align:center; border-radius:5px; padding:10px; background-color:var(--brand-color); color:#fff; }
+.campaign-countdown > div .time{ font-weight:700; font-size:20px; }
+.campaign-countdown > div .label{ display:block; }
