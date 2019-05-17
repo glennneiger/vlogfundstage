@@ -2296,6 +2296,16 @@ if (jQuery('body').hasClass('page-create-a-new-youtube-collaboration') || jQuery
 			timezone: $timezone
 		});
 	}
+	
+	//Make Update Tab Selected Specially Made for Update Posted Email Template Link
+	if( typeof location.hash != 'undefined' && location.hash == '#tab-4' ) {
+		setTimeout(function(){
+			$('html, body').animate({
+				scrollTop: ( $('a[href^="#tab-4"]').offset().top - 100 ) 
+			}, 650);
+			$('a[href^="#tab-4"]').trigger('click');
+		}, 300);
+	}
 
 }); //end
 

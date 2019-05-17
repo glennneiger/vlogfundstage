@@ -397,3 +397,46 @@ function vlogfund_schedule_draft_campaign_cron_jobs(){
 }
 add_action('wp', 'vlogfund_schedule_draft_campaign_cron_jobs');
 endif;
+if( !function_exists('vlogfund_campaign_update_posted_notifications') ) :
+/**
+ * Send email to campaign commenters, voters and donors if update is posted
+ **/
+function vlogfund_campaign_update_posted_notifications( $post_id, $form_data ){
+	global $wpdb;
+	//Get Parent Campaign ID
+	$campaign_id= get_post_meta($post_id, '_wpcf_belongs_product_id', true);
+	$commenters	= $wpdb->get_col($wpdb->prepare( "SELECT comment_author_email FROM $wpdb->comments WHERE 1=1 AND comment_post_ID=%d;", $campaign_id ) );
+	$vote_users	= ( $upvote_users = get_post_meta( $campaign_id, '_upvote_users', true ) ) ? implode(",",$upvote_users) : array();
+	$voters 	= array();
+	if( !empty( $vote_users ) ) : //Get All Voters Email ID
+		$voters = $wpdb->get_col("SELECT user_email FROM $wpdb->users WHERE ID IN(".$vote_users.");");
+	endif; //Endif
+	$donors	= $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT(orders_meta.meta_value) FROM {$wpdb->prefix}woocommerce_order_itemmeta order_itemmeta
+					INNER JOIN {$wpdb->prefix}woocommerce_order_items order_items ON order_itemmeta.order_item_id = order_items.order_item_id
+					INNER JOIN $wpdb->posts orders ON order_items.order_id = orders.ID
+					INNER JOIN $wpdb->postmeta orders_meta ON order_items.order_id = orders_meta.post_id AND orders_meta.meta_key = '_billing_email'
+					WHERE order_itemmeta.meta_key = '_product_id'
+					AND order_itemmeta.meta_value IN (%d)
+					AND orders.post_status IN ( 'wc-completed' ) AND orders.post_type IN ('shop_order');", $campaign_id ) );
+	//Merge All Commenters, Voters & Donors
+	$final_users = array_unique( array_merge( $commenters,$voters,$donors ) );
+	//Send Emails to Final Users
+	if( !empty( $final_users ) ) :
+		$email_subject 	= 'An update was added to %%POST_TITLE%%';
+		ob_start();
+		include_once( get_theme_file_path('/inc/emails/email-update-posted.php') );
+		$email_body = ob_get_contents();
+		ob_get_clean();
+		add_filter('wp_mail_content_type', function(){ return "text/html"; });
+		$find_vars 		= array( '%%POST_TITLE%%', '%%POST_LINK%%', '%%POST_ID%%', '%%HOME_URL%%');
+		$replace_vars 	= array( get_the_title($campaign_id), get_permalink($campaign_id), $campaign_id, home_url(), '' );
+		$email_subject 	= str_replace($find_vars, $replace_vars, $email_subject);
+		$email_body 	= str_replace($find_vars, $replace_vars, $email_body);
+		foreach( $final_users as $email_user ) : //Email to Users
+			//Email to Author
+			wp_mail( $email_user, htmlspecialchars_decode( $email_subject ), $email_body );
+		endforeach;
+	endif; //Endif
+}
+add_action('cred_submit_complete_928', 'vlogfund_campaign_update_posted_notifications', 20, 2);
+endif;
