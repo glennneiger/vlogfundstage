@@ -620,7 +620,7 @@
 																					<tbody>
 																						<tr style="border-collapse:collapse;padding:0;text-align:left;vertical-align:top">
 																							<td style="-moz-hyphens:auto;-webkit-hyphens:auto;-webkit-text-size-adjust:none;Margin:0;background:#dc2c5d;border:2px solid #dc2c5d;;border-collapse:collapse!important;color:#ffffff;font-family:Lato,Arial,sans-serif;font-size:16px;font-weight:900;hyphens:auto;line-height:1.3;margin:0;mso-line-height-rule:exactly;padding:0;text-align:left;vertical-align:top;word-wrap:break-word;text-transform:uppercase;">
-																								<a class="btn" href="%%POST_LINK%%?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-creation&utm_content=buttonlink" style="-webkit-text-size-adjust:none;Margin:0;border:0 solid #fff;color:#ffffff;display:inline-block;font-family:Lato,Arial,sans-serif;font-style: italic;font-size:16px;font-weight:900;line-height:1.3;margin:0;mso-line-height-rule:exactly;padding:12px 25px 12px 25px;text-align:left;text-decoration:none;text-transform:uppercase;">Share now</a>
+																								<a class="btn" href="%%POST_LINK%%?utm_source=autoresponder&utm_medium=email&utm_campaign=campaign-vote&utm_content=buttonlink" style="-webkit-text-size-adjust:none;Margin:0;border:0 solid #fff;color:#ffffff;display:inline-block;font-family:Lato,Arial,sans-serif;font-style: italic;font-size:16px;font-weight:900;line-height:1.3;margin:0;mso-line-height-rule:exactly;padding:12px 25px 12px 25px;text-align:left;text-decoration:none;text-transform:uppercase;">Share now</a>
 																							</td>
 																						</tr>
 																					</tbody>
