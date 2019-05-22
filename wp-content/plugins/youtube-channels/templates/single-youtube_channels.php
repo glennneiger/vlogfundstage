@@ -140,19 +140,30 @@ get_header();
 							</div><!--/.tweets-list-->
 						</div><!--/.latest-tweets-section-->
 					<?php endif; //Endif ?>
-				</div><!--/.latest-videos-section-->
-				<div class="vf-yt-channel-banner channel-section">
-					<div class="vf-yt-channel-banner-col">
-						<h2 class="vf-yt-channel-banner-text">Who should <?php the_title('<span>','</span>'); //Title of Channel ?> collaborate with next?</h2>
-						<a id="create_campaign" href="/create-a-new-youtube-collaboration"><button class="sf-get-started">Bring Your Dream Collab To Life</button></a>
-					</div><!--/.vf-yt-channel-banner-col-->
-					<div class="vf-yt-channel-banner-col">
-						<img src="<?php echo $logo;?>" alt="<?php the_title();?>">
-						<i class="fa fa-plus"></i>
-						<img src="/wp-content/uploads/2018/06/question-mark.png" alt="">
-					</div><!--/.vf-yt-channel-banner-col-->
-				</div><!--/.vf-yt-channel-banner-->
-				<?php  if( $related_posts = toolset_get_related_posts( get_the_ID(), 'channel-post', 'parent') ) : //Check Blog Post Related
+				</div><!--/.latest-videos-section-->                
+                <a id="create_campaign" href="/create-a-new-youtube-collaboration">
+                    <div class="vf-yt-channel-banner channel-section">
+                        <div class="vf-yt-channel-banner-col">
+                            <h2 class="vf-yt-channel-banner-text">Who should <?php the_title('<span>','</span>'); //Title of Channel ?> collaborate with next?</h2>
+                            <button class="sf-get-started">Bring Your Dream Collab To Life</button>
+                        </div><!--/.vf-yt-channel-banner-col-->
+                        <div class="vf-yt-channel-banner-col">
+                            <img src="<?php echo $logo;?>" alt="<?php the_title();?>">
+                            <i class="fa fa-plus"></i>
+                            <img src="/wp-content/uploads/2018/06/question-mark.png" alt="">
+                        </div><!--/.vf-yt-channel-banner-col-->                    
+                    </div><!--/.vf-yt-channel-banner-->            
+                </a>    
+				<div class="related-collaborations-section channel-section">
+					<?php if( $related_collabs = toolset_get_related_posts( get_the_ID(), 'channel-campaign', 'parent') ) : //Check Related Campaign
+						echo '<h2>Collaborations</h2>';
+						echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="4" ids="'.implode(',', $related_collabs).'"]');
+					else : //Else
+						echo '<h2>New Collaborations You Might Like</h2>';
+						echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]');
+					endif; //Endif ?>
+				</div><!--/.related-collaborations-section-->
+                <?php  if( $related_posts = toolset_get_related_posts( get_the_ID(), 'channel-post', 'parent') ) : //Check Blog Post Related
 					$rba_big = array_shift( $related_posts ); ?>
 					<div class="related-blog-section channel-section" style="margin-top: 40px;">
 						<h2>Related Articles</h2>
@@ -208,7 +219,7 @@ get_header();
 						</div><!--/.grid-cols-->
 					</div><!--/.related-blog-section-->
 				<?php else : //Else
-					$related_posts = get_posts( array('post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => 5, 'orderby' => 'rand') );
+					$related_posts = get_posts( array('post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => 5, 'orderby' => 'date', 'order' => 'DESC') );
 					$rba_big = array_shift( $related_posts ); ?>
 					<div class="related-blog-section channel-section">
 						<h2>Discover articles from our Blog</h2>
@@ -264,17 +275,6 @@ get_header();
 						</div><!--/.grid-cols-->
 					</div><!--/.related-blog-section-->
 				<?php endif; //Endif ?>
-
-
-				<div class="related-collaborations-section channel-section">
-					<?php if( $related_collabs = toolset_get_related_posts( get_the_ID(), 'channel-campaign', 'parent') ) : //Check Related Campaign
-						echo '<h2>Collaborations</h2>';
-						echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="4" ids="'.implode(',', $related_collabs).'"]');
-					else : //Else
-						echo '<h2>New Collaborations You Might Like</h2>';
-						echo do_shortcode('[wpv-view name="campaign-search" view_display="layout" limit="3"]');
-					endif; //Endif ?>
-				</div><!--/.related-collaborations-section-->
 			</div><!--/.container-main-->
 		</div><!--/.channel-details-wrapper-->
 
