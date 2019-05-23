@@ -83,3 +83,24 @@ function vlog_allow_subscribers_to_upload_media(){
 }
 add_action('init', 'vlog_allow_subscribers_to_upload_media');
 endif;
+if( !function_exists('vlog_user_welcome_notification') ) :
+/**
+ * User Welcome Notificaitons
+ **/
+function vlog_user_welcome_notification($user_id){
+		
+	if( !empty( $user_id ) ) :
+		$user_data = get_userdata($user_id);
+		$email_subject = 'Welcome to Vlogfund';
+		ob_start();
+		include_once( get_theme_file_path('/inc/emails/email-user-welcome.php') );
+		$email_body = ob_get_contents();
+		ob_get_clean();
+		add_filter( 'wp_mail_content_type', function(){	return "text/html";	} );
+		//Email to Author
+		wp_mail( $user_data->user_email, htmlspecialchars_decode( $email_subject ), $email_body );
+	endif; //Endif
+}
+add_action('user_register', 		'vlog_user_welcome_notification');
+add_action('vlog_user_register', 	'vlog_user_welcome_notification');
+endif;
