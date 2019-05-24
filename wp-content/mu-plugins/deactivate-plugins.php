@@ -17,7 +17,7 @@ if( false === $is_admin ){
  */
 function kinsta_option_active_plugins( $plugins ){
 	global $request_uri;
-	$is_organization_archive = strpos( $request_uri, '/organization/' );
+	$is_organization_archive = strpos( $request_uri, '/organizations/' );
   $is_product_page = strpos( $request_uri, '/collaboration/' );
   $is_blog_article = strpos( $request_uri, '/blog/' );
   $is_create_collab_page = strpos( $request_uri, 'create-a-new-youtube-collaboration' );
