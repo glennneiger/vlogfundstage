@@ -43,7 +43,7 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
     <div class="sfc-checkout-billing-profile-wrapper">
                             <div class="sfc-checkout-billing-profile-background">
                                 <?php if ( is_user_logged_in() ) {
-                                echo '<h3><i class="fa fa-address-card-o"></i></h3>';
+                                echo '<h3><i class="fas fa-address-card"></i></h3>';
     }
 else {
     	echo '<h3>Already have an account? <a href="#login" class="sf-checkout-login-link">Login</a></h3>';
