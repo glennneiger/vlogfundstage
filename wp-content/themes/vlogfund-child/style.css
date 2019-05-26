@@ -5337,6 +5337,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
   padding: 0;
   list-style: none;
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   justify-content: flex-start;
   margin: -55px auto auto auto;
@@ -5366,6 +5367,7 @@ div.sf-campaign-popular-yt-video-thumbnail iframe {
 
 .sfc-ngo-single-header-item:nth-of-type(2) {
   align-self: flex-end;
+  padding: 0 10px;
 }
 
 .sfc-ngo-single-header-item h1 {
