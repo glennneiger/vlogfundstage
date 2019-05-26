@@ -16,9 +16,9 @@ if( !function_exists('vlogfund_woocommerce_override_checkout_fields') ) :
 function vlogfund_woocommerce_override_checkout_fields( $fields ) {
 
 	//Make Lastname Optional
-	$fields['billing']['billing_last_name']['required'] = false;
+	// $fields['billing']['billing_last_name']['required'] = false;
 	//Make Optional Country Field
-	$fields['billing']['billing_country']['required'] = false;	
+	$fields['billing']['billing_country']['required'] = false;
 
 	//Billing Fields
 	unset($fields['billing']['billing_address_1'],$fields['billing']['billing_address_2']);
@@ -792,7 +792,7 @@ endif;
 if( !function_exists('vlogfund_wc_email_footer') ) :
 /**
  * Woocommerce Email Footer
- * 
+ *
  * Handles to Email Footer
  **/
 function vlogfund_wc_email_footer( $email ){ ?>
@@ -804,7 +804,7 @@ function vlogfund_wc_email_footer( $email ){ ?>
 					<table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
 					<tr>
 					<![endif]-->
-	
+
 					<!--[if mso]>
 					<td valign="top" width="600" style="width:600px;">
 					<![endif]-->
@@ -820,7 +820,7 @@ function vlogfund_wc_email_footer( $email ){ ?>
 					<!--[if mso]>
 					</td>
 					<![endif]-->
-	
+
 					<!--[if mso]>
 					</tr>
 					</table>
@@ -837,7 +837,7 @@ function vlogfund_wc_email_footer( $email ){ ?>
 					<table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
 					<tr>
 					<![endif]-->
-	
+
 					<!--[if mso]>
 					<td valign="top" width="600" style="width:600px;">
 					<![endif]-->
@@ -861,6 +861,6 @@ function vlogfund_wc_email_footer( $email ){ ?>
 			</tr>
 		</tbody>
 	</table>
-<?php 
+<?php
 }
 endif;
