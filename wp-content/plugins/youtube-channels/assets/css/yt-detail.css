@@ -122,7 +122,7 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 	background: linear-gradient(to bottom,#1dc8cd 0%,#2cdd9b 100%);
 }
 .vf-yt-channel-banner-col {
-	flex: 1;
+	flex: auto;
 	align-self: center;
 	padding: 15px 0;
 	order: 2;
@@ -166,6 +166,9 @@ html, body { -webkit-font-smoothing:antialiased; -moz-font-smoothing:antialiased
 	}
 	.vf-link-to-videos {
 		align-self: flex-end;
+	}
+	.vf-yt-channel-banner-col {
+		flex: 1;
 	}
 }
 @media only screen and (max-width: 1099px) {
